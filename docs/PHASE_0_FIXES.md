@@ -30,3 +30,7 @@ On a networked build machine, run `npm ci`, `npx expo install --check`, `npm run
 ## GitHub Actions run #1 (new evidence)
 
 [Workflow run #1](https://github.com/OmarIsmail0/Liftria/actions/runs/39310163977): clean `npm install` **PASS** (1,419 packages installed without `--legacy-peer-deps`). `npx expo install --fix` **FAIL**: an unconstrained optional `react-dom@19.3.1` resolved against pinned React 19.2.3. Expo also expected Jest 29 rather than Jest 30. Follow-up pinned `react-dom@19.2.3`, `jest@~29.7.0`, and `@types/jest@29.5.14`. No lockfile or passing test result was produced by run #1.
+
+## GitHub Actions run #2 (new evidence)
+
+[Workflow run #2](https://github.com/OmarIsmail0/Liftria/actions/runs/39310591613): **PASS** for strict `npm install`, `npx expo install --fix`, clean `npm ci`, and `npx expo install --check`. Workflow committed a genuine `package-lock.json` (GitHub commit `3cd51e6`). Typecheck **FAIL** on obsolete Expo SDK 57 option `newArchEnabled` in `app.config.ts`. This field has now been removed. Subsequent CI is **read-only** and uses `npm ci`; no auto dependency mutations.

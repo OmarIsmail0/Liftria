@@ -14,11 +14,11 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 | Check | Status | Evidence / required action |
 |---|---|---|
 | GitHub repository and committed source | **PASS** | Connected GitHub API reports completed commits to `main`; inspect source files |
-| Dependencies/npm install + lockfile | **PENDING RE-TEST** | Old install failed (ISSUE-1). Pinned RN 0.86.3 and Jest preset; lockfile still needed via npm with registry access |
+| Dependencies/npm install + lockfile | **PASS** | GitHub Actions run #2: strict install, `npm ci`, Expo dependency alignment succeeded; `package-lock.json` committed in `3cd51e6` |
 | Expo prebuild manifest (including Health Connect rationale) | **BLOCKED** | No local Android SDK / install; owner run commands in DEVICE_TESTS.md |
 | Android dev-client `assembleDebug` + install | **BLOCKED** | No SDK, Gradle build, or device observed |
 | Android self-contained signed release + install | **BLOCKED** | No SDK, key, Gradle build, or device observed |
-| Strict typecheck and lint | **PENDING RE-TEST** | Old run failed (7 TS errors; 1 lint error). Corrections committed; no new completed run |
+| Strict typecheck and lint | **FAIL / PENDING RE-TEST** | Run #2 typecheck found obsolete `newArchEnabled`; removed in follow-up. Must repeat typecheck and lint |
 | Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PENDING RE-TEST** | Old 16/17 result after workaround. Mock corrected; new regressions added; cannot claim PASS |
 | SQLite migration on phone | **PENDING_DEVICE_TEST** | Run Init then check schema 1 |
 | SQLite CRUD / transactions on phone | **PENDING_DEVICE_TEST** | Test Add/Read/Clear and settings |
