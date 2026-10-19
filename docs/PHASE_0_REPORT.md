@@ -15,7 +15,7 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 |---|---|---|
 | GitHub repository and committed source | **PASS** | Connected GitHub API reports completed commits to `main`; inspect source files |
 | Dependencies/npm install + lockfile | **PASS** | GitHub Actions run #2: strict install, `npm ci`, Expo dependency alignment succeeded; `package-lock.json` committed in `3cd51e6` |
-| Expo prebuild manifest (including Health Connect rationale) | **BLOCKED** | No local Android SDK / install; owner run commands in DEVICE_TESTS.md |
+| Expo Android prebuild | **PASS** | GitHub Actions run #5 completed `npx expo prebuild --clean --platform android --no-install`; Health Connect permission **UI** still PENDING_DEVICE_TEST |
 | Android dev-client `assembleDebug` + install | **BLOCKED** | No SDK, Gradle build, or device observed |
 | Android self-contained signed release + install | **BLOCKED** | No SDK, key, Gradle build, or device observed |
 | Strict typecheck | **PASS** | GitHub Actions [run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): `tsc --noEmit` zero errors |\n| ESLint | **PASS** | GitHub Actions run #4: `eslint .` zero errors or warnings |
@@ -56,3 +56,9 @@ Record: machine versions, npm lock hash, `npx expo install --check`, `npm run ch
 | Daily calorie tracking | **PENDING** | No verified daily active/total energy or overlap comparison |
 
 **Roadmap:** Phase 1 **UI/UX design may proceed** with feature-readiness labels. Phase 2 foundation **MUST NOT start** until Core = GO. Phase 3 watch features require wearable READY or explicit descope. Phase 4 daily energy requires calorie READY or explicit descope. See PHASE_1_READINESS.md.
+
+## Updated GitHub evidence (2026-10-19)
+
+- [Actions run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): reproducible npm ci, Expo dependencies, tsc, eslint, and all **22/22** tests PASS.
+- [Actions run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054): verification job PASS and `expo prebuild --clean --platform android --no-install` PASS. At the time of writing its `assembleDebug` build was still in progress; **no APK result is claimed**. Check the live run for its ultimate result.
+- The original `PHASE_0_ISSUES.md` captures older failures at `644edfa`; see `docs/PHASE_0_FIXES.md` for fix-by-fix code and evidence.
