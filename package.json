@@ -1,0 +1,49 @@
+{
+  "name": "liftria",
+  "version": "0.0.1",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "prebuild": "expo prebuild --clean --platform android",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "jest",
+    "check": "npm run typecheck && npm run lint && npm test -- --runInBand"
+  },
+  "dependencies": {
+    "expo": "~57.0.10",
+    "expo-router": "~57.0.10",
+    "expo-application": "~57.0.0",
+    "expo-build-properties": "~57.0.0",
+    "expo-constants": "~57.0.9",
+    "expo-dev-client": "~57.0.0",
+    "expo-device": "~57.0.1",
+    "expo-image-manipulator": "~57.0.0",
+    "expo-image-picker": "~57.0.0",
+    "expo-network": "~57.0.0",
+    "expo-secure-store": "~57.0.0",
+    "expo-sqlite": "~57.0.3",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-health-connect": "^4.1.0",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "^10.0.0",
+    "jest": "^30.0.0",
+    "jest-expo": "~57.0.0",
+    "typescript": "~6.0.3"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "testMatch": ["**/__tests__/**/*.test.ts"],
+    "testPathIgnorePatterns": ["/node_modules/"]
+  }
+}
