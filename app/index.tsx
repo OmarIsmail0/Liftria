@@ -1,0 +1,275 @@
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as Application from 'expo-application';
+import * as Device from 'expo-device';
+import * as Network from 'expo-network';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import {
+  initializeDatabase, schemaVersion, addTestData, readTestData, clearTestData,
+  setSetting, getSetting, saveHealthValues, listCachedHealth,
+} from '../src/services/database';
+import { keyState, saveKey, deleteKey, type KeyState } from '../src/services/secure-storage';
+import { runMealEstimate, TEXT_EXAMPLE, DEFAULT_MODEL, type ImageData } from '../src/services/anthropic';
+import { healthConnect, requestHistoryReadPermission } from '../src/services/health';
+import { metricTypes, type MetricType, type PermissionState, type HealthValue } from '../src/services/health/types';
+
+type RowStatus = { state: string; count?: number; source?: string; range?: string; device?: string; units?: string };
+const common = StyleSheet.create({
+  page: { flex: 1, backgroundColor: '#11151C' },
+  scroll: { paddingHorizontal: 18, paddingTop: 44, paddingBottom: 60 },
+  h1: { color: '#F5F6F8', fontSize: 26, fontWeight: '700', marginBottom: 6 },
+  sub: { color: '#AAB3BE', marginBottom: 20, fontSize: 13 },
+  section: { backgroundColor: '#202732', borderRadius: 13, padding: 14, marginBottom: 14 },
+  h2: { color: '#FFF', fontSize: 17, fontWeight: '700', marginBottom: 9 },
+  body: { color: '#D0D8E2', fontSize: 13, lineHeight: 19, marginBottom: 6 },
+  muted: { color: '#9AA8B9', fontSize: 12, marginBottom: 6 },
+  buttons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 8 },
+  button: { backgroundColor: '#3656B5', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8 },
+  buttonOff: { backgroundColor: '#444B57', opacity: 0.5 },
+  buttonText: { color: '#FFF', fontWeight: '600', fontSize: 13 },
+  field: { borderWidth: 1, borderColor: '#506075', borderRadius: 8, padding: 10, color: '#FFF', marginVertical: 6 },
+  line: { borderBottomColor: '#394554', borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 7 },
+});
+function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
+  return (
+    <Pressable
+      accessibilityRole="button" accessibilityLabel={label}
+      disabled={disabled} onPress={onPress}
+      style={[common.button, disabled && common.buttonOff]}
+    ><Text style={common.buttonText}>{label}</Text></Pressable>
+  );
+}
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return <View style={common.section}><Text style={common.h2}>{title}</Text>{children}</View>;
+}
+function desc(value: HealthValue): string {
+  if (value.kind === 'aggregate') return `${value.metric}: ${value.value} ${value.unit} [${value.windowStart} — ${value.windowEnd}]`;
+  if (value.kind === 'session') return `exercise ${value.exerciseType}: ${Math.round(value.durationSec)} sec (${value.start} — ${value.end})`;
+  if (value.kind === 'sleep') return `sleep: ${value.start} — ${value.end}, ${value.stages?.length ?? 0} stages`;
+  if (value.kind === 'series') return `heart rate: ${value.points.length} samples (${value.start} — ${value.end}) bpm`;
+  if (value.kind === 'interval') return `${value.metric}: ${value.value} ${value.unit} (${value.start} — ${value.end})`;
+  return `${value.metric}: ${value.value} ${value.unit} at ${value.time}`;
+}
+
+export default function Diagnostics() {
+  const [dbText, setDbText] = useState('Not initialized');
+  const [key, setKey] = useState('');
+  const [storedKey, setStoredKey] = useState<KeyState>({ status: 'missing' });
+  const [aiText, setAiText] = useState('Not tested');
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const requestRef = useRef<AbortController | null>(null);
+  const [photo, setPhoto] = useState<ImageData | null>(null);
+  const [photoName, setPhotoName] = useState<string | null>(null);
+  const [netText, setNetText] = useState('Checking');
+  const [offlineText, setOfflineText] = useState('Not tested');
+  const [healthText, setHealthText] = useState('Not checked');
+  const [historyText, setHistoryText] = useState('Not requested');
+  const [permissions, setPermissions] = useState<Record<MetricType, PermissionState> | null>(null);
+  const [healthRows, setHealthRows] = useState<Partial<Record<MetricType, RowStatus>>>({});
+  const [samples, setSamples] = useState<HealthValue[]>([]);
+  const [healthBusy, setHealthBusy] = useState(false);
+  const healthBusyRef = useRef(false);
+
+  const refreshNetwork = async () => {
+    try {
+      const net = await Network.getNetworkStateAsync();
+      const offline = net.isConnected === false || net.isInternetReachable === false;
+      setNetText(offline ? 'Offline' : net.isInternetReachable === true ? 'Online' : 'Unknown (no internet check)');
+      return offline;
+    } catch { setNetText('Unknown'); return false; }
+  };
+
+  useEffect(() => {
+    void initializeDatabase().then(() => schemaVersion()).then(result =>
+      setDbText(result.ok ? `Schema v${result.value} initialized` : result.error.message))
+      .catch(() => setDbText('DB initialization failed'));
+    void keyState().then(setStoredKey);
+    void refreshNetwork();
+    void healthConnect.getAvailability().then(status => setHealthText(`Availability: ${status}`));
+    return () => requestRef.current?.abort();
+  }, []);
+
+  const showDb = async () => {
+    const result = await readTestData();
+    setDbText(result.ok ? JSON.stringify(result.value, null, 2) : result.error.message);
+  };
+  const refreshCached = async () => {
+    const result = await listCachedHealth();
+    if (result.ok) { setSamples(result.value); setOfflineText(`Read ${result.value.length} cached health records offline-capable`); }
+    else setOfflineText(result.error.message);
+  };
+
+  const pickPhoto = async () => {
+    try {
+      const selection = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: false });
+      const asset = selection.assets?.[0];
+      if (selection.canceled || !asset) return;
+      const longest = Math.max(asset.width || 0, asset.height || 0);
+      const resize = longest > 1024
+        ? [{ resize: asset.width >= asset.height ? { width: 1024 } : { height: 1024 } }]
+        : [];
+      const processed = await ImageManipulator.manipulateAsync(asset.uri, resize, {
+        compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true,
+      });
+      if (!processed.base64) { setAiText('Could not prepare a JPEG on the phone.'); return; }
+      setPhoto({ base64: processed.base64, mediaType: 'image/jpeg' });
+      setPhotoName('JPEG prepared on-device; not uploaded. Tap Test B to send.');
+    } catch { setAiText('Image selection/compression failed.'); }
+  };
+
+  const runClaude = async (image?: ImageData) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    const controller = new AbortController();
+    requestRef.current = controller;
+    setAiText('Request in flight...');
+    try {
+      const result = await runMealEstimate({ image, signal: controller.signal });
+      if (result.ok) {
+        console.info('[Liftria] Claude token counts only', result.usage);
+        const estimates = result.data.items.map(item =>
+          `${item.name}: ${item.quantity} ${item.unit} (confidence ${item.confidence.toFixed(2)})`);
+        setAiText(`Estimated only — NOT measured:\n${estimates.join('\n')}\nTokens: ${result.usage.inputTokens} input / ${result.usage.outputTokens} output`);
+      } else setAiText(`${result.code}: ${result.message}`);
+    } catch { setAiText('Unexpected diagnostics failure.'); }
+    finally { busyRef.current = false; setBusy(false); requestRef.current = null; }
+  };
+
+  const permissionRefresh = async () => {
+    const states = await healthConnect.getPermissionStatus([...metricTypes]);
+    setPermissions(states);
+  };
+  const readHealth = async () => {
+    if (healthBusyRef.current) return;
+    healthBusyRef.current = true;
+    setHealthBusy(true);
+    const range = { start: new Date(Date.now() - 7 * 86400000), end: new Date() };
+    const next: Partial<Record<MetricType, RowStatus>> = {};
+    let all: HealthValue[] = [];
+    try {
+      for (const metric of metricTypes) {
+        const res = await healthConnect.read(metric, range);
+        if (res.status === 'ok') {
+          all = [...all, ...res.records];
+          const first = res.records[0];
+          const last = res.records[res.records.length - 1];
+          next[metric] = {
+            state: 'records found', count: res.records.length,
+            source: first && first.kind !== 'aggregate' ? first.dataOrigin : 'aggregate',
+            range: first && first.kind !== 'aggregate'
+              ? 'start' in first ? first.start : 'time' in first ? first.time : 'unknown' : 'aggregate',
+            device: first && first.kind !== 'aggregate' ? JSON.stringify(first.device ?? {}) : undefined,
+            units: first && 'unit' in first ? first.unit : undefined,
+          };
+          if (last && last.kind !== 'aggregate' && next[metric]) {
+            next[metric]!.range += ` (last origin: ${last.dataOrigin})`;
+          }
+        } else next[metric] = { state: res.status };
+        setHealthRows({ ...next });
+      }
+      if (all.length > 0) {
+        const stored = await saveHealthValues(all);
+        setHealthText(stored.ok ? `Imported/updated ${stored.value} read-only records on device` : stored.error.message);
+      } else setHealthText('No normalized health records imported; check status per metric');
+      setSamples(all.slice(0, 30));
+    } finally { setHealthBusy(false); healthBusyRef.current = false; }
+  };
+
+  const checkOffline = async () => {
+    const offline = await refreshNetwork();
+    if (!offline) { setOfflineText('Enable airplane mode first. No API request was sent.'); return; }
+    const res = await runMealEstimate();
+    setOfflineText(res.ok ? 'Unexpected API success while offline' : `Offline Claude test: ${res.code} — ${res.message}`);
+  };
+
+  return (
+    <ScrollView style={common.page} contentContainerStyle={common.scroll} keyboardShouldPersistTaps="handled">
+      <Text style={common.h1}>LIFTRIA / Phase 0</Text>
+      <Text style={common.sub}>Local-first feasibility diagnostics · not the final UI</Text>
+      <Section title="App / Device">
+        <Text style={common.body}>Version: {Application.nativeApplicationVersion ?? 'unknown'}</Text>
+        <Text style={common.body}>Android API: {String(Platform.Version)} · OS {Device.osVersion ?? 'unknown'}</Text>
+        <Text style={common.body}>Device: {Device.manufacturer ?? 'unknown'} {Device.modelName ?? 'unknown'}</Text>
+        <Text style={common.body}>Database: {dbText}</Text>
+        <Text style={common.muted}>No app data is uploaded. Only the selected meal example/photo is sent to Claude after tapping Test.</Text>
+      </Section>
+      <Section title="SQLite / Local data">
+        <View style={common.buttons}>
+          <Action label="Init" onPress={() => { void initializeDatabase().then(showDb).catch(() => setDbText('Initialization failed')); }} />
+          <Action label="Add test data" onPress={() => { void addTestData().then(showDb); }} />
+          <Action label="Read" onPress={() => { void showDb(); }} />
+          <Action label="Clear test data" onPress={() => { void clearTestData().then(showDb); }} />
+        </View>
+        <View style={common.buttons}>
+          <Action label="Write setting" onPress={() => { void setSetting('phase0_flag', new Date().toISOString()).then(r => setDbText(r.ok ? 'Saved setting locally' : r.error.message)); }} />
+          <Action label="Read setting" onPress={() => { void getSetting('phase0_flag').then(r => setDbText(r.ok ? `Setting: ${r.value ?? 'missing'}` : r.error.message)); }} />
+        </View>
+        <Text style={common.muted}>Add test data → force-stop app → reopen → Read to verify persistence.</Text>
+      </Section>
+      <Section title="Claude / SecureStore">
+        <Text style={common.body}>Model: {DEFAULT_MODEL}</Text>
+        <Text style={common.body}>Stored key: {storedKey.status === 'ready' ? storedKey.hint : storedKey.status}</Text>
+        <TextInput
+          value={key} onChangeText={setKey} secureTextEntry autoCapitalize="none"
+          autoCorrect={false} autoComplete="off" placeholder="sk-ant-…" placeholderTextColor="#8993A0"
+          style={common.field} accessibilityLabel="Anthropic API key" />
+        <View style={common.buttons}>
+          <Action label="Save key" onPress={() => { void saveKey(key).then(s => { setStoredKey(s); setKey(''); setAiText(s.status === 'ready' ? 'Key securely saved' : s.status); }); }} disabled={busy} />
+          <Action label="Check key" onPress={() => { void keyState().then(setStoredKey); }} />
+          <Action label="Delete key" onPress={() => { void deleteKey().then(setStoredKey); }} disabled={busy} />
+        </View>
+        <Text style={common.muted}>Test A input: {TEXT_EXAMPLE}</Text>
+        <View style={common.buttons}>
+          <Action label="Test A / key" disabled={busy} onPress={() => { void runClaude(); }} />
+          <Action label="Pick photo" disabled={busy} onPress={() => { void pickPhoto(); }} />
+          <Action label="Test B / photo" disabled={busy || !photo} onPress={() => { if (photo) void runClaude(photo); }} />
+          <Action label="Cancel" disabled={!busy} onPress={() => requestRef.current?.abort()} />
+        </View>
+        <Text style={common.muted}>{photoName ?? 'No meal photo selected'}</Text>
+        {busy && <ActivityIndicator color="#A7C6FF" />}
+        <Text style={common.body}>{aiText}</Text>
+        <Text style={common.muted}>Results are estimates, not nutrition facts. Key is stored in Android Keystore-backed SecureStore.</Text>
+      </Section>
+      <Section title="Health Connect / Watch 4">
+        <Text style={common.body}>{healthText}</Text>
+        <Text style={common.muted}>Samsung Health → Settings → Health Connect sync must be enabled first. No health data is sent to Claude.</Text>
+        <View style={common.buttons}>
+          <Action label="Check availability" onPress={() => { void healthConnect.getAvailability().then(s => setHealthText(`Availability: ${s}`)); }} />
+          <Action label="Permissions" onPress={() => { void permissionRefresh(); }} />
+          <Action label="Grant read-only" onPress={() => { void healthConnect.requestPermissions([...metricTypes]).then(setPermissions); }} />
+          <Action label="History grant" onPress={() => { void requestHistoryReadPermission().then(setHistoryText); }} />
+          <Action label="Read 7 days" disabled={healthBusy} onPress={() => { void readHealth(); }} />
+        </View>
+        <Text style={common.muted}>History permission: {historyText} · Special grant requires separate device verification.</Text>
+        {metricTypes.map(metric => {
+          const row = healthRows[metric];
+          return (
+            <View key={metric} style={common.line}>
+              <Text style={common.body}>{metric} · permission: {permissions?.[metric] ?? 'not checked'}</Text>
+              <Text style={common.muted}>API supported: adapter declared · {row?.state ?? 'not read'} · count {row?.count ?? '—'}</Text>
+              {row?.source && <Text style={common.muted}>Origin: {row.source} · unit: {row.units ?? 'varies'} · time: {row.range ?? '—'}</Text>}
+              {row?.device && <Text style={common.muted}>Device: {row.device}</Text>}
+            </View>
+          );
+        })}
+        <Text style={common.muted}>API support ≠ permission granted ≠ data present ≠ verified against Samsung Health.</Text>
+      </Section>
+      <Section title="Offline / Local cache">
+        <Text style={common.body}>Connection: {netText}</Text>
+        <Text style={common.body}>{offlineText}</Text>
+        <View style={common.buttons}>
+          <Action label="Network status" onPress={() => { void refreshNetwork(); }} />
+          <Action label="Read health cache" onPress={() => { void refreshCached(); }} />
+          <Action label="Test offline API failure" onPress={() => { void checkOffline(); }} />
+        </View>
+        {samples.slice(0, 12).map((record, i) =>
+          <Text key={i} style={common.muted}>{desc(record)}{record.kind !== 'aggregate' ? ` · ${record.dataOrigin}` : ''}</Text>)}
+        <Text style={common.muted}>Airplane-mode validation requires a bundled APK, not Metro.</Text>
+      </Section>
+      <Text style={common.muted}>Privacy: on-device SQLite and credentials. Photos leave the device only when Test B is tapped. Direct Claude API keys can be extracted from compromised phones.</Text>
+    </ScrollView>
+  );
+}
