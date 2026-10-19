@@ -13,20 +13,20 @@
     "check": "npm run typecheck && npm run lint && npm test -- --runInBand"
   },
   "dependencies": {
-    "expo": "~57.0.10",
-    "expo-router": "~57.0.10",
+    "expo": "~57.0.17",
+    "expo-router": "~57.0.28",
     "expo-application": "~57.0.0",
-    "expo-build-properties": "~57.0.0",
+    "expo-build-properties": "~57.0.22",
     "expo-constants": "~57.0.9",
-    "expo-dev-client": "~57.0.0",
+    "expo-dev-client": "~57.0.20",
     "expo-device": "~57.0.1",
-    "expo-image-manipulator": "~57.0.0",
-    "expo-image-picker": "~57.0.0",
+    "expo-image-manipulator": "~57.0.21",
+    "expo-image-picker": "~57.0.20",
     "expo-network": "~57.0.0",
     "expo-secure-store": "~57.0.0",
     "expo-sqlite": "~57.0.3",
     "react": "19.2.3",
-    "react-native": "0.86.2",
+    "react-native": "0.86.3",
     "react-native-health-connect": "^4.1.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
@@ -39,11 +39,16 @@
     "eslint-config-expo": "~57.0.1",
     "jest": "^30.0.0",
     "jest-expo": "~57.0.0",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "@react-native/jest-preset": "0.86.3"
   },
   "jest": {
     "preset": "jest-expo",
-    "testMatch": ["**/__tests__/**/*.test.ts"],
-    "testPathIgnorePatterns": ["/node_modules/"]
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }

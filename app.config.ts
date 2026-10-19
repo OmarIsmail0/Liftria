@@ -29,7 +29,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     versionCode: 1,
     permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
     allowBackup: false,
-    usesCleartextTraffic: false,
   },
   plugins: [
     'expo-router',
@@ -37,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-secure-store',
     'react-native-health-connect',
     ['expo-build-properties', {
-      android: { minSdkVersion: 26, compileSdkVersion: 36, targetSdkVersion: 36 },
+      android: { minSdkVersion: 26, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
     }],
   ],
 });

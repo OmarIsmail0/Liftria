@@ -76,9 +76,13 @@ export function parseClaudeBody(value: unknown): ClaudeResult {
 
 export function retryAfterMs(value: string | null): number | null {
   if (!value) return null;
-  const seconds = Number(value);
-  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(seconds * 1000, 120_000);
-  const date = Date.parse(value);
+  const trimmed = value.trim();
+  // A negative numeric value is invalid; never feed it into Date.parse (which accepts '-5' as a date).
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
+    const seconds = Number(trimmed);
+    return Number.isFinite(seconds) && seconds >= 0 ? Math.min(seconds * 1000, 120_000) : null;
+  }
+  const date = Date.parse(trimmed);
   return Number.isFinite(date) ? Math.max(0, Math.min(date - Date.now(), 120_000)) : null;
 }
 export async function delay(ms: number, signal?: AbortSignal): Promise<boolean> {
@@ -103,6 +107,7 @@ export async function runMealEstimate(opts: ClaudeOptions = {}): Promise<ClaudeR
   const controller = new AbortController();
   const timeoutMs = Math.max(1000, Math.min(opts.timeoutMs ?? 45000, 120000));
   let timedOut = false;
+  const startedAt = Date.now();
   const timer = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
   const cancel = () => controller.abort();
   opts.signal?.addEventListener('abort', cancel, { once: true });
@@ -141,6 +146,10 @@ export async function runMealEstimate(opts: ClaudeOptions = {}): Promise<ClaudeR
         const code = httpError(response.status);
         if ((code === 'rate-limited' || code === 'overloaded') && attempt < 2) {
           const wait = retryAfterMs(response.headers.get('retry-after')) ?? (700 * 2 ** attempt);
+          // Don't misreport a long server-requested backoff as a network timeout.
+          // The request's total time budget also covers all retries.
+          const remaining = timeoutMs - (Date.now() - startedAt);
+          if (wait >= remaining) return fail(code);
           const resumed = await delay(wait, controller.signal);
           if (!resumed) return fail(timedOut ? 'timeout' : 'cancelled');
           continue;

@@ -118,6 +118,8 @@ export async function readTestData(): Promise<DbResult<TestCounts>> {
 export async function clearTestData(): Promise<DbResult<void>> {
   return dbOperation(async (db) => {
     await db.withExclusiveTransactionAsync(async (tx) => {
+      // Exclusive transactions open their own SQLite connection; FK enforcement is connection-local.
+      await tx.runAsync('DELETE FROM test_workout_sets');
       await tx.runAsync('DELETE FROM test_workout_sessions');
       await tx.runAsync('DELETE FROM test_nutrition_entries');
       await tx.runAsync("DELETE FROM app_settings WHERE key='persistence_marker'");

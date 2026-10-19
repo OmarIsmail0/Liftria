@@ -36,7 +36,7 @@ test('retry-after numeric seconds is parsed and bounded', () => {
 });
 test('offline fails before reading a key and without fetch', async () => {
   const fetchMock = jest.fn();
-  global.fetch = fetchMock as unknown as typeof fetch;
+  globalThis.fetch = fetchMock as unknown as typeof fetch;
   const result = await runMealEstimate();
   expect(result).toMatchObject({ ok: false, code: 'offline' });
   expect(fetchMock).not.toHaveBeenCalled();
@@ -50,7 +50,7 @@ test('missing and malformed key states', async () => {
 test('abort timeout maps to timeout', async () => {
   jest.useFakeTimers();
   (SecureStore.getItemAsync as jest.Mock).mockResolvedValue('sk-ant-example-only-not-a-real-key');
-  global.fetch = jest.fn((_url, opts: RequestInit) =>
+  globalThis.fetch = jest.fn((_url, opts: RequestInit) =>
     new Promise((_resolve, reject) =>
       opts.signal?.addEventListener('abort', () => reject(new Error('aborted')), { once: true }))) as unknown as typeof fetch;
   try {

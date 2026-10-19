@@ -10,7 +10,14 @@ const state = {
   health: new Map<string, DbRow>(),
   aggregates: new Map<string, DbRow>(),
 };
-const mockDb = {
+type MockDatabase = {
+  execAsync: jest.Mock;
+  getFirstAsync: jest.Mock;
+  getAllAsync: jest.Mock;
+  runAsync: jest.Mock;
+  withExclusiveTransactionAsync: jest.Mock;
+};
+const mockDb: MockDatabase = {
   execAsync: jest.fn(async (sql: string) => {
     if (sql.includes('PRAGMA user_version = 1')) state.schema = 1;
   }),
@@ -49,11 +56,11 @@ const mockDb = {
     } else if (sql.includes('UPDATE test_nutrition_entries')) {
       const found = state.meals.get(args[2] as number);
       if (found) { found.description = args[0]; found.quantity = args[1]; } else changes = 0;
-    } else if (sql.includes('DELETE FROM test_workout_sessions WHERE id')) {
-      state.sessions.delete(args[0] as number);
+    } else if (sql.includes('DELETE FROM test_workout_sets WHERE session_id')) {
       for (const [setId, set] of state.sets) if (set.session_id === args[0]) state.sets.delete(setId);
-    } else if (sql.includes('DELETE FROM test_nutrition_entries WHERE id')) state.meals.delete(args[0] as number);
-    else if (sql.includes('DELETE FROM test_workout_sessions')) { state.sessions.clear(); state.sets.clear(); }
+    } else if (sql.includes('DELETE FROM test_workout_sets')) state.sets.clear();
+    else if (sql.includes('DELETE FROM test_workout_sessions WHERE id')) state.sessions.delete(args[0] as number); else if (sql.includes('DELETE FROM test_nutrition_entries WHERE id')) state.meals.delete(args[0] as number);
+    else if (sql.includes('DELETE FROM test_workout_sessions')) state.sessions.clear();
     else if (sql.includes('DELETE FROM test_nutrition_entries')) state.meals.clear();
     else if (sql.includes('INSERT INTO health_samples')) {
       state.health.set(`${args[0]}:${args[1]}`, { payload_json: args[5] });
@@ -62,7 +69,7 @@ const mockDb = {
     }
     return { lastInsertRowId: id, changes };
   }),
-  withExclusiveTransactionAsync: jest.fn(async (f: (tx: unknown) => Promise<unknown>) => f(mockDb)),
+  withExclusiveTransactionAsync: jest.fn(async (f: (tx: MockDatabase) => Promise<unknown>): Promise<void> => { await f(mockDb); }),
 };
 jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb) }));
 import {
@@ -94,6 +101,7 @@ test('workout and nutrition CRUD', async () => {
   const n = await createNutrition('Egg', 2, 'piece');
   expect(w.ok && n.ok).toBe(true);
   if (!w.ok || !n.ok) return;
+  expect(typeof w.value).toBe('number'); // Real API transaction returns void; ID must be captured outside.
   expect(await getWorkout(w.value)).toMatchObject({ ok: true, value: { title: 'Gym' } });
   expect(await updateWorkout(w.value, 'Gym revised')).toEqual({ ok: true, value: 1 });
   expect(await getNutrition(n.value)).toMatchObject({ ok: true, value: { quantity: 2 } });
@@ -112,5 +120,5 @@ test('import uses adapter/source ID upsert key and never deduplicates by synthet
 test('clear removes diagnostic data but keeps imported health records', async () => {
   await clearTestData();
   const result = await readTestData();
-  if (result.ok) expect(result.value).toMatchObject({ workouts: 0, meals: 0, healthSamples: 1 });
+  if (result.ok) expect(result.value).toMatchObject({ workouts: 0, sets: 0, meals: 0, healthSamples: 1 });
 });
