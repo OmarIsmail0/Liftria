@@ -2,6 +2,10 @@ name: Phase 0 code verification
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - 'PHASE_0_ISSUES.md'
   workflow_dispatch:
 
 permissions:

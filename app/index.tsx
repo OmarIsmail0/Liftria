@@ -304,7 +304,7 @@ export default function Diagnostics() {
         })}
         <Text style={common.muted}>API support ≠ permission granted ≠ data present ≠ verified against Samsung Health.</Text>
         <Text style={common.h2}>Daily window totals (NOT verified daily expenditure)</Text>
-        <Text style={common.muted}>Local calendar day, today's window is partial. Aggregation reflects only available Health Connect sources; it can include exercise intervals without all-day calories. Never add basal, active, and total together.</Text>
+        <Text style={common.muted}>Local calendar day; the current window is partial. Aggregation reflects only available Health Connect sources; it can include exercise intervals without all-day calories. Never add basal, active, and total together.</Text>
         {dailyRows.map((row) => (
           <View key={`${row.date}:${row.metric}`} style={common.line}>
             <Text style={common.body}>{row.date} · {row.metric}: {row.status === 'ok' ? `${row.value.value.toFixed(1)} kcal` : row.status}</Text>

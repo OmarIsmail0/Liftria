@@ -34,3 +34,7 @@ On a networked build machine, run `npm ci`, `npx expo install --check`, `npm run
 ## GitHub Actions run #2 (new evidence)
 
 [Workflow run #2](https://github.com/OmarIsmail0/Liftria/actions/runs/39310591613): **PASS** for strict `npm install`, `npx expo install --fix`, clean `npm ci`, and `npx expo install --check`. Workflow committed a genuine `package-lock.json` (GitHub commit `3cd51e6`). Typecheck **FAIL** on obsolete Expo SDK 57 option `newArchEnabled` in `app.config.ts`. This field has now been removed. Subsequent CI is **read-only** and uses `npm ci`; no auto dependency mutations.
+
+## GitHub Actions run #3
+
+[Workflow run #3](https://github.com/OmarIsmail0/Liftria/actions/runs/39311024190): `npm ci` **PASS**, `npx expo install --check` **PASS**, `tsc --noEmit` **PASS** (zero errors). ESLint **FAIL** at the JSX text apostrophe in app/index.tsx, line 307. Corrected the text to remove the unescaped apostrophe. Jest was not reached in run #3.
