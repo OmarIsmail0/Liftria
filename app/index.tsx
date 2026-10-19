@@ -11,7 +11,8 @@ import {
 } from '../src/services/database';
 import { keyState, saveKey, deleteKey, type KeyState } from '../src/services/secure-storage';
 import { runMealEstimate, TEXT_EXAMPLE, DEFAULT_MODEL, type ImageData } from '../src/services/anthropic';
-import { healthConnect, requestHistoryReadPermission } from '../src/services/health';
+import { healthConnect, requestHistoryReadPermission, readDailyEnergy, type DailyEnergyRow } from '../src/services/health';
+import { getLastWorkout, updateWorkout, getLastNutrition, deleteNutrition } from '../src/services/database/repositories';
 import { metricTypes, type MetricType, type PermissionState, type HealthValue } from '../src/services/health/types';
 
 type RowStatus = { state: string; count?: number; source?: string; range?: string; device?: string; units?: string };
@@ -70,6 +71,8 @@ export default function Diagnostics() {
   const [healthRows, setHealthRows] = useState<Partial<Record<MetricType, RowStatus>>>({});
   const [samples, setSamples] = useState<HealthValue[]>([]);
   const [healthBusy, setHealthBusy] = useState(false);
+  const [dailyBusy, setDailyBusy] = useState(false);
+  const [dailyRows, setDailyRows] = useState<DailyEnergyRow[]>([]);
   const healthBusyRef = useRef(false);
 
   const refreshNetwork = async () => {
@@ -86,7 +89,11 @@ export default function Diagnostics() {
       setDbText(result.ok ? `Schema v${result.value} initialized` : result.error.message))
       .catch(() => setDbText('DB initialization failed'));
     void keyState().then(setStoredKey);
-    void refreshNetwork();
+    // Async callback avoids synchronous setState in a mount effect (react-hooks lint).
+    void Network.getNetworkStateAsync().then(net => {
+      const offline = net.isConnected === false || net.isInternetReachable === false;
+      setNetText(offline ? 'Offline' : net.isInternetReachable === true ? 'Online' : 'Unknown (no internet check)');
+    }).catch(() => setNetText('Unknown'));
     void healthConnect.getAvailability().then(status => setHealthText(`Availability: ${status}`));
     return () => requestRef.current?.abort();
   }, []);
@@ -179,6 +186,40 @@ export default function Diagnostics() {
     } finally { setHealthBusy(false); healthBusyRef.current = false; }
   };
 
+  const updateLastWorkout = async () => {
+    const latest = await getLastWorkout();
+    if (!latest.ok || !latest.value) {
+      setDbText(latest.ok ? 'No workout to update' : latest.error.message);
+      return;
+    }
+    const result = await updateWorkout(latest.value.id, 'Updated on device');
+    if (!result.ok || result.value !== 1) { setDbText(result.ok ? 'Workout update affected no rows' : result.error.message); return; }
+    await showDb();
+    setDbText(`Updated workout #${latest.value.id}; verify the title using Read detail or database inspection`);
+  };
+  const deleteLastNutrition = async () => {
+    const latest = await getLastNutrition();
+    if (!latest.ok || !latest.value) { setDbText(latest.ok ? 'No nutrition row to delete' : latest.error.message); return; }
+    const result = await deleteNutrition(latest.value.id);
+    if (!result.ok || result.value !== 1) { setDbText(result.ok ? 'Delete affected no rows' : result.error.message); return; }
+    await showDb();
+  };
+  const readDaily = async () => {
+    if (dailyBusy) return;
+    setDailyBusy(true);
+    try {
+      const rows = await readDailyEnergy(7);
+      setDailyRows(rows);
+      const values = rows.flatMap(row => row.status === 'ok' ? [row.value] : []);
+      if (values.length) {
+        const saved = await saveHealthValues(values);
+        setHealthText(saved.ok
+          ? `Cached ${saved.value} time-windowed energy aggregates (daily coverage NOT verified)`
+          : saved.error.message);
+      } else setHealthText('No daily energy aggregates returned; check permission and Samsung Health sync.');
+    } catch { setHealthText('Daily energy diagnostic failed.'); }
+    finally { setDailyBusy(false); }
+  };
   const checkOffline = async () => {
     const offline = await refreshNetwork();
     if (!offline) { setOfflineText('Enable airplane mode first. No API request was sent.'); return; }
@@ -203,6 +244,8 @@ export default function Diagnostics() {
           <Action label="Add test data" onPress={() => { void addTestData().then(showDb); }} />
           <Action label="Read" onPress={() => { void showDb(); }} />
           <Action label="Clear test data" onPress={() => { void clearTestData().then(showDb); }} />
+          <Action label="Update last workout" onPress={() => { void updateLastWorkout(); }} />
+          <Action label="Delete last nutrition" onPress={() => { void deleteLastNutrition(); }} />
         </View>
         <View style={common.buttons}>
           <Action label="Write setting" onPress={() => { void setSetting('phase0_flag', new Date().toISOString()).then(r => setDbText(r.ok ? 'Saved setting locally' : r.error.message)); }} />
@@ -243,6 +286,7 @@ export default function Diagnostics() {
           <Action label="Grant read-only" onPress={() => { void healthConnect.requestPermissions([...metricTypes]).then(setPermissions); }} />
           <Action label="History grant" onPress={() => { void requestHistoryReadPermission().then(setHistoryText); }} />
           <Action label="Read 7 days" disabled={healthBusy} onPress={() => { void readHealth(); }} />
+          <Action label="Daily energy / 7 days" disabled={dailyBusy || healthBusy} onPress={() => { void readDaily(); }} />
         </View>
         <Text style={common.muted}>History permission: {historyText} · Special grant requires separate device verification.</Text>
         {metricTypes.map(metric => {
@@ -257,6 +301,15 @@ export default function Diagnostics() {
           );
         })}
         <Text style={common.muted}>API support ≠ permission granted ≠ data present ≠ verified against Samsung Health.</Text>
+        <Text style={common.h2}>Daily window totals (NOT verified daily expenditure)</Text>
+        <Text style={common.muted}>Local calendar day, today's window is partial. Aggregation reflects only available Health Connect sources; it can include exercise intervals without all-day calories. Never add basal, active, and total together.</Text>
+        {dailyRows.map((row) => (
+          <View key={`${row.date}:${row.metric}`} style={common.line}>
+            <Text style={common.body}>{row.date} · {row.metric}: {row.status === 'ok' ? `${row.value.value.toFixed(1)} kcal` : row.status}</Text>
+            {row.status === 'ok' &&
+              <Text style={common.muted}>{row.value.operation} · {row.value.windowStart} — {row.value.windowEnd} · origin(s): {row.value.dataOrigins?.join(', ') || 'unknown'}</Text>}
+          </View>
+        ))}
       </Section>
       <Section title="Offline / Local cache">
         <Text style={common.body}>Connection: {netText}</Text>

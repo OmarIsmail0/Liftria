@@ -40,6 +40,7 @@ export type AggregateValue = {
   kind: 'aggregate'; metric: MetricType; adapter: SourceMeta['adapter'];
   operation: string; windowStart: string; windowEnd: string;
   value: number; unit: 'kcal' | 'count'; dataOrigin?: string;
+  dataOrigins?: string[]; // An aggregate may include multiple apps; never misattribute it.
 };
 export type HealthRecord =
   | InstantSample | RateSample | IntervalSample | SeriesSample | ExerciseSession | SleepSession;
