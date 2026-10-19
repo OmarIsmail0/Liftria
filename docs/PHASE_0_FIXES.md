@@ -26,3 +26,7 @@ The environment available to this agent has Node 22 but no Android SDK, Galaxy S
 On a networked build machine, run `npm ci`, `npx expo install --check`, `npm run check` and `npx expo prebuild --clean --platform android`, then both APK builds and the manual checklist. If a CI workflow produces results, record its run URL and observed status here before promoting PASS. A generated lockfile is only PASS if it is committed and npm verifies it.
 
 **Four independent readiness verdicts remain CORE PENDING, CLAUDE PENDING, WORKOUT WEARABLE PENDING, DAILY CALORIES PENDING. Phase 1 UI design may proceed; Phase 2 implementation remains blocked until CORE GO.**
+
+## GitHub Actions run #1 (new evidence)
+
+[Workflow run #1](https://github.com/OmarIsmail0/Liftria/actions/runs/39310163977): clean `npm install` **PASS** (1,419 packages installed without `--legacy-peer-deps`). `npx expo install --fix` **FAIL**: an unconstrained optional `react-dom@19.3.1` resolved against pinned React 19.2.3. Expo also expected Jest 29 rather than Jest 30. Follow-up pinned `react-dom@19.2.3`, `jest@~29.7.0`, and `@types/jest@29.5.14`. No lockfile or passing test result was produced by run #1.
