@@ -7,19 +7,19 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 - Execution host: Linux container, Node `v22.16.0`, npm `10.9.2`, global TypeScript `5.8.3`. No configured ANDROID_HOME / Android Studio SDK.
 - `npm view expo version --json --fetch-timeout=8000` timed out (registry access unavailable). Direct `git ls-remote` from container failed DNS: `Could not resolve host: github.com`. GitHub repository updates instead used the authorized connected GitHub integration.
 - Android phone/Watch not connected; no Android Gradle prebuild/build output or device logs.
-- Commands `npm install`, `tsc --noEmit`, `eslint`, `jest`, `expo prebuild`, `assembleDebug`, and `assembleRelease` were **not successfully run**. Source tests present != tests passed.
+- Independent CI-style container testing at commit `644edfa` was later recorded in `PHASE_0_ISSUES.md`: clean npm install, strict tsc, lint and Jest boot initially failed; after a temporary Jest setup, 16/17 tests passed. Remediation commits address these findings, but **there is not yet a passing re-run of updated source**. Android prebuild/build and device integration still have no evidence.
 
 ## Status table
 
 | Check | Status | Evidence / required action |
 |---|---|---|
 | GitHub repository and committed source | **PASS** | Connected GitHub API reports completed commits to `main`; inspect source files |
-| Dependencies/npm install + lockfile | **BLOCKED** | This container cannot reach npm; owner run `npm install` + `npx expo install --fix`, commit lockfile |
+| Dependencies/npm install + lockfile | **PENDING RE-TEST** | Old install failed (ISSUE-1). Pinned RN 0.86.3 and Jest preset; lockfile still needed via npm with registry access |
 | Expo prebuild manifest (including Health Connect rationale) | **BLOCKED** | No local Android SDK / install; owner run commands in DEVICE_TESTS.md |
 | Android dev-client `assembleDebug` + install | **BLOCKED** | No SDK, Gradle build, or device observed |
 | Android self-contained signed release + install | **BLOCKED** | No SDK, key, Gradle build, or device observed |
-| Strict typecheck and lint | **BLOCKED** | Dependencies absent; run and capture real output |
-| Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **BLOCKED** | Test sources committed but could not execute |
+| Strict typecheck and lint | **PENDING RE-TEST** | Old run failed (7 TS errors; 1 lint error). Corrections committed; no new completed run |
+| Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PENDING RE-TEST** | Old 16/17 result after workaround. Mock corrected; new regressions added; cannot claim PASS |
 | SQLite migration on phone | **PENDING_DEVICE_TEST** | Run Init then check schema 1 |
 | SQLite CRUD / transactions on phone | **PENDING_DEVICE_TEST** | Test Add/Read/Clear and settings |
 | SQLite persists after force-stop and restart | **PENDING_DEVICE_TEST** | See DEVICE_TESTS.md |

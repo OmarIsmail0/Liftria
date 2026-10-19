@@ -58,3 +58,11 @@ References:
 The SDK requires Samsung's official distribution/licensing and developer mode or partner registration (app signature/package matching). Do **not** commit proprietary `.aar` binaries; keep locally sourced binaries outside Git and follow license restrictions. Partner approval may be required for production scale. The deprecated Samsung Health SDK for Android must not be used.
 
 **Open questions: unknown — needs device data.** No Samsung fallback is built in Phase 0 without a proven HC gap.
+
+## 2026-10-19 remediation notes (ISSUE-7, 9, 11–13)
+
+The read adapter now follows `pageToken` until exhausted and **fails closed** on repeated tokens or >100 pages, instead of treating incomplete reads as full totals. A new "Daily energy / 7 days" control reads Health Connect's `aggregateRecord` separately for active energy, total energy, and `BasalMetabolicRate.BASAL_CALORIES_TOTAL`. This operation integrates basal-rate records into energy; it is a distinct, documented aggregate, **not a sum of stored BMR power values**. The records are stored separately with operation, start/end of each local day, and all reported source origins.
+
+**Coverage warning:** these aggregates can represent only the Health Connect data actually supplied by Samsung Health, which may include workouts but exclude all-day activity. A query for an entire calendar day does not guarantee that the *input data* covers the full day. The owner must compare Samsung Health → Settings → Health Connect → App permissions and then validate daily Samsung totals on-device. If the gap is observed, evaluate the Samsung Health Data SDK using its verified `TOTAL_ACTIVE_CALORIES_BURNED` and `TOTAL_CALORIES_BURNED` ActivitySummaryType operations. Do not add active to total or basal before establishing overlap.
+
+Samsung Health Data SDK documented prerequisites: Samsung Health 6.30.2+, Android 10+ physical device, developer mode (about 10 taps on version) for local testing; published partner app approval tied to package ID and signing cert SHA-256. These are prerequisites, **not evidence that the SDK was installed or run**.

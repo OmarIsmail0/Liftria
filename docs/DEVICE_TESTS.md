@@ -7,8 +7,8 @@ No test below has been executed by the agent. Record real timestamps, device/OS 
 1. Install Node 22+, JDK 17, Android Studio, SDK Platform 36, SDK Build Tools, Android platform-tools. Set JAVA_HOME and ANDROID_HOME if needed.
 2. In PowerShell in the cloned repo:
    ```powershell
-   npm install
-   npx expo install --fix
+   npm ci
+   npx expo install --check
    npm run typecheck
    npm run lint
    npm test -- --runInBand
@@ -54,7 +54,8 @@ No test below has been executed by the agent. Record real timestamps, device/OS 
    ```
    (Reconnect USB as needed for ADB, but do not keep Metro attached for the offline test.)
 5. Tap SQLite **Read**, **Read setting**, and Claude **Check key**. The data and key must survive restart. Tap **Delete key**, force-stop/reopen, and verify `missing`. Re-save later if needed.
-6. **Clear test data** must clear workout and nutrition diagnostic rows; imported health sample data is intentionally retained.
+6. **Clear test data** must clear workout **and sets** and nutrition diagnostic rows; imported health samples are intentionally retained. Run **Add test data → Clear test data → Read** and confirm `workouts: 0`, `sets: 0`, `meals: 0`.
+7. With at least one new session and meal, tap **Update last workout**: it must display `Updated on device` after a real reread. Tap **Delete last nutrition**, then Read: meals must decrease by exactly one. Repeat after restarting to confirm persistence.
 
 ## 4. Claude Test A and Test B
 
@@ -66,13 +67,18 @@ No test below has been executed by the agent. Record real timestamps, device/OS 
 ## 5. Samsung Health → Health Connect
 
 1. Pair/refresh Galaxy Watch 4 with Samsung Health; make sure there is recent Watch 4 step/heart-rate/exercise data and a sleep night if available.
-2. In Samsung Health → **Settings → Health Connect**, enable synchronization/sharing for the relevant data. Open Android **Settings → Health Connect** and review app permissions.
+2. In Samsung Health → **Settings → Health Connect → App permissions**, enable synchronization/sharing for the relevant data, then review the Liftria permission screen. The Samsung Health entrypoint matters.
 3. Open Liftria. Tap **Check availability → Grant read-only → Permissions**. Verify read grants for the ten requested types, no writes. Test the Health Connect privacy-policy/rationale link.
 4. Tap **History grant** **separately** and verify grant in Android settings. An `unverified` code result is not a denial or PASS.
-5. Tap **Read 7 days**. For every metric capture: Health Connect permission, count, unit, source dataOrigin, device, timestamp interval, and any failure/empty state.
+5. Tap **Read 7 days**. The adapter follows all available pages; if it reports a pagination error, do not record counts as complete. For every metric capture: Health Connect permission, count, unit, source dataOrigin, device, timestamp interval, and any failure/empty state.
 6. Compare apples to apples against Samsung Health for the *same dates*, with same units/time windows, not just a similar number. Check origin `com.sec.android.app.shealth` and device metadata to establish Watch 4 provenance. Investigate deviations above 5%, but under 5% is not automatic proof.
-7. For energy explicitly record four distinct categories: exercise-only energy, daily active energy, daily **total** energy, and basal/resting rate/energy. Determine if a supposed total covers a workout interval only and whether intervals overlap.
-8. If HR or daily usable energy or sleep/exercise data is missing, investigate Samsung Health Data SDK; **do not assume missing data** simply from an empty HC query.
+7. Tap **Daily energy / 7 days**. This invokes Health Connect's **local-calendar-day aggregate** calls for `ACTIVE_CALORIES_TOTAL`, `ENERGY_TOTAL`, and `BASAL_CALORIES_TOTAL`. The current date is partial. The result is an **available-record sum for a window, not proof of full-day Samsung calories**. Compare each day against Samsung Health's same-day totals. If an aggregate is missing, don't treat it as zero. Check source origins and whether multiple origins overlap.
+8. For energy explicitly record four distinct categories: exercise-only energy, daily active energy, daily **total** energy, and basal/resting rate/energy. Determine if a supposed total covers a workout interval only and whether intervals overlap.
+9. If HR or daily usable energy or sleep/exercise data is missing, investigate Samsung Health Data SDK; **do not assume missing data** simply from an empty HC query.
+
+## Samsung Health Data SDK conditional fallback (only if Health Connect device tests fail)
+
+On the **physical phone** (not an emulator), use Samsung Health **6.30.2+**, Android **10+**, and the current **Samsung Health Data SDK**, not the deprecated Android SDK. Enable developer mode by opening Samsung Health → Settings → About Samsung Health, tapping the version number about 10 times, and enabling data read in developer mode. This may vary by app version. For published apps Samsung requires partner registration tied to the package name and SHA-256 signing certificate. Download the proprietary `.aar` through Samsung's approved route, keep it outside Git. Relevant `ActivitySummaryType` aggregate operation names: `TOTAL_ACTIVE_CALORIES_BURNED` and `TOTAL_CALORIES_BURNED`. Validate actual SDK signatures in the installed artifact before writing the Kotlin adapter.
 
 ## 6. Airplane-mode validation
 

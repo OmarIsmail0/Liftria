@@ -13,7 +13,7 @@ Node.js 22+, Android Studio with Android SDK 36, Java 17, an S22 Ultra with USB 
 ## Develop
 
 ```powershell
-npm install
+npm ci
 npx expo install --check
 npm run typecheck
 npm run lint
@@ -36,3 +36,5 @@ adb install -r android\app\build\outputs\apk\debug\app-debug.apk
 For the offline test, build a **self-contained JavaScript-bundled release** using a local signing configuration. Do not commit any keystore. Full instructions and the mandatory device checklist are in `docs/DEVICE_TESTS.md`. A development APK connected to Metro does **not** prove offline operation.
 
 For the exact dependency and SDK choices see `docs/TECHNICAL_DECISIONS.md`. For readiness and blockers see `docs/PHASE_1_READINESS.md`.
+
+Follow-up issue and verification ledger: [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md).

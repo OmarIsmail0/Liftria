@@ -12,7 +12,7 @@ C3 (SecureStore restart persistence and key deletion): PENDING_DEVICE_TEST.
 
 C4 (embedded-bundle airplane-mode startup, settings, workout/nutrition CRUD, health cache, offline AI failure): PENDING_DEVICE_TEST.
 
-**Owner corrective action:** on Windows run `npm install`, `npx expo install --fix`, `npm run check`, `expo prebuild`, `assembleDebug`, `assembleRelease`, install both, follow DEVICE_TESTS.md and attach evidence. **Agent corrective action:** fix any concrete dependency/native/runtime errors surfaced by these runs. Re-test the failed criterion before granting GO.
+**Owner corrective action:** on Windows run `npm ci` (once lockfile is committed), `npx expo install --check`, `npm run check`, `expo prebuild`, `assembleDebug`, `assembleRelease`, install both, follow DEVICE_TESTS.md and attach evidence. **Agent corrective action:** fix any concrete dependency/native/runtime errors surfaced by these runs. Re-test the failed criterion before granting GO.
 
 ## Claude AI — PENDING
 

@@ -1,5 +1,7 @@
 # LIFTRIA Phase 0: Test Results and Issues
 
+> **Historical findings against commit `644edfa`.** Fixes are being tracked in [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md). These test results must not be confused with validation of later commits.
+
 Independent test of the Phase 0 implementation on `main` (commit `644edfa`), checked against `LIFTRIA_PHASE_0_FINAL` (the frozen spec). Tested 2026-10-19 in a Linux cloud container with Node 22. No Android SDK, phone or watch was available.
 
 ## Summary

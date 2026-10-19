@@ -2,13 +2,13 @@
 
 ## Platform and dependencies
 
-- Expo SDK 57 (57.0.x), React Native 0.86.2, React 19.2.3, TypeScript strict mode.
+- Expo SDK 57 (57.0.x), React Native 0.86.3, React 19.2.3, TypeScript strict mode.
 - Expo Router 57.0.x, development client, prebuild/CNG. Android native directories are generated and gitignored.
 - Android package `com.liftria.diagnostics`, `minSdk=26`, `compileSdk=36`, `targetSdk=36` via `expo-build-properties`. This covers the Android 14+ S22 Ultra target; actual OS and permission behavior still needs hardware validation.
 - `expo-sqlite` for app data (schema 1); `expo-secure-store` for API key; `expo-network` for offline detection; Expo image picker/manipulator for photo input.
 - `react-native-health-connect@^4.1.0` with the integrated Expo config plugin (v4+), **not** the deprecated `expo-health-connect`. Permissions are read-only and declared explicitly.
 - `zod` for runtime schema validation of the Claude structured response; raw fetch instead of an SDK to minimize dependencies and eliminate backend needs.
-- TypeScript and Jest tests are authored, but there is **no verified npm install, lockfile, native build, typecheck, lint, or test output in this environment**. First local `npm install` must reconcile package versions using `npx expo install --fix`, then generate/commit `package-lock.json`. Do not interpret ranges as confirmed compatibility.
+- TypeScript and Jest tests are authored; the original independently reported failing installation, lint, typecheck and Jest tests against commit 644edfa. The code/versions have been updated to address those findings. Re-run validation on updated source before marking PASS. See `docs/PHASE_0_FIXES.md`; npm dependency resolution and reproducible lockfile generation are still outstanding until a successful npm install.
 
 ### Verified source references
 
@@ -49,4 +49,4 @@
 - Basal metabolic rate is a power/rate (W or kcal/day), **not an energy total**. A rate must never be summed with daily calorie intervals without an explicit time integration method.
 - Empty/read permission denied/not supported/data absent are not interchangeable. Imported origins may identify Samsung Health rather than Galaxy Watch itself.
 - Health Connect historic read permission is requested **separately**. [Known library issue #276](https://github.com/matinzd/react-native-health-connect/issues/276): a history grant may not appear in results. Diagnose as `unverified` until confirmed on the actual phone.
-- `readRecords` uses an initial page of up to 1000 records per type. If a 7-day device test returns a continuation token, pagination must be added and re-tested before claiming complete coverage.
+- `readRecords` now follows continuation tokens across pages; repeated tokens or more than 100 pages abort import instead of presenting truncated counts. Device test still required.
