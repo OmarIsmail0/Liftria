@@ -6,8 +6,8 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 
 - Execution host: Linux container, Node `v22.16.0`, npm `10.9.2`, global TypeScript `5.8.3`. No configured ANDROID_HOME / Android Studio SDK.
 - `npm view expo version --json --fetch-timeout=8000` timed out (registry access unavailable). Direct `git ls-remote` from container failed DNS: `Could not resolve host: github.com`. GitHub repository updates instead used the authorized connected GitHub integration.
-- Android phone/Watch not connected; no Android Gradle prebuild/build output or device logs.
-- Independent CI-style container testing at commit `644edfa` was later recorded in `PHASE_0_ISSUES.md`: clean npm install, strict tsc, lint and Jest boot initially failed; after a temporary Jest setup, 16/17 tests passed. Remediation commits address these findings, but **there is not yet a passing re-run of updated source**. Android prebuild/build and device integration still have no evidence.
+- Android phone/Watch not connected; Android prebuild PASS, debug Gradle build FAILED on CI disk exhaustion, no on-device logs.
+- Independent CI-style container testing at commit `644edfa` was later recorded in `PHASE_0_ISSUES.md`: clean npm install, strict tsc, lint and Jest boot initially failed; after a temporary Jest setup, 16/17 tests passed. Remediation commits address these findings, and were independently re-tested. CI run #4 and subsequent run #5 PASS reproducible install, strict TypeScript, lint and 22/22 Jest tests. Run #5 PASSED prebuild but FAILED on disk exhaustion during debug APK compilation; release NOT RUN; no device integration evidence.
 
 ## Status table
 
@@ -16,8 +16,8 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 | GitHub repository and committed source | **PASS** | Connected GitHub API reports completed commits to `main`; inspect source files |
 | Dependencies/npm install + lockfile | **PASS** | GitHub Actions run #2: strict install, `npm ci`, Expo dependency alignment succeeded; `package-lock.json` committed in `3cd51e6` |
 | Expo Android prebuild | **PASS** | GitHub Actions run #5 completed `npx expo prebuild --clean --platform android --no-install`; Health Connect permission **UI** still PENDING_DEVICE_TEST |
-| Android dev-client `assembleDebug` + install | **BLOCKED** | No SDK, Gradle build, or device observed |
-| Android self-contained signed release + install | **BLOCKED** | No SDK, key, Gradle build, or device observed |
+| Android debug `assembleDebug` | **FAIL (CI run #5)** | `No space left on device` compiling Reanimated native C++; retry ARM64-only after runner disk cleanup |\n| Debug APK installation on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or installation logs |
+| Embedded-bundle release `assembleRelease` | **NOT RUN** | CI run #5 stopped at failed debug compilation |\n| Release APK install and offline test on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or release installation logs |
 | Strict typecheck | **PASS** | GitHub Actions [run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): `tsc --noEmit` zero errors |\n| ESLint | **PASS** | GitHub Actions run #4: `eslint .` zero errors or warnings |
 | Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PASS** | GitHub Actions run #4: 4/4 suites, 22/22 tests; mocked contracts only, not device integration |
 | SQLite migration on phone | **PENDING_DEVICE_TEST** | Run Init then check schema 1 |
@@ -37,9 +37,9 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 
 - Library support is not data coverage. The library's history permission response can be unreliable ([upstream #276](https://github.com/matinzd/react-native-health-connect/issues/276)).
 - All health read rows currently show **PENDING_DEVICE_TEST**; do not copy documentation support into the "data present" column.
-- Current adapter reads first page (1000 entries) per type, with no verified pagination. If a continuation token appears, implement pagination and re-test before declaring complete seven-day coverage.
+- Adapter now follows Health Connect continuation tokens (verified by mock test); real high-volume pagination remains PENDING_DEVICE_TEST.
 - Android 14+ rationale alias must be **functionally** exercised, not inferred from plugin documentation.
-- Version ranges still require actual npm resolution and `expo install --fix`.
+- Dependency versions and lockfile were resolved by `npm ci` and Expo check in CI; Expo 57 native Reanimated and Worklets version alignment remains TASK-5 until rerun.
 - SecureStore cannot remove the intrinsic risk of a direct on-device API key; use Anthropic spend controls.
 
 ## Required owner sign-off evidence
@@ -60,5 +60,9 @@ Record: machine versions, npm lock hash, `npx expo install --check`, `npm run ch
 ## Updated GitHub evidence (2026-10-19)
 
 - [Actions run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): reproducible npm ci, Expo dependencies, tsc, eslint, and all **22/22** tests PASS.
-- [Actions run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054): verification job PASS and `expo prebuild --clean --platform android --no-install` PASS. At the time of writing its `assembleDebug` build was still in progress; **no APK result is claimed**. Check the live run for its ultimate result.
+- [Actions run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054): verification job PASS and `expo prebuild --clean --platform android --no-install` PASS. The debug APK build **FAILED** after 27m 49s due to runner disk exhaustion (`No space left on device` while compiling Reanimated C++). `assembleRelease` **NOT RUN**. Neither APK was uploaded. This is a failed CI build, not a proven native-code defect.
 - The original `PHASE_0_ISSUES.md` captures older failures at `644edfa`; see `docs/PHASE_0_FIXES.md` for fix-by-fix code and evidence.
+
+## Re-test 2 follow-up (2026-10-19)
+
+[Independent re-test summary](../PHASE_0_ISSUES.md) confirms ISSUE-1 through ISSUE-10 fixed (code/automated checks), ISSUE-11–14 addressed in docs, and records 5 new tasks. GitHub Actions [run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054) **failed** on available CI disk space; the release task and APK upload did not run. C1 and Core GO remain blocked until both APKs compile, upload and pass S22 Ultra installation/offline tests. Do not treat prebuild PASS as APK PASS.

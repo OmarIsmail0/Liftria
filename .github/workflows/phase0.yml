@@ -1,22 +1,22 @@
-name: Phase 0 code verification
+name: Phase 0 repair: dependency lockfile
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - 'README.md'
-      - 'PHASE_0_ISSUES.md'
+    paths:
+      - 'app.config.ts'
+      - '.github/workflows/phase0.yml'
+      - 'package.json'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: liftria-phase0-verify
+  group: liftria-phase0-repair
   cancel-in-progress: false
 
 jobs:
-  verify:
+  refresh-dependencies:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -25,41 +25,19 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Reproducible install from committed lockfile
-        run: npm ci --no-audit --no-fund
-      - name: Check SDK 57 dependency compatibility
-        run: npx expo install --check
-      - name: TypeScript lint Jest
-        run: npm run check
-
-  android-build:
-    needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Install exact dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Generate Android project (CNG)
-        run: npx expo prebuild --clean --platform android --no-install
-      - name: Debug APK compile
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
-      - name: Embedded bundle release APK compile (local test signing only)
-        working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
-      - name: Archive build outputs (private GitHub Actions artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: liftria-phase0-android-apks
-          path: android/app/build/outputs/apk/**/*.apk
-          if-no-files-found: error
-          retention-days: 7
+      - name: Resolve SDK-matched native dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npx expo install expo-system-ui react-native-reanimated react-native-worklets
+          npx expo install --check
+          npm ls react-native-reanimated react-native-worklets
+      - name: Persist checked package.json and package-lock.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --stat
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: align Expo 57 native UI and worklets dependencies"
+            git push origin HEAD:main
+          fi

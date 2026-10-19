@@ -4,14 +4,14 @@ Original independent report: [PHASE_0_ISSUES.md](../PHASE_0_ISSUES.md), tested a
 
 | Issue | Code/document response | Validation now |
 |---|---|---|
-| 1 Dependency mismatch & Jest boot | Updated React Native to 0.86.3, Expo 57 library versions, and added `@react-native/jest-preset@0.86.3`. Added an npm-based validation/lockfile regeneration workflow. | **PENDING RE-TEST**: verify clean `npm ci` and committed `package-lock.json`. Never use `--legacy-peer-deps` to hide broken peer dependencies. |
-| 2 Workout ID undefined | Capture insert ID outside exclusive transaction callback (which returns void). Mock now matches transaction void behavior. | Code fixed; **PENDING RE-TEST** on Jest + phone. |
-| 3 Orphaned sets | Explicitly delete test sets before sessions, also explicit delete for individual workout in its own transaction. Added 0-sets verification. | Code fixed; **PENDING RE-TEST** on actual SQLite connection. |
-| 4 TypeScript config/tests | Move cleartext option to `expo-build-properties`, use globalThis, explicitly type DB mock. | Code fixed; **PENDING RE-TEST** for tsc/prebuild. |
-| 5 Negative retry-after | Numeric negative input returns null before Date.parse; regression test retained. | Code fixed; **PENDING RE-TEST**. |
+| 1 Dependency mismatch & Jest boot | Updated React Native to 0.86.3, Expo 57 library versions, and added `@react-native/jest-preset@0.86.3`. Added an npm-based validation/lockfile regeneration workflow. | **VERIFIED (CI run #4 / independent Re-test 2)**: clean npm ci and committed lockfile; no legacy peer flag. |
+| 2 Workout ID undefined | Capture insert ID outside exclusive transaction callback (which returns void). Mock now matches transaction void behavior. | **VERIFIED (CI run #4 / independent Re-test 2)** in mocked Jest; physical phone transaction behavior remains PENDING_DEVICE_TEST. |
+| 3 Orphaned sets | Explicitly delete test sets before sessions, also explicit delete for individual workout in its own transaction. Added 0-sets verification. | **VERIFIED in code/tests** (CI run #4 / independent Re-test 2); actual SQLite connection remains PENDING_DEVICE_TEST. |
+| 4 TypeScript config/tests | Move cleartext option to `expo-build-properties`, use globalThis, explicitly type DB mock. | **VERIFIED (CI run #4 and #5 / independent Re-test 2)**: typecheck and prebuild pass. |
+| 5 Negative retry-after | Numeric negative input returns null before Date.parse; regression test retained. | **VERIFIED (CI run #4 / independent Re-test 2)** by Jest regression test. |
 | 6 Timeout hides long backoff | Compare requested retry delay to remaining total timeout; return rate-limited or overloaded instead of timeout, regression case for 429/60s. | Code fixed; **PENDING RE-TEST**. |
-| 7 Health pagination | Follow next page token until exhausted; fail closed on token loops or 100 pages. | Code fixed; **PENDING_DEVICE_TEST** for genuine high volume. |
-| 8 Lint / test imports | Use async effect network read; place imports before Jest mocks (Jest hoists mocks). | Code fixed; **PENDING RE-TEST** for lint. |
+| 7 Health pagination | Follow next page token until exhausted; fail closed on token loops or 100 pages. | **VERIFIED in mocked Jest** (CI run #4 / independent Re-test 2); genuine device high-volume pagination still PENDING_DEVICE_TEST. |
+| 8 Lint / test imports | Use async effect network read; place imports before Jest mocks (Jest hoists mocks). | **VERIFIED (CI run #4 / independent Re-test 2)**: lint zero errors/warnings. |
 | 9 Daily energy | Add day-scoped Health Connect active/total/basal energy aggregates, cache with exact operation/window/source origins; no energy balance computation. | Code fixed; **PENDING_DEVICE_TEST**. |
 | 10 On-device CRUD | Add Update last workout / Delete last nutrition buttons and follow-up reread. | Code fixed; **PENDING_DEVICE_TEST**. |
 | 11 Samsung all-day data limitations | Explicit diagnostic warning that exercise-only data cannot establish full-day active/total energy; conditional SDK fallback remains separate. | **PENDING_DEVICE_TEST**, not a confirmed missing-data finding yet. |
@@ -47,4 +47,8 @@ A separate GitHub Actions native build job now attempts `expo prebuild`, `assemb
 
 ## GitHub Actions run #5 — native CNG evidence
 
-[Run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054): verification job PASS; `expo prebuild --clean --platform android --no-install` PASS on Ubuntu, validating generated Android project configuration. Debug Gradle compilation was still in progress when this note was committed; not yet counted as an APK PASS. Device and Watch 4 checks remain PENDING_DEVICE_TEST.
+[Run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054): verification job PASS; `expo prebuild --clean --platform android --no-install` PASS on Ubuntu, validating generated Android project configuration. Debug Gradle compilation **FAILED** on runner disk exhaustion (`No space left on device`) after 27m 49s. Release **NOT RUN**; no APK artifact uploaded. This supersedes the earlier in-progress wording. Device and Watch 4 checks remain PENDING_DEVICE_TEST.
+
+## Independent Re-test 2 — new TASK-1 to TASK-5
+
+[Re-test 2](../PHASE_0_ISSUES.md) verifies the 14 original fixes and documents new native build/disk, report, permission, dark-style dependency, and Reanimated/Worklets alignment tasks. [Run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054) **FAIL** (out of CI storage during Reanimated C++); release **NOT RUN**. No hardware result is claimed. Do not promote native APK or Core to PASS on the basis of generated source.

@@ -28,9 +28,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     versionCode: 1,
     permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
     allowBackup: false,
+    blockedPermissions: [
+      'android.permission.RECORD_AUDIO',
+      'android.permission.SYSTEM_ALERT_WINDOW',
+    ],
   },
   plugins: [
     'expo-router',
+    ['expo-image-picker', { cameraPermission: false, microphonePermission: false }],
     ['expo-sqlite', { useSQLCipher: false }],
     'expo-secure-store',
     'react-native-health-connect',

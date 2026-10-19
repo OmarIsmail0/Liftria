@@ -8,7 +8,7 @@
 - `expo-sqlite` for app data (schema 1); `expo-secure-store` for API key; `expo-network` for offline detection; Expo image picker/manipulator for photo input.
 - `react-native-health-connect@^4.1.0` with the integrated Expo config plugin (v4+), **not** the deprecated `expo-health-connect`. Permissions are read-only and declared explicitly.
 - `zod` for runtime schema validation of the Claude structured response; raw fetch instead of an SDK to minimize dependencies and eliminate backend needs.
-- TypeScript and Jest tests are authored; the original independently reported failing installation, lint, typecheck and Jest tests against commit 644edfa. The code/versions have been updated to address those findings. Re-run validation on updated source before marking PASS. See `docs/PHASE_0_FIXES.md`; npm dependency resolution and reproducible lockfile generation are still outstanding until a successful npm install.
+- TypeScript and Jest tests are authored; the original independently reported failing installation, lint, typecheck and Jest tests against commit 644edfa. The code/versions have been updated to address those findings. Re-run validation on updated source before marking PASS. See `docs/PHASE_0_FIXES.md`; npm ci and a checked-in lockfile now pass in GitHub Actions run #4; code and mocked tests pass.
 
 ### Verified source references
 
@@ -21,7 +21,7 @@
 
 - First build priority: `npx expo prebuild --clean --platform android`; inspect resulting manifest and `gradlew.bat assembleDebug`.
 - A release APK must be signed **locally**, contain an embedded JS bundle, and start with Metro stopped and USB unplugged. Do not substitute dev-client offline results.
-- No Android SDK or physical test phone was available in the authoring environment. Both APKs and device validation are **BLOCKED / PENDING_DEVICE_TEST**; not PASS.
+- No Android SDK or physical test phone was available in the authoring environment. Debug CI build **FAILED** from GitHub Actions runner disk exhaustion in run #5; release **NOT RUN**. Both APK installations and device validation remain **PENDING_DEVICE_TEST**.
 - EAS cloud builds are intentionally unnecessary. No analytics, servers, authentication, telemetry, or cloud database.
 
 ## Storage and privacy
@@ -54,3 +54,7 @@
 ### Updated validation evidence (2026-10-19)
 
 A reproducible `package-lock.json` is committed. [Actions run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769) passes `npm ci`, Expo check, strict typecheck, lint and all 22 mocked unit tests. These are genuine command results from a GitHub Actions Ubuntu runner, not native hardware evidence. The optional peer warning involving `react-native-worklets@0.13.0` remains in npm's install output despite exit code 0; verify native build compatibility before declaring the Android foundation PASS.
+
+## Privacy/build mitigation after Re-test 2
+
+The Expo image picker is configured for library-only selection; camera and microphone permissions disabled. Android additionally blocks `RECORD_AUDIO` and `SYSTEM_ALERT_WINDOW` inherited by dependencies. Actual merged manifest will be inspected by native GitHub Actions prebuild and must prove the list contains only INTERNET, read-only Health Connect permissions, and SDK-limited legacy storage permissions. Dark Android system UI requires `expo-system-ui`, and Expo SDK 57 expects direct `react-native-reanimated@~4.5.1` and `react-native-worklets@0.10.1`; resolution and real build need verification. No new services or runtime network traffic are added.
