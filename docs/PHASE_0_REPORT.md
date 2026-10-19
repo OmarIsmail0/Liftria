@@ -66,3 +66,9 @@ Record: machine versions, npm lock hash, `npx expo install --check`, `npm run ch
 ## Re-test 2 follow-up (2026-10-19)
 
 [Independent re-test summary](../PHASE_0_ISSUES.md) confirms ISSUE-1 through ISSUE-10 fixed (code/automated checks), ISSUE-11–14 addressed in docs, and records 5 new tasks. GitHub Actions [run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054) **failed** on available CI disk space; the release task and APK upload did not run. C1 and Core GO remain blocked until both APKs compile, upload and pass S22 Ultra installation/offline tests. Do not treat prebuild PASS as APK PASS.
+
+## Re-test 2 remediation evidence (2026-10-19)
+
+- [CI dependency refresh](https://github.com/OmarIsmail0/Liftria/actions/runs/39319967346): Expo-system-ui, Reanimated 4.5.1 and Worklets 0.10.1 installed with Expo; `npm ls` shows no invalid packages; lockfile committed as `7860a33`.
+- [New read-only CI run #7](https://github.com/OmarIsmail0/Liftria/actions/runs/39320193305): repeatable `npm ci`, `npx expo install --check`, peer dependency tree, TypeScript, lint, Jest, disk cleanup, Expo Android prebuild and source manifest inspection **PASS** at the time of this record. **Debug and release Gradle outcomes still pending**. Do not claim APK or installation PASS until real output exists.
+- Release signing for eventual Play Store remains separate from CI's locally signed/test-build artifact. A signed APK compiled in CI is not a physical-device test.

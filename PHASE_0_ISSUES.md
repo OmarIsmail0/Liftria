@@ -2,6 +2,8 @@
 
 # Re-test 2: commit `420c771` (2026-10-19)
 
+> **Historical independent review.** This section describes findings at commit `420c771`, not the current branch verdict. Updated fixes and evidence: [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md), [docs/PHASE_0_REPORT.md](docs/PHASE_0_REPORT.md).
+
 Independent re-test of `main` after the fixes recorded in [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md). Run from a clean `node_modules` in a Linux container with Node 22. There's still no Android SDK, phone or watch here. The Android build result below comes from the repo's own GitHub Actions run.
 
 ## Results

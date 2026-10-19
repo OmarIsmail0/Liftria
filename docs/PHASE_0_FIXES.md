@@ -21,7 +21,7 @@ Original independent report: [PHASE_0_ISSUES.md](../PHASE_0_ISSUES.md), tested a
 
 ## Evidence / remaining gates
 
-The environment available to this agent has Node 22 but no Android SDK, Galaxy S22 Ultra, Galaxy Watch 4, Anthropic key or npm registry access (`EAI_AGAIN` when contacting registry.npmjs.org on 2026-10-19). Code changes in GitHub are real; **no passing npm/Jest/tsc/lint/native APK evidence has been produced by the agent in this environment**.
+This local authoring environment has no Android SDK, Galaxy S22 Ultra, Galaxy Watch 4 or owner Anthropic key. GitHub Actions separately provides **real passing npm ci, typecheck, lint, 22 Jest tests and Expo prebuild evidence** (runs #4 and #5). Android APK compilation failed in run #5 because the CI runner ran out of disk. Device/Watch/Claude validation is still pending.
 
 On a networked build machine, run `npm ci`, `npx expo install --check`, `npm run check` and `npx expo prebuild --clean --platform android`, then both APK builds and the manual checklist. If a CI workflow produces results, record its run URL and observed status here before promoting PASS. A generated lockfile is only PASS if it is committed and npm verifies it.
 
@@ -52,3 +52,17 @@ A separate GitHub Actions native build job now attempts `expo prebuild`, `assemb
 ## Independent Re-test 2 — new TASK-1 to TASK-5
 
 [Re-test 2](../PHASE_0_ISSUES.md) verifies the 14 original fixes and documents new native build/disk, report, permission, dark-style dependency, and Reanimated/Worklets alignment tasks. [Run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054) **FAIL** (out of CI storage during Reanimated C++); release **NOT RUN**. No hardware result is claimed. Do not promote native APK or Core to PASS on the basis of generated source.
+
+## Re-test 2 remediation (against commit 420c771)
+
+Independent findings: [Re-test 2](../PHASE_0_ISSUES.md). The listed tasks are **not** themselves proof of successful APK installation.
+
+| New task | Remediation | Verification |
+|---|---|---|
+| TASK-1 CI space | ARM64-only `-PreactNativeArchitectures=arm64-v8a` passed to BOTH debug and release Gradle invocations with `--no-daemon`, explicit runner cleanup and disk reporting, plus `pull_request` and manual triggers | [Run #7](https://github.com/OmarIsmail0/Liftria/actions/runs/39320193305): disk cleanup and prebuild PASS; Gradle outcome must be checked separately before APK PASS |
+| TASK-2 outdated report | Corrected run #5 to disk-space FAIL, release NOT RUN, split malformed table row, updated original ISSUE-1–8 to verified (automated with device gaps separate) | Documentation committed; no device claims |
+| TASK-3 privacy | Image picker configured library-only with cameraPermission:false and microphonePermission:false; block RECORD_AUDIO and SYSTEM_ALERT_WINDOW in app config | Run #7 generated manifest inspection step PASS; final merged manifest still requires checking |
+| TASK-4 system UI | Added direct `expo-system-ui@~57.0.4` using `npx expo install` | `npm ci` and Expo check PASS in run #7; prebuild PASS; inspect warning absence in CI logs |
+| TASK-5 native versions | Pinned direct `react-native-reanimated@4.5.1` and `react-native-worklets@0.10.1` via Expo installer; committed npm lockfile | [Dependency run](https://github.com/OmarIsmail0/Liftria/actions/runs/39319967346): `npm ls` no invalid, Expo check PASS; run #7 code checks PASS; phone startup still PENDING_DEVICE_TEST |
+
+The lockfile/version change was committed by the GitHub Actions dependency job as `7860a33`. Follow-up native CI is **read-only**; it uploads both APKs only if both builds succeed. Device install, offline launch, secure storage, Health Connect/Watch 4 and real Claude calls are still PENDING. 

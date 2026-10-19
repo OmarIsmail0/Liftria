@@ -58,3 +58,9 @@ A reproducible `package-lock.json` is committed. [Actions run #4](https://github
 ## Privacy/build mitigation after Re-test 2
 
 The Expo image picker is configured for library-only selection; camera and microphone permissions disabled. Android additionally blocks `RECORD_AUDIO` and `SYSTEM_ALERT_WINDOW` inherited by dependencies. Actual merged manifest will be inspected by native GitHub Actions prebuild and must prove the list contains only INTERNET, read-only Health Connect permissions, and SDK-limited legacy storage permissions. Dark Android system UI requires `expo-system-ui`, and Expo SDK 57 expects direct `react-native-reanimated@~4.5.1` and `react-native-worklets@0.10.1`; resolution and real build need verification. No new services or runtime network traffic are added.
+
+### Re-test 2 package alignment and build configuration
+
+- Direct dependencies: `expo-system-ui@~57.0.4`, `react-native-reanimated@4.5.1`, `react-native-worklets@0.10.1` (saved by `npx expo install` with lockfile commit `7860a33`). `npm ls` checks reported no invalid peer dependencies, and follow-up code tests passed.
+- No Android camera, RECORD_AUDIO or SYSTEM_ALERT_WINDOW runtime features are required for Phase 0. `expo-image-picker` config disables camera/microphone permissions and Expo Android config blocks microphone/overlay in merged permissions. Verify the final merged manifest on the CI build; the generated source manifest alone cannot prove the final merged list.
+- GitHub Actions builds only `arm64-v8a` for Galaxy S22 Ultra, removes unnecessary preinstalled SDK toolchains to recover disk, and compiles debug *and* release without Gradle daemon. The new CI job also runs on pull requests. It does not build 32-bit or x86 variants; this is a device-targeted feasibility artifact, not a distribution-ready universal release.
