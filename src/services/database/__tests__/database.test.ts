@@ -10,7 +10,7 @@ const state = {
   health: new Map<string, DbRow>(),
   aggregates: new Map<string, DbRow>(),
 };
-const fakeDb = {
+const mockDb = {
   execAsync: jest.fn(async (sql: string) => {
     if (sql.includes('PRAGMA user_version = 1')) state.schema = 1;
   }),
@@ -62,9 +62,9 @@ const fakeDb = {
     }
     return { lastInsertRowId: id, changes };
   }),
-  withExclusiveTransactionAsync: jest.fn(async (f: (tx: unknown) => Promise<unknown>) => f(fakeDb)),
+  withExclusiveTransactionAsync: jest.fn(async (f: (tx: unknown) => Promise<unknown>) => f(mockDb)),
 };
-jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => fakeDb) }));
+jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb) }));
 import {
   initializeDatabase, schemaVersion, addTestData, readTestData, clearTestData,
   setSetting, getSetting, deleteSetting, saveHealthValues,
@@ -75,7 +75,7 @@ import { createWorkout, getWorkout, updateWorkout, deleteWorkout,
 test('versioned migration, marker persistence and multirow insert', async () => {
   await initializeDatabase();
   expect(await schemaVersion()).toEqual({ ok: true, value: 1 });
-  expect(fakeDb.withExclusiveTransactionAsync).toHaveBeenCalled();
+  expect(mockDb.withExclusiveTransactionAsync).toHaveBeenCalled();
   expect((await addTestData()).ok).toBe(true);
   const read = await readTestData();
   expect(read.ok).toBe(true);

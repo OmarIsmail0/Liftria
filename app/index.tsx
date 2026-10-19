@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as Application from 'expo-application';
 import * as Device from 'expo-device';
@@ -40,7 +40,7 @@ function Action({ label, onPress, disabled = false }: { label: string; onPress: 
     ><Text style={common.buttonText}>{label}</Text></Pressable>
   );
 }
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return <View style={common.section}><Text style={common.h2}>{title}</Text>{children}</View>;
 }
 function desc(value: HealthValue): string {
@@ -114,6 +114,7 @@ export default function Diagnostics() {
         compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true,
       });
       if (!processed.base64) { setAiText('Could not prepare a JPEG on the phone.'); return; }
+      if (processed.base64.length > 10 * 1024 * 1024) { setAiText('Image is still too large for the Claude API. Choose another photo.'); return; }
       setPhoto({ base64: processed.base64, mediaType: 'image/jpeg' });
       setPhotoName('JPEG prepared on-device; not uploaded. Tap Test B to send.');
     } catch { setAiText('Image selection/compression failed.'); }
