@@ -18,8 +18,8 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 | Expo prebuild manifest (including Health Connect rationale) | **BLOCKED** | No local Android SDK / install; owner run commands in DEVICE_TESTS.md |
 | Android dev-client `assembleDebug` + install | **BLOCKED** | No SDK, Gradle build, or device observed |
 | Android self-contained signed release + install | **BLOCKED** | No SDK, key, Gradle build, or device observed |
-| Strict typecheck | **PASS** | GitHub Actions run #3: `tsc --noEmit` zero errors |\n| ESLint | **FAIL** | Run #3: one JSX apostrophe escaping error; fixed subsequently, awaiting re-test |
-| Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PENDING RE-TEST** | Old 16/17 result after workaround. Mock corrected; new regressions added; cannot claim PASS |
+| Strict typecheck | **PASS** | GitHub Actions [run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): `tsc --noEmit` zero errors |\n| ESLint | **PASS** | GitHub Actions run #4: `eslint .` zero errors or warnings |
+| Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PASS** | GitHub Actions run #4: 4/4 suites, 22/22 tests; mocked contracts only, not device integration |
 | SQLite migration on phone | **PENDING_DEVICE_TEST** | Run Init then check schema 1 |
 | SQLite CRUD / transactions on phone | **PENDING_DEVICE_TEST** | Test Add/Read/Clear and settings |
 | SQLite persists after force-stop and restart | **PENDING_DEVICE_TEST** | See DEVICE_TESTS.md |

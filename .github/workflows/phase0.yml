@@ -31,3 +31,35 @@ jobs:
         run: npx expo install --check
       - name: TypeScript lint Jest
         run: npm run check
+
+  android-build:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install exact dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Generate Android project (CNG)
+        run: npx expo prebuild --clean --platform android --no-install
+      - name: Debug APK compile
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Embedded bundle release APK compile (local test signing only)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Archive build outputs (private GitHub Actions artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: liftria-phase0-android-apks
+          path: android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 7

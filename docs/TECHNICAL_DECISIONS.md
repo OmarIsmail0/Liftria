@@ -50,3 +50,7 @@
 - Empty/read permission denied/not supported/data absent are not interchangeable. Imported origins may identify Samsung Health rather than Galaxy Watch itself.
 - Health Connect historic read permission is requested **separately**. [Known library issue #276](https://github.com/matinzd/react-native-health-connect/issues/276): a history grant may not appear in results. Diagnose as `unverified` until confirmed on the actual phone.
 - `readRecords` now follows continuation tokens across pages; repeated tokens or more than 100 pages abort import instead of presenting truncated counts. Device test still required.
+
+### Updated validation evidence (2026-10-19)
+
+A reproducible `package-lock.json` is committed. [Actions run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769) passes `npm ci`, Expo check, strict typecheck, lint and all 22 mocked unit tests. These are genuine command results from a GitHub Actions Ubuntu runner, not native hardware evidence. The optional peer warning involving `react-native-worklets@0.13.0` remains in npm's install output despite exit code 0; verify native build compatibility before declaring the Android foundation PASS.

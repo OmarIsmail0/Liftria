@@ -38,3 +38,9 @@ On a networked build machine, run `npm ci`, `npx expo install --check`, `npm run
 ## GitHub Actions run #3
 
 [Workflow run #3](https://github.com/OmarIsmail0/Liftria/actions/runs/39311024190): `npm ci` **PASS**, `npx expo install --check` **PASS**, `tsc --noEmit` **PASS** (zero errors). ESLint **FAIL** at the JSX text apostrophe in app/index.tsx, line 307. Corrected the text to remove the unescaped apostrophe. Jest was not reached in run #3.
+
+## GitHub Actions run #4: JS/TS validation GREEN
+
+[Workflow run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): clean reproducible `npm ci` **PASS**, Expo dependency alignment **PASS**, `tsc --noEmit` **PASS**, `eslint .` **PASS** (zero warnings), Jest **PASS** (4 suites, **22 tests**). This validates the corrected code under mocked adapters; it does **not** validate SQLite in Android, Health Connect on the phone, real Claude API, or a generated APK.
+
+A separate GitHub Actions native build job now attempts `expo prebuild`, `assembleDebug`, and `assembleRelease`. Only mark these PASS when that job completes with evidence.
