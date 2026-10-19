@@ -1,0 +1,43 @@
+name: Phase 0 code verification and npm lockfile
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liftria-phase0-lockfile
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install with strict peer dependencies
+        run: npm install --no-audit --no-fund
+      - name: Align with Expo SDK 57's bundled versions
+        run: npx expo install --fix
+      - name: Verify reproducible install
+        run: npm ci --no-audit --no-fund
+      - name: Check Expo dependency alignment
+        run: npx expo install --check
+      - name: Commit generated lockfile / Expo alignment
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: pin resolved Phase 0 npm dependencies"
+            git push origin HEAD:main
+          fi
+      - name: Typecheck lint and unit tests
+        run: npm run check
