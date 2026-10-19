@@ -12,7 +12,7 @@ import {
 import { keyState, saveKey, deleteKey, type KeyState } from '../src/services/secure-storage';
 import { runMealEstimate, TEXT_EXAMPLE, DEFAULT_MODEL, type ImageData } from '../src/services/anthropic';
 import { healthConnect, requestHistoryReadPermission, readDailyEnergy, type DailyEnergyRow } from '../src/services/health';
-import { getLastWorkout, updateWorkout, getLastNutrition, deleteNutrition } from '../src/services/database/repositories';
+import { getLastWorkout, getWorkout, updateWorkout, getLastNutrition, deleteNutrition } from '../src/services/database/repositories';
 import { metricTypes, type MetricType, type PermissionState, type HealthValue } from '../src/services/health/types';
 
 type RowStatus = { state: string; count?: number; source?: string; range?: string; device?: string; units?: string };
@@ -194,8 +194,10 @@ export default function Diagnostics() {
     }
     const result = await updateWorkout(latest.value.id, 'Updated on device');
     if (!result.ok || result.value !== 1) { setDbText(result.ok ? 'Workout update affected no rows' : result.error.message); return; }
-    await showDb();
-    setDbText(`Updated workout #${latest.value.id}; verify the title using Read detail or database inspection`);
+    const verified = await getWorkout(latest.value.id);
+    setDbText(verified.ok && verified.value
+      ? `Updated workout #${verified.value.id}: ${verified.value.title}`
+      : 'Workout updated, but reading it back failed');
   };
   const deleteLastNutrition = async () => {
     const latest = await getLastNutrition();

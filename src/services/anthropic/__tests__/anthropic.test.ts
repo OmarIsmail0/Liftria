@@ -1,10 +1,10 @@
-jest.mock('expo-network', () => ({ getNetworkStateAsync: jest.fn(async () => ({ isConnected: false, isInternetReachable: false })) }));
-jest.mock('expo-secure-store', () => ({ getItemAsync: jest.fn(async () => 'sk-ant-example-only-not-a-real-key') }));
 import * as Network from 'expo-network';
 import * as SecureStore from 'expo-secure-store';
 import { httpError, retryAfterMs, parseClaudeBody, runMealEstimate } from '../index';
 import { mealSchema } from '../schema';
 
+jest.mock('expo-network', () => ({ getNetworkStateAsync: jest.fn(async () => ({ isConnected: false, isInternetReachable: false })) }));
+jest.mock('expo-secure-store', () => ({ getItemAsync: jest.fn(async () => 'sk-ant-example-only-not-a-real-key') }));
 const valid = {
   stop_reason: 'end_turn',
   content: [{ type: 'thinking', thinking: '' }, { type: 'text',
@@ -60,4 +60,16 @@ test('abort timeout maps to timeout', async () => {
     const value = await pending;
     expect(value).toMatchObject({ ok: false, code: 'timeout' });
   } finally { jest.useRealTimers(); }
+});
+
+test('429 Retry-After longer than budget reports rate-limit instead of timeout', async () => {
+  (Network.getNetworkStateAsync as jest.Mock).mockResolvedValue({ isConnected: true, isInternetReachable: true });
+  (SecureStore.getItemAsync as jest.Mock).mockResolvedValue('sk-ant-example-only-not-a-real-key');
+  const mockFetch = jest.fn(async () => ({
+    ok: false, status: 429, headers: { get: () => '60' },
+  }));
+  globalThis.fetch = mockFetch as unknown as typeof fetch;
+  const value = await runMealEstimate({ timeoutMs: 1000 });
+  expect(value).toMatchObject({ ok: false, code: 'rate-limited' });
+  expect(mockFetch).toHaveBeenCalledTimes(1);
 });

@@ -1,3 +1,11 @@
+import {
+  initializeDatabase, schemaVersion, addTestData, readTestData, clearTestData,
+  setSetting, getSetting, deleteSetting, saveHealthValues,
+} from '../index';
+import { createWorkout, getWorkout, updateWorkout, deleteWorkout,
+  createNutrition, getNutrition, updateNutrition, deleteNutrition,
+  getLastWorkout, getLastNutrition } from '../repositories';
+
 /* Mock-backed contract tests. NOT proof of Android SQLite integration. */
 type DbRow = Record<string, unknown>;
 const state = {
@@ -35,8 +43,14 @@ const mockDb: MockDatabase = {
       const key = (sql.includes('persistence_marker') ? 'persistence_marker' : args[0]) as string;
       return state.settings.has(key) ? { value: state.settings.get(key) } : null;
     }
-    if (sql.includes('FROM test_workout_sessions')) return state.sessions.get(args[0] as number) ?? null;
-    if (sql.includes('FROM test_nutrition_entries')) return state.meals.get(args[0] as number) ?? null;
+    if (sql.includes('FROM test_workout_sessions')) {
+      if (sql.includes('ORDER BY id DESC')) return [...state.sessions.values()].at(-1) ?? null;
+      return state.sessions.get(args[0] as number) ?? null;
+    }
+    if (sql.includes('FROM test_nutrition_entries')) {
+      if (sql.includes('ORDER BY id DESC')) return [...state.meals.values()].at(-1) ?? null;
+      return state.meals.get(args[0] as number) ?? null;
+    }
     return null;
   }),
   getAllAsync: jest.fn(async () => []),
@@ -72,12 +86,6 @@ const mockDb: MockDatabase = {
   withExclusiveTransactionAsync: jest.fn(async (f: (tx: MockDatabase) => Promise<unknown>): Promise<void> => { await f(mockDb); }),
 };
 jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb) }));
-import {
-  initializeDatabase, schemaVersion, addTestData, readTestData, clearTestData,
-  setSetting, getSetting, deleteSetting, saveHealthValues,
-} from '../index';
-import { createWorkout, getWorkout, updateWorkout, deleteWorkout,
-  createNutrition, getNutrition, updateNutrition, deleteNutrition } from '../repositories';
 
 test('versioned migration, marker persistence and multirow insert', async () => {
   await initializeDatabase();
@@ -103,6 +111,8 @@ test('workout and nutrition CRUD', async () => {
   if (!w.ok || !n.ok) return;
   expect(typeof w.value).toBe('number'); // Real API transaction returns void; ID must be captured outside.
   expect(await getWorkout(w.value)).toMatchObject({ ok: true, value: { title: 'Gym' } });
+  expect(await getLastWorkout()).toMatchObject({ ok: true, value: { id: w.value } });
+  expect(await getLastNutrition()).toMatchObject({ ok: true, value: { id: n.value } });
   expect(await updateWorkout(w.value, 'Gym revised')).toEqual({ ok: true, value: 1 });
   expect(await getNutrition(n.value)).toMatchObject({ ok: true, value: { quantity: 2 } });
   expect(await updateNutrition(n.value, 'Eggs', 3)).toEqual({ ok: true, value: 1 });
