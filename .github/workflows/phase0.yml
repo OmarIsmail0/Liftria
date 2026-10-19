@@ -15,15 +15,16 @@ permissions:
 
 concurrency:
   group: phase0-${{ github.ref }}
-  cancel-in-progress: false
+  # A newer push to the same PR makes the running 40-minute build pointless.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
@@ -39,82 +40,72 @@ jobs:
   android-build:
     needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Free disk for ARM64 native compilation
         run: |
-          echo "BEFORE cleanup"
-          df -h
+          df -h /
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /opt/hostedtoolcache/CodeQL
-          echo "AFTER cleanup"
-          df -h
-      - uses: actions/setup-node@v4
+          df -h /
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+      # Caches Gradle dependencies and wrapper between runs.
+      - uses: gradle/actions/setup-gradle@v5
       - name: Install reproducible dependencies
         run: npm ci --no-audit --no-fund
       - name: Expo Android prebuild
         run: npx expo prebuild --clean --platform android --no-install
-      - name: Inspect generated Android manifest permissions
-        run: |
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-          path = Path('android/app/src/main/AndroidManifest.xml')
-          root = ET.parse(path).getroot()
-          android = '{http://schemas.android.com/apk/res/android}'
-          perms = []
-          print('PREBUILD_USES_PERMISSIONS')
-          for child in root:
-              if child.tag.endswith('uses-permission') or child.tag.endswith('uses-permission-sdk-23'):
-                  name = child.get(android+'name')
-                  maximum = child.get(android+'maxSdkVersion')
-                  perms.append(name)
-                  print(f'{name} maxSdkVersion={maximum or "none"}')
-          forbidden = {'android.permission.RECORD_AUDIO', 'android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.CAMERA'}
-          # The source manifest can use tools:node="remove" placeholders for merged dependencies.
-          tools = '{http://schemas.android.com/tools}'
-          for child in root:
-              if child.get(android+'name') in forbidden and child.get(tools+'node') != 'remove':
-                  raise SystemExit('Forbidden permission is not removed by manifest tools directives')
-          print('Android source manifest inspected. Final merged manifest also needs native/device validation.')
-          PY
-      - name: Compile S22 Ultra ARM64 debug APK
+      - name: Compile S22 Ultra ARM64 debug (dev client) and embedded-bundle release APKs
         working-directory: android
-        run: ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
-      - name: Compile S22 Ultra ARM64 embedded release APK
-        working-directory: android
-        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
-      - name: Inspect merged manifest and fail for needless permissions
-        run: |
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-          android = '{http://schemas.android.com/apk/res/android}'
-          manifests = list(Path('android/app/build/intermediates').glob('**/merged_manifests/**/AndroidManifest.xml'))
-          if not manifests:
-              raise SystemExit('No merged manifest found; permissions unverified')
-          for path in manifests:
-              print('MERGED_MANIFEST', path)
-              root = ET.parse(path).getroot()
-              for child in root:
-                  if child.tag.endswith('uses-permission') or child.tag.endswith('uses-permission-sdk-23'):
-                      name = child.get(android+'name')
-                      max_sdk = child.get(android+'maxSdkVersion')
-                      print(f'{name} maxSdkVersion={max_sdk or "none"}')
-                      if name in {'android.permission.RECORD_AUDIO', 'android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.CAMERA'}:
-                          raise SystemExit(f'Forbidden merged Android permission: {name}')
-          PY
+        run: ./gradlew assembleDebug assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
+      # Upload before the permission gate so a failed gate still leaves the APKs to inspect.
       - name: Upload debug and release APK artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: liftria-phase0-s22-arm64-apks
           path: android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 7
+      - name: Check release APK permissions
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          ANDROID = '{http://schemas.android.com/apk/res/android}'
+          FORBIDDEN = {
+              'android.permission.RECORD_AUDIO',
+              'android.permission.SYSTEM_ALERT_WINDOW',
+              'android.permission.CAMERA',
+          }
+
+          def permissions(variant):
+              found = list(Path('android/app/build/intermediates/merged_manifests').glob(f'{variant}/**/AndroidManifest.xml'))
+              if not found:
+                  raise SystemExit(f'No merged {variant} manifest found; permissions unverified')
+              root = ET.parse(found[0]).getroot()
+              return sorted(
+                  (child.get(ANDROID + 'name'), child.get(ANDROID + 'maxSdkVersion'))
+                  for child in root
+                  if child.tag in ('uses-permission', 'uses-permission-sdk-23')
+              )
+
+          # The debug (dev client) build legitimately gets SYSTEM_ALERT_WINDOW from
+          # React Native's debug manifest for the dev overlay; it is informational only.
+          for variant in ('debug', 'release'):
+              print(f'== {variant} ==')
+              for name, max_sdk in permissions(variant):
+                  print(f'{name} maxSdkVersion={max_sdk or "none"}')
+
+          shipped = {name for name, _ in permissions('release')} & FORBIDDEN
+          if shipped:
+              raise SystemExit(f'Forbidden permission in release APK: {sorted(shipped)}')
+          print('Release APK permissions OK')
+          PY
