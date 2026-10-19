@@ -1,6 +1,112 @@
 # LIFTRIA Phase 0: Test Results and Issues
 
-> **Historical findings against commit `644edfa`.** Fixes are being tracked in [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md). These test results must not be confused with validation of later commits.
+# Re-test 2: commit `420c771` (2026-10-19)
+
+Independent re-test of `main` after the fixes recorded in [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md). Run from a clean `node_modules` in a Linux container with Node 22. There's still no Android SDK, phone or watch here. The Android build result below comes from the repo's own GitHub Actions run.
+
+## Results
+
+| Check | Result | Evidence |
+|---|---|---|
+| `npm ci` from committed lockfile | **PASS** | 1025 packages, no `--legacy-peer-deps` |
+| Versions vs Expo SDK 57 | **PASS** | Every installed Expo module matches `expo/bundledNativeModules.json` (react-native 0.86.3, react 19.2.3, jest-expo 57.0.6, …) |
+| `tsc --noEmit` (strict) | **PASS** | 0 errors |
+| `eslint .` | **PASS** | 0 errors, 0 warnings |
+| `jest` | **PASS** | 4 suites, 22/22 tests |
+| `expo prebuild --platform android` | **PASS** (warning) | Manifest generated. Health Connect rationale filter and `VIEW_PERMISSION_USAGE` alias are present. minSdk 26, target/compile 36, cleartext off, backup off. Warning: `userInterfaceStyle` needs `expo-system-ui` (TASK-4). |
+| Android `assembleDebug` (GitHub Actions run #5) | **FAIL** | [Run #5](https://github.com/OmarIsmail0/Liftria/actions/runs/39311475054) `android-build` failed after 27m 49s: `No space left on device` while compiling `react-native-reanimated` C++ (TASK-1) |
+| Android `assembleRelease` | **NOT RUN** | The job stopped before it |
+| Device / watch / real Claude key | **PENDING** | Not testable here |
+
+## Status of the original issues (from `644edfa`)
+
+| Issue | Status | Verified by |
+|---|---|---|
+| 1 Install / Jest boot | **FIXED** | Clean `npm ci` and Jest pass |
+| 2 `createWorkout` ID lost | **FIXED** | ID captured outside the transaction; test asserts `typeof value === 'number'` |
+| 3 Orphaned sets | **FIXED** | Explicit `DELETE FROM test_workout_sets` in clear and in `deleteWorkout` |
+| 4 TypeScript errors | **FIXED** | `tsc` clean; cleartext setting moved to `expo-build-properties` (present in the generated manifest) |
+| 5 `retryAfterMs('-5')` | **FIXED** | Test passes |
+| 6 Timeout vs retry-after | **FIXED** | New regression test passes |
+| 7 Health pagination | **FIXED** | Follows `pageToken`; fails closed on loops and over 100 pages; tested |
+| 8 Lint | **FIXED** | 0 problems |
+| 9 Daily energy aggregates | **FIXED** (code) | Uses the correct `react-native-health-connect` result keys (`ACTIVE_CALORIES_TOTAL`, `ENERGY_TOTAL`, `BASAL_CALORIES_TOTAL`, checked against the library's types), and keeps `dataOrigins`. Device test pending. |
+| 10 On-device CRUD | **FIXED** (code) | "Update last workout" and "Delete last nutrition" buttons, with read-back |
+| 11–14 Docs / research | **ADDRESSED** | Docs updated; device checks pending |
+
+**Verdict:** the JavaScript/TypeScript side is now in good shape. What's left blocking Core GO is **the Android build** (TASK-1), then the device tests.
+
+## New issues: tasks for the implementing agent
+
+Each task below is written as a prompt you can paste straight into the agent fixing the code.
+
+### TASK-1: Android CI build runs out of disk (High, blocks Core C1)
+
+**Copy-paste prompt:**
+
+> The `android-build` job in `.github/workflows/phase0.yml` fails in GitHub Actions run #5 with `fatal error: ... No space left on device` while compiling `react-native-reanimated` C++ (BUILD FAILED in 27m 49s). Fix it as follows:
+> 1. Build only the S22 Ultra's CPU architecture: pass `-PreactNativeArchitectures=arm64-v8a` to both `./gradlew assembleDebug` and `./gradlew assembleRelease`.
+> 2. Add a disk-cleanup step at the start of the job. Remove `/usr/share/dotnet`, `/opt/ghc`, `/usr/local/share/boost` and `/opt/hostedtoolcache/CodeQL`, and run `df -h` before and after.
+> 3. Keep `--no-daemon`.
+> 4. Make the workflow also run on `pull_request` (and on `workflow_dispatch`, already present), so fixes are verified before merging.
+> 5. Trigger the workflow. Record the real run URL and the outcome of each step in `docs/PHASE_0_REPORT.md`. Mark the APK builds PASS only if both Gradle tasks succeed **and** the APK artifact uploads.
+>
+> Don't skip or remove the release build. Don't mark anything PASS without a completed run.
+
+### TASK-2: Report says the build is "in progress", but it failed (Medium, accuracy)
+
+**Copy-paste prompt:**
+
+> Correct `docs/PHASE_0_REPORT.md` and `docs/PHASE_0_FIXES.md`:
+> 1. Run #5 has **completed with failure**: `android-build` ran out of disk space (`No space left on device`). Replace every "still in progress" or "no APK result" wording for run #5 with **FAIL** and that reason.
+> 2. In the `PHASE_0_REPORT.md` status table, the "Strict typecheck" row contains a literal `\n` that merges the ESLint row into it. Split it into two proper table rows.
+> 3. The `assembleDebug` and `assembleRelease` rows say "No SDK, Gradle build, or device observed". Update them to: debug **FAIL** (CI run #5, disk space); release **NOT RUN**. Keep "install on device" as PENDING_DEVICE_TEST.
+> 4. In `PHASE_0_FIXES.md`, change items 1–8 from "PENDING RE-TEST" to **VERIFIED**, citing CI run #4 and the independent re-test in `PHASE_0_ISSUES.md` (Re-test 2).
+>
+> Don't claim any device result.
+
+### TASK-3: Remove permissions the app doesn't need (Medium, privacy rule in spec §12)
+
+The generated `AndroidManifest.xml` includes `android.permission.RECORD_AUDIO` and `android.permission.SYSTEM_ALERT_WINDOW`. Neither is used by Phase 0. `RECORD_AUDIO` comes from `expo-image-picker`'s default config.
+
+**Copy-paste prompt:**
+
+> In `app.config.ts`:
+> 1. Configure the `expo-image-picker` plugin as `['expo-image-picker', { cameraPermission: false, microphonePermission: false }]`. Phase 0 only picks from the photo library.
+> 2. Add `android.blockedPermissions: ['android.permission.RECORD_AUDIO', 'android.permission.SYSTEM_ALERT_WINDOW']`.
+> 3. Run `npx expo prebuild --clean --platform android --no-install`. Paste the resulting `<uses-permission>` list into `docs/TECHNICAL_DECISIONS.md` as evidence, and confirm it contains only INTERNET, the Health Connect READ permissions, and the storage permissions capped at maxSdk 32.
+> 4. Confirm the "Pick photo" flow still compiles (`npm run check`).
+
+### TASK-4: Dark style setting has no effect without `expo-system-ui` (Low)
+
+Prebuild warns: *"android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature."*
+
+**Copy-paste prompt:**
+
+> Run `npx expo install expo-system-ui`, commit the updated `package.json` and `package-lock.json`, and confirm `npx expo prebuild --clean --platform android --no-install` no longer prints the `userInterfaceStyle` warning. Run `npm run check`.
+
+### TASK-5: Reanimated and worklets versions don't match Expo SDK 57 (Medium)
+
+| Package | Installed (transitive, via `expo-router`) | Expo SDK 57 expects |
+|---|---|---|
+| `react-native-reanimated` | 4.7.1 | 4.5.1 |
+| `react-native-worklets` | 0.13.0 | 0.10.1 |
+
+`npm ls` also flags worklets 0.13.0 as outside `expo-modules-core`'s peer range. `expo install --check` doesn't catch this, because neither package is a direct dependency. Both are native modules that get compiled into the APK (they're what was compiling when TASK-1 ran out of disk). A native version mismatch can crash the app at startup.
+
+**Copy-paste prompt:**
+
+> `react-native-reanimated@4.7.1` and `react-native-worklets@0.13.0` are installed transitively via `expo-router`, but Expo SDK 57's `bundledNativeModules.json` expects `react-native-reanimated ~4.5.1` and `react-native-worklets 0.10.1`. Run `npx expo install react-native-reanimated react-native-worklets` so both become direct dependencies pinned to the SDK 57 versions. Commit the regenerated `package-lock.json`. Then confirm `npm ls react-native-worklets react-native-reanimated` shows no `invalid`, and that `npx expo install --check` and `npm run check` pass. If Reanimated needs its Babel plugin, follow the Expo SDK 57 docs. Verify on the device that the app starts without a worklets/reanimated error.
+
+### Recommended order
+
+TASK-1 → TASK-2 → TASK-3 → TASK-4 → TASK-5, then build the APK and run `docs/DEVICE_TESTS.md` on the S22 Ultra.
+
+---
+
+# Original test: commit `644edfa` (historical)
+
+> These findings were against commit `644edfa`. See "Status of the original issues" above for what has since been fixed.
 
 Independent test of the Phase 0 implementation on `main` (commit `644edfa`), checked against `LIFTRIA_PHASE_0_FINAL` (the frozen spec). Tested 2026-10-19 in a Linux cloud container with Node 22. No Android SDK, phone or watch was available.
 
