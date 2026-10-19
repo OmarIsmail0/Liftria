@@ -1,22 +1,24 @@
-name: 'Phase 0 repair: dependency lockfile'
+name: Phase 0 code and Android verification
+
 on:
   push:
     branches: [main]
-    paths:
-      - 'app.config.ts'
-      - '.github/workflows/phase0.yml'
-      - 'package.json'
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - 'PHASE_0_ISSUES.md'
+  pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: liftria-phase0-repair
+  group: phase0-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  refresh-dependencies:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -25,19 +27,94 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Resolve SDK-matched native dependencies
+      - name: Reproducible clean dependency install
+        run: npm ci --no-audit --no-fund
+      - name: Validate Expo SDK versions and native peer dependency tree
         run: |
-          npm ci --no-audit --no-fund
-          npx expo install expo-system-ui react-native-reanimated react-native-worklets
           npx expo install --check
           npm ls react-native-reanimated react-native-worklets
-      - name: Persist checked package.json and package-lock.json
+      - name: TypeScript, lint, Jest
+        run: npm run check
+
+  android-build:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk for ARM64 native compilation
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git diff --cached --stat
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: align Expo 57 native UI and worklets dependencies"
-            git push origin HEAD:main
-          fi
+          echo "BEFORE cleanup"
+          df -h
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          echo "AFTER cleanup"
+          df -h
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install reproducible dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Expo Android prebuild
+        run: npx expo prebuild --clean --platform android --no-install
+      - name: Inspect generated Android manifest permissions
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          root = ET.parse(path).getroot()
+          android = '{http://schemas.android.com/apk/res/android}'
+          perms = []
+          print('PREBUILD_USES_PERMISSIONS')
+          for child in root:
+              if child.tag.endswith('uses-permission') or child.tag.endswith('uses-permission-sdk-23'):
+                  name = child.get(android+'name')
+                  maximum = child.get(android+'maxSdkVersion')
+                  perms.append(name)
+                  print(f'{name} maxSdkVersion={maximum or "none"}')
+          forbidden = {'android.permission.RECORD_AUDIO', 'android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.CAMERA'}
+          # The source manifest can use tools:node="remove" placeholders for merged dependencies.
+          tools = '{http://schemas.android.com/tools}'
+          for child in root:
+              if child.get(android+'name') in forbidden and child.get(tools+'node') != 'remove':
+                  raise SystemExit('Forbidden permission is not removed by manifest tools directives')
+          print('Android source manifest inspected. Final merged manifest also needs native/device validation.')
+          PY
+      - name: Compile S22 Ultra ARM64 debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
+      - name: Compile S22 Ultra ARM64 embedded release APK
+        working-directory: android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
+      - name: Inspect merged manifest and fail for needless permissions
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          android = '{http://schemas.android.com/apk/res/android}'
+          manifests = list(Path('android/app/build/intermediates').glob('**/merged_manifests/**/AndroidManifest.xml'))
+          if not manifests:
+              raise SystemExit('No merged manifest found; permissions unverified')
+          for path in manifests:
+              print('MERGED_MANIFEST', path)
+              root = ET.parse(path).getroot()
+              for child in root:
+                  if child.tag.endswith('uses-permission') or child.tag.endswith('uses-permission-sdk-23'):
+                      name = child.get(android+'name')
+                      max_sdk = child.get(android+'maxSdkVersion')
+                      print(f'{name} maxSdkVersion={max_sdk or "none"}')
+                      if name in {'android.permission.RECORD_AUDIO', 'android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.CAMERA'}:
+                          raise SystemExit(f'Forbidden merged Android permission: {name}')
+          PY
+      - name: Upload debug and release APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: liftria-phase0-s22-arm64-apks
+          path: android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 7
