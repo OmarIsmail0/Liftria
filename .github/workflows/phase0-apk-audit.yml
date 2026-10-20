@@ -1,9 +1,6 @@
 name: 'Phase 0 APK artifact audit'
 
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/phase0-apk-audit.yml']
   workflow_run:
     workflows: ['Phase 0 code and Android verification']
     types: [completed]
@@ -12,7 +9,6 @@ on:
       source_run:
         description: 'Successful Android CI run ID containing APK artifact'
         required: true
-        default: '39326177878'
 
 permissions:
   contents: read
@@ -20,11 +16,11 @@ permissions:
 
 jobs:
   inspect-uploaded-apks:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SOURCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.source_run || github.event_name == 'push' && '39326177878' || github.event.workflow_run.id }}
+      SOURCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.source_run || github.event.workflow_run.id }}
     steps:
       - name: Download exact APKs from successful CI run
         uses: actions/download-artifact@v6
@@ -60,6 +56,8 @@ jobs:
           "$aapt" dump badging "$release" | grep 'sdkVersion:'
           echo 'Release assets:'
           unzip -Z1 "$release" | grep -E '^assets/(index.android.bundle|.*\.hbc)$'
-          echo 'Release ARM64 libraries:'
-          unzip -Z1 "$release" | grep -m 3 '^lib/arm64-v8a/'
+          # Count instead of grep -m: an early-exiting grep would SIGPIPE unzip and fail under pipefail.
+          arm64_libs=$(unzip -Z1 "$release" | grep -c '^lib/arm64-v8a/')
+          echo "Release ARM64 libraries: $arm64_libs"
+          test "$arm64_libs" -gt 0
           echo 'Both APKs are signed, the release contains bundled JS, and the expected Android package/ARM64 libraries are present.'

@@ -16,9 +16,12 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 | GitHub repository and committed source | **PASS** | Connected GitHub API reports completed commits to `main`; inspect source files |
 | Dependencies/npm install + lockfile | **PASS** | GitHub Actions run #2: strict install, `npm ci`, Expo dependency alignment succeeded; `package-lock.json` committed in `3cd51e6` |
 | Expo Android prebuild | **PASS** | GitHub Actions run #9 and run #5 completed `npx expo prebuild --clean --platform android --no-install`; Health Connect permission **UI** still PENDING_DEVICE_TEST |
-| Android debug `assembleDebug` | **PASS (run #9)** | ARM64 Gradle build succeeded; uploaded test APK artifact; run #5 disk failure is historical |\n| Debug APK installation on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or installation logs |
-| Embedded-bundle release `assembleRelease` | **PASS (run #9)** | ARM64 Gradle build and artifact upload succeeded; local-test-signed APK, offline startup still needs phone test |\n| Release APK install and offline test on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or release installation logs |
-| Strict typecheck | **PASS** | GitHub Actions [run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): `tsc --noEmit` zero errors |\n| ESLint | **PASS** | GitHub Actions run #4: `eslint .` zero errors or warnings |
+| Android debug `assembleDebug` | **PASS (run #9)** | ARM64 Gradle build succeeded; uploaded test APK artifact; run #5 disk failure is historical |
+| Debug APK installation on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or installation logs |
+| Embedded-bundle release `assembleRelease` | **PASS (run #9)** | ARM64 Gradle build and artifact upload succeeded; local-test-signed APK, offline startup still needs phone test |
+| Release APK install and offline test on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or release installation logs |
+| Strict typecheck | **PASS** | GitHub Actions [run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): `tsc --noEmit` zero errors |
+| ESLint | **PASS** | GitHub Actions run #4: `eslint .` zero errors or warnings |
 | Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PASS** | GitHub Actions run #4: 4/4 suites, 22/22 tests; mocked contracts only, not device integration |
 | SQLite migration on phone | **PENDING_DEVICE_TEST** | Run Init then check schema 1 |
 | SQLite CRUD / transactions on phone | **PENDING_DEVICE_TEST** | Test Add/Read/Clear and settings |

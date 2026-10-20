@@ -1,5 +1,27 @@
 # LIFTRIA Phase 0: Test Results and Issues
 
+# Re-test 3: commit `af45b18` (2026-10-20)
+
+Review of the 5 commits after the CI fix (`c1de298`): diagnostics polish, the APK audit workflow, the handoff doc, and report updates.
+
+| Check | Result |
+|---|---|
+| `npm ci`, `tsc`, `eslint`, Jest | **PASS**: 22/22 tests, run locally from a clean install |
+| Full CI on code commits | **PASS**: [run #10](https://github.com/OmarIsmail0/Liftria/actions/runs/39390420651) and [run #12](https://github.com/OmarIsmail0/Liftria/actions/runs/39390684476). Run #11 was cancelled because a newer queued run replaced it, which is expected concurrency behavior. |
+| APK audit workflow | **PASS**: apksigner, package name, embedded JS bundle and ARM64 libraries all checked. `actionlint` clean. |
+| Code changes (`5039a42`) | **OK**: `model_context_window_exceeded` is now treated as truncation (tested). Health read errors show their code. The key field clears when the key is deleted. A "Clear photo" button was added. Health reads can't overlap daily reads. |
+
+**Fixed directly in this re-test:**
+- **TASK-2 was not actually finished.** `PHASE_0_FIXES.md` said the malformed table row had been split, but 3 rows in `docs/PHASE_0_REPORT.md` still contained a literal `\n`, which merged them into the row above. All 3 are now real rows.
+- **The audit workflow was tied to an expiring artifact.** Its `push` trigger and its `workflow_dispatch` default both pointed at run #9, whose artifact expires 2026-10-26. After that date, any edit to the workflow would have failed it. I removed the push trigger and the hard-coded default, so it now runs after each successful CI run, or manually with a run ID you choose.
+- **A precaution in the audit's library check.** `unzip | grep -m 3` under `set -o pipefail` can fail if `grep` exits early. I couldn't reproduce it, but it's now replaced with a count check.
+
+**Note for the owner:** to test the newest code, use the APK from **run #12** (commit `9875c00`). The later commits only changed docs and workflows, so the app code is identical, and the run #9 APK is older code. Both expire 7 days after their run.
+
+No new tasks for the implementing agent. Phase 0 is now waiting only on the S22 Ultra / Watch 4 / API key device tests in `docs/PHASE_0_HANDOFF.md`.
+
+---
+
 # Re-test 2: commit `420c771` (2026-10-19)
 
 > **Historical independent review.** This section describes findings at commit `420c771`, not the current branch verdict. Updated fixes and evidence: [docs/PHASE_0_FIXES.md](docs/PHASE_0_FIXES.md), [docs/PHASE_0_REPORT.md](docs/PHASE_0_REPORT.md).
