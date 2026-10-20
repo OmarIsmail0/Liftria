@@ -1,6 +1,6 @@
 # Liftria Phase 0 — evidence report
 
-Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 session took place. Source control commits alone are not Android compatibility evidence.
+Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 session took place. CI APK compilation, release bundle and signing were verified separately; they are not a physical-device test.
 
 ## Environment evidence
 
@@ -15,9 +15,9 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 |---|---|---|
 | GitHub repository and committed source | **PASS** | Connected GitHub API reports completed commits to `main`; inspect source files |
 | Dependencies/npm install + lockfile | **PASS** | GitHub Actions run #2: strict install, `npm ci`, Expo dependency alignment succeeded; `package-lock.json` committed in `3cd51e6` |
-| Expo Android prebuild | **PASS** | GitHub Actions run #5 completed `npx expo prebuild --clean --platform android --no-install`; Health Connect permission **UI** still PENDING_DEVICE_TEST |
-| Android debug `assembleDebug` | **FAIL (CI run #5)** | `No space left on device` compiling Reanimated native C++; retry ARM64-only after runner disk cleanup |\n| Debug APK installation on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or installation logs |
-| Embedded-bundle release `assembleRelease` | **NOT RUN** | CI run #5 stopped at failed debug compilation |\n| Release APK install and offline test on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or release installation logs |
+| Expo Android prebuild | **PASS** | GitHub Actions run #9 and run #5 completed `npx expo prebuild --clean --platform android --no-install`; Health Connect permission **UI** still PENDING_DEVICE_TEST |
+| Android debug `assembleDebug` | **PASS (run #9)** | ARM64 Gradle build succeeded; uploaded test APK artifact; run #5 disk failure is historical |\n| Debug APK installation on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or installation logs |
+| Embedded-bundle release `assembleRelease` | **PASS (run #9)** | ARM64 Gradle build and artifact upload succeeded; local-test-signed APK, offline startup still needs phone test |\n| Release APK install and offline test on S22 Ultra | **PENDING_DEVICE_TEST** | No device access or release installation logs |
 | Strict typecheck | **PASS** | GitHub Actions [run #4](https://github.com/OmarIsmail0/Liftria/actions/runs/39311214769): `tsc --noEmit` zero errors |\n| ESLint | **PASS** | GitHub Actions run #4: `eslint .` zero errors or warnings |
 | Jest SQLite CRUD/migration, Claude error, schema and normalization tests | **PASS** | GitHub Actions run #4: 4/4 suites, 22/22 tests; mocked contracts only, not device integration |
 | SQLite migration on phone | **PENDING_DEVICE_TEST** | Run Init then check schema 1 |
@@ -31,7 +31,7 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 | Watch-originated steps/HR/exercise sessions | **PENDING_DEVICE_TEST** | No physical evidence |
 | Daily active / daily total / resting / exercise energy | **PENDING_DEVICE_TEST** | No physical evidence; don't infer daily totals from HC types |
 | Sleep/body composition + full validation matrix | **PENDING_DEVICE_TEST** | No physical evidence |
-| Embedded APK airplane-mode startup/storage/cache/API failure | **PENDING_DEVICE_TEST** | No signed JS-embedded APK or airplane-mode device test |
+| Embedded APK airplane-mode startup/storage/cache/API failure | **PENDING_DEVICE_TEST** | Embedded-bundle APK and v2 signature verified by [artifact audit](https://github.com/OmarIsmail0/Liftria/actions/runs/39390684453); no actual airplane-mode phone test |
 
 ## Corrections and known limitations
 
@@ -39,7 +39,7 @@ Generated 2026-10-19. **Phase 0 NOT APPROVED.** No actual S22 Ultra / Watch 4 se
 - All health read rows currently show **PENDING_DEVICE_TEST**; do not copy documentation support into the "data present" column.
 - Adapter now follows Health Connect continuation tokens (verified by mock test); real high-volume pagination remains PENDING_DEVICE_TEST.
 - Android 14+ rationale alias must be **functionally** exercised, not inferred from plugin documentation.
-- Dependency versions and lockfile were resolved by `npm ci` and Expo check in CI; Expo 57 native Reanimated and Worklets version alignment remains TASK-5 until rerun.
+- Dependency versions and lockfile were resolved by `npm ci` and Expo check in CI; Native Reanimated and Worklets versions are now aligned with Expo SDK 57, as verified by npm ls and run #9.
 - SecureStore cannot remove the intrinsic risk of a direct on-device API key; use Anthropic spend controls.
 
 ## Required owner sign-off evidence
@@ -76,3 +76,7 @@ Record: machine versions, npm lock hash, `npx expo install --check`, `npm run ch
 ## CI native build resolution and device handoff (2026-10-20)
 
 [Successful Actions run #9](https://github.com/OmarIsmail0/Liftria/actions/runs/39326177878) at commit `c1de298`: strict npm, Expo check, TypeScript, ESLint and Jest **22/22 PASS**. Native ARM64 debug and release APK compilation **PASS**; APK artifact upload **PASS** ([artifact](https://github.com/OmarIsmail0/Liftria/actions/runs/39326177878/artifacts/12223183918)); release merged-manifest permission check **PASS**. This supersedes historical FAILED run #5 and formerly pending run #7. No APK has been installed on the owner's actual S22 Ultra and no real Watch 4, Health Connect, Claude key or airplane-mode validation was observed. **Every independent device verdict remains pending**. See [PHASE_0_HANDOFF.md](PHASE_0_HANDOFF.md). Later source changes require a matching new green APK build; never use the run #9 artifact as evidence for a newer source commit.
+
+## APK static integrity audit (2026-10-20)
+
+[APK artifact audit run](https://github.com/OmarIsmail0/Liftria/actions/runs/39390684453) **PASS** for run #9 artifacts: both `app-debug.apk` and `app-release.apk` exist and pass Android `apksigner verify --verbose` with v2 signatures; release has `com.liftria.diagnostics`, `minSdkVersion 26`, `assets/index.android.bundle` and `lib/arm64-v8a/` binaries. Release SHA-256: `0b2fe93c551b3adb1eef0d6ef18a2673a0980d49b576e6b4c335ad9312b914be`; debug SHA-256: `60b1d97f4d8e4feb5c0fb517a0e28172de55e03cae876a2138c3b3864871b306`. These exact hashes belong to run #9 only. The audit workflow runs automatically for subsequent successful full CI. This demonstrates self-contained signed build *packaging*, not actual offline startup or watch/Claude functionality.
