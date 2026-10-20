@@ -19,6 +19,8 @@ Open [GitHub Actions](https://github.com/OmarIsmail0/Liftria/actions/workflows/p
 
 ## Send back results
 
+In the app, scroll to **Report → Export report** and share the text (e.g. paste it into the chat or save it to Files). It contains the latest result of every section, the Health Connect metric table, daily energy windows and a timestamped test log that survives restarts. It never includes the API key, photos or raw health samples; review it before sending. Use **Clear test log** before a fresh test pass.
+
 Use [DEVICE_TESTS.md](DEVICE_TESTS.md) for the full acceptance checklist; it requests device evidence, appropriate health origin/time-range comparisons, and airplane-mode tests. Report the **tested commit and workflow run ID, Android OS/build, exact failing button/action and visible message**, plus redacted screenshots or logcat if needed. No API keys, authentication secrets, or private images.
 
 Final verdicts: **Core offline foundation, Claude AI, Workout wearable, Daily calories**. They remain **PENDING_DEVICE_TEST / PENDING_OWNER_TEST** until those checks actually run. If Health Connect is missing Samsung data, consider Samsung's SDK only after confirmed gaps; it is intentionally not bundled.

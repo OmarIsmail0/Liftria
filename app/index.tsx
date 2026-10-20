@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as Application from 'expo-application';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
@@ -14,6 +14,7 @@ import { runMealEstimate, TEXT_EXAMPLE, DEFAULT_MODEL, type ImageData } from '..
 import { healthConnect, requestHistoryReadPermission, readDailyEnergy, type DailyEnergyRow } from '../src/services/health';
 import { getLastWorkout, getWorkout, updateWorkout, getLastNutrition, deleteNutrition } from '../src/services/database/repositories';
 import { metricTypes, type MetricType, type PermissionState, type HealthValue } from '../src/services/health/types';
+import { appendLog, buildDiagnosticReport, logEntry, parseStoredLog } from '../src/features/diagnostics/report';
 
 type RowStatus = { state: string; count?: number; source?: string; range?: string; device?: string; units?: string };
 const common = StyleSheet.create({
@@ -53,27 +54,53 @@ function desc(value: HealthValue): string {
   return `${value.metric}: ${value.value} ${value.unit} at ${value.time}`;
 }
 
+const LOG_SETTING = 'diagnostic_log';
+type LogStore = { current: { entries: string[]; loaded: boolean } };
+/** Append to the on-device test log and persist it, so restart tests stay in the exported report. */
+function record(store: LogStore, setCount: (n: number) => void, section: string, message: string) {
+  store.current.entries = appendLog(store.current.entries, logEntry(section, message));
+  setCount(store.current.entries.length);
+  // Until the previous session's log is loaded, persisting would overwrite it.
+  if (store.current.loaded) void setSetting(LOG_SETTING, JSON.stringify(store.current.entries));
+}
+const keySummary = (s: KeyState) => (s.status === 'ready' ? 'ready (masked)' : s.status);
+
 export default function Diagnostics() {
-  const [dbText, setDbText] = useState('Not initialized');
+  const [dbText, setDbTextRaw] = useState('Not initialized');
   const [key, setKey] = useState('');
-  const [storedKey, setStoredKey] = useState<KeyState>({ status: 'missing' });
-  const [aiText, setAiText] = useState('Not tested');
+  const [storedKey, setStoredKeyRaw] = useState<KeyState>({ status: 'missing' });
+  const [aiText, setAiTextRaw] = useState('Not tested');
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const requestRef = useRef<AbortController | null>(null);
   const [photo, setPhoto] = useState<ImageData | null>(null);
   const [photoName, setPhotoName] = useState<string | null>(null);
-  const [netText, setNetText] = useState('Checking');
-  const [offlineText, setOfflineText] = useState('Not tested');
-  const [healthText, setHealthText] = useState('Not checked');
-  const [historyText, setHistoryText] = useState('Not requested');
-  const [permissions, setPermissions] = useState<Record<MetricType, PermissionState> | null>(null);
+  const [netText, setNetTextRaw] = useState('Checking');
+  const [offlineText, setOfflineTextRaw] = useState('Not tested');
+  const [healthText, setHealthTextRaw] = useState('Not checked');
+  const [historyText, setHistoryTextRaw] = useState('Not requested');
+  const [permissions, setPermissionsRaw] = useState<Record<MetricType, PermissionState> | null>(null);
   const [healthRows, setHealthRows] = useState<Partial<Record<MetricType, RowStatus>>>({});
   const [samples, setSamples] = useState<HealthValue[]>([]);
   const [healthBusy, setHealthBusy] = useState(false);
   const [dailyBusy, setDailyBusy] = useState(false);
   const [dailyRows, setDailyRows] = useState<DailyEnergyRow[]>([]);
   const healthBusyRef = useRef(false);
+  const logRef = useRef({ entries: [] as string[], loaded: false });
+  const [logCount, setLogCount] = useState(0);
+  const note = (section: string, message: string) => record(logRef, setLogCount, section, message);
+  const setDbText = (text: string) => { setDbTextRaw(text); note('SQLite', text); };
+  const setAiText = (text: string) => { setAiTextRaw(text); note('Claude', text); };
+  const setNetText = (text: string) => { setNetTextRaw(text); note('Network', text); };
+  const setOfflineText = (text: string) => { setOfflineTextRaw(text); note('Offline', text); };
+  const setHealthText = (text: string) => { setHealthTextRaw(text); note('Health Connect', text); };
+  const setHistoryText = (text: string) => { setHistoryTextRaw(text); note('History permission', text); };
+  const setStoredKey = (state: KeyState) => { setStoredKeyRaw(state); note('API key', keySummary(state)); };
+  const setPermissions = (states: Record<MetricType, PermissionState>) => {
+    setPermissionsRaw(states);
+    const granted = metricTypes.filter(metric => states[metric] === 'granted');
+    note('Permissions', `${granted.length}/${metricTypes.length} granted: ${granted.join(', ') || 'none'}`);
+  };
 
   const refreshNetwork = async () => {
     try {
@@ -85,16 +112,30 @@ export default function Diagnostics() {
   };
 
   useEffect(() => {
-    void initializeDatabase().then(() => schemaVersion()).then(result =>
-      setDbText(result.ok ? `Schema v${result.value} initialized` : result.error.message))
-      .catch(() => setDbText('DB initialization failed'));
-    void keyState().then(setStoredKey);
+    const mountNote = (section: string, message: string) => record(logRef, setLogCount, section, message);
+    void initializeDatabase()
+      .then(async () => {
+        const stored = await getSetting(LOG_SETTING);
+        logRef.current.entries = [...(stored.ok ? parseStoredLog(stored.value) : []), ...logRef.current.entries];
+        logRef.current.loaded = stored.ok;
+        mountNote('App', 'Started');
+        return schemaVersion();
+      })
+      .then(result => {
+        const text = result.ok ? `Schema v${result.value} initialized` : result.error.message;
+        setDbTextRaw(text); mountNote('SQLite', text);
+      })
+      .catch(() => { setDbTextRaw('DB initialization failed'); mountNote('SQLite', 'DB initialization failed'); });
+    void keyState().then(state => { setStoredKeyRaw(state); mountNote('API key', keySummary(state)); });
     // Async callback avoids synchronous setState in a mount effect (react-hooks lint).
     void Network.getNetworkStateAsync().then(net => {
       const offline = net.isConnected === false || net.isInternetReachable === false;
-      setNetText(offline ? 'Offline' : net.isInternetReachable === true ? 'Online' : 'Unknown (no internet check)');
-    }).catch(() => setNetText('Unknown'));
-    void healthConnect.getAvailability().then(status => setHealthText(`Availability: ${status}`));
+      const text = offline ? 'Offline' : net.isInternetReachable === true ? 'Online' : 'Unknown (no internet check)';
+      setNetTextRaw(text); mountNote('Network', text);
+    }).catch(() => setNetTextRaw('Unknown'));
+    void healthConnect.getAvailability().then(status => {
+      setHealthTextRaw(`Availability: ${status}`); mountNote('Health Connect', `Availability: ${status}`);
+    });
     return () => requestRef.current?.abort();
   }, []);
 
@@ -177,6 +218,8 @@ export default function Diagnostics() {
           }
         } else next[metric] = { state: res.status === 'error' ? `error (${res.code}: ${res.message})` : res.status };
         setHealthRows({ ...next });
+        const row = next[metric];
+        note(`Health ${metric}`, `${row?.state ?? 'unknown'}${row?.count !== undefined ? ` · ${row.count} records · ${row.source ?? ''}` : ''}`);
       }
       if (all.length > 0) {
         const stored = await saveHealthValues(all);
@@ -213,6 +256,7 @@ export default function Diagnostics() {
     try {
       const rows = await readDailyEnergy(7);
       setDailyRows(rows);
+      note('Daily energy', `${rows.filter(row => row.status === 'ok').length}/${rows.length} windows returned values`);
       const values = rows.flatMap(row => row.status === 'ok' ? [row.value] : []);
       if (values.length) {
         const saved = await saveHealthValues(values);
@@ -222,6 +266,28 @@ export default function Diagnostics() {
       } else setHealthText('No daily energy aggregates returned; check permission and Samsung Health sync.');
     } catch { setHealthText('Daily energy diagnostic failed.'); }
     finally { setDailyBusy(false); }
+  };
+  const exportReport = async () => {
+    const report = buildDiagnosticReport({
+      generatedAt: new Date().toISOString(),
+      app: {
+        version: Application.nativeApplicationVersion ?? 'unknown', build: Application.nativeBuildVersion ?? 'unknown',
+        androidApi: String(Platform.Version), os: Device.osVersion ?? 'unknown',
+        device: `${Device.manufacturer ?? 'unknown'} ${Device.modelName ?? 'unknown'}`,
+      },
+      status: {
+        network: netText, database: dbText, apiKey: keySummary(storedKey), claude: aiText,
+        health: healthText, history: historyText, offline: offlineText,
+      },
+      permissions, healthRows, daily: dailyRows, log: logRef.current.entries,
+    });
+    try { await Share.share({ title: 'Liftria Phase 0 device report', message: report }); }
+    catch { setOfflineText('Could not open the share sheet for the report.'); }
+  };
+  const clearLog = () => {
+    logRef.current.entries = [];
+    setLogCount(0);
+    if (logRef.current.loaded) void setSetting(LOG_SETTING, '[]');
   };
   const checkOffline = async () => {
     const offline = await refreshNetwork();
@@ -326,6 +392,14 @@ export default function Diagnostics() {
         {samples.slice(0, 12).map((record, i) =>
           <Text key={i} style={common.muted}>{desc(record)}{record.kind !== 'aggregate' ? ` · ${record.dataOrigin}` : ''}</Text>)}
         <Text style={common.muted}>Airplane-mode validation requires a bundled APK, not Metro.</Text>
+      </Section>
+      <Section title="Report">
+        <Text style={common.body}>Test log: {logCount} entries (kept across restarts)</Text>
+        <View style={common.buttons}>
+          <Action label="Export report" onPress={() => { void exportReport(); }} />
+          <Action label="Clear test log" onPress={clearLog} />
+        </View>
+        <Text style={common.muted}>Shares a text report of every result above. It never includes your API key, photos or raw health samples, but it does include health record counts, sources and daily kcal. Review before sending.</Text>
       </Section>
       <Text style={common.muted}>Privacy: on-device SQLite and credentials. Photos leave the device only when Test B is tapped. Direct Claude API keys can be extracted from compromised phones.</Text>
     </ScrollView>
