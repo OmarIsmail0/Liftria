@@ -4,7 +4,7 @@
 
 ## Core foundation — PENDING
 
-C1 (debug/release embedded-bundle APK builds AND device installation): BLOCKED by absent Android SDK and physical device.
+C1 (debug/release embedded-bundle APK builds AND device installation): **APK builds and upload PASSED** in GitHub Actions run #9; **device installation PENDING_DEVICE_TEST**, hence overall C1 is NOT YET GO.
 
 C2 (SQLite migrations and restart persistence): PENDING_DEVICE_TEST.
 
@@ -12,7 +12,7 @@ C3 (SecureStore restart persistence and key deletion): PENDING_DEVICE_TEST.
 
 C4 (embedded-bundle airplane-mode startup, settings, workout/nutrition CRUD, health cache, offline AI failure): PENDING_DEVICE_TEST.
 
-**Owner corrective action:** on Windows run `npm ci` (once lockfile is committed), `npx expo install --check`, `npm run check`, `expo prebuild`, `assembleDebug`, `assembleRelease`, install both, follow DEVICE_TESTS.md and attach evidence. **Agent corrective action:** fix any concrete dependency/native/runtime errors surfaced by these runs. Re-test the failed criterion before granting GO.
+**Owner testing action:** download the matching full-green-run release APK artifact, install on the S22 Ultra, follow DEVICE_TESTS.md, and attach sanitized results. Rebuilding on Windows is optional unless debugging an issue. **Agent corrective action:** fix any concrete dependency/native/runtime errors surfaced by these runs. Re-test the failed criterion before granting GO.
 
 ## Claude AI — PENDING
 

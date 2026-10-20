@@ -4,7 +4,7 @@ Private, local-first Android diagnostics for a Samsung Galaxy S22 Ultra and Gala
 
 ## Status
 
-The Android build and device integrations require testing on the owner's Windows machine and S22 Ultra. See `docs/PHASE_0_REPORT.md` and `docs/PHASE_1_READINESS.md`; do not treat untested integrations as PASS.
+The JavaScript code checks and Android ARM64 debug/release builds **have passed GitHub Actions**, with uploaded APKs. Actual Android installation, restart, airplane-mode operation, Claude calls, and Galaxy Watch 4 / Health Connect data **still require physical-device verification**. See [Phase 0 handoff](docs/PHASE_0_HANDOFF.md) and [report](docs/PHASE_0_REPORT.md).
 
 ## Windows prerequisites
 
@@ -33,7 +33,7 @@ cd ..
 adb install -r android\app\build\outputs\apk\debug\app-debug.apk
 ```
 
-For the offline test, build a **self-contained JavaScript-bundled release** using a local signing configuration. Do not commit any keystore. Full instructions and the mandatory device checklist are in `docs/DEVICE_TESTS.md`. A development APK connected to Metro does **not** prove offline operation.
+For the offline test, install a **self-contained JavaScript-bundled release** APK from the newest green GitHub Actions run; alternatively build and sign locally. Do not commit any keystore. Full instructions and the mandatory device checklist are in `docs/DEVICE_TESTS.md`. A development APK connected to Metro does **not** prove offline operation.
 
 For the exact dependency and SDK choices see `docs/TECHNICAL_DECISIONS.md`. For readiness and blockers see `docs/PHASE_1_READINESS.md`.
 
