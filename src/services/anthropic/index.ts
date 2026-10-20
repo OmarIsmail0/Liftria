@@ -54,7 +54,7 @@ export function httpError(status: number): ClaudeErrorCode {
 export function parseClaudeBody(value: unknown): ClaudeResult {
   if (!value || typeof value !== 'object') return fail('invalid-response');
   const body = value as Record<string, unknown>;
-  if (body.stop_reason === 'max_tokens') return fail('truncated');
+  if (body.stop_reason === 'max_tokens' || body.stop_reason === 'model_context_window_exceeded') return fail('truncated');
   if (body.stop_reason === 'refusal') return fail('refusal');
   if (body.stop_reason !== 'end_turn' || !Array.isArray(body.content)) return fail('invalid-response');
   const block = body.content.find((item: unknown) =>

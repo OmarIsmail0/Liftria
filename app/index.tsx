@@ -166,7 +166,7 @@ export default function Diagnostics() {
           const last = res.records[res.records.length - 1];
           next[metric] = {
             state: 'records found', count: res.records.length,
-            source: first && first.kind !== 'aggregate' ? first.dataOrigin : 'aggregate',
+            source: [...new Set(res.records.flatMap(value => value.kind === 'aggregate' ? [] : [value.dataOrigin]))].join(', ') || 'unknown',
             range: first && first.kind !== 'aggregate'
               ? 'start' in first ? first.start : 'time' in first ? first.time : 'unknown' : 'aggregate',
             device: first && first.kind !== 'aggregate' ? JSON.stringify(first.device ?? {}) : undefined,
@@ -175,7 +175,7 @@ export default function Diagnostics() {
           if (last && last.kind !== 'aggregate' && next[metric]) {
             next[metric]!.range += ` (last origin: ${last.dataOrigin})`;
           }
-        } else next[metric] = { state: res.status };
+        } else next[metric] = { state: res.status === 'error' ? `error (${res.code}: ${res.message})` : res.status };
         setHealthRows({ ...next });
       }
       if (all.length > 0) {
@@ -183,7 +183,8 @@ export default function Diagnostics() {
         setHealthText(stored.ok ? `Imported/updated ${stored.value} read-only records on device` : stored.error.message);
       } else setHealthText('No normalized health records imported; check status per metric');
       setSamples(all.slice(0, 30));
-    } finally { setHealthBusy(false); healthBusyRef.current = false; }
+    } catch { setHealthText('Health Connect diagnostic failed unexpectedly.'); }
+    finally { setHealthBusy(false); healthBusyRef.current = false; }
   };
 
   const updateLastWorkout = async () => {
@@ -265,13 +266,14 @@ export default function Diagnostics() {
         <View style={common.buttons}>
           <Action label="Save key" onPress={() => { void saveKey(key).then(s => { setStoredKey(s); setKey(''); setAiText(s.status === 'ready' ? 'Key securely saved' : s.status); }); }} disabled={busy} />
           <Action label="Check key" onPress={() => { void keyState().then(setStoredKey); }} />
-          <Action label="Delete key" onPress={() => { void deleteKey().then(setStoredKey); }} disabled={busy} />
+          <Action label="Delete key" onPress={() => { setKey(''); void deleteKey().then(setStoredKey); }} disabled={busy} />
         </View>
         <Text style={common.muted}>Test A input: {TEXT_EXAMPLE}</Text>
         <View style={common.buttons}>
           <Action label="Test A / key" disabled={busy} onPress={() => { void runClaude(); }} />
           <Action label="Pick photo" disabled={busy} onPress={() => { void pickPhoto(); }} />
           <Action label="Test B / photo" disabled={busy || !photo} onPress={() => { if (photo) void runClaude(photo); }} />
+          <Action label="Clear photo" disabled={busy || !photo} onPress={() => { setPhoto(null); setPhotoName(null); }} />
           <Action label="Cancel" disabled={!busy} onPress={() => requestRef.current?.abort()} />
         </View>
         <Text style={common.muted}>{photoName ?? 'No meal photo selected'}</Text>
@@ -287,7 +289,7 @@ export default function Diagnostics() {
           <Action label="Permissions" onPress={() => { void permissionRefresh(); }} />
           <Action label="Grant read-only" onPress={() => { void healthConnect.requestPermissions([...metricTypes]).then(setPermissions); }} />
           <Action label="History grant" onPress={() => { void requestHistoryReadPermission().then(setHistoryText); }} />
-          <Action label="Read 7 days" disabled={healthBusy} onPress={() => { void readHealth(); }} />
+          <Action label="Read 7 days" disabled={healthBusy || dailyBusy} onPress={() => { void readHealth(); }} />
           <Action label="Daily energy / 7 days" disabled={dailyBusy || healthBusy} onPress={() => { void readDaily(); }} />
         </View>
         <Text style={common.muted}>History permission: {historyText} · Special grant requires separate device verification.</Text>

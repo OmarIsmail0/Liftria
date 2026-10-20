@@ -24,6 +24,7 @@ test('finds text block rather than assuming index 0; checks stop reason', () => 
   expect(parsed.ok).toBe(true);
   if (parsed.ok) expect(parsed.usage.inputTokens).toBe(45);
   expect(parseClaudeBody({ ...valid, stop_reason: 'max_tokens' })).toMatchObject({ ok: false, code: 'truncated' });
+  expect(parseClaudeBody({ ...valid, stop_reason: 'model_context_window_exceeded' })).toMatchObject({ ok: false, code: 'truncated' });
   expect(parseClaudeBody({ ...valid, stop_reason: 'refusal' })).toMatchObject({ ok: false, code: 'refusal' });
   expect(parseClaudeBody({ ...valid, content: [{ type: 'text', text: '{"items":[' }] }))
     .toMatchObject({ ok: false, code: 'invalid-response' });
