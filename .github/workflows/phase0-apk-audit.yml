@@ -1,6 +1,9 @@
 name: 'Phase 0 APK artifact audit'
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/phase0-apk-audit.yml']
   workflow_run:
     workflows: ['Phase 0 code and Android verification']
     types: [completed]
@@ -17,11 +20,11 @@ permissions:
 
 jobs:
   inspect-uploaded-apks:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SOURCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.source_run || github.event.workflow_run.id }}
+      SOURCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.source_run || github.event_name == 'push' && '39326177878' || github.event.workflow_run.id }}
     steps:
       - name: Download exact APKs from successful CI run
         uses: actions/download-artifact@v6
