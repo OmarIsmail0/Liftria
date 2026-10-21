@@ -1,6 +1,6 @@
 import {
   initializeDatabase, schemaVersion, addTestData, readTestData, clearTestData,
-  setSetting, getSetting, deleteSetting, saveHealthValues,
+  setSetting, getSetting, deleteSetting, saveHealthValues, listCachedHealth,
 } from '../index';
 import { createWorkout, getWorkout, updateWorkout, deleteWorkout,
   createNutrition, getNutrition, updateNutrition, deleteNutrition,
@@ -53,7 +53,11 @@ const mockDb: MockDatabase = {
     }
     return null;
   }),
-  getAllAsync: jest.fn(async () => []),
+  getAllAsync: jest.fn(async (sql: string, args: unknown[] = []) => {
+    if (sql.includes('FROM health_samples')) return [...state.health.values()].slice(0, args[0] as number);
+    if (sql.includes('FROM health_aggregates')) return [...state.aggregates.values()];
+    return [];
+  }),
   runAsync: jest.fn(async (sql: string, args: unknown[] = []) => {
     const id = state.nextId++;
     let changes = 1;
@@ -79,7 +83,11 @@ const mockDb: MockDatabase = {
     else if (sql.includes('INSERT INTO health_samples')) {
       state.health.set(`${args[0]}:${args[1]}`, { payload_json: args[5] });
     } else if (sql.includes('INSERT INTO health_aggregates')) {
-      state.aggregates.set(`${args[0]}:${args[1]}:${args[2]}:${args[3]}`, { payload_json: args[4] });
+      state.aggregates.set(`${args[0]}:${args[1]}:${args[2]}:${args[3]}`, {
+        adapter: args[0], operation: args[1], window_start: args[2], window_end: args[3], payload_json: args[4],
+      });
+    } else if (sql.includes('DELETE FROM health_aggregates')) {
+      state.aggregates.delete(`${args[0]}:${args[1]}:${args[2]}:${args[3]}`);
     }
     return { lastInsertRowId: id, changes };
   }),
@@ -127,6 +135,52 @@ test('import uses adapter/source ID upsert key and never deduplicates by synthet
   expect((await saveHealthValues([sample, sample])).ok).toBe(true);
   expect(state.health.size).toBe(1);
 });
+test('source-less energy estimates never enter the cache, even via direct persistence', async () => {
+  const estimate = {
+    kind: 'aggregate' as const, metric: 'total-calories' as const,
+    adapter: 'health-connect' as const, operation: 'ENERGY_TOTAL',
+    windowStart: '2026-10-18T00:00:00Z', windowEnd: '2026-10-19T00:00:00Z',
+    value: 1564.5, unit: 'kcal' as const, dataOrigins: [],
+  };
+  const watchBacked = {
+    ...estimate, windowStart: '2026-10-19T00:00:00Z', windowEnd: '2026-10-20T00:00:00Z',
+    value: 260, dataOrigins: ['com.sec.android.app.shealth'],
+  };
+  expect(await saveHealthValues([estimate, watchBacked])).toEqual({ ok: true, value: 1 });
+  const cached = await listCachedHealth();
+  expect(cached.ok).toBe(true);
+  if (cached.ok) {
+    expect(cached.value).not.toEqual(expect.arrayContaining([expect.objectContaining({
+      kind: 'aggregate', value: 1564.5,
+    })]));
+    expect(cached.value).toEqual(expect.arrayContaining([expect.objectContaining({
+      kind: 'aggregate', value: 260,
+    })]));
+  }
+});
+
+test('legacy source-less energy entries are filtered and purged without removing sourced data', async () => {
+  const legacy = {
+    kind: 'aggregate' as const, metric: 'basal-metabolic-rate' as const,
+    adapter: 'health-connect' as const, operation: 'BASAL_CALORIES_TOTAL',
+    windowStart: '2026-10-20T00:00:00Z', windowEnd: '2026-10-21T00:00:00Z',
+    value: 1564.5, unit: 'kcal' as const, dataOrigins: [],
+  };
+  const key = `${legacy.adapter}:${legacy.operation}:${legacy.windowStart}:${legacy.windowEnd}`;
+  state.aggregates.set(key, {
+    adapter: legacy.adapter, operation: legacy.operation,
+    window_start: legacy.windowStart, window_end: legacy.windowEnd, payload_json: JSON.stringify(legacy),
+  });
+  expect(state.aggregates.has(key)).toBe(true);
+  const cached = await listCachedHealth();
+  expect(cached.ok).toBe(true);
+  if (cached.ok) {
+    expect(cached.value.some(value => value.kind === 'aggregate' && value.value === 1564.5)).toBe(false);
+    expect(cached.value.some(value => value.kind === 'aggregate' && value.value === 260)).toBe(true);
+  }
+  expect(state.aggregates.has(key)).toBe(false);
+});
+
 test('clear removes diagnostic data but keeps imported health records', async () => {
   await clearTestData();
   const result = await readTestData();
