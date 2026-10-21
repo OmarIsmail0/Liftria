@@ -1,0 +1,648 @@
+<title>Liftria Prototype 1A</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a review board around one S22 Ultra-sized phone; on a real phone the frame becomes the whole screen. */
+:root {
+  /* Liftria design tokens, dark theme (default). Names match DESIGN_SYSTEM.md. */
+  --color-bg-base: #0F1216;
+  --color-bg-surface: #161A20;
+  --color-bg-raised: #1E232B;
+  --color-bg-glass: rgba(30, 35, 43, 0.78);
+  --color-border-subtle: #272D37;
+  --color-border-strong: #636D7B;
+  --color-text-primary: #EEF1F5;
+  --color-text-secondary: #A7B0BD;
+  --color-text-tertiary: #828C9B;
+  --color-text-inverse: #0F1216;
+  --color-on-train: #1A0D06;
+  --color-on-hiku: #120E2B;
+  --color-action-primary-bg: #EEF1F5;
+  --color-action-primary-fg: #0F1216;
+  --color-domain-train: #FF8A5C;
+  --color-domain-eat: #F2C14E;
+  --color-domain-health: #4CC3A6;
+  --color-domain-hiku: #A99CFF;
+  --color-macro-protein: #7FB2FF;
+  --color-macro-carbs: #F2C14E;
+  --color-macro-fat: #F08FB0;
+  --color-status-success: #5BD08F;
+  --color-status-warning: #F2B44C;
+  --color-status-danger: #FF6B6B;
+  --color-tint-train: rgba(255, 138, 92, 0.14);
+  --color-tint-eat: rgba(242, 193, 78, 0.14);
+  --color-tint-health: rgba(76, 195, 166, 0.14);
+  --color-tint-hiku: rgba(169, 156, 255, 0.15);
+  --color-tint-warning: rgba(242, 180, 76, 0.14);
+  --color-tint-danger: rgba(255, 107, 107, 0.14);
+  --color-board-bg: #0A0C0F;
+  --shadow-raised: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.35);
+  --font-display: "Archivo", "Roboto Condensed", system-ui, sans-serif;
+  --font-body: "Figtree", "Roboto", system-ui, sans-serif;
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 22px; --radius-pill: 999px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-bg-base: #F3F5F8; --color-bg-surface: #FFFFFF; --color-bg-raised: #FFFFFF;
+    --color-bg-glass: rgba(255, 255, 255, 0.82);
+    --color-border-subtle: #E1E5EB; --color-border-strong: #808996;
+    --color-text-primary: #12161C; --color-text-secondary: #4D5767; --color-text-tertiary: #68717E;
+    --color-text-inverse: #FFFFFF; --color-on-train: #FFFFFF; --color-on-hiku: #FFFFFF;
+    --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
+    --color-domain-train: #C04A20; --color-domain-eat: #946800; --color-domain-health: #167A63; --color-domain-hiku: #6150D8;
+    --color-macro-protein: #2E6BD3; --color-macro-carbs: #946800; --color-macro-fat: #B8406F;
+    --color-status-success: #177A45; --color-status-warning: #946300; --color-status-danger: #C93636;
+    --color-tint-train: rgba(210, 85, 42, 0.10); --color-tint-eat: rgba(154, 108, 0, 0.10);
+    --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
+    --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
+    --color-board-bg: #E4E8EE;
+    --shadow-raised: 0 1px 2px rgba(18,22,28,0.06), 0 6px 18px rgba(18,22,28,0.07);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --color-bg-base: #F3F5F8; --color-bg-surface: #FFFFFF; --color-bg-raised: #FFFFFF;
+  --color-bg-glass: rgba(255, 255, 255, 0.82);
+  --color-border-subtle: #E1E5EB; --color-border-strong: #808996;
+  --color-text-primary: #12161C; --color-text-secondary: #4D5767; --color-text-tertiary: #68717E;
+  --color-text-inverse: #FFFFFF; --color-on-train: #FFFFFF; --color-on-hiku: #FFFFFF;
+  --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
+  --color-domain-train: #C04A20; --color-domain-eat: #946800; --color-domain-health: #167A63; --color-domain-hiku: #6150D8;
+  --color-macro-protein: #2E6BD3; --color-macro-carbs: #946800; --color-macro-fat: #B8406F;
+  --color-status-success: #177A45; --color-status-warning: #946300; --color-status-danger: #C93636;
+  --color-tint-train: rgba(210, 85, 42, 0.10); --color-tint-eat: rgba(154, 108, 0, 0.10);
+  --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
+  --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
+  --color-board-bg: #E4E8EE;
+  --shadow-raised: 0 1px 2px rgba(18,22,28,0.06), 0 6px 18px rgba(18,22,28,0.07);
+  color-scheme: light;
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+.btn svg { width: 20px; height: 20px; flex: none; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--color-board-bg); color: var(--color-text-primary);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--color-domain-hiku); outline-offset: 2px; }
+
+/* ---------- review board ---------- */
+.board {
+  min-height: 100%; display: grid; grid-template-columns: minmax(0, 320px) auto; gap: 40px;
+  justify-content: center; align-items: start;
+  padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.panel { display: grid; gap: 20px; position: sticky; top: 32px; min-width: 0; }
+.panel h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 28px; line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
+.panel p { margin: 0; color: var(--color-text-secondary); font-size: 14px; }
+.ctl { display: grid; gap: 6px; }
+.ctl label, .eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); }
+.ctl select {
+  width: 100%; min-height: 44px; padding: 8px 12px; border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); border: 1px solid var(--color-border-strong);
+}
+.seg { display: inline-flex; border: 1px solid var(--color-border-strong); border-radius: var(--radius-pill); overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 8px 14px; min-height: 40px; cursor: pointer; font-size: 14px; color: var(--color-text-secondary); }
+.seg button[aria-pressed="true"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); font-weight: 600; }
+.note { font-size: 13px; color: var(--color-text-secondary); border-left: 3px solid var(--color-domain-hiku); padding: 4px 0 4px 12px; }
+.legend { display: grid; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
+
+/* ---------- phone ---------- */
+.phone {
+  width: 384px; height: 832px; border-radius: 44px; padding: 10px; background: #050608;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06);
+}
+.screen {
+  position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden;
+  background: var(--color-bg-base); display: flex; flex-direction: column;
+}
+.statusbar { height: 32px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+.scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.page { padding: 8px 18px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+@media (max-width: 760px) {
+  .board { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 12px; }
+  .panel { position: static; }
+  .panel { gap: 10px; }
+  .panel .legend, .panel .note, .panel > .stack p { display: none; }
+  .panel h1 { font-size: 22px; }
+  .panel .ctl select { min-height: 40px; }
+  .phone { width: 100%; max-width: 420px; height: min(832px, calc(100dvh - 24px)); margin: 0 auto; border-radius: 28px; padding: 6px; }
+  .screen { border-radius: 23px; }
+}
+
+/* ---------- type ---------- */
+.t-display { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 34px; line-height: 1.05; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+.t-title { font-family: var(--font-display); font-stretch: 108%; font-weight: 700; font-size: 22px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.t-head { font-family: var(--font-display); font-stretch: 104%; font-weight: 700; font-size: 17px; line-height: 1.3; margin: 0; }
+.t-body { font-size: 15px; line-height: 1.5; color: var(--color-text-secondary); margin: 0; }
+.t-small { font-size: 13px; line-height: 1.4; color: var(--color-text-secondary); margin: 0; }
+.t-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--color-text-tertiary); }
+.t-metric { font-family: var(--font-display); font-stretch: 116%; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- components ---------- */
+.card { background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow-raised); }
+.card.flat { box-shadow: none; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.card-head .lhs { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.btn { min-height: 48px; padding: 0 20px; border-radius: var(--radius-pill); border: 0; cursor: pointer; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); }
+.btn-secondary { background: transparent; color: var(--color-text-primary); border: 1px solid var(--color-border-strong); }
+.btn-ghost { background: transparent; color: var(--color-text-secondary); min-height: 48px; padding: 0 12px; }
+.btn-train { background: var(--color-domain-train); color: var(--color-on-train); }
+.btn-hiku { background: var(--color-domain-hiku); color: var(--color-on-hiku); }
+.btn-block { width: 100%; }
+.btn-sm { min-height: 48px; padding: 0 14px; font-size: 14px; }
+.row { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.row.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.stack { display: grid; gap: 8px; }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; border: 1px solid transparent; }
+.chip svg { width: 12px; height: 12px; flex: none; }
+.chip-measured { background: var(--color-tint-health); color: var(--color-domain-health); }
+.chip-estimate { background: transparent; color: var(--color-text-secondary); border: 1px dashed var(--color-border-strong); }
+.chip-pending { background: var(--color-tint-hiku); color: var(--color-domain-hiku); }
+.chip-stale { background: var(--color-tint-warning); color: var(--color-status-warning); }
+.chip-off { background: transparent; color: var(--color-text-tertiary); border: 1px solid var(--color-border-subtle); }
+.chip-phone { background: var(--color-bg-raised); color: var(--color-text-secondary); border: 1px solid var(--color-border-subtle); }
+
+.banner { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; line-height: 1.4; }
+.banner svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+.banner-offline { background: var(--color-bg-raised); border: 1px solid var(--color-border-strong); color: var(--color-text-primary); }
+.banner-warning { background: var(--color-tint-warning); color: var(--color-text-primary); }
+
+.bar { height: 8px; border-radius: var(--radius-pill); background: var(--color-bg-raised); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: inherit; }
+.macro { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+.macro b { font-weight: 600; color: var(--color-text-secondary); }
+
+.ring-wrap { display: grid; grid-template-columns: 132px 1fr; gap: 16px; align-items: center; }
+.ring { position: relative; width: 132px; height: 132px; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+
+.list { display: grid; }
+.list-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--color-border-subtle); min-height: 56px; }
+.list-item:first-child { border-top: 0; }
+.icon-tile { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; flex: none; }
+.icon-tile svg { width: 20px; height: 20px; }
+
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 11px; color: var(--color-text-tertiary); }
+.week .day { display: grid; gap: 6px; justify-items: center; }
+.week .pip { width: 26px; height: 26px; border-radius: 9px; border: 1px solid var(--color-border-subtle); display: grid; place-items: center; }
+.week .pip.today { border-color: var(--color-text-primary); }
+.week .pip i { width: 8px; height: 8px; border-radius: 50%; }
+
+/* bottom nav */
+.nav { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 8px 12px; background: var(--color-bg-glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--color-border-subtle); }
+.nav button { border: 0; background: transparent; display: grid; justify-items: center; gap: 4px; padding: 6px 0; min-height: 56px; cursor: pointer; color: var(--color-text-tertiary); font-size: 11px; font-weight: 600; }
+.nav button svg { width: 24px; height: 24px; }
+.nav button .pill { width: 56px; height: 30px; border-radius: var(--radius-pill); display: grid; place-items: center; }
+.nav button[aria-current="page"] { color: var(--color-text-primary); }
+.nav button[aria-current="page"] .pill { background: var(--color-bg-raised); border: 1px solid var(--color-border-strong); }
+
+/* top bar */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 18px 8px; flex: none; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--color-border-strong); background: var(--color-bg-raised); display: grid; place-items: center; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+/* onboarding */
+.onb { flex: 1; display: flex; flex-direction: column; padding: 8px 22px 22px; gap: 18px; overflow-y: auto; scrollbar-width: none; }
+.onb .spacer { flex: 1; }
+.progress-dots { display: flex; gap: 6px; }
+.progress-dots i { height: 4px; flex: 1; border-radius: 2px; background: var(--color-border-strong); }
+.progress-dots i.on { background: var(--color-text-primary); }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.field input, .field .input { min-height: 52px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); padding: 0 14px; width: 100%; }
+.unit-input { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+.unit-input input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.unit-input span { min-height: 52px; display: grid; place-items: center; padding: 0 14px; border: 1px solid var(--color-border-strong); border-left: 0; border-radius: 0 var(--radius-md) var(--radius-md) 0; color: var(--color-text-secondary); background: var(--color-bg-raised); font-size: 14px; }
+.choice { display: grid; gap: 10px; }
+.choice button { text-align: left; border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); border-radius: var(--radius-md); padding: 14px 16px; min-height: 56px; cursor: pointer; display: grid; gap: 2px; }
+.choice button[aria-pressed="true"] { border-color: var(--color-text-primary); box-shadow: 0 0 0 1px var(--color-text-primary) inset; }
+.choice small { color: var(--color-text-secondary); font-size: 13px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.check { display: flex; gap: 12px; align-items: flex-start; }
+.check .tick { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; flex: none; margin-top: 2px; }
+.check .tick svg { width: 14px; height: 14px; }
+.brandmark { width: 64px; height: 64px; }
+.kbd { font-family: ui-monospace, "Roboto Mono", monospace; font-size: 13px; background: var(--color-bg-raised); border: 1px solid var(--color-border-subtle); border-radius: 6px; padding: 1px 6px; }
+
+.placeholder { flex: 1; display: grid; place-content: center; text-align: center; padding: 32px; gap: 12px; justify-items: center; }
+.placeholder .icon-tile { width: 56px; height: 56px; border-radius: 18px; }
+.placeholder .icon-tile svg { width: 28px; height: 28px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ring circle.val { transition: stroke-dashoffset 600ms cubic-bezier(.2,.8,.2,1); }
+  .bar > i { transition: width 500ms cubic-bezier(.2,.8,.2,1); }
+  .screen-anim { animation: enter 220ms cubic-bezier(.2,.8,.2,1); }
+  @keyframes enter { from { opacity: .6; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+</style>
+
+<div class="board">
+  <aside class="panel" aria-label="Prototype controls">
+    <div class="stack">
+      <span class="eyebrow">Phase 1A · design prototype</span>
+      <h1>Liftria</h1>
+      <p>Onboarding, Today and the data-honesty states. Tap through the phone, or jump to any screen.</p>
+    </div>
+    <div class="ctl">
+      <label for="screen-select">Screen</label>
+      <select id="screen-select"></select>
+    </div>
+    <div class="ctl" id="variant-ctl">
+      <label for="variant-select">Today state</label>
+      <select id="variant-select">
+        <option value="rich">Populated day</option>
+        <option value="first">First day, nothing logged</option>
+        <option value="offline">Offline</option>
+        <option value="nokey">No Anthropic key</option>
+        <option value="hcoff">Health Connect off</option>
+        <option value="stale">Stale health data</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <span class="eyebrow" id="theme-label">Theme</span>
+      <div class="seg" role="group" aria-labelledby="theme-label">
+        <button type="button" data-theme-btn="system" aria-pressed="true">System</button>
+        <button type="button" data-theme-btn="dark" aria-pressed="false">Dark</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+    <p class="note">Example data only. Phase 1 is design; nothing here reads real health data.</p>
+    <div class="legend" aria-label="Provenance legend">
+      <span class="eyebrow">Provenance markers</span>
+      <span><span class="chip chip-measured" data-icon="dot">Measured</span> from a named source</span>
+      <span><span class="chip chip-phone" data-icon="phone">Phone</span> counted by the phone, not the watch</span>
+      <span><span class="chip chip-estimate" data-icon="approx">Estimate</span> calculated, never measured</span>
+      <span><span class="chip chip-pending" data-icon="clock">Pending</span> awaiting device verification</span>
+      <span><span class="chip chip-stale" data-icon="clock">2 d ago</span> older than the freshness limit</span>
+    </div>
+  </aside>
+
+  <div class="phone" aria-label="Liftria app preview, Galaxy S22 Ultra size">
+    <div class="screen" id="screen"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const ICON = {
+    dot: '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="currentColor"/></svg>',
+    approx: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 4.5c1.3-1.2 2.7-1.2 4 0s2.7 1.2 4 0M2 8c1.3-1.2 2.7-1.2 4 0s2.7 1.2 4 0"/></svg>',
+    clock: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.5"/><path d="M6 3.5V6l1.7 1" stroke-linecap="round"/></svg>',
+    phone: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.2" y="1.2" width="5.6" height="9.6" rx="1.4"/><path d="M5.3 9h1.4" stroke-linecap="round"/></svg>',
+    watch: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.8" y="3" width="6.4" height="6" rx="2"/><path d="M4.5 3V1.3h3V3M4.5 9v1.7h3V9" stroke-linejoin="round"/></svg>',
+    off: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="4.5"/><path d="M3 9l6-6"/></svg>',
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>',
+    train: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
+    eat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M9 7.5c0-1.5 1.5-1.5 1.5-3M13.5 7.5c0-1.5 1.5-1.5 1.5-3"/></svg>',
+    progress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 15l4-4 3 3 5-6"/></svg>',
+    hiku: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
+    steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5c1.7 0 2.5 2 2.2 4.5-.3 2-1.2 3.5-2.7 3.5S5 11 5.2 8.8C5.4 6.4 6.3 4.5 8 4.5zM6 15.5l3.7.5-.4 3a1.9 1.9 0 0 1-3.7-.5zM16 8.5c1.7 0 2.7 1.9 2.5 4.3-.2 2-1.2 3.4-2.6 3.4s-2.4-1.5-2.3-3.6c.1-2.4 .7-4.1 2.4-4.1zM14 19.2l3.6.6-.4 2.2"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 19.5s-7-4.3-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.1c0 5.1-7 9.4-7 9.4z"/><path d="M7.5 12h2.2l1.2-2 2 4 1.2-2h2.4" stroke-linecap="round"/></svg>',
+    flame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5a6 6 0 0 0 6-6c0-4-3-5.5-3.5-9.5-2.5 1.5-4 4-4 6.5-1-.5-1.5-1.5-1.7-2.8A7.3 7.3 0 0 0 6 14.5a6 6 0 0 0 6 6z"/></svg>',
+    camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2L9 5h6l1.3 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+    cloudoff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5h9.5a3.5 3.5 0 0 0 .8-6.9 5.5 5.5 0 0 0-9.4-3.3M5.3 10.4A4 4 0 0 0 7.5 18.5"/><path d="M4 4l16 16"/></svg>',
+    check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 4.5 21 19.5H3z"/><path d="M12 10v4M12 16.8v.2" stroke-linecap="round"/></svg>',
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>',
+    brand: '<svg viewBox="0 0 64 64"><rect x="6" y="34" width="14" height="24" rx="4" fill="var(--color-domain-eat)"/><rect x="25" y="20" width="14" height="38" rx="4" fill="var(--color-domain-train)"/><rect x="44" y="6" width="14" height="52" rx="4" fill="var(--color-domain-health)"/></svg>',
+  };
+  const chip = (kind, icon, text) => `<span class="chip chip-${kind}">${ICON[icon]}${text}</span>`;
+
+  document.querySelectorAll('[data-icon]').forEach(el => el.insertAdjacentHTML('afterbegin', ICON[el.dataset.icon]));
+
+  const screenEl = document.getElementById('screen');
+  const screenSelect = document.getElementById('screen-select');
+  const variantSelect = document.getElementById('variant-select');
+  const variantCtl = document.getElementById('variant-ctl');
+  const state = { screen: 'onb-welcome', variant: 'rich', goal: 'build', activity: 'moderate' };
+
+  const statusbar = (offline) => `<div class="statusbar"><span class="num">9:41</span><span>${offline ? 'Airplane mode' : '5G · 82%'}</span></div>`;
+  const dots = (n, total = 8) => `<div class="progress-dots" aria-label="Step ${n} of ${total}">${Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>`;
+  const back = (to) => `<button class="btn btn-ghost" data-go="${to}" aria-label="Back">${ICON.back}</button>`;
+
+  // ---------- onboarding ----------
+  const ONB = {
+    'onb-welcome': () => `
+      <div class="onb">
+        <div class="spacer"></div>
+        <div class="brandmark" aria-hidden="true">${ICON.brand}</div>
+        <h1 class="t-display">Train, eat and recover, all in one honest log.</h1>
+        <p class="t-body">Liftria keeps your workouts, meals and health data on this phone. No account, no cloud.</p>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-privacy">Get started</button>
+        <p class="t-small" style="text-align:center">Takes about 2 minutes. Every step after this is optional.</p>
+      </div>`,
+    'onb-privacy': () => `
+      <div class="onb">
+        <div class="row">${back('onb-welcome')}<div class="grow">${dots(1)}</div></div>
+        <h1 class="t-title">Your data stays on this phone</h1>
+        <div class="stack" style="gap:14px">
+          ${[['lock', 'health', 'Stored only on your S22', 'Workouts, meals, goals and health readings live in a local database. There is no Liftria server.'],
+             ['hiku', 'hiku', 'Hiku asks before it sends', 'Hiku uses the Claude API with your own key. Only the meal text or photo you choose is sent, and only when you tap Send.'],
+             ['cloudoff', 'eat', 'Works offline', 'Logging meals and workouts never needs internet. Only Hiku does.']]
+            .map(([i, c, t, d]) => `<div class="check"><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${ICON[i]}</span><div class="stack" style="gap:2px"><strong>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}
+        </div>
+        <div class="banner banner-warning">${ICON.warn}<span>Because nothing is in the cloud, losing this phone loses your data. Backup and export are planned for a later version.</span></div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-profile">I understand</button>
+      </div>`,
+    'onb-profile': () => `
+      <div class="onb">
+        <div class="row">${back('onb-privacy')}<div class="grow">${dots(2)}</div><button class="btn btn-ghost" data-go="onb-goals">Skip</button></div>
+        <div class="stack"><h1 class="t-title">About you</h1><p class="t-body">Used only to estimate a calorie target. You can change or delete this anytime.</p></div>
+        <div class="field"><label for="f-name">First name (optional)</label><input id="f-name" placeholder="What should Liftria call you?"></div>
+        <div class="two">
+          <div class="field"><label for="f-age">Age</label><div class="unit-input"><input id="f-age" inputmode="numeric" value="29"><span>yrs</span></div></div>
+          <div class="field"><label for="f-sex">Sex for the formula</label><div class="input" id="f-sex" style="display:flex;align-items:center;justify-content:space-between">Male ${ICON.chevron.replace('<svg', '<svg width="18" height="18"')}</div></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="f-h">Height</label><div class="unit-input"><input id="f-h" inputmode="numeric" value="178"><span>cm</span></div></div>
+          <div class="field"><label for="f-w">Weight</label><div class="unit-input"><input id="f-w" inputmode="decimal" value="76.5"><span>kg</span></div></div>
+        </div>
+        <p class="t-small">Units can be switched to lb and ft in Settings.</p>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-goals">Continue</button>
+      </div>`,
+    'onb-goals': () => {
+      const goals = [['lose', 'Lose fat', 'A moderate deficit, kept above a safe floor'], ['build', 'Build muscle', 'A small surplus with high protein'], ['maintain', 'Maintain', 'Hold your weight, improve performance']];
+      const acts = [['low', 'Mostly sitting'], ['moderate', 'On my feet some'], ['high', 'Active job or daily training']];
+      return `
+      <div class="onb">
+        <div class="row">${back('onb-profile')}<div class="grow">${dots(3)}</div><button class="btn btn-ghost" data-go="onb-target">Skip</button></div>
+        <h1 class="t-title">What are you working toward?</h1>
+        <div class="choice" role="group" aria-label="Goal">${goals.map(([k, t, s]) => `<button type="button" data-goal="${k}" aria-pressed="${state.goal === k}"><strong>${t}</strong><small>${s}</small></button>`).join('')}</div>
+        <span class="t-label">Day-to-day activity, outside workouts</span>
+        <div class="choice" role="group" aria-label="Activity">${acts.map(([k, t]) => `<button type="button" data-act="${k}" aria-pressed="${state.activity === k}"><strong>${t}</strong></button>`).join('')}</div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-target">Continue</button>
+      </div>`;
+    },
+    'onb-target': () => `
+      <div class="onb">
+        <div class="row">${back('onb-goals')}<div class="grow">${dots(4)}</div></div>
+        <h1 class="t-title">Your starting target</h1>
+        <div class="card">
+          <div class="card-head"><span class="t-label">Daily calories</span>${chip('estimate', 'approx', 'Estimate')}</div>
+          <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:52px">2,650</span><span class="t-small">kcal / day</span></div>
+          <div class="stack" style="gap:6px">
+            <div class="macro"><b>Protein</b><div class="bar"><i style="width:100%;background:var(--color-macro-protein)"></i></div><span class="num">155 g</span></div>
+            <div class="macro"><b>Carbs</b><div class="bar"><i style="width:100%;background:var(--color-macro-carbs)"></i></div><span class="num">340 g</span></div>
+            <div class="macro"><b>Fat</b><div class="bar"><i style="width:100%;background:var(--color-macro-fat)"></i></div><span class="num">75 g</span></div>
+          </div>
+          <p class="t-small">Mifflin-St Jeor from your profile × "on my feet some", plus about 10% for building muscle. Watch data will not change this until Liftria can verify it.</p>
+        </div>
+        <button class="btn btn-secondary btn-block">Set my own numbers</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-health">Use this target</button>
+      </div>`,
+    'onb-health': () => `
+      <div class="onb">
+        <div class="row">${back('onb-target')}<div class="grow">${dots(5)}</div><button class="btn btn-ghost" data-go="onb-key">Not now</button></div>
+        <div class="icon-tile" style="width:56px;height:56px;border-radius:18px;background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.heart}</div>
+        <h1 class="t-title">Read steps, heart rate and workouts from Health Connect</h1>
+        <p class="t-body">Liftria only reads. It never writes to Health Connect and never sends health data anywhere.</p>
+        <div class="card flat">
+          <span class="t-label">Android will ask about each of these</span>
+          <div class="list">
+            ${[['steps', 'Steps', 'Phone and watch counted separately'], ['heart', 'Heart rate', ''], ['train', 'Exercise sessions', ''], ['flame', 'Active, total and resting energy', ''], ['progress', 'Weight and body composition', ''], ['clock', 'Older history (beyond 30 days)', 'Separate permission']]
+              .map(([i, t, s]) => `<div class="list-item" style="min-height:44px;padding:8px 0"><span style="color:var(--color-text-secondary);width:20px;height:20px">${(ICON[i] || ICON.dot).replace('<svg', '<svg width="20" height="20"')}</span><div class="grow"><div style="font-size:14px">${t}</div>${s ? `<div class="t-small">${s}</div>` : ''}</div></div>`).join('')}
+          </div>
+        </div>
+        <p class="t-small">You can allow some and skip others. Liftria shows what each missing permission affects.</p>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-watch">Continue to Android permissions</button>
+      </div>`,
+    'onb-watch': () => `
+      <div class="onb">
+        <div class="row">${back('onb-health')}<div class="grow">${dots(6)}</div><button class="btn btn-ghost" data-go="onb-key">Skip</button></div>
+        <h1 class="t-title">Using a Galaxy Watch?</h1>
+        <p class="t-body">Your watch talks to Samsung Health, and Samsung Health shares with Health Connect. Liftria reads from there.</p>
+        <div class="card flat stack" style="gap:14px">
+          ${[['Open Samsung Health', 'On this phone, not the watch.'], ['Settings → Health Connect', 'Start from Samsung Health, not from the Health Connect app.'], ['Allow Samsung Health to write', 'Turn on steps, heart rate, exercise, sleep and energy.']]
+            .map(([t, d], i) => `<div class="check"><span class="tick num" style="background:var(--color-bg-raised);border:1px solid var(--color-border-strong);font-size:12px;font-weight:700">${i + 1}</span><div class="stack" style="gap:2px"><strong>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}
+        </div>
+        <div class="banner banner-warning">${ICON.clock.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span>Samsung Health shares data from the day you connect it, not your history. Expect the first watch readings within a few minutes.</span></div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-key">Done, continue</button>
+      </div>`,
+    'onb-key': () => `
+      <div class="onb">
+        <div class="row">${back('onb-watch')}<div class="grow">${dots(7)}</div><button class="btn btn-ghost" data-go="onb-done">Skip</button></div>
+        <div class="icon-tile" style="width:56px;height:56px;border-radius:18px;background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${ICON.hiku}</div>
+        <h1 class="t-title">Meet Hiku</h1>
+        <p class="t-body">Hiku turns a meal description or photo into editable calories and macros. It runs on Anthropic's Claude, using your own API key.</p>
+        <div class="field"><label for="f-key">Anthropic API key</label><input id="f-key" type="password" placeholder="sk-ant-…" autocomplete="off"></div>
+        <div class="stack t-small" style="gap:6px">
+          <span>• Stored in Android's secure keystore on this phone.</span>
+          <span>• Sends only what you choose, when you tap Send. Needs internet.</span>
+          <span>• You pay Anthropic directly. Set a spending limit in the Anthropic Console.</span>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-hiku btn-block" data-go="onb-done">Save key</button>
+        <p class="t-small" style="text-align:center">Everything else in Liftria works without a key.</p>
+      </div>`,
+    'onb-done': () => `
+      <div class="onb">
+        <div class="grow" style="flex:0">${dots(8)}</div>
+        <div class="spacer"></div>
+        <h1 class="t-display">You're set.</h1>
+        <div class="card flat stack" style="gap:12px">
+          ${[['done', 'Calorie target', 'Estimated 2,650 kcal'], ['done', 'Health Connect', 'Steps and heart rate allowed'], ['skip', 'Hiku', 'No key yet, add it later in Settings'], ['skip', 'Galaxy Watch', 'Waiting for first Samsung Health data']]
+            .map(([s, t, d]) => `<div class="check"><span class="tick" style="background:${s === 'done' ? 'var(--color-tint-health);color:var(--color-domain-health)' : 'var(--color-bg-raised);color:var(--color-text-tertiary)'}">${s === 'done' ? ICON.check : ICON.clock.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="14" height="14"')}</span><div class="stack" style="gap:0"><strong style="font-size:15px">${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="home" data-variant="first">Open Today</button>
+      </div>`,
+  };
+
+  // ---------- Today ----------
+  function ring(eaten, target) {
+    const r = 56, c = 2 * Math.PI * r, pct = target ? Math.min(eaten / target, 1) : 0;
+    return `<div class="ring" role="img" aria-label="${target ? `${eaten} of ${target} kilocalories eaten` : 'No target set'}">
+      <svg viewBox="0 0 132 132"><circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--color-bg-raised)" stroke-width="12"/>
+      ${target ? `<circle class="val" cx="66" cy="66" r="${r}" fill="none" stroke="var(--color-domain-eat)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>` : ''}</svg>
+      <div class="center"><span class="t-metric" style="font-size:30px">${eaten.toLocaleString('en-US')}</span><span class="t-small">kcal eaten</span></div></div>`;
+  }
+
+  function today(v) {
+    const first = v === 'first', offline = v === 'offline';
+    const eaten = first ? 0 : 1420, target = 2650;
+    const meals = first ? [] : [['Breakfast', 520, '07:40'], ['Lunch', 680, '13:05'], ['Snack', 220, '16:30']];
+    const greet = first ? 'Welcome to Liftria' : 'Good afternoon';
+
+    const nutrition = `
+      <section class="card" aria-labelledby="nut-h">
+        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-eat)"></span><h2 class="t-head" id="nut-h">Nutrition</h2></div>${chip('estimate', 'approx', 'Estimated target')}</div>
+        <div class="ring-wrap">${ring(eaten, target)}
+          <div class="stack" style="gap:8px">
+            <div><span class="t-metric" style="font-size:24px">${(target - eaten).toLocaleString('en-US')}</span> <span class="t-small">kcal left of 2,650</span></div>
+            ${[['Protein', first ? 0 : 96, 155, 'protein'], ['Carbs', first ? 0 : 152, 340, 'carbs'], ['Fat', first ? 0 : 41, 75, 'fat']]
+              .map(([n, g, t, k]) => `<div class="stack" style="gap:4px"><div class="row" style="justify-content:space-between;font-size:12px"><span style="color:var(--color-text-secondary)">${n}</span><span class="num">${g}/${t} g</span></div><div class="bar" style="height:6px"><i style="width:${(g / t) * 100}%;background:var(--color-macro-${k})"></i></div></div>`).join('')}
+          </div>
+        </div>
+        ${meals.length ? `<div class="list">${meals.map(([m, k, t]) => `<div class="list-item" style="min-height:48px;padding:8px 0"><div class="grow"><div style="font-weight:600;font-size:15px">${m}</div><div class="t-small num">${t}</div></div><span class="num" style="font-weight:600">${k} kcal</span></div>`).join('')}
+          <div class="list-item" style="min-height:48px;padding:8px 0"><div class="grow" style="color:var(--color-text-tertiary)">Dinner, not logged yet</div></div></div>`
+          : `<p class="t-small">Nothing logged today. Your first meal fills the ring.</p>`}
+        <div class="row"><button class="btn btn-primary btn-sm grow">Log a meal</button>${!offline && v !== 'nokey' ? `<button class="btn btn-secondary btn-sm" aria-label="Log a meal by photo with Hiku">${ICON.camera.replace('<svg', '<svg width="18" height="18"')}Photo</button>` : ''}</div>
+      </section>`;
+
+    const training = first ? `
+      <section class="card" aria-labelledby="tr-h">
+        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-train)"></span><h2 class="t-head" id="tr-h">Training</h2></div></div>
+        <p class="t-small">No workouts yet. Start an empty session or build a template you can repeat.</p>
+        <div class="row"><button class="btn btn-train btn-sm grow">Start empty workout</button><button class="btn btn-secondary btn-sm">Templates</button></div>
+      </section>` : `
+      <section class="card" aria-labelledby="tr-h">
+        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-train)"></span><h2 class="t-head" id="tr-h">Training</h2></div><span class="t-small">Planned today</span></div>
+        <div class="row"><div class="grow"><div style="font-family:var(--font-display);font-stretch:108%;font-weight:800;font-size:22px">Upper A</div><div class="t-small">6 exercises · about 55 min · last done Thu</div></div></div>
+        <button class="btn btn-train btn-block">Start workout</button>
+        <p class="t-small">Works offline and without the watch.</p>
+      </section>`;
+
+    let activityBody;
+    if (v === 'hcoff') {
+      activityBody = `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero. Logging still works.</span></div>
+        <div class="row"><button class="btn btn-secondary btn-sm grow">Turn on</button><button class="btn btn-ghost btn-sm">Not now</button></div>`;
+    } else if (first) {
+      activityBody = `<div class="list-item" style="border:0;padding:0"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.steps}</span><div class="grow"><div class="row" style="gap:8px"><span class="t-metric" style="font-size:24px">1,208</span><span class="t-small">steps</span></div><div class="row wrap" style="gap:6px;margin-top:4px">${chip('phone', 'phone', 'Phone')}<span class="t-small">updated just now</span></div></div></div>
+        <div class="banner banner-offline">${ICON.watch.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span>No watch data yet. Samsung Health shares from the day you connect. <u>Check setup</u></span></div>`;
+    } else {
+      const stale = v === 'stale';
+      activityBody = `
+        <div class="list">
+          <div class="list-item" style="padding-top:0"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.steps}</span><div class="grow"><div class="row" style="gap:8px"><span class="t-metric" style="font-size:24px">6,214</span><span class="t-small">steps</span></div><div class="row wrap" style="gap:6px;margin-top:4px">${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '2 d ago') : '<span class="t-small">12 min ago</span>'}</div></div></div>
+          <div class="list-item"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.heart}</span><div class="grow"><div class="row" style="gap:8px"><span class="t-metric" style="font-size:24px">72</span><span class="t-small">bpm, latest</span></div><div class="row wrap" style="gap:6px;margin-top:4px">${chip('measured', 'dot', 'Samsung Health')}${stale ? chip('stale', 'clock', '2 d ago') : chip('pending', 'clock', 'Watch unverified')}</div></div></div>
+          <div class="list-item"><span class="icon-tile" style="background:var(--color-bg-raised);color:var(--color-text-tertiary)">${ICON.flame}</span><div class="grow"><div style="font-weight:600;font-size:15px">Energy burned</div><div class="t-small">No measured source yet. Health Connect only has its own estimate, so Liftria doesn't show it as data.</div></div></div>
+        </div>
+        ${stale ? `<div class="banner banner-warning">${ICON.warn}<span>Nothing new from Samsung Health for 2 days. Open Samsung Health on the phone to sync, then pull to refresh.</span></div>` : ''}`;
+    }
+    const activity = `
+      <section class="card" aria-labelledby="ac-h">
+        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-health)"></span><h2 class="t-head" id="ac-h">Activity</h2></div><button class="btn btn-ghost btn-sm" aria-label="Activity sources">Sources ${ICON.chevron.replace('<svg', '<svg width="16" height="16"')}</button></div>
+        ${activityBody}
+      </section>`;
+
+    let hikuCard;
+    if (offline) hikuCard = `<section class="card flat" aria-labelledby="hk-h"><div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-hiku)"></span><h2 class="t-head" id="hk-h">Hiku</h2></div>${chip('off', 'off', 'Needs internet')}</div><p class="t-small">You're offline. Log meals manually now; Hiku will be ready when you reconnect.</p></section>`;
+    else if (v === 'nokey' || first) hikuCard = `<section class="card flat" aria-labelledby="hk-h"><div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-hiku)"></span><h2 class="t-head" id="hk-h">Hiku</h2></div>${chip('off', 'lock', 'No API key')}</div><p class="t-small">Add your Anthropic API key to estimate meals from a description or photo. Everything else works without it.</p><button class="btn btn-secondary btn-sm">Add API key</button></section>`;
+    else hikuCard = `<section class="card" style="background:linear-gradient(160deg,var(--color-tint-hiku),transparent 70%),var(--color-bg-surface)" aria-labelledby="hk-h"><div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-hiku)"></span><h2 class="t-head" id="hk-h">Hiku</h2></div><span class="t-small">Claude · your key</span></div><p style="margin:0;font-size:15px">Dinner still open. Snap it and I'll estimate it for you to check before saving.</p><div class="row"><button class="btn btn-hiku btn-sm grow">${ICON.camera.replace('<svg', '<svg width="18" height="18"')}Photo of dinner</button><button class="btn btn-secondary btn-sm">Describe it</button></div></section>`;
+
+    const week = first ? '' : `
+      <section class="card flat" aria-labelledby="wk-h">
+        <div class="card-head"><h2 class="t-head" id="wk-h">This week</h2><span class="t-small">3 workouts · 6 of 7 days logged</span></div>
+        <div class="week" role="img" aria-label="Monday to Sunday: meals logged six days, workouts Monday, Wednesday and Thursday">
+          ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => { const w = [0, 2, 3].includes(i), l = i !== 4, t = i === 1; return `<div class="day"><span>${d}</span><span class="pip ${t ? 'today' : ''}" style="${w ? 'background:var(--color-tint-train)' : ''}">${l ? `<i style="background:${w ? 'var(--color-domain-train)' : 'var(--color-domain-eat)'}"></i>` : ''}</span></div>`; }).join('')}
+        </div>
+      </section>`;
+
+    const setup = first ? `
+      <section class="card flat" aria-labelledby="su-h">
+        <h2 class="t-head" id="su-h">Getting started</h2>
+        ${[['done', 'Set a calorie target'], ['todo', 'Log your first meal'], ['todo', 'Plan a first workout'], ['skip', 'Add a Hiku API key (optional)']]
+          .map(([s, t]) => `<div class="check"><span class="tick" style="background:${s === 'done' ? 'var(--color-tint-health);color:var(--color-domain-health)' : 'var(--color-bg-raised);color:var(--color-text-tertiary);border:1px solid var(--color-border-strong)'}">${s === 'done' ? ICON.check : ''}</span><span style="font-size:15px;${s === 'done' ? 'color:var(--color-text-tertiary);text-decoration:line-through' : ''}">${t}</span></div>`).join('')}
+      </section>` : '';
+
+    return `
+      ${statusbar(offline)}
+      <div class="topbar">
+        <div class="stack" style="gap:0"><span class="t-small num">Tue 21 Oct</span><span style="font-family:var(--font-display);font-stretch:110%;font-weight:800;font-size:26px;line-height:1.15">${greet}</span></div>
+        <button class="avatar" aria-label="Profile and settings" data-go="tab-settings">L</button>
+      </div>
+      <div class="scroll"><div class="page screen-anim">
+        ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Logging, workouts and your history work as usual. Hiku needs internet.</span></div>` : ''}
+        ${setup}${nutrition}${training}${activity}${hikuCard}${week}
+      </div></div>`;
+  }
+
+  // ---------- energy states sheet ----------
+  function energyStates() {
+    const card = (title, chipHtml, metric, body) => `<section class="card"><div class="card-head"><h2 class="t-head">${title}</h2>${chipHtml}</div>${metric ? `<div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:32px">${metric}</span><span class="t-small">kcal</span></div>` : ''}<p class="t-small">${body}</p></section>`;
+    return `${statusbar(false)}
+      <div class="topbar"><div class="stack" style="gap:0"><span class="t-small">Design system</span><span style="font-family:var(--font-display);font-stretch:110%;font-weight:800;font-size:24px">Energy states</span></div></div>
+      <div class="scroll"><div class="page screen-anim">
+        <p class="t-body">The same "active energy" slot, in each state the data can be in. Never merge these, never add active, resting and total.</p>
+        ${card('Measured', chip('measured', 'dot', 'Samsung Health'), '412', 'Active energy written by Samsung Health for today, read through Health Connect. Shown with its source and update time.')}
+        ${card('Measured zero', chip('measured', 'dot', 'Samsung Health'), '0', 'A real source reported 0 for this window. Rare, but different from missing; shown as 0 with its source.')}
+        ${card('Estimate, not used', chip('estimate', 'approx', 'Health Connect estimate'), '', 'Health Connect returned 1,565 kcal with no contributing app (seen on the S22 test). Liftria hides the number by default and explains why.')}
+        ${card('No source', chip('off', 'off', 'No data'), '', 'Nothing has reported energy. Shown as a dash and a setup hint, never as 0.')}
+        ${card('Permission denied', chip('off', 'lock', 'Not allowed'), '', 'You didn\'t allow active energy. Shown with a link to Health Connect permissions, not as missing data.')}
+        ${card('Pending verification', chip('pending', 'clock', 'Pending'), '', 'Feature designed but not yet proven on your devices (Phase 0). Hidden from totals until verified.')}
+      </div></div>`;
+  }
+
+  // ---------- placeholders for later milestones ----------
+  const LATER = {
+    'tab-train': ['train', 'Train', 'Gym, workouts, templates, the active workout and records are designed in milestone 1B.'],
+    'tab-eat': ['eat', 'Eat', 'The food diary, local food search, portions and targets are designed in milestone 1C.'],
+    'tab-progress': ['health', 'Progress', 'Trends, body measurements and Health Connect details are designed in milestone 1D.'],
+    'tab-hiku': ['hiku', 'Hiku', 'Chat, photo meal analysis and confirm-before-saving are designed in milestone 1C.'],
+    'tab-settings': ['health', 'Settings', 'Profile, targets, API key, privacy and data management are designed in milestone 1D.'],
+  };
+  const later = (id) => {
+    const [c, t, d] = LATER[id];
+    const icon = { train: ICON.train, eat: ICON.eat, health: ICON.progress, hiku: ICON.hiku }[c];
+    return `${statusbar(false)}<div class="topbar">${id === 'tab-settings' ? back('home') : '<span></span>'}</div><div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${icon}</span><h1 class="t-title">${t}</h1><p class="t-body" style="max-width:260px">${d}</p></div>`;
+  };
+
+  const NAV = [['home', 'Today', 'home'], ['tab-train', 'Train', 'train'], ['tab-eat', 'Eat', 'eat'], ['tab-progress', 'Progress', 'progress'], ['tab-hiku', 'Hiku', 'hiku']];
+  const nav = (active) => `<nav class="nav" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" ${active === id ? 'aria-current="page"' : ''}><span class="pill">${ICON[icon]}</span>${label}</button>`).join('')}</nav>`;
+
+  const SCREENS = [
+    ['Onboarding', [['onb-welcome', '1 · Welcome'], ['onb-privacy', '2 · Privacy and local storage'], ['onb-profile', '3 · Profile (optional)'], ['onb-goals', '4 · Goal and activity'], ['onb-target', '5 · Estimated target'], ['onb-health', '6 · Health Connect'], ['onb-watch', '7 · Galaxy Watch guidance'], ['onb-key', '8 · Hiku API key (optional)'], ['onb-done', '9 · Done']]],
+    ['App', [['home', 'Today (pick a state below)'], ['energy', 'Energy states sheet'], ['tab-train', 'Train (1B)'], ['tab-eat', 'Eat (1C)'], ['tab-progress', 'Progress (1D)'], ['tab-hiku', 'Hiku (1C)']]],
+  ];
+  screenSelect.innerHTML = SCREENS.map(([g, items]) => `<optgroup label="${g}">${items.map(([id, l]) => `<option value="${id}">${l}</option>`).join('')}</optgroup>`).join('');
+
+  function render() {
+    const s = state.screen;
+    let html;
+    if (ONB[s]) html = statusbar(false) + ONB[s]();
+    else if (s === 'home') html = today(state.variant) + nav('home');
+    else if (s === 'energy') html = energyStates() + nav('home');
+    else html = later(s) + (s === 'tab-settings' ? '' : nav(s));
+    screenEl.innerHTML = html;
+    screenSelect.value = s === 'tab-settings' ? 'home' : s;
+    variantCtl.hidden = s !== 'home';
+    variantSelect.value = state.variant;
+    try { localStorage.setItem('liftria-1a', JSON.stringify({ screen: s, variant: state.variant })); } catch (e) { /* storage may be blocked */ }
+  }
+
+  screenEl.addEventListener('click', (e) => {
+    const goal = e.target.closest('[data-goal]'), act = e.target.closest('[data-act]'), go = e.target.closest('[data-go]');
+    if (goal) { state.goal = goal.dataset.goal; render(); return; }
+    if (act) { state.activity = act.dataset.act; render(); return; }
+    if (go) { if (go.dataset.variant) state.variant = go.dataset.variant; state.screen = go.dataset.go; render(); }
+  });
+  screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; render(); });
+  variantSelect.addEventListener('change', () => { state.variant = variantSelect.value; render(); });
+
+  const themeBtns = document.querySelectorAll('[data-theme-btn]');
+  function setTheme(t) {
+    if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+    themeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === t)));
+  }
+  themeBtns.forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeBtn)));
+
+  try { const saved = JSON.parse(localStorage.getItem('liftria-1a') || 'null'); if (saved) Object.assign(state, saved); } catch (e) { /* ignore */ }
+  const hash = location.hash.slice(1);
+  if (hash === 'today') state.screen = 'home'; else if (hash === 'energy') state.screen = 'energy'; else if (hash === 'onboarding') state.screen = 'onb-welcome';
+  render();
+})();
+</script>
