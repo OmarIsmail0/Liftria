@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Liftria Look Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a swipeable row of four phones, one per visual direction; the board itself stays neutral. */
+:root {
+  --board-bg: #0B0C10; --board-fg: #E9ECF1; --board-muted: #9AA3B0; --board-line: #2A2F38; --board-accent: #B9AEFF;
+  --font-display: "Archivo", "Roboto Condensed", system-ui, sans-serif;
+  --font-body: "Figtree", "Roboto", system-ui, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --board-bg: #EDEFF3; --board-fg: #12151B; --board-muted: #535C6A; --board-line: #CDD3DC; --board-accent: #5B4BD0; color-scheme: light; }
+}
+:root[data-theme="light"] { --board-bg: #EDEFF3; --board-fg: #12151B; --board-muted: #535C6A; --board-line: #CDD3DC; --board-accent: #5B4BD0; color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--board-bg); color: var(--board-fg); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--board-accent); outline-offset: 3px; }
+
+.wrap { padding-block: 28px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; max-width: 1640px; margin: 0 auto; }
+.intro { display: grid; gap: 6px; max-width: 62ch; }
+.intro .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--board-muted); }
+.intro h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(26px, 4vw, 36px); line-height: 1.05; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.intro p { margin: 0; color: var(--board-muted); font-size: 15px; line-height: 1.5; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs button { border: 1px solid var(--board-line); background: transparent; border-radius: 999px; padding: 8px 14px; min-height: 44px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--board-muted); }
+.tabs button[aria-pressed="true"] { color: var(--board-fg); border-color: var(--board-fg); }
+
+.rail { display: grid; grid-auto-flow: column; grid-auto-columns: 360px; gap: 28px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; scrollbar-width: thin; }
+.slot { scroll-snap-align: center; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.slot header { display: grid; gap: 2px; }
+.slot header b { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 20px; }
+.slot header span { font-size: 13px; color: var(--board-muted); line-height: 1.4; }
+@media (max-width: 760px) { .rail { grid-auto-columns: min(360px, 88vw); gap: 16px; } }
+
+/* ---------- phone shell ---------- */
+.phone { width: 100%; aspect-ratio: 360 / 760; max-width: 100%; border-radius: 40px; padding: 8px; background: #040506; box-shadow: 0 24px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.06); }
+.app { position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--fg); isolation: isolate; }
+.app .ambient { position: absolute; inset: 0; z-index: -1; background: var(--ambient); }
+.app .status { height: 30px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.app .body { flex: 1; overflow: hidden; padding: 4px 14px 0; display: grid; gap: 12px; align-content: start; }
+.app .top { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px 2px; }
+.app .date { font-size: 12px; color: var(--muted); }
+.app .greet { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 23px; line-height: 1.1; }
+.app .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--chip-bg); border: 1px solid var(--edge); }
+
+.app .card { border-radius: var(--radius); padding: 14px; display: grid; gap: 11px; background: var(--card); border: 1px solid var(--edge); box-shadow: var(--card-shadow); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); position: relative; }
+.app .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.app .title { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-stretch: 104%; font-weight: 700; font-size: 15px; }
+.app .dot { width: 8px; height: 8px; border-radius: 50%; }
+.app .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; background: var(--chip-bg); color: var(--muted); border: 1px solid var(--edge); }
+.app .chip.dash { background: transparent; border-style: dashed; }
+.app .chip.ph::before { content: ""; width: 6px; height: 9px; border: 1.4px solid currentColor; border-radius: 2px; }
+.app .chip.src { color: var(--health); }
+.app .chip.src::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.app .chip.pend { color: var(--hiku); }
+
+.ringrow { display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center; }
+.ring { position: relative; width: 112px; height: 112px; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.metric { font-family: var(--font-display); font-stretch: 116%; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+.small { font-size: 11.5px; color: var(--muted); }
+.macros { display: grid; gap: 7px; }
+.macro { display: grid; gap: 4px; }
+.macro .l { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.macro .l b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.track { height: 6px; border-radius: 999px; background: var(--track); overflow: hidden; }
+.track i { display: block; height: 100%; border-radius: inherit; }
+
+.btns { display: flex; gap: 8px; }
+.btn { flex: 1; min-height: 44px; border-radius: 999px; border: 0; font-weight: 700; font-size: 13.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.primary { background: var(--btn-bg); color: var(--btn-fg); box-shadow: var(--btn-shadow); }
+.btn.ghost { flex: 0 0 auto; padding: 0 16px; background: var(--btn2-bg); color: var(--fg); border: 1px solid var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); }
+.btn.train { background: var(--train-btn); color: var(--train-btn-fg); box-shadow: var(--btn-shadow); }
+
+.row { display: flex; align-items: center; gap: 10px; }
+.tile { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; flex: none; }
+.tile svg { width: 18px; height: 18px; }
+.sub { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 3px; }
+
+.nav { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); margin: 8px 10px 10px; padding: 6px; border-radius: 24px; background: var(--nav); border: 1px solid var(--edge); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4); box-shadow: var(--card-shadow); }
+.nav span { display: grid; justify-items: center; gap: 2px; font-size: 10px; font-weight: 600; color: var(--muted); padding: 4px 0; border-radius: 18px; }
+.nav span svg { width: 20px; height: 20px; }
+.nav span.on { color: var(--fg); background: var(--nav-on); }
+
+/* ---------- direction 1: Subtle glass (current) ---------- */
+.d1 { --bg: #0F1216; --fg: #EEF1F5; --muted: #8A94A3; --edge: rgba(255,255,255,.10); --card: linear-gradient(180deg, rgba(255,255,255,.07), transparent 38%), rgba(24,29,37,.76);
+  --card-shadow: 0 12px 32px rgba(0,0,0,.3); --blur: blur(22px) saturate(1.35); --radius: 22px; --chip-bg: rgba(255,255,255,.05); --track: rgba(255,255,255,.09);
+  --btn-bg: #EEF1F5; --btn-fg: #0F1216; --btn-shadow: none; --btn2-bg: transparent; --train-btn: #FF8A5C; --train-btn-fg: #1A0D06;
+  --nav: rgba(24,29,37,.7); --nav-on: rgba(255,255,255,.08);
+  --eat: #F2C14E; --train: #FF8A5C; --health: #4CC3A6; --hiku: #A99CFF; --protein: #7FB2FF; --fat: #F08FB0;
+  --ambient: radial-gradient(70% 38% at 0% 0%, rgba(255,138,92,.40), transparent 72%), radial-gradient(65% 36% at 100% 28%, rgba(169,156,255,.36), transparent 72%), radial-gradient(70% 40% at 0% 72%, rgba(76,195,166,.30), transparent 72%); }
+
+/* ---------- direction 2: Aurora (bold, deep, vivid) ---------- */
+.d2 { --bg: #06070C; --fg: #FFFFFF; --muted: rgba(255,255,255,.70); --edge: rgba(255,255,255,.16); --card: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.04) 45%, rgba(255,255,255,.02)), rgba(14,14,28,.42);
+  --card-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 20px 50px rgba(0,0,0,.45); --blur: blur(30px) saturate(1.7); --radius: 26px; --chip-bg: rgba(255,255,255,.10); --track: rgba(255,255,255,.14);
+  --btn-bg: linear-gradient(135deg, #FFFFFF, #E6E2FF); --btn-fg: #0B0A1A; --btn-shadow: 0 8px 24px rgba(160,140,255,.35); --btn2-bg: rgba(255,255,255,.10);
+  --train-btn: linear-gradient(135deg, #FF9A6B, #FF5E7E); --train-btn-fg: #1B0710;
+  --nav: rgba(18,18,34,.45); --nav-on: rgba(255,255,255,.14);
+  --eat: #FFD36B; --train: #FF8F6B; --health: #4FE3C1; --hiku: #C2B6FF; --protein: #8EC0FF; --fat: #FF9CC2;
+  --ambient: radial-gradient(55% 32% at 15% 8%, rgba(255,94,126,.75), transparent 70%), radial-gradient(60% 34% at 95% 30%, rgba(123,92,255,.85), transparent 70%), radial-gradient(60% 34% at 5% 70%, rgba(25,194,160,.65), transparent 70%), radial-gradient(55% 30% at 90% 95%, rgba(255,190,80,.45), transparent 70%); }
+
+/* ---------- direction 3: Frost (light, airy, calm) ---------- */
+.d3 { --bg: #EEF0F7; --fg: #0E1220; --muted: #4F586A; --edge: rgba(255,255,255,.9); --card: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55));
+  --card-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 14px 34px rgba(60,70,120,.14); --blur: blur(30px) saturate(1.6); --radius: 28px; --chip-bg: rgba(255,255,255,.7); --track: rgba(14,18,32,.08);
+  --btn-bg: #0E1220; --btn-fg: #FFFFFF; --btn-shadow: 0 8px 20px rgba(14,18,32,.22); --btn2-bg: rgba(255,255,255,.6); --train-btn: #E2582E; --train-btn-fg: #FFFFFF;
+  --nav: rgba(255,255,255,.6); --nav-on: rgba(14,18,32,.07);
+  --eat: #A87400; --train: #C9471E; --health: #127A62; --hiku: #5A48D6; --protein: #2E66CF; --fat: #B53B6C;
+  --ambient: radial-gradient(70% 40% at 0% 0%, rgba(255,170,140,.75), transparent 70%), radial-gradient(70% 40% at 100% 25%, rgba(170,150,255,.70), transparent 70%), radial-gradient(70% 40% at 0% 75%, rgba(120,225,200,.65), transparent 70%), radial-gradient(60% 35% at 100% 100%, rgba(255,215,130,.6), transparent 70%); }
+
+/* ---------- direction 4: Neon rim (dark, glowing edges, less blur) ---------- */
+.d4 { --bg: #040507; --fg: #F4F6F9; --muted: #8E97A5; --edge: rgba(255,255,255,.07); --card: linear-gradient(180deg, #101319, #0B0D11);
+  --card-shadow: 0 0 0 1px rgba(255,255,255,.03), 0 18px 40px rgba(0,0,0,.6); --blur: none; --radius: 20px; --chip-bg: rgba(255,255,255,.05); --track: rgba(255,255,255,.08);
+  --btn-bg: #F4F6F9; --btn-fg: #040507; --btn-shadow: 0 0 24px rgba(244,246,249,.18); --btn2-bg: transparent; --train-btn: #FF8A5C; --train-btn-fg: #1A0D06;
+  --nav: rgba(12,14,18,.85); --nav-on: rgba(255,255,255,.07);
+  --eat: #FFCB52; --train: #FF8A5C; --health: #3FE0B8; --hiku: #B3A6FF; --protein: #84B8FF; --fat: #FF94BC;
+  --ambient: radial-gradient(80% 30% at 50% -5%, rgba(255,138,92,.16), transparent 70%); }
+.d4 .card::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: linear-gradient(140deg, var(--rim, rgba(255,255,255,.25)), transparent 45%, transparent 70%, rgba(255,255,255,.06));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+.d4 .card.nut { --rim: var(--eat); box-shadow: 0 0 30px rgba(255,203,82,.10), 0 18px 40px rgba(0,0,0,.6); }
+.d4 .card.trn { --rim: var(--train); box-shadow: 0 0 30px rgba(255,138,92,.10), 0 18px 40px rgba(0,0,0,.6); }
+.d4 .card.act { --rim: var(--health); box-shadow: 0 0 30px rgba(63,224,184,.10), 0 18px 40px rgba(0,0,0,.6); }
+.d4 .ring circle.v { filter: drop-shadow(0 0 6px rgba(255,203,82,.55)); }
+
+.verdict { font-size: 13px; color: var(--board-muted); border-left: 3px solid var(--board-line); padding-left: 10px; line-height: 1.45; }
+.verdict b { color: var(--board-fg); }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <span class="eyebrow">Phase 1A · look directions</span>
+    <h1>Four ways Liftria could look</h1>
+    <p>Same Today screen, same data, four visual styles. Swipe through, then pick one, or mix them ("2's background with 4's edges").</p>
+  </div>
+  <div class="tabs" role="group" aria-label="Jump to a direction" id="tabs"></div>
+  <div class="rail" id="rail"></div>
+</div>
+
+<script>
+(() => {
+  const DIRS = [
+    ['d1', '1 · Subtle glass', 'What you saw. Graphite, faint colored glow, quiet frosted cards.', 'Calm and very readable, but the glass barely shows.'],
+    ['d2', '2 · Aurora', 'Deep night with vivid color glows; strong frost, glossy edges, gradient buttons.', 'Most "glassy" and eye-catching. Busier; colors behind cards shift as you scroll.'],
+    ['d3', '3 · Frost', 'Bright and airy, like frosted glass on a pastel morning sky.', 'Fresh and premium; the light-mode version of glass. Less dramatic at night.'],
+    ['d4', '4 · Neon rim', 'Near-black with crisp cards whose edges glow in each section color. Little blur.', 'Sharp, sporty, watch-face feel. Glows, but isn\'t really frosted glass.'],
+  ];
+  const I = {
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>',
+    train: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
+    eat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M9 7.5c0-1.5 1.5-1.5 1.5-3M13.5 7.5c0-1.5 1.5-1.5 1.5-3"/></svg>',
+    prog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 15l4-4 3 3 5-6"/></svg>',
+    hiku: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg>',
+    steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5c1.7 0 2.5 2 2.2 4.5-.3 2-1.2 3.5-2.7 3.5S5 11 5.2 8.8C5.4 6.4 6.3 4.5 8 4.5zM16 8.5c1.7 0 2.7 1.9 2.5 4.3-.2 2-1.2 3.4-2.6 3.4s-2.4-1.5-2.3-3.6c.1-2.4.7-4.1 2.4-4.1z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 19.5s-7-4.3-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.1c0 5.1-7 9.4-7 9.4z"/></svg>',
+    cam: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2L9 5h6l1.3 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>',
+  };
+  const ring = (id) => {
+    const r = 47, c = 2 * Math.PI * r, off = c * (1 - 1420 / 2650);
+    const grad = id === 'd2' ? `<defs><linearGradient id="g-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD36B"/><stop offset="1" stop-color="#FF7A8A"/></linearGradient></defs>` : '';
+    const stroke = id === 'd2' ? `url(#g-${id})` : 'var(--eat)';
+    return `<div class="ring" role="img" aria-label="1,420 of 2,650 kilocalories eaten"><svg viewBox="0 0 112 112">${grad}<circle cx="56" cy="56" r="${r}" fill="none" stroke="var(--track)" stroke-width="10"/><circle class="v" cx="56" cy="56" r="${r}" fill="none" stroke="${stroke}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><div class="c"><span class="metric" style="font-size:25px">1,420</span><span class="small">kcal eaten</span></div></div>`;
+  };
+  const macro = (n, g, t, v) => `<div class="macro"><div class="l"><span>${n}</span><b>${g}/${t} g</b></div><div class="track"><i style="width:${g / t * 100}%;background:var(--${v})"></i></div></div>`;
+  const screen = (id) => `
+    <div class="app ${id}"><div class="ambient"></div>
+      <div class="status"><span>9:41</span><span>5G · 82%</span></div>
+      <div class="body">
+        <div class="top"><div><div class="date">Tue 21 Oct</div><div class="greet">Good afternoon</div></div><span class="avatar">L</span></div>
+        <section class="card nut">
+          <div class="head"><span class="title"><i class="dot" style="background:var(--eat)"></i>Nutrition</span><span class="chip dash">≈ Estimated target</span></div>
+          <div class="ringrow">${ring(id)}<div class="macros"><div><span class="metric" style="font-size:20px">1,230</span> <span class="small">kcal left</span></div>${macro('Protein', 96, 155, 'protein')}${macro('Carbs', 152, 340, 'eat')}${macro('Fat', 41, 75, 'fat')}</div></div>
+          <div class="btns"><span class="btn primary">Log a meal</span><span class="btn ghost">${I.cam}Photo</span></div>
+        </section>
+        <section class="card trn">
+          <div class="head"><span class="title"><i class="dot" style="background:var(--train)"></i>Training</span><span class="small">Planned today</span></div>
+          <div class="row"><div style="flex:1"><div class="metric" style="font-size:20px;font-stretch:108%">Upper A</div><div class="small" style="margin-top:4px">6 exercises · about 55 min</div></div><span class="btn train" style="flex:0 0 auto;padding:0 18px">Start</span></div>
+        </section>
+        <section class="card act">
+          <div class="head"><span class="title"><i class="dot" style="background:var(--health)"></i>Activity</span></div>
+          <div class="row"><span class="tile" style="background:color-mix(in srgb, var(--health) 16%, transparent);color:var(--health)">${I.steps}</span><div><span class="metric" style="font-size:19px">6,214</span> <span class="small">steps</span><div class="sub"><span class="chip ph">Phone</span><span class="small">12 min ago</span></div></div></div>
+          <div class="row"><span class="tile" style="background:color-mix(in srgb, var(--health) 16%, transparent);color:var(--health)">${I.heart}</span><div><span class="metric" style="font-size:19px">72</span> <span class="small">bpm</span><div class="sub"><span class="chip src">Samsung Health</span><span class="chip pend">Watch unverified</span></div></div></div>
+        </section>
+      </div>
+      <nav class="nav" aria-hidden="true"><span class="on">${I.home}Today</span><span>${I.train}Train</span><span>${I.eat}Eat</span><span>${I.prog}Progress</span><span>${I.hiku}Hiku</span></nav>
+    </div>`;
+
+  const rail = document.getElementById('rail'), tabs = document.getElementById('tabs');
+  rail.innerHTML = DIRS.map(([id, name, what, verdict]) => `
+    <article class="slot" id="slot-${id}" aria-label="${name}">
+      <header><b>${name}</b><span>${what}</span></header>
+      <div class="phone">${screen(id)}</div>
+      <p class="verdict"><b>Trade-off:</b> ${verdict}</p>
+    </article>`).join('');
+  tabs.innerHTML = DIRS.map(([id, name], i) => `<button type="button" data-slot="${id}" aria-pressed="${i === 0}">${name}</button>`).join('');
+  const buttons = [...tabs.querySelectorAll('button')];
+  tabs.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-slot]'); if (!b) return;
+    document.getElementById(`slot-${b.dataset.slot}`).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+  });
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting && en.intersectionRatio > 0.6) { const id = en.target.id.slice(5); buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.slot === id))); } });
+  }, { root: rail, threshold: [0.6] });
+  rail.querySelectorAll('.slot').forEach(s => io.observe(s));
+})();
+</script>
+
+</body>
+</html>
