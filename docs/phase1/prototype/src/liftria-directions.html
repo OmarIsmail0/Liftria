@@ -129,6 +129,23 @@ button { font: inherit; color: inherit; }
 .d4 .card.act { --rim: var(--health); box-shadow: 0 0 30px rgba(63,224,184,.10), 0 18px 40px rgba(0,0,0,.6); }
 .d4 .ring circle.v { filter: drop-shadow(0 0 6px rgba(255,203,82,.55)); }
 
+/* ---------- direction 5: Aurora rim (recommended hybrid) ---------- */
+.d5 { --bg: #06070C; --fg: #FFFFFF; --muted: rgba(255,255,255,.72); --edge: rgba(255,255,255,.08);
+  --card: linear-gradient(165deg, rgba(255,255,255,.10), rgba(255,255,255,.03) 45%, rgba(255,255,255,.015)), rgba(12,13,24,.58);
+  --card-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(0,0,0,.5); --blur: blur(28px) saturate(1.6); --radius: 24px; --chip-bg: rgba(255,255,255,.08); --track: rgba(255,255,255,.12);
+  --btn-bg: #F4F6FA; --btn-fg: #07080F; --btn-shadow: 0 6px 20px rgba(255,255,255,.12); --btn2-bg: rgba(255,255,255,.08);
+  --train-btn: linear-gradient(135deg, #FF9A6B, #FF6A6A); --train-btn-fg: #1B0710;
+  --nav: rgba(14,14,26,.55); --nav-on: rgba(255,255,255,.12);
+  --eat: #FFCF5E; --train: #FF8F6B; --health: #46E0BC; --hiku: #BDB1FF; --protein: #8CBEFF; --fat: #FF9AC0;
+  --ambient: radial-gradient(55% 32% at 12% 6%, rgba(255,94,126,.45), transparent 70%), radial-gradient(60% 34% at 98% 32%, rgba(123,92,255,.50), transparent 70%), radial-gradient(60% 34% at 2% 72%, rgba(25,194,160,.38), transparent 70%), radial-gradient(55% 30% at 92% 96%, rgba(255,190,80,.26), transparent 70%); }
+.d5 .card::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1.2px; background: linear-gradient(140deg, var(--rim, rgba(255,255,255,.3)), color-mix(in srgb, var(--rim, #fff) 25%, transparent) 30%, transparent 55%, rgba(255,255,255,.08));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+.d5 .card.nut { --rim: var(--eat); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 34px rgba(255,207,94,.12), 0 18px 44px rgba(0,0,0,.5); }
+.d5 .card.trn { --rim: var(--train); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 34px rgba(255,143,107,.12), 0 18px 44px rgba(0,0,0,.5); }
+.d5 .card.act { --rim: var(--health); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 34px rgba(70,224,188,.12), 0 18px 44px rgba(0,0,0,.5); }
+.d5 .ring circle.v { filter: drop-shadow(0 0 5px rgba(255,207,94,.45)); }
+.slot.rec header b::after { content: "Recommended"; margin-left: 8px; font-family: var(--font-body); font-stretch: normal; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--board-accent); color: var(--board-accent); vertical-align: 3px; }
+
 .verdict { font-size: 13px; color: var(--board-muted); border-left: 3px solid var(--board-line); padding-left: 10px; line-height: 1.45; }
 .verdict b { color: var(--board-fg); }
 </style>
@@ -136,8 +153,8 @@ button { font: inherit; color: inherit; }
 <div class="wrap">
   <div class="intro">
     <span class="eyebrow">Phase 1A · look directions</span>
-    <h1>Four ways Liftria could look</h1>
-    <p>Same Today screen, same data, four visual styles. Swipe through, then pick one, or mix them ("2's background with 4's edges").</p>
+    <h1>Five ways Liftria could look</h1>
+    <p>Same Today screen, same data, five visual styles. Swipe through, then pick one, or mix them ("2's background with 4's edges").</p>
   </div>
   <div class="tabs" role="group" aria-label="Jump to a direction" id="tabs"></div>
   <div class="rail" id="rail"></div>
@@ -149,6 +166,7 @@ button { font: inherit; color: inherit; }
     ['d1', '1 · Subtle glass', 'What you saw. Graphite, faint colored glow, quiet frosted cards.', 'Calm and very readable, but the glass barely shows.'],
     ['d2', '2 · Aurora', 'Deep night with vivid color glows; strong frost, glossy edges, gradient buttons.', 'Most "glassy" and eye-catching. Busier; colors behind cards shift as you scroll.'],
     ['d3', '3 · Frost', 'Bright and airy, like frosted glass on a pastel morning sky.', 'Fresh and premium; the light-mode version of glass. Less dramatic at night.'],
+    ['d5', '5 · Aurora rim', 'Aurora\'s frosted glass over a calmer glow, with Neon rim\'s colored edges marking each section.', 'Glassy and modern, and the edges carry meaning: coral = training, honey = food, teal = health. Calmer than Aurora.'],
     ['d4', '4 · Neon rim', 'Near-black with crisp cards whose edges glow in each section color. Little blur.', 'Sharp, sporty, watch-face feel. Glows, but isn\'t really frosted glass.'],
   ];
   const I = {
@@ -193,12 +211,12 @@ button { font: inherit; color: inherit; }
 
   const rail = document.getElementById('rail'), tabs = document.getElementById('tabs');
   rail.innerHTML = DIRS.map(([id, name, what, verdict]) => `
-    <article class="slot" id="slot-${id}" aria-label="${name}">
+    <article class="slot ${id === 'd5' ? 'rec' : ''}" id="slot-${id}" aria-label="${name}">
       <header><b>${name}</b><span>${what}</span></header>
       <div class="phone">${screen(id)}</div>
       <p class="verdict"><b>Trade-off:</b> ${verdict}</p>
     </article>`).join('');
-  tabs.innerHTML = DIRS.map(([id, name], i) => `<button type="button" data-slot="${id}" aria-pressed="${i === 0}">${name}</button>`).join('');
+  tabs.innerHTML = DIRS.map(([id, name], i) => `<button type="button" data-slot="${id}" aria-pressed="${id === 'd5'}">${name}</button>`).join('');
   const buttons = [...tabs.querySelectorAll('button')];
   tabs.addEventListener('click', (e) => {
     const b = e.target.closest('[data-slot]'); if (!b) return;
@@ -208,5 +226,6 @@ button { font: inherit; color: inherit; }
     entries.forEach(en => { if (en.isIntersecting && en.intersectionRatio > 0.6) { const id = en.target.id.slice(5); buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.slot === id))); } });
   }, { root: rail, threshold: [0.6] });
   rail.querySelectorAll('.slot').forEach(s => io.observe(s));
+  requestAnimationFrame(() => document.getElementById('slot-d5').scrollIntoView({ inline: 'center', block: 'nearest' }));
 })();
 </script>
