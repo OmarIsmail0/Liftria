@@ -1,6 +1,6 @@
 # Accessibility
 
-**Milestone:** 1A · **Target:** WCAG 2.2 AA, Android accessibility guidelines
+**Milestone:** 1A, 1B · **Target:** WCAG 2.2 AA, Android accessibility guidelines
 
 ## Contrast (measured)
 
@@ -65,8 +65,38 @@ The first palette draft failed in five places: tertiary text in both themes, and
 8. **One-handed reach on the S22 Ultra:** primary actions sit in the lower half or the bottom bar; the top area is for reading, not for frequent actions.
 9. **Right-to-left readiness:** layouts use start/end, not left/right. Icons that imply direction (back, chevron) mirror in RTL. V1 ships English only.
 
+## Train (1B)
+
+**Contrast.**
+- Rest-orb ink `#120B22`, where the label sits: dark ≥ 8.57 (12.31 at the centre), light ≥ 11.14.
+- Text on the Log set button is the same as the train button: 8.51 dark, 6.24 light.
+- Record badges use the domain eat color on its tint, measured like the other chips (≥ 5.12).
+
+**In the gym** (sweaty hands, gloves, one hand on a dumbbell):
+- Log set and the steppers are **64dp**. Set ticks are 48dp. Everything needed mid-set sits in the bottom 40% of the screen.
+- No gestures are required: swipes (rail, sheet) always have a tap equivalent.
+- **Undo instead of confirm** for single sets. Confirmation sheets are only for discarding a whole workout or deleting a session.
+
+**Screen reader:**
+- A set row reads "Set 3, last time 70 kilograms by 8, now 72.5 by 8, not done". Ticked rows say "done" and their action is "undo".
+- Steppers announce the new value.
+- The rest timer is a `timer` role. It announces at start, at 30 s, at 10 s and at 0, **not every second**.
+- The body map's text alternative lists primary and secondary muscles. Group chips replace tapping regions.
+- The week strip and chart have text summaries.
+
+**Reduced motion:**
+- The rest orb doesn't breathe, and the countdown ring updates without easing.
+- Sheets appear without sliding.
+
+**Font scaling:**
+- At 200% the set table switches to two lines per set (number + last time on top, kg · reps · tick below).
+- Steppers stack vertically. The exercise rail chips wrap their text.
+
+**Fixed during this review:** the Today profile button was 40dp (1A); it's now 48dp.
+
 ## Testing plan (Phase 2+)
 
 - Automated contrast check of the token file in CI.
-- TalkBack walkthrough of onboarding, Today and logging a meal on the S22 Ultra.
+- TalkBack walkthrough of onboarding, Today, logging a meal, and a full workout (log, rest, finish) on the S22 Ultra.
+- A real gym session: log a workout one-handed with the phone on a bench, and the rest timer with the screen locked.
 - Manual check at Android font size "Largest" plus display size "Largest".

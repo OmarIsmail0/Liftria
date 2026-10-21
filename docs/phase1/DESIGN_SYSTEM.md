@@ -161,7 +161,34 @@ The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C c
 | **Step indicator** | n of 8 | Segmented bar with an accessible label "Step n of 8". |
 | **Checklist row** | done / to do / skipped | Getting-started list on the first day. |
 
-Components for workout logging, the rest timer, food search, Hiku messages, charts, sheets, dialogs and snackbars are added in 1B–1D.
+### 1B components (Train)
+
+| Component | Variants | Notes |
+|---|---|---|
+| **Set row** | done / current / to do / editing | Columns: set, last time, kg, reps, tick (48dp). Current row has a train tint and a 1.5px train outline (not color alone: it's also `aria-current`). Done ticks are filled train color. |
+| **Stepper** | kg / reps / duration | 64dp tall, − and + 52dp wide, number in `type.metric.m` with a unit label. Glass fill in Aurora Rim. |
+| **Log set button** | `train`, size `xl` | 64dp, full width, in the bottom dock, the one gradient button. |
+| **Bottom dock** | with or without banner | Fixed to the bottom of focus screens, fading into the background (`dock-bg`); holds the screen's primary action in thumb reach. |
+| **Rest orb** | running / over | The Pulse Orb in training colors (`rest.1–3`) with a countdown ring. 200px. |
+| **Body map** | full (front + back) / mini glyph | Liftria's own geometric figure: one rounded block per muscle group. Primary = solid train color; secondary = 30% train fill **with a dashed outline**, so it doesn't rely on color alone. Always paired with a text legend ("Primary: Chest · Secondary: Triceps, Front delts"). The mini glyph shows whichever side holds the primary muscles. |
+| **Exercise row** | default / with detail | Glyph tile, name, equipment · muscles, chevron. 64dp. |
+| **Filter chip** | off / on | 48dp tall pill; on = chalk fill. Scrolls horizontally, edge to edge. |
+| **Week plan strip** | done / today / planned / rest | 7 cells: done = filled with a tick; today = train outline; planned = template initials (UA, LB); rest = dashed. Plus a text alternative. |
+| **Stat trio** | — | Three numbers with labels (duration, sets, volume). |
+| **Line chart** | single series | Train-colored line and soft area, 3 gridlines with labels, last point emphasized. Needs ≥ 2 points; text alternative states start, end and range. |
+| **Record badge** | "PR" / "Record" / dated | Honey on honey tint with a trophy icon. Records are achievements, so they use the honey color, not a status color. |
+| **Bottom sheet** | info / permission / destructive | Grabber, icon tile, title, body, then stacked full-width buttons. In destructive sheets, the safe choice is the primary button. Glass sheets use `sheet.glass` (more opaque than cards). |
+| **Mini bar** | workout in progress | Floats above the capsule nav on every tab. Train outline, live dot, name, time, sets, Resume. |
+| **Snackbar** | info / with Undo | Chalk pill above the nav. 4 s, or 8 s with Undo. |
+| **Search field** | idle / with query | 52dp pill with a search icon. |
+
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `rest.1` / `rest.2` / `rest.3` | `#FFC2A3` / `#FF8F6B` / `#D9487A` | `#FFD9C7` / `#FFB496` / `#F08DB0` | Rest orb fill (centre → edge); ink is `orb.ink` |
+| `sheet.glass` | `rgba(16,17,30,.94)` | `rgba(255,255,255,.95)` | Bottom sheets and the mini bar in Aurora Rim |
+| `dock.bg` | `aurora.base` (Solid: `bg.base`) | same | The fade behind the bottom dock |
+
+Components for food search, Hiku messages, more chart types and dialogs are added in 1C–1D.
 
 ## 6. Data-honesty patterns (the core of the system)
 
@@ -190,4 +217,10 @@ Components for workout logging, the rest timer, food search, Hiku messages, char
 | `motion.slow` | 500–600 ms | same | Ring and bar fills on first show |
 
 - Under Android's "Remove animations" setting (`prefers-reduced-motion`), there are no transitions, and values appear at their final state.
-- No looping animations, with **one exception**: the Pulse Orb "breathes" (3% scale and slight saturation, 5 s cycle). It is off under "Remove animations", paused when Today isn't visible, and carries no meaning. Haptics for set logged, timer done and destructive confirmations (specified in 1B).
+- No looping animations, with **one exception**: the Pulse Orb "breathes" (3% scale and slight saturation, 5 s cycle). It is off under "Remove animations", paused when Today isn't visible, and carries no meaning. 
+- **Haptics (1B):**
+  - light tick on Log set
+  - a double pulse at rest 0:00 (vibration also goes through the notification when the screen is off)
+  - a heavy tick when confirming a destructive action
+
+  There are no haptics on steppers, to keep the phone quiet mid-set. Haptics follow the Android system setting.

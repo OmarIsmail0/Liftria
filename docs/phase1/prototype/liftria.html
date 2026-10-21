@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Liftria Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a review board around one S22 Ultra-sized phone; on a real phone the frame becomes the whole screen. */
+:root {
+  /* Liftria design tokens, dark theme (default). Names match DESIGN_SYSTEM.md. */
+  --color-bg-base: #0F1216;
+  --color-bg-surface: #161A20;
+  --color-bg-raised: #1E232B;
+  --color-bg-glass: rgba(30, 35, 43, 0.78);
+  --color-border-subtle: #272D37;
+  --color-border-strong: #636D7B;
+  --color-text-primary: #EEF1F5;
+  --color-text-secondary: #BFC6D1;
+  --color-text-tertiary: #A3ACBA;
+  --color-text-inverse: #0F1216;
+  --color-on-train: #1A0D06;
+  --color-on-hiku: #120E2B;
+  --color-action-primary-bg: #EEF1F5;
+  --color-action-primary-fg: #0F1216;
+  --color-domain-train: #FF8F6B;
+  --color-domain-eat: #FFCF5E;
+  --color-domain-health: #46E0BC;
+  --color-domain-hiku: #BDB1FF;
+  --color-macro-protein: #8CBEFF;
+  --color-macro-carbs: #FFCF5E;
+  --color-macro-fat: #FF9AC0;
+  --color-status-success: #5BD08F;
+  --color-status-warning: #F2B44C;
+  --color-status-danger: #FF6B6B;
+  --color-tint-train: rgba(255, 138, 92, 0.14);
+  --color-tint-eat: rgba(242, 193, 78, 0.14);
+  --color-tint-health: rgba(76, 195, 166, 0.14);
+  --color-tint-hiku: rgba(169, 156, 255, 0.15);
+  --color-tint-warning: rgba(242, 180, 76, 0.14);
+  --color-tint-danger: rgba(255, 107, 107, 0.14);
+  --color-board-bg: #0A0C0F;
+  /* Glass style: translucent cards over a fixed ambient glow (no live blur needed under cards). */
+  --aurora-base: #06070C;
+  --glass-card: rgba(12, 13, 24, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.10);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 44px rgba(0, 0, 0, 0.50);
+  --rim-strength: 25%;
+  --rim-glow: 12%;
+  --train-grad-end: #FF6A6A;
+  --ambient-train: rgba(255, 94, 126, 0.45);
+  --ambient-health: rgba(25, 194, 160, 0.38);
+  --ambient-hiku: rgba(123, 92, 255, 0.50);
+  --ambient-eat: rgba(255, 190, 80, 0.26);
+  --color-track: rgba(255, 255, 255, 0.09);
+  --card-fill: var(--color-bg-surface);
+  --orb-1: #FFCF5E; --orb-2: #FF8F6B; --orb-3: #7B5CFF; --orb-ink: #120B22;
+  --rest-1: #FFC2A3; --rest-2: #FF8F6B; --rest-3: #D9487A;
+  --shadow-raised: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.35);
+  --font-display: "Archivo", "Roboto Condensed", system-ui, sans-serif;
+  --font-body: "Figtree", "Roboto", system-ui, sans-serif;
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 22px; --radius-pill: 999px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-bg-base: #F3F5F8; --color-bg-surface: #FFFFFF; --color-bg-raised: #FFFFFF;
+    --color-bg-glass: rgba(255, 255, 255, 0.82);
+    --color-border-subtle: #E1E5EB; --color-border-strong: #808996;
+    --color-text-primary: #12161C; --color-text-secondary: #4D5767; --color-text-tertiary: #5E6878;
+    --color-text-inverse: #FFFFFF; --color-on-train: #FFFFFF; --color-on-hiku: #FFFFFF;
+    --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
+    --color-domain-train: #A83E18; --color-domain-eat: #855D00; --color-domain-health: #126B57; --color-domain-hiku: #6150D8;
+    --color-macro-protein: #2E6BD3; --color-macro-carbs: #855D00; --color-macro-fat: #B8406F;
+    --color-status-success: #177A45; --color-status-warning: #946300; --color-status-danger: #C93636;
+    --color-tint-train: rgba(210, 85, 42, 0.10); --color-tint-eat: rgba(154, 108, 0, 0.10);
+    --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
+    --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
+    --color-board-bg: #E4E8EE;
+    --aurora-base: #EEF0F7; --glass-card: rgba(255, 255, 255, 0.78); --glass-border: rgba(255, 255, 255, 0.90); --rim-strength: 15%; --rim-glow: 7%; --train-grad-end: #B8322E; --orb-1: #FFE09A; --orb-2: #FFB496; --orb-3: #B9A8FF; --rest-1: #FFD9C7; --rest-2: #FFB496; --rest-3: #F08DB0;
+    --glass-highlight: rgba(255, 255, 255, 0.75); --color-track: rgba(18, 22, 28, 0.09); --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 14px 34px rgba(60, 70, 120, 0.14);
+    --ambient-train: rgba(255, 170, 140, 0.60); --ambient-health: rgba(120, 225, 200, 0.50);
+    --ambient-hiku: rgba(170, 150, 255, 0.55); --ambient-eat: rgba(255, 215, 130, 0.50);
+    --shadow-raised: 0 1px 2px rgba(18,22,28,0.06), 0 6px 18px rgba(18,22,28,0.07);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --color-bg-base: #F3F5F8; --color-bg-surface: #FFFFFF; --color-bg-raised: #FFFFFF;
+  --color-bg-glass: rgba(255, 255, 255, 0.82);
+  --color-border-subtle: #E1E5EB; --color-border-strong: #808996;
+  --color-text-primary: #12161C; --color-text-secondary: #4D5767; --color-text-tertiary: #5E6878;
+  --color-text-inverse: #FFFFFF; --color-on-train: #FFFFFF; --color-on-hiku: #FFFFFF;
+  --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
+  --color-domain-train: #A83E18; --color-domain-eat: #855D00; --color-domain-health: #126B57; --color-domain-hiku: #6150D8;
+  --color-macro-protein: #2E6BD3; --color-macro-carbs: #855D00; --color-macro-fat: #B8406F;
+  --color-status-success: #177A45; --color-status-warning: #946300; --color-status-danger: #C93636;
+  --color-tint-train: rgba(210, 85, 42, 0.10); --color-tint-eat: rgba(154, 108, 0, 0.10);
+  --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
+  --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
+  --color-board-bg: #E4E8EE;
+  --aurora-base: #EEF0F7; --glass-card: rgba(255, 255, 255, 0.78); --glass-border: rgba(255, 255, 255, 0.90); --rim-strength: 15%; --rim-glow: 7%; --train-grad-end: #B8322E; --orb-1: #FFE09A; --orb-2: #FFB496; --orb-3: #B9A8FF; --rest-1: #FFD9C7; --rest-2: #FFB496; --rest-3: #F08DB0;
+  --glass-highlight: rgba(255, 255, 255, 0.75); --color-track: rgba(18, 22, 28, 0.09); --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 14px 34px rgba(60, 70, 120, 0.14);
+  --ambient-train: rgba(255, 170, 140, 0.60); --ambient-health: rgba(120, 225, 200, 0.50);
+  --ambient-hiku: rgba(170, 150, 255, 0.55); --ambient-eat: rgba(255, 215, 130, 0.50);
+  --shadow-raised: 0 1px 2px rgba(18,22,28,0.06), 0 6px 18px rgba(18,22,28,0.07);
+  color-scheme: light;
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+.btn svg { width: 20px; height: 20px; flex: none; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--color-board-bg); color: var(--color-text-primary);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--color-domain-hiku); outline-offset: 2px; }
+
+/* ---------- review board ---------- */
+.board {
+  min-height: 100%; display: grid; grid-template-columns: minmax(0, 320px) auto; gap: 40px;
+  justify-content: center; align-items: start;
+  padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.panel { display: grid; gap: 20px; position: sticky; top: 32px; min-width: 0; }
+.panel h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 28px; line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
+.panel p { margin: 0; color: var(--color-text-secondary); font-size: 14px; }
+.ctl { display: grid; gap: 6px; }
+.ctl label, .eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); }
+.ctl select {
+  width: 100%; min-height: 44px; padding: 8px 12px; border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); border: 1px solid var(--color-border-strong);
+}
+.seg { display: inline-flex; border: 1px solid var(--color-border-strong); border-radius: var(--radius-pill); overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 8px 14px; min-height: 40px; cursor: pointer; font-size: 14px; color: var(--color-text-secondary); }
+.seg button[aria-pressed="true"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); font-weight: 600; }
+.note { font-size: 13px; color: var(--color-text-secondary); border-left: 3px solid var(--color-domain-hiku); padding: 4px 0 4px 12px; }
+.legend { display: grid; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
+
+/* ---------- phone ---------- */
+.phone {
+  width: 384px; height: 832px; border-radius: 44px; padding: 10px; background: #050608;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06);
+}
+.screen {
+  position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden;
+  background: var(--color-bg-base); display: flex; flex-direction: column;
+}
+.statusbar { height: 32px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+.scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.page { padding: 8px 18px 104px; display: flex; flex-direction: column; gap: 14px; }
+
+@media (max-width: 760px) {
+  .board { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 12px; }
+  .panel { position: static; }
+  .panel { gap: 10px; }
+  .panel .legend, .panel .note, .panel > .stack p { display: none; }
+  .panel h1 { font-size: 22px; }
+  .panel .ctl select { min-height: 40px; }
+  .phone { width: 100%; max-width: 420px; height: min(832px, calc(100dvh - 24px)); margin: 0 auto; border-radius: 28px; padding: 6px; }
+  .screen { border-radius: 23px; }
+}
+
+/* ---------- type ---------- */
+.t-display { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 34px; line-height: 1.05; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+.t-title { font-family: var(--font-display); font-stretch: 108%; font-weight: 700; font-size: 22px; line-height: 1.2; margin: 0; text-wrap: balance; }
+.t-head { font-family: var(--font-display); font-stretch: 104%; font-weight: 700; font-size: 17px; line-height: 1.3; margin: 0; }
+.t-body { font-size: 15px; line-height: 1.5; color: var(--color-text-secondary); margin: 0; }
+.t-small { font-size: 13px; line-height: 1.4; color: var(--color-text-secondary); margin: 0; }
+.t-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--color-text-tertiary); }
+.t-metric { font-family: var(--font-display); font-stretch: 116%; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- components ---------- */
+.card { background: var(--card-fill); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow-raised); }
+.card.flat { box-shadow: none; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.card-head .lhs { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.btn { min-height: 48px; padding: 0 20px; border-radius: var(--radius-pill); border: 0; cursor: pointer; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); }
+.btn-secondary { background: transparent; color: var(--color-text-primary); border: 1px solid var(--color-border-strong); }
+.btn-ghost { background: transparent; color: var(--color-text-secondary); min-height: 48px; padding: 0 12px; }
+.btn-train { background: var(--color-domain-train); color: var(--color-on-train); }
+.btn-hiku { background: var(--color-domain-hiku); color: var(--color-on-hiku); }
+.btn-block { width: 100%; }
+.btn-sm { min-height: 48px; padding: 0 14px; font-size: 14px; }
+.row { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.row.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.stack { display: grid; gap: 8px; }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; border: 1px solid transparent; }
+.chip svg { width: 12px; height: 12px; flex: none; }
+.chip-measured { background: var(--color-tint-health); color: var(--color-domain-health); }
+.chip-estimate { background: transparent; color: var(--color-text-secondary); border: 1px dashed var(--color-border-strong); }
+.chip-pending { background: var(--color-tint-hiku); color: var(--color-domain-hiku); }
+.chip-stale { background: var(--color-tint-warning); color: var(--color-status-warning); }
+.chip-off { background: transparent; color: var(--color-text-tertiary); border: 1px solid var(--color-border-subtle); }
+.chip-phone { background: var(--color-bg-raised); color: var(--color-text-secondary); border: 1px solid var(--color-border-subtle); }
+
+.banner { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; line-height: 1.4; }
+.banner svg { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+.banner-offline { background: var(--color-bg-raised); border: 1px solid var(--color-border-strong); color: var(--color-text-primary); }
+.banner-warning { background: var(--color-tint-warning); color: var(--color-text-primary); }
+
+.bar { height: 8px; border-radius: var(--radius-pill); background: var(--color-track); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: inherit; }
+.macro { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+.macro b { font-weight: 600; color: var(--color-text-secondary); }
+
+.ring-wrap { display: grid; grid-template-columns: 132px 1fr; gap: 16px; align-items: center; }
+.ring { position: relative; width: 132px; height: 132px; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+
+.list { display: grid; }
+.list-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--color-border-subtle); min-height: 56px; }
+.list-item:first-child { border-top: 0; }
+.icon-tile { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; flex: none; }
+.icon-tile svg { width: 20px; height: 20px; }
+
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 11px; color: var(--color-text-tertiary); }
+.week .day { display: grid; gap: 6px; justify-items: center; }
+.week .pip { width: 26px; height: 26px; border-radius: 9px; border: 1px solid var(--color-border-subtle); display: grid; place-items: center; }
+.week .pip.today { border-color: var(--color-text-primary); }
+.week .pip i { width: 8px; height: 8px; border-radius: 50%; }
+
+/* bottom nav */
+.nav { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 8px 12px; background: var(--color-bg-glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-top: 1px solid var(--color-border-subtle); }
+.nav button { border: 0; background: transparent; display: grid; justify-items: center; gap: 4px; padding: 6px 0; min-height: 56px; cursor: pointer; color: var(--color-text-tertiary); font-size: 11px; font-weight: 600; }
+.nav button svg { width: 24px; height: 24px; }
+.nav button .pill { width: 56px; height: 30px; border-radius: var(--radius-pill); display: grid; place-items: center; }
+.nav button[aria-current="page"] { color: var(--color-text-primary); }
+.nav button[aria-current="page"] .pill { background: var(--color-bg-raised); border: 1px solid var(--color-border-strong); }
+
+/* floating capsule nav: icons, label only on the active tab */
+.capsule { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px; border-radius: var(--radius-pill); background: var(--glass-card); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); backdrop-filter: blur(26px) saturate(1.6); -webkit-backdrop-filter: blur(26px) saturate(1.6); z-index: 5; }
+.capsule button { border: 0; background: transparent; min-width: 48px; height: 48px; padding: 0 12px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--color-text-tertiary); cursor: pointer; font-size: 13px; font-weight: 700; }
+.capsule button svg { width: 22px; height: 22px; flex: none; }
+.capsule button span { display: none; }
+.capsule button[aria-current="page"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); padding: 0 16px 0 14px; }
+.capsule button[aria-current="page"] span { display: inline; }
+
+/* Pulse Orb Today */
+.orb-page { padding: 4px 0 104px; display: flex; flex-direction: column; gap: 12px; }
+.orb-page > .orb-top, .orb-page > .banner, .orb-page > .orb-sub, .orb-page > .orb-macros, .orb-page > .orb-actions { margin-inline: 18px; }
+.orb-top { display: flex; justify-content: space-between; align-items: center; }
+.orb-greet { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 24px; line-height: 1.15; }
+.orb-wrap { position: relative; width: 236px; height: 236px; margin: 2px auto 0; display: grid; place-items: center; flex: none; }
+.orb { position: absolute; inset: 24px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.5), transparent 30%), radial-gradient(circle at 50% 62%, var(--orb-1) 0%, var(--orb-2) 46%, var(--orb-3) 100%);
+  box-shadow: 0 0 60px color-mix(in srgb, var(--orb-2) 45%, transparent), 0 0 120px color-mix(in srgb, var(--orb-3) 35%, transparent), inset 0 -20px 40px rgba(20, 10, 60, .45); }
+.orb-wrap.is-empty .orb { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.35), transparent 32%), var(--glass-card); border: 1px solid var(--glass-border); box-shadow: inset 0 -16px 36px rgba(0,0,0,.25), 0 0 40px color-mix(in srgb, var(--orb-3) 20%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.orb-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.orb-label { position: relative; display: grid; justify-items: center; color: var(--orb-ink); text-align: center; }
+.orb-wrap.is-empty .orb-label { color: var(--color-text-primary); }
+.orb-n { font-family: var(--font-display); font-stretch: 120%; font-weight: 900; font-size: 46px; letter-spacing: -0.03em; line-height: .95; font-variant-numeric: tabular-nums; }
+.orb-u { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.orb-sub { margin: 0; display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; color: var(--color-text-secondary); text-align: center; }
+.orb-sub b { color: var(--color-text-primary); }
+.link { border: 0; background: transparent; padding: 0; min-height: 44px; font-weight: 700; color: var(--color-text-primary); text-decoration: underline; cursor: pointer; }
+.orb-macros { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--color-text-secondary); }
+.orb-macros > span { display: inline-flex; align-items: center; gap: 6px; }
+.orb-macros i { width: 8px; height: 8px; border-radius: 50%; }
+.orb-macros b { color: var(--color-text-primary); }
+.orb-actions { display: flex; gap: 10px; }
+.deck { display: grid; grid-auto-flow: column; grid-auto-columns: 262px; gap: 12px; overflow-x: auto; padding: 4px 18px 6px; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; scrollbar-width: none; }
+.deck::-webkit-scrollbar { display: none; }
+.dcard { scroll-snap-align: start; min-height: 168px; align-content: start; }
+.dc-big { font-family: var(--font-display); font-stretch: 112%; font-weight: 900; font-size: 26px; line-height: 1.05; }
+.deck-dots { display: flex; justify-content: center; gap: 6px; }
+.deck-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--color-track); transition: width 200ms; }
+.deck-dots i.on { width: 18px; background: var(--color-text-primary); }
+@media (prefers-reduced-motion: no-preference) {
+  .orb { animation: breathe 5s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { transform: scale(1); filter: saturate(1); } 50% { transform: scale(1.03); filter: saturate(1.18); } }
+}
+
+/* top bar */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 18px 8px; flex: none; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--color-border-strong); background: var(--color-bg-raised); display: grid; place-items: center; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+/* onboarding */
+.onb { flex: 1; display: flex; flex-direction: column; padding: 8px 22px 22px; gap: 18px; overflow-y: auto; scrollbar-width: none; }
+.onb .spacer { flex: 1; }
+.progress-dots { display: flex; gap: 6px; }
+.progress-dots i { height: 4px; flex: 1; border-radius: 2px; background: var(--color-border-strong); }
+.progress-dots i.on { background: var(--color-text-primary); }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.field input, .field .input { min-height: 52px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); padding: 0 14px; width: 100%; }
+.unit-input { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+.unit-input input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.unit-input span { min-height: 52px; display: grid; place-items: center; padding: 0 14px; border: 1px solid var(--color-border-strong); border-left: 0; border-radius: 0 var(--radius-md) var(--radius-md) 0; color: var(--color-text-secondary); background: var(--color-bg-raised); font-size: 14px; }
+.choice { display: grid; gap: 10px; }
+.choice button { text-align: left; border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); border-radius: var(--radius-md); padding: 14px 16px; min-height: 56px; cursor: pointer; display: grid; gap: 2px; }
+.choice button[aria-pressed="true"] { border-color: var(--color-text-primary); box-shadow: 0 0 0 1px var(--color-text-primary) inset; }
+.choice small { color: var(--color-text-secondary); font-size: 13px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.check { display: flex; gap: 12px; align-items: flex-start; }
+.check .tick { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; flex: none; margin-top: 2px; }
+.check .tick svg { width: 14px; height: 14px; }
+.brandmark { width: 64px; height: 64px; }
+.kbd { font-family: ui-monospace, "Roboto Mono", monospace; font-size: 13px; background: var(--color-bg-raised); border: 1px solid var(--color-border-subtle); border-radius: 6px; padding: 1px 6px; }
+
+.placeholder { flex: 1; display: grid; place-content: center; text-align: center; padding: 32px; gap: 12px; justify-items: center; }
+.placeholder .icon-tile { width: 56px; height: 56px; border-radius: 18px; }
+.placeholder .icon-tile svg { width: 28px; height: 28px; }
+
+/* ---------- glass style ---------- */
+.screen.glass {
+  --card-fill: linear-gradient(165deg, var(--glass-highlight), transparent 45%), var(--glass-card);
+  background:
+    radial-gradient(55% 32% at 12% 6%, var(--ambient-train), transparent 70%),
+    radial-gradient(60% 34% at 98% 32%, var(--ambient-hiku), transparent 70%),
+    radial-gradient(60% 34% at 2% 72%, var(--ambient-health), transparent 70%),
+    radial-gradient(55% 30% at 92% 96%, var(--ambient-eat), transparent 70%),
+    var(--aurora-base);
+}
+.screen.glass .card { position: relative; border-color: var(--glass-border); box-shadow: var(--glass-shadow); backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6); }
+/* Rim: a section-colored edge that fades along the card. --rim is set per section; neutral cards keep a faint white edge. */
+.screen.glass .card::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1.2px; pointer-events: none;
+  background: linear-gradient(140deg, var(--rim, rgba(255,255,255,.28)), color-mix(in srgb, var(--rim, #fff) var(--rim-strength), transparent) 30%, transparent 55%, color-mix(in srgb, var(--rim, #fff) 8%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.card.rim-eat { --rim: var(--color-domain-eat); }
+.card.rim-train { --rim: var(--color-domain-train); }
+.card.rim-health { --rim: var(--color-domain-health); }
+.card.rim-hiku { --rim: var(--color-domain-hiku); }
+.screen.glass .card[class*="rim-"] { box-shadow: var(--glass-shadow), 0 0 34px color-mix(in srgb, var(--rim) var(--rim-glow), transparent); }
+.screen.glass .ring circle.val { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-domain-eat) 45%, transparent)); }
+.screen.glass .btn-train { background: linear-gradient(135deg, var(--color-domain-train), var(--train-grad-end)); }
+.screen.glass .card.flat { box-shadow: none; }
+.screen.glass .choice button, .screen.glass .banner-offline { background: var(--glass-card); border-color: var(--glass-border); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.screen.glass .choice button[aria-pressed="true"] { border-color: var(--color-text-primary); }
+.screen.glass .nav { background: var(--glass-card); border-top-color: var(--glass-border); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4); }
+.screen.glass .avatar { background: var(--glass-card); border-color: var(--glass-border); }
+
+
+/* ---------- 1B: Train ---------- */
+.hdr { display: flex; align-items: center; gap: 8px; padding: 2px 14px 6px 8px; flex: none; min-height: 56px; }
+.hdr.root { padding-inline: 18px; }
+.hdr h1 { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 24px; line-height: 1.15; margin: 0; flex: 1; min-width: 0; }
+.hdr .sub { display: block; font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-secondary); font-stretch: 100%; }
+.iconbtn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--color-border-strong); background: transparent; display: grid; place-items: center; cursor: pointer; color: var(--color-text-primary); flex: none; padding: 0; }
+.iconbtn svg { width: 22px; height: 22px; }
+.iconbtn.bare { border-color: transparent; }
+.screen.glass .iconbtn:not(.bare) { background: var(--glass-card); border-color: var(--glass-border); }
+.btn-danger { background: var(--color-status-danger); color: var(--color-text-inverse); }
+.btn-text-danger { background: transparent; color: var(--color-status-danger); }
+.btn-xl { min-height: 64px; font-size: 18px; border-radius: 22px; }
+.btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.section-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.section-h h2 { font-family: var(--font-display); font-stretch: 106%; font-weight: 700; font-size: 17px; margin: 0; }
+.section-h .link { min-height: 48px; font-size: 14px; }
+
+.search { min-height: 52px; border-radius: var(--radius-pill); border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); display: flex; align-items: center; gap: 10px; padding: 0 16px; color: var(--color-text-tertiary); font-size: 15px; }
+.search svg { width: 20px; height: 20px; flex: none; }
+.search b { color: var(--color-text-primary); font-weight: 500; }
+.screen.glass .search { background: var(--glass-card); border-color: var(--glass-border); }
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; }
+.chips::-webkit-scrollbar { display: none; }
+.fchip { min-height: 48px; padding: 0 16px; border-radius: var(--radius-pill); border: 1px solid var(--color-border-strong); background: transparent; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; color: var(--color-text-secondary); display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.fchip svg { width: 16px; height: 16px; }
+.fchip[aria-pressed="true"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); border-color: transparent; }
+.screen.glass .fchip:not([aria-pressed="true"]) { background: var(--glass-card); border-color: var(--glass-border); }
+
+.rowlink { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; text-align: start; cursor: pointer; color: inherit; }
+.rowlink:first-child { border-top: 0; }
+.rowlink > svg { width: 20px; height: 20px; color: var(--color-text-tertiary); flex: none; }
+.rowlink .grow { display: grid; gap: 2px; }
+.rowlink strong { font-weight: 600; font-size: 15px; }
+.glyph { width: 46px; height: 46px; border-radius: 13px; background: var(--color-tint-train); display: grid; place-items: center; flex: none; }
+.glyph svg { width: 34px; height: 40px; }
+
+/* original body map: geometric muscle blocks, no third-party artwork */
+.bmap .m { fill: var(--color-track); stroke: var(--color-border-strong); stroke-width: .8; }
+.bmap .m.n { fill: none; }
+.bmap .m.p { fill: var(--color-domain-train); stroke: var(--color-domain-train); }
+.bmap .m.s { fill: color-mix(in srgb, var(--color-domain-train) 30%, transparent); stroke: var(--color-domain-train); stroke-dasharray: 2.2 1.6; }
+.glyph .bmap .m { stroke-width: 1.6; }
+.glyph .bmap .m.s { stroke-dasharray: none; }
+.bmap-wrap { display: grid; justify-items: center; gap: 6px; }
+.bmap-wrap svg { width: 100%; max-width: 280px; height: auto; }
+.bmap-cap { display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 280px; text-align: center; }
+.legend-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--color-text-secondary); }
+.legend-row span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.sw.p { background: var(--color-domain-train); }
+.sw.s { background: color-mix(in srgb, var(--color-domain-train) 30%, transparent); border: 1px dashed var(--color-domain-train); }
+.bmap .tap { cursor: pointer; }
+
+.weekplan { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.weekplan > div { display: grid; justify-items: center; gap: 4px; font-size: 11px; color: var(--color-text-tertiary); font-weight: 600; }
+.weekplan .d { width: 100%; aspect-ratio: 1; max-width: 40px; border-radius: 12px; border: 1px solid var(--color-border-subtle); display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--color-text-secondary); }
+.weekplan .d svg { width: 16px; height: 16px; }
+.weekplan .d.done { background: var(--color-domain-train); color: var(--color-on-train); border-color: transparent; }
+.weekplan .d.today { border: 2px solid var(--color-domain-train); color: var(--color-text-primary); }
+.weekplan .d.rest { border-style: dashed; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { display: grid; gap: 2px; min-width: 0; }
+.stat b { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--color-text-secondary); }
+
+/* active workout */
+.wk-top { display: flex; align-items: center; gap: 8px; padding: 2px 14px 4px 8px; flex: none; }
+.wk-top .grow { text-align: center; display: grid; }
+.wk-top strong { font-family: var(--font-display); font-stretch: 108%; font-weight: 800; font-size: 17px; }
+.wk-progress { margin: 0 18px 8px; }
+.rail { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 18px 10px; flex: none; }
+.rail::-webkit-scrollbar { display: none; }
+.rail .fchip.done { color: var(--color-text-tertiary); }
+.rail .fchip.done svg { color: var(--color-domain-train); }
+.sets { display: grid; gap: 4px; }
+.set-row { display: grid; grid-template-columns: 26px 1fr 58px 44px 48px; align-items: center; gap: 8px; min-height: 52px; padding: 0 2px 0 8px; border-radius: 14px; font-variant-numeric: tabular-nums; font-size: 15px; }
+.set-row.head { min-height: 0; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-tertiary); }
+.set-row .prev { color: var(--color-text-tertiary); font-size: 13px; }
+.set-row .v { font-weight: 700; text-align: end; }
+.set-row.done .v { color: var(--color-text-secondary); }
+.set-row.cur { background: var(--color-tint-train); box-shadow: inset 0 0 0 1.5px var(--color-domain-train); }
+.set-row.todo .v { color: var(--color-text-tertiary); }
+.tick-btn { width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--color-border-strong); display: grid; place-items: center; background: transparent; color: var(--color-text-tertiary); padding: 0; cursor: pointer; }
+.tick-btn svg { width: 18px; height: 18px; }
+.set-row.done .tick-btn { background: var(--color-domain-train); color: var(--color-on-train); border-color: transparent; }
+.set-row input { width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); text-align: center; font-weight: 700; padding: 0 4px; }
+
+.dock .banner-warning { background: color-mix(in srgb, var(--color-status-warning) 14%, var(--dock-bg)); }
+.dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 16px 16px; display: grid; gap: 10px; z-index: 4; background: linear-gradient(to bottom, transparent, var(--dock-bg) 22%); }
+.screen { --dock-bg: var(--color-bg-base); }
+.screen.glass { --dock-bg: var(--aurora-base); }
+.steppers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stepper { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; border: 1px solid var(--color-border-strong); border-radius: 20px; min-height: 64px; background: var(--color-bg-surface); }
+.screen.glass .stepper { background: var(--glass-card); border-color: var(--glass-border); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.stepper button { height: 64px; border: 0; background: transparent; font-size: 26px; font-weight: 600; cursor: pointer; color: var(--color-text-primary); padding: 0; }
+.stepper output { display: grid; justify-items: center; line-height: 1.05; }
+.stepper output b { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; }
+.stepper output span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-text-tertiary); }
+
+/* rest orb: the Pulse Orb, in training colors */
+.orb.rest { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.5), transparent 30%), radial-gradient(circle at 50% 62%, var(--rest-1) 0%, var(--rest-2) 50%, var(--rest-3) 100%);
+  box-shadow: 0 0 60px color-mix(in srgb, var(--rest-2) 45%, transparent), 0 0 110px color-mix(in srgb, var(--rest-3) 30%, transparent), inset 0 -20px 40px rgba(60, 10, 30, .35); }
+.orb-wrap.sm { width: 200px; height: 200px; }
+.orb-wrap.sm .orb { inset: 20px; }
+
+/* sheets */
+.scrim { position: absolute; inset: 0; background: rgba(4, 5, 10, .58); z-index: 7; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; border-radius: 28px 28px 0 0; background: var(--color-bg-raised); padding: 10px 20px 22px; display: grid; gap: 14px; box-shadow: 0 -18px 50px rgba(0,0,0,.35); }
+.screen.glass .sheet { background: linear-gradient(170deg, var(--glass-highlight), transparent 40%), var(--sheet-glass); border-top: 1px solid var(--glass-border); backdrop-filter: blur(30px) saturate(1.5); -webkit-backdrop-filter: blur(30px) saturate(1.5); }
+.screen { --sheet-glass: rgba(16, 17, 30, .94); }
+:root[data-theme="light"] .screen { --sheet-glass: rgba(255, 255, 255, .95); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .screen { --sheet-glass: rgba(255, 255, 255, .95); } }
+.grabber { width: 40px; height: 4px; border-radius: 2px; background: var(--color-border-strong); justify-self: center; }
+.sheet h2 { font-family: var(--font-display); font-stretch: 106%; font-weight: 800; font-size: 21px; line-height: 1.2; margin: 0; }
+.sheet-tile { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; }
+.sheet-tile svg { width: 26px; height: 26px; }
+.three { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 8px; }
+
+/* in-progress mini bar, above the capsule */
+.minibar { position: absolute; left: 14px; right: 14px; bottom: 82px; z-index: 5; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 22px; background: var(--color-bg-raised); border: 1px solid var(--color-domain-train); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.screen.glass .minibar { background: var(--sheet-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 0 28px color-mix(in srgb, var(--color-domain-train) 25%, transparent); }
+.minibar .live { width: 10px; height: 10px; border-radius: 50%; background: var(--color-domain-train); flex: none; }
+.screen.has-mini .snackbar { bottom: 146px; }
+.screen.has-mini .page, .screen.has-mini .orb-page { padding-bottom: 170px; }
+.snackbar { position: absolute; left: 14px; right: 14px; bottom: 84px; z-index: 6; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 4px 4px 16px; border-radius: 16px; background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+.snackbar .btn { color: var(--color-action-primary-fg); background: transparent; text-decoration: underline; }
+
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .grid { stroke: var(--color-border-subtle); stroke-width: 1; }
+.chart .line { fill: none; stroke: var(--color-domain-train); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.chart .area { fill: color-mix(in srgb, var(--color-domain-train) 16%, transparent); }
+.chart text { fill: var(--color-text-tertiary); font-size: 11px; font-family: var(--font-body); }
+.chart .pt { fill: var(--color-domain-train); }
+.chart .pt.last { stroke: var(--color-text-primary); stroke-width: 2; }
+
+.steps-list { margin: 0; padding-inline-start: 20px; display: grid; gap: 8px; color: var(--color-text-secondary); font-size: 14px; }
+.badge-pr { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--color-tint-eat); color: var(--color-domain-eat); font-size: 12px; font-weight: 700; }
+.badge-pr svg { width: 12px; height: 12px; }
+.addrow { min-height: 56px; border-radius: var(--radius-md); border: 1.5px dashed var(--color-border-strong); background: transparent; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; cursor: pointer; color: var(--color-text-primary); }
+.addrow svg { width: 20px; height: 20px; }
+.tmpl-ex { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 8px 0; border-top: 1px solid var(--color-border-subtle); }
+.tmpl-ex:first-child { border-top: 0; }
+.tmpl-ex .handle { width: 32px; height: 48px; display: grid; place-items: center; color: var(--color-text-tertiary); flex: none; }
+.tmpl-ex .handle svg { width: 20px; height: 20px; }
+.hint { font-size: 13px; color: var(--color-status-warning); display: flex; gap: 6px; align-items: flex-start; }
+.hint svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+
+/* Android lock screen, for reference */
+.lock { flex: 1; display: flex; flex-direction: column; padding: 40px 14px 20px; gap: 14px; background: radial-gradient(70% 45% at 20% 10%, #3a2560, transparent 70%), radial-gradient(70% 50% at 90% 80%, #5a2232, transparent 70%), #08080d; color: #F2F3F7; }
+.lock .clock { text-align: center; font-family: var(--font-display); font-stretch: 100%; font-weight: 500; font-size: 64px; line-height: 1; letter-spacing: -0.02em; }
+.lock .date { text-align: center; font-size: 15px; color: #C9CCD6; margin-top: -6px; }
+.notif { background: rgba(38, 40, 52, .92); border-radius: 26px; padding: 14px 16px; display: grid; gap: 8px; color: #F2F3F7; }
+.notif .app { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #C9CCD6; }
+.notif .app i { width: 20px; height: 20px; border-radius: 50%; background: #FF8F6B; display: grid; place-items: center; }
+.notif .app i svg { width: 13px; height: 13px; color: #1A0D06; }
+.notif strong { font-size: 16px; }
+.notif .acts { display: flex; gap: 8px; }
+.notif .acts button { flex: 1; min-height: 48px; border-radius: 999px; border: 0; background: rgba(255,255,255,.12); color: #F2F3F7; font-weight: 700; cursor: pointer; }
+.notif .bar { background: rgba(255,255,255,.14); }
+.sys-note { margin-top: auto; text-align: center; font-size: 12px; color: #A9AEBC; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ring circle.val { transition: stroke-dashoffset 600ms cubic-bezier(.2,.8,.2,1); }
+  .bar > i { transition: width 500ms cubic-bezier(.2,.8,.2,1); }
+  .screen-anim { animation: enter 220ms cubic-bezier(.2,.8,.2,1); }
+  @keyframes enter { from { opacity: .6; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+</style>
+
+<div class="board">
+  <aside class="panel" aria-label="Prototype controls">
+    <div class="stack">
+      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B</span>
+      <h1>Liftria</h1>
+      <p>Onboarding, Today and the whole Train tab. Tap through the phone, or jump to any screen and state.</p>
+    </div>
+    <div class="ctl">
+      <label for="screen-select">Screen</label>
+      <select id="screen-select"></select>
+    </div>
+    <div class="ctl" id="variant-ctl">
+      <label for="variant-select">State</label>
+      <select id="variant-select"></select>
+    </div>
+    <div class="ctl">
+      <span class="eyebrow" id="theme-label">Theme</span>
+      <div class="seg" role="group" aria-labelledby="theme-label">
+        <button type="button" data-theme-btn="system" aria-pressed="true">System</button>
+        <button type="button" data-theme-btn="dark" aria-pressed="false">Dark</button>
+        <button type="button" data-theme-btn="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="eyebrow" id="style-label">Style</span>
+      <div class="seg" role="group" aria-labelledby="style-label">
+        <button type="button" data-style-btn="glass" aria-pressed="true">Aurora Rim</button>
+        <button type="button" data-style-btn="solid" aria-pressed="false">Solid</button>
+      </div>
+    </div>
+    <p class="note">Example data only. Phase 1 is design; nothing here reads real health data.</p>
+    <div class="legend" aria-label="Provenance legend">
+      <span class="eyebrow">Provenance markers</span>
+      <span><span class="chip chip-measured" data-icon="dot">Measured</span> from a named source</span>
+      <span><span class="chip chip-phone" data-icon="phone">Phone</span> counted by the phone, not the watch</span>
+      <span><span class="chip chip-estimate" data-icon="approx">Estimate</span> calculated, never measured</span>
+      <span><span class="chip chip-pending" data-icon="clock">Pending</span> awaiting device verification</span>
+      <span><span class="chip chip-stale" data-icon="clock">2 d ago</span> older than the freshness limit</span>
+    </div>
+  </aside>
+
+  <div class="phone" aria-label="Liftria app preview, Galaxy S22 Ultra size">
+    <div class="screen" id="screen"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const ICON = {
+    dot: '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="currentColor"/></svg>',
+    approx: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 4.5c1.3-1.2 2.7-1.2 4 0s2.7 1.2 4 0M2 8c1.3-1.2 2.7-1.2 4 0s2.7 1.2 4 0"/></svg>',
+    clock: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.5"/><path d="M6 3.5V6l1.7 1" stroke-linecap="round"/></svg>',
+    phone: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.2" y="1.2" width="5.6" height="9.6" rx="1.4"/><path d="M5.3 9h1.4" stroke-linecap="round"/></svg>',
+    watch: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.8" y="3" width="6.4" height="6" rx="2"/><path d="M4.5 3V1.3h3V3M4.5 9v1.7h3V9" stroke-linejoin="round"/></svg>',
+    off: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="4.5"/><path d="M3 9l6-6"/></svg>',
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>',
+    train: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
+    eat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M9 7.5c0-1.5 1.5-1.5 1.5-3M13.5 7.5c0-1.5 1.5-1.5 1.5-3"/></svg>',
+    progress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 15l4-4 3 3 5-6"/></svg>',
+    hiku: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 16l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
+    steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5c1.7 0 2.5 2 2.2 4.5-.3 2-1.2 3.5-2.7 3.5S5 11 5.2 8.8C5.4 6.4 6.3 4.5 8 4.5zM6 15.5l3.7.5-.4 3a1.9 1.9 0 0 1-3.7-.5zM16 8.5c1.7 0 2.7 1.9 2.5 4.3-.2 2-1.2 3.4-2.6 3.4s-2.4-1.5-2.3-3.6c.1-2.4 .7-4.1 2.4-4.1zM14 19.2l3.6.6-.4 2.2"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 19.5s-7-4.3-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.1c0 5.1-7 9.4-7 9.4z"/><path d="M7.5 12h2.2l1.2-2 2 4 1.2-2h2.4" stroke-linecap="round"/></svg>',
+    flame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5a6 6 0 0 0 6-6c0-4-3-5.5-3.5-9.5-2.5 1.5-4 4-4 6.5-1-.5-1.5-1.5-1.7-2.8A7.3 7.3 0 0 0 6 14.5a6 6 0 0 0 6 6z"/></svg>',
+    camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2L9 5h6l1.3 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+    cloudoff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5h9.5a3.5 3.5 0 0 0 .8-6.9 5.5 5.5 0 0 0-9.4-3.3M5.3 10.4A4 4 0 0 0 7.5 18.5"/><path d="M4 4l16 16"/></svg>',
+    check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 4.5 21 19.5H3z"/><path d="M12 10v4M12 16.8v.2" stroke-linecap="round"/></svg>',
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="18.5" r="1.8"/></svg>',
+    grip: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="7" r="1.5"/><circle cx="15" cy="7" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="17" r="1.5"/><circle cx="15" cy="17" r="1.5"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 19l1-4L16 5l3 3L9 18z"/><path d="M14 7l3 3"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0" stroke-linecap="round"/></svg>',
+    down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5l6 6 6-6"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+    list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5h8v5a4 4 0 0 1-8 0zM8 6.5H5v1.5a3 3 0 0 0 3 3M16 6.5h3v1.5a3 3 0 0 1-3 3M12 13.5v3.5M8.5 20h7M9.5 17h5v3h-5z"/></svg>',
+    body: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M6 8.5h12M12 8.5v6M9 21l3-6.5 3 6.5"/></svg>',
+    brand: '<svg viewBox="0 0 64 64"><rect x="6" y="34" width="14" height="24" rx="4" fill="var(--color-domain-eat)"/><rect x="25" y="20" width="14" height="38" rx="4" fill="var(--color-domain-train)"/><rect x="44" y="6" width="14" height="52" rx="4" fill="var(--color-domain-health)"/></svg>',
+  };
+  const chip = (kind, icon, text) => `<span class="chip chip-${kind}">${ICON[icon]}${text}</span>`;
+
+  document.querySelectorAll('[data-icon]').forEach(el => el.insertAdjacentHTML('afterbegin', ICON[el.dataset.icon]));
+
+  const screenEl = document.getElementById('screen');
+  const screenSelect = document.getElementById('screen-select');
+  const variantSelect = document.getElementById('variant-select');
+  const variantCtl = document.getElementById('variant-ctl');
+  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass' };
+
+  const statusbar = (offline) => `<div class="statusbar"><span class="num">9:41</span><span>${offline ? 'Airplane mode' : '5G · 82%'}</span></div>`;
+  const dots = (n, total = 8) => `<div class="progress-dots" aria-label="Step ${n} of ${total}">${Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>`;
+  const back = (to) => `<button class="btn btn-ghost" data-go="${to}" aria-label="Back">${ICON.back}</button>`;
+
+  // ---------- onboarding ----------
+  const ONB = {
+    'onb-welcome': () => `
+      <div class="onb">
+        <div class="spacer"></div>
+        <div class="brandmark" aria-hidden="true">${ICON.brand}</div>
+        <h1 class="t-display">Train, eat and recover, all in one honest log.</h1>
+        <p class="t-body">Liftria keeps your workouts, meals and health data on this phone. No account, no cloud.</p>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-privacy">Get started</button>
+        <p class="t-small" style="text-align:center">Takes about 2 minutes. Every step after this is optional.</p>
+      </div>`,
+    'onb-privacy': () => `
+      <div class="onb">
+        <div class="row">${back('onb-welcome')}<div class="grow">${dots(1)}</div></div>
+        <h1 class="t-title">Your data stays on this phone</h1>
+        <div class="stack" style="gap:14px">
+          ${[['lock', 'health', 'Stored only on your S22', 'Workouts, meals, goals and health readings live in a local database. There is no Liftria server.'],
+             ['hiku', 'hiku', 'Hiku asks before it sends', 'Hiku uses the Claude API with your own key. Only the meal text or photo you choose is sent, and only when you tap Send.'],
+             ['cloudoff', 'eat', 'Works offline', 'Logging meals and workouts never needs internet. Only Hiku does.']]
+            .map(([i, c, t, d]) => `<div class="check"><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${ICON[i]}</span><div class="stack" style="gap:2px"><strong>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}
+        </div>
+        <div class="banner banner-warning">${ICON.warn}<span>Because nothing is in the cloud, losing this phone loses your data. Backup and export are planned for a later version.</span></div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-profile">I understand</button>
+      </div>`,
+    'onb-profile': () => `
+      <div class="onb">
+        <div class="row">${back('onb-privacy')}<div class="grow">${dots(2)}</div><button class="btn btn-ghost" data-go="onb-goals">Skip</button></div>
+        <div class="stack"><h1 class="t-title">About you</h1><p class="t-body">Used only to estimate a calorie target. You can change or delete this anytime.</p></div>
+        <div class="field"><label for="f-name">First name (optional)</label><input id="f-name" placeholder="What should Liftria call you?"></div>
+        <div class="two">
+          <div class="field"><label for="f-age">Age</label><div class="unit-input"><input id="f-age" inputmode="numeric" value="29"><span>yrs</span></div></div>
+          <div class="field"><label for="f-sex">Sex for the formula</label><div class="input" id="f-sex" style="display:flex;align-items:center;justify-content:space-between">Male ${ICON.chevron.replace('<svg', '<svg width="18" height="18"')}</div></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="f-h">Height</label><div class="unit-input"><input id="f-h" inputmode="numeric" value="178"><span>cm</span></div></div>
+          <div class="field"><label for="f-w">Weight</label><div class="unit-input"><input id="f-w" inputmode="decimal" value="76.5"><span>kg</span></div></div>
+        </div>
+        <p class="t-small">Units can be switched to lb and ft in Settings.</p>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-goals">Continue</button>
+      </div>`,
+    'onb-goals': () => {
+      const goals = [['lose', 'Lose fat', 'A moderate deficit, kept above a safe floor'], ['build', 'Build muscle', 'A small surplus with high protein'], ['maintain', 'Maintain', 'Hold your weight, improve performance']];
+      const acts = [['low', 'Mostly sitting'], ['moderate', 'On my feet some'], ['high', 'Active job or daily training']];
+      return `
+      <div class="onb">
+        <div class="row">${back('onb-profile')}<div class="grow">${dots(3)}</div><button class="btn btn-ghost" data-go="onb-target">Skip</button></div>
+        <h1 class="t-title">What are you working toward?</h1>
+        <div class="choice" role="group" aria-label="Goal">${goals.map(([k, t, s]) => `<button type="button" data-goal="${k}" aria-pressed="${state.goal === k}"><strong>${t}</strong><small>${s}</small></button>`).join('')}</div>
+        <span class="t-label">Day-to-day activity, outside workouts</span>
+        <div class="choice" role="group" aria-label="Activity">${acts.map(([k, t]) => `<button type="button" data-act="${k}" aria-pressed="${state.activity === k}"><strong>${t}</strong></button>`).join('')}</div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-target">Continue</button>
+      </div>`;
+    },
+    'onb-target': () => `
+      <div class="onb">
+        <div class="row">${back('onb-goals')}<div class="grow">${dots(4)}</div></div>
+        <h1 class="t-title">Your starting target</h1>
+        <div class="card rim-eat">
+          <div class="card-head"><span class="t-label">Daily calories</span>${chip('estimate', 'approx', 'Estimate')}</div>
+          <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:52px">2,650</span><span class="t-small">kcal / day</span></div>
+          <div class="stack" style="gap:6px">
+            <div class="macro"><b>Protein</b><div class="bar"><i style="width:100%;background:var(--color-macro-protein)"></i></div><span class="num">155 g</span></div>
+            <div class="macro"><b>Carbs</b><div class="bar"><i style="width:100%;background:var(--color-macro-carbs)"></i></div><span class="num">340 g</span></div>
+            <div class="macro"><b>Fat</b><div class="bar"><i style="width:100%;background:var(--color-macro-fat)"></i></div><span class="num">75 g</span></div>
+          </div>
+          <p class="t-small">Mifflin-St Jeor from your profile × "on my feet some", plus about 10% for building muscle. Watch data will not change this until Liftria can verify it.</p>
+        </div>
+        <button class="btn btn-secondary btn-block">Set my own numbers</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-health">Use this target</button>
+      </div>`,
+    'onb-health': () => `
+      <div class="onb">
+        <div class="row">${back('onb-target')}<div class="grow">${dots(5)}</div><button class="btn btn-ghost" data-go="onb-key">Not now</button></div>
+        <div class="icon-tile" style="width:56px;height:56px;border-radius:18px;background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.heart}</div>
+        <h1 class="t-title">Read steps, heart rate and workouts from Health Connect</h1>
+        <p class="t-body">Liftria only reads. It never writes to Health Connect and never sends health data anywhere.</p>
+        <div class="card flat">
+          <span class="t-label">Android will ask about each of these</span>
+          <div class="list">
+            ${[['steps', 'Steps', 'Phone and watch counted separately'], ['heart', 'Heart rate', ''], ['train', 'Exercise sessions', ''], ['flame', 'Active, total and resting energy', ''], ['progress', 'Weight and body composition', ''], ['clock', 'Older history (beyond 30 days)', 'Separate permission']]
+              .map(([i, t, s]) => `<div class="list-item" style="min-height:44px;padding:8px 0"><span style="color:var(--color-text-secondary);width:20px;height:20px">${(ICON[i] || ICON.dot).replace('<svg', '<svg width="20" height="20"')}</span><div class="grow"><div style="font-size:14px">${t}</div>${s ? `<div class="t-small">${s}</div>` : ''}</div></div>`).join('')}
+          </div>
+        </div>
+        <p class="t-small">You can allow some and skip others. Liftria shows what each missing permission affects.</p>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-watch">Continue to Android permissions</button>
+      </div>`,
+    'onb-watch': () => `
+      <div class="onb">
+        <div class="row">${back('onb-health')}<div class="grow">${dots(6)}</div><button class="btn btn-ghost" data-go="onb-key">Skip</button></div>
+        <h1 class="t-title">Using a Galaxy Watch?</h1>
+        <p class="t-body">Your watch talks to Samsung Health, and Samsung Health shares with Health Connect. Liftria reads from there.</p>
+        <div class="card flat stack" style="gap:14px">
+          ${[['Open Samsung Health', 'On this phone, not the watch.'], ['Settings → Health Connect', 'Start from Samsung Health, not from the Health Connect app.'], ['Allow Samsung Health to write', 'Turn on steps, heart rate, exercise, sleep and energy.']]
+            .map(([t, d], i) => `<div class="check"><span class="tick num" style="background:var(--color-bg-raised);border:1px solid var(--color-border-strong);font-size:12px;font-weight:700">${i + 1}</span><div class="stack" style="gap:2px"><strong>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}
+        </div>
+        <div class="banner banner-warning">${ICON.clock.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span>Samsung Health shares data from the day you connect it, not your history. Expect the first watch readings within a few minutes.</span></div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="onb-key">Done, continue</button>
+      </div>`,
+    'onb-key': () => `
+      <div class="onb">
+        <div class="row">${back('onb-watch')}<div class="grow">${dots(7)}</div><button class="btn btn-ghost" data-go="onb-done">Skip</button></div>
+        <div class="icon-tile" style="width:56px;height:56px;border-radius:18px;background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${ICON.hiku}</div>
+        <h1 class="t-title">Meet Hiku</h1>
+        <p class="t-body">Hiku turns a meal description or photo into editable calories and macros. It runs on Anthropic's Claude, using your own API key.</p>
+        <div class="field"><label for="f-key">Anthropic API key</label><input id="f-key" type="password" placeholder="sk-ant-…" autocomplete="off"></div>
+        <div class="stack t-small" style="gap:6px">
+          <span>• Stored in Android's secure keystore on this phone.</span>
+          <span>• Sends only what you choose, when you tap Send. Needs internet.</span>
+          <span>• You pay Anthropic directly. Set a spending limit in the Anthropic Console.</span>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-hiku btn-block" data-go="onb-done">Save key</button>
+        <p class="t-small" style="text-align:center">Everything else in Liftria works without a key.</p>
+      </div>`,
+    'onb-done': () => `
+      <div class="onb">
+        <div class="grow" style="flex:0">${dots(8)}</div>
+        <div class="spacer"></div>
+        <h1 class="t-display">You're set.</h1>
+        <div class="card flat stack" style="gap:12px">
+          ${[['done', 'Calorie target', 'Estimated 2,650 kcal'], ['done', 'Health Connect', 'Steps and heart rate allowed'], ['skip', 'Hiku', 'No key yet, add it later in Settings'], ['skip', 'Galaxy Watch', 'Waiting for first Samsung Health data']]
+            .map(([s, t, d]) => `<div class="check"><span class="tick" style="background:${s === 'done' ? 'var(--color-tint-health);color:var(--color-domain-health)' : 'var(--color-bg-raised);color:var(--color-text-tertiary)'}">${s === 'done' ? ICON.check : ICON.clock.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="14" height="14"')}</span><div class="stack" style="gap:0"><strong style="font-size:15px">${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-block" data-go="home" data-variant="first">Open Today</button>
+      </div>`,
+  };
+
+  // ---------- Today: Pulse Orb ----------
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  function orb(v) {
+    const first = v === 'first', noTarget = v === 'notarget';
+    const eaten = first ? 0 : 1420, target = noTarget ? null : 2650;
+    const r = 104, c = 2 * Math.PI * r, pct = target ? Math.min(eaten / target, 1) : 0;
+    const label = first
+      ? `<span class="orb-n" style="font-size:40px">0</span><span class="orb-u">kcal eaten</span>`
+      : noTarget
+        ? `<span class="orb-n">${fmt(eaten)}</span><span class="orb-u">kcal eaten</span>`
+        : `<span class="orb-n">${fmt(target - eaten)}</span><span class="orb-u">kcal left</span>`;
+    const aria = first ? 'Nothing eaten yet today' : noTarget ? `${fmt(eaten)} kilocalories eaten, no target set` : `${fmt(target - eaten)} kilocalories left, ${fmt(eaten)} of an estimated ${fmt(target)} eaten`;
+    return `<div class="orb-wrap ${first ? 'is-empty' : ''}" role="img" aria-label="${aria}">
+        <div class="orb"></div>
+        <svg viewBox="0 0 236 236" aria-hidden="true"><circle cx="118" cy="118" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="4"/>
+        ${target && eaten ? `<circle class="val" cx="118" cy="118" r="${r}" fill="none" stroke="var(--color-domain-eat)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>` : ''}</svg>
+        <div class="orb-label">${label}</div>
+      </div>`;
+  }
+  const dcard = (rim, label, body, extra = '') => `<article class="dcard card ${rim ? 'rim-' + rim : ''}" ${extra}><span class="t-label">${label}</span>${body}</article>`;
+
+  function today(v) {
+    const first = v === 'first', offline = v === 'offline', noKey = v === 'nokey' || first, noTarget = v === 'notarget';
+    const hikuReady = !offline && !noKey;
+
+    const sub = first
+      ? `<p class="orb-sub">Your first meal lights it up.</p>`
+      : noTarget
+        ? `<p class="orb-sub">No target yet · <button class="link" type="button">Set a target</button></p>`
+        : `<p class="orb-sub"><b class="num">1,420</b> eaten of <b class="num">2,650</b> ${chip('estimate', 'approx', 'Estimate')}</p>`;
+    const macros = first ? '' : `<div class="orb-macros" aria-label="${noTarget ? 'Protein 96 grams, carbs 152, fat 41' : 'Protein 96 of 155 grams, carbs 152 of 340, fat 41 of 75'}">
+        ${[['protein', 96, 155, 'P'], ['carbs', 152, 340, 'C'], ['fat', 41, 75, 'F']].map(([k, g, t, l]) => `<span><i style="background:var(--color-macro-${k})"></i><b class="num">${g}</b><span class="num">${noTarget ? 'g' : '/' + t} ${l}</span></span>`).join('')}
+      </div>`;
+    const actions = `<div class="orb-actions"><button class="btn btn-primary grow" type="button">Log a meal</button>${hikuReady ? `<button class="btn btn-secondary" type="button" aria-label="Log a meal by photo with Hiku">${ICON.camera}Photo</button>` : ''}</div>`;
+
+    const cards = [];
+    if (first) cards.push(dcard('', 'Getting started', `<div class="stack" style="gap:8px">${[['done', 'Calorie target set'], ['todo', 'Log your first meal'], ['todo', 'Plan a first workout']].map(([st, t]) => `<div class="check"><span class="tick" style="${st === 'done' ? 'background:var(--color-tint-health);color:var(--color-domain-health)' : 'border:1px solid var(--color-border-strong)'}">${st === 'done' ? ICON.check : ''}</span><span style="font-size:14px">${t}</span></div>`).join('')}</div>`));
+    cards.push(first
+      ? dcard('train', 'Training', `<span class="dc-big">No workouts yet</span><span class="t-small">Start empty or build a template.</span><button class="btn btn-train btn-sm" type="button" style="justify-self:start" data-go="tr-active">Start empty workout</button>`)
+      : dcard('train', "Today's training", `<span class="dc-big">Upper A</span><span class="t-small">6 exercises · about 55 min · works offline</span><button class="btn btn-train btn-sm" type="button" style="justify-self:start" data-go="tr-preview">Start workout</button>`));
+
+    let act;
+    if (v === 'hcoff') act = `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero.</span></div><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Turn on</button>`;
+    else if (first) act = `<div><span class="dc-big num">1,208</span> <span class="t-small">steps</span></div><div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}<span class="t-small">just now</span></div><p class="t-small">No watch data yet. It starts from the day you connect Samsung Health.</p>`;
+    else {
+      const stale = v === 'stale';
+      act = `<div><span class="dc-big num">6,214</span> <span class="t-small">steps</span></div>
+        <div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '2 d ago') : '<span class="t-small">12 min ago</span>'}</div>
+        <div class="row wrap" style="gap:6px"><span class="num" style="font-weight:700">72 bpm</span>${chip('measured', 'dot', 'Samsung Health')}${stale ? '' : chip('pending', 'clock', 'Unverified')}</div>
+        <p class="t-small">Energy burned: no measured source yet.</p>`;
+    }
+    cards.push(dcard('health', 'Activity', act));
+
+    const hiku = offline
+      ? `<span class="dc-big">Offline</span><span class="t-small">Log meals manually now. Hiku comes back when you reconnect.</span>`
+      : noKey
+        ? `<span class="dc-big">Add Hiku</span><span class="t-small">Your Anthropic key unlocks meal estimates from a photo or a description.</span><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Add API key</button>`
+        : `<span class="dc-big">Snap dinner</span><span class="t-small">Hiku estimates it, you check it before saving.</span><button class="btn btn-hiku btn-sm" type="button" style="justify-self:start">${ICON.camera}Photo</button>`;
+    cards.push(dcard('hiku', 'Hiku', hiku));
+    if (!first) cards.push(dcard('eat', 'Meals today', `<div class="stack" style="gap:6px">${[['Breakfast', 520], ['Lunch', 680], ['Snack', 220]].map(([m, k]) => `<div class="row" style="justify-content:space-between"><span style="font-size:14px">${m}</span><span class="num" style="font-weight:700">${k}</span></div>`).join('')}<div class="t-small">Dinner, not logged yet</div></div>`));
+
+    return `
+      ${statusbar(offline)}
+      <div class="scroll"><div class="orb-page screen-anim">
+        <div class="orb-top"><div class="stack" style="gap:0"><span class="t-small num">Tue 21 Oct</span><span class="orb-greet">${first ? 'Welcome to Liftria' : 'Good afternoon'}</span></div><button class="avatar" aria-label="Profile and settings" data-go="tab-settings">L</button></div>
+        ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Everything works except Hiku.</span></div>` : ''}
+        ${orb(v)}${sub}${macros}${actions}
+        <div class="deck" id="deck" aria-label="Today cards, swipe for more">${cards.join('')}</div>
+        <div class="deck-dots" id="deck-dots" aria-hidden="true">${cards.map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('')}</div>
+      </div></div>`;
+  }
+
+  // ---------- energy states sheet ----------
+  function energyStates() {
+    const card = (title, chipHtml, metric, body) => `<section class="card"><div class="card-head"><h2 class="t-head">${title}</h2>${chipHtml}</div>${metric ? `<div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:32px">${metric}</span><span class="t-small">kcal</span></div>` : ''}<p class="t-small">${body}</p></section>`;
+    return `${statusbar(false)}
+      <div class="topbar"><div class="stack" style="gap:0"><span class="t-small">Design system</span><span style="font-family:var(--font-display);font-stretch:110%;font-weight:800;font-size:24px">Energy states</span></div></div>
+      <div class="scroll"><div class="page screen-anim">
+        <p class="t-body">The same "active energy" slot, in each state the data can be in. Never merge these, never add active, resting and total.</p>
+        ${card('Measured', chip('measured', 'dot', 'Samsung Health'), '412', 'Active energy written by Samsung Health for today, read through Health Connect. Shown with its source and update time.')}
+        ${card('Measured zero', chip('measured', 'dot', 'Samsung Health'), '0', 'A real source reported 0 for this window. Rare, but different from missing; shown as 0 with its source.')}
+        ${card('Estimate, not used', chip('estimate', 'approx', 'Health Connect estimate'), '', 'Health Connect returned 1,565 kcal with no contributing app (seen on the S22 test). Liftria hides the number by default and explains why.')}
+        ${card('No source', chip('off', 'off', 'No data'), '', 'Nothing has reported energy. Shown as a dash and a setup hint, never as 0.')}
+        ${card('Permission denied', chip('off', 'lock', 'Not allowed'), '', 'You didn\'t allow active energy. Shown with a link to Health Connect permissions, not as missing data.')}
+        ${card('Pending verification', chip('pending', 'clock', 'Pending'), '', 'Feature designed but not yet proven on your devices (Phase 0). Hidden from totals until verified.')}
+      </div></div>`;
+  }
+
+
+  // ---------- 1B: Train ----------
+  const MUSCLE = { chest: 'Chest', frontdelts: 'Front delts', reardelts: 'Rear delts', biceps: 'Biceps', triceps: 'Triceps', forearms: 'Forearms', abs: 'Abs', obliques: 'Obliques', quads: 'Quads', hamstrings: 'Hamstrings', glutes: 'Glutes', calves: 'Calves', lats: 'Lats', traps: 'Traps', lowerback: 'Lower back' };
+  // Liftria's own body map: rounded geometric blocks, one per muscle group (front, then back). Not derived from any third-party artwork.
+  const FRONT = [['frontdelts', 'e', 26, 44, 8, 7], ['frontdelts', 'e', 74, 44, 8, 7], ['chest', 'r', 31, 37, 18, 19, 7], ['chest', 'r', 51, 37, 18, 19, 7], ['biceps', 'r', 17, 53, 9, 22, 4.5], ['biceps', 'r', 74, 53, 9, 22, 4.5], ['forearms', 'r', 13, 78, 9, 26, 4.5], ['forearms', 'r', 78, 78, 9, 26, 4.5], ['abs', 'r', 40, 59, 20, 34, 6], ['obliques', 'r', 32, 60, 7, 28, 3.5], ['obliques', 'r', 61, 60, 7, 28, 3.5], ['quads', 'r', 32, 100, 16, 46, 8], ['quads', 'r', 52, 100, 16, 46, 8], ['calves', 'r', 34, 152, 12, 38, 6], ['calves', 'r', 54, 152, 12, 38, 6]];
+  const BACK = [['traps', 'r', 37, 29, 26, 14, 7], ['reardelts', 'e', 26, 44, 8, 7], ['reardelts', 'e', 74, 44, 8, 7], ['lats', 'r', 31, 46, 17, 28, 8], ['lats', 'r', 52, 46, 17, 28, 8], ['triceps', 'r', 17, 53, 9, 22, 4.5], ['triceps', 'r', 74, 53, 9, 22, 4.5], ['forearms', 'r', 13, 78, 9, 26, 4.5], ['forearms', 'r', 78, 78, 9, 26, 4.5], ['lowerback', 'r', 40, 76, 20, 16, 5], ['glutes', 'r', 33, 94, 16, 17, 7], ['glutes', 'r', 51, 94, 16, 17, 7], ['hamstrings', 'r', 33, 114, 15, 36, 7], ['hamstrings', 'r', 52, 114, 15, 36, 7], ['calves', 'r', 34, 154, 12, 34, 6], ['calves', 'r', 54, 154, 12, 34, 6]];
+  function figure(parts, prim, sec, x = 0) {
+    const cls = (k) => prim.includes(k) ? 'm p' : sec.includes(k) ? 'm s' : 'm';
+    return `<g transform="translate(${x} 0)"><circle class="m n" cx="50" cy="14" r="10"/><rect class="m n" x="45" y="24" width="10" height="8" rx="3"/>${parts.map(([k, t, a, b, c, d, r]) => t === 'e' ? `<ellipse class="${cls(k)}" cx="${a}" cy="${b}" rx="${c}" ry="${d}"/>` : `<rect class="${cls(k)}" x="${a}" y="${b}" width="${c}" height="${d}" rx="${r}"/>`).join('')}</g>`;
+  }
+  const names = (ks) => [...new Set(ks)].map(k => MUSCLE[k]).join(', ');
+  function bodyMap(prim, sec = [], mini = false) {
+    if (mini) {
+      const back = !prim.some(k => FRONT.some(p => p[0] === k));
+      return `<svg class="bmap" viewBox="6 0 88 196" aria-hidden="true">${figure(back ? BACK : FRONT, prim, sec)}</svg>`;
+    }
+    return `<div class="bmap-wrap"><svg class="bmap" viewBox="0 0 210 196" role="img" aria-label="Muscles worked. Primary: ${names(prim)}${sec.length ? '. Secondary: ' + names(sec) : ''}">${figure(FRONT, prim, sec)}${figure(BACK, prim, sec, 110)}</svg>
+      <div class="bmap-cap t-label" aria-hidden="true"><span>Front</span><span>Back</span></div></div>`;
+  }
+  const legend = (prim, sec) => `<div class="legend-row"><span><i class="sw p"></i>Primary: ${names(prim)}</span>${sec.length ? `<span><i class="sw s"></i>Secondary: ${names(sec)}</span>` : ''}</div>`;
+
+  const EX = {
+    bench: ['Bench press', 'Barbell', ['chest'], ['triceps', 'frontdelts']],
+    row: ['Barbell row', 'Barbell', ['lats'], ['biceps', 'reardelts', 'traps']],
+    ohp: ['Overhead press', 'Barbell', ['frontdelts'], ['triceps', 'traps']],
+    pulldown: ['Lat pulldown', 'Cable', ['lats'], ['biceps']],
+    curl: ['Dumbbell curl', 'Dumbbell', ['biceps'], ['forearms']],
+    pushdown: ['Triceps pushdown', 'Cable', ['triceps'], []],
+    incline: ['Incline dumbbell press', 'Dumbbell', ['chest', 'frontdelts'], ['triceps']],
+    squat: ['Back squat', 'Barbell', ['quads', 'glutes'], ['hamstrings', 'lowerback']],
+    rdl: ['Romanian deadlift', 'Barbell', ['hamstrings', 'glutes'], ['lowerback']],
+    legpress: ['Leg press', 'Machine', ['quads'], ['glutes']],
+    calf: ['Standing calf raise', 'Machine', ['calves'], []],
+    plank: ['Plank', 'Body weight', ['abs'], ['obliques']],
+  };
+  const GROUPS = [['chest', 'Chest', ['chest']], ['back', 'Back', ['lats', 'traps', 'lowerback']], ['shoulders', 'Shoulders', ['frontdelts', 'reardelts']], ['arms', 'Arms', ['biceps', 'triceps', 'forearms']], ['legs', 'Legs', ['quads', 'hamstrings', 'glutes', 'calves']], ['core', 'Core', ['abs', 'obliques']]];
+  const glyph = (id) => `<span class="glyph">${bodyMap(EX[id][2], EX[id][3], true)}</span>`;
+  // Upper A: [exercise, sets, reps, rest, last time]
+  const UPPER_A = [['bench', 4, '6–8', '2:30', '80 × 8, 8, 7, 6'], ['row', 4, '8', '2:00', '70 × 8, 8, 8, 7'], ['ohp', 4, '8', '2:00', '45 × 8, 8, 7, 7'], ['pulldown', 4, '10', '1:30', '60 × 10, 10, 9, 9'], ['curl', 3, '12', '1:00', '14 × 12, 11, 10'], ['pushdown', 3, '12', '1:00', '30 × 12, 12, 11']];
+
+  const hdr = (title, { to, sub, right = '', root = false } = {}) => `<div class="hdr ${root ? 'root' : ''}">${to ? `<button class="iconbtn bare" data-go="${to}" aria-label="Back">${ICON.back}</button>` : ''}<h1>${title}${sub ? `<span class="sub">${sub}</span>` : ''}</h1>${right}</div>`;
+  const exRow = (id, extra = '', variant = '') => `<button class="rowlink" type="button" data-go="tr-exercise" ${variant ? `data-variant="${variant}"` : ''}>${glyph(id)}<span class="grow"><strong>${EX[id][0]}</strong><span class="t-small">${extra || `${EX[id][1]} · ${names(EX[id][2])}`}</span></span>${ICON.chevron}</button>`;
+  const sheet = (body) => `<div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true"><div class="grabber" aria-hidden="true"></div>${body}</div>`;
+  const pr = (t = 'Record') => `<span class="badge-pr">${ICON.trophy}${t}</span>`;
+
+  function trHome(v) {
+    const first = v === 'first', resume = v === 'resume';
+    let hero;
+    if (resume) hero = `<section class="card rim-train"><div class="row" style="justify-content:space-between"><span class="t-label">Workout in progress</span><span class="row" style="gap:6px"><i class="minibar-dot" style="width:8px;height:8px;border-radius:50%;background:var(--color-domain-train)"></i><span class="num t-small">23:10</span></span></div>
+        <span class="dc-big">Upper A</span><div class="bar" aria-label="9 of 22 sets logged"><i style="width:41%;background:var(--color-domain-train)"></i></div><span class="t-small">9 of 22 sets · next: Barbell row, set 3</span>
+        <div class="row"><button class="btn btn-train grow" data-go="tr-active">Resume</button><button class="btn btn-secondary" data-go="tr-active" data-variant="discard">Discard</button></div></section>`;
+    else if (first) hero = `<section class="card rim-train"><span class="t-label">Get going</span><span class="dc-big">No workouts yet</span><p class="t-small">Start an empty session and add exercises as you go, or build a template you can repeat.</p>
+        <div class="row wrap"><button class="btn btn-train" data-go="tr-active">Start empty workout</button><button class="btn btn-secondary" data-go="tr-template" data-variant="new">Build a template</button></div></section>`;
+    else hero = `<section class="card rim-train"><div class="row" style="justify-content:space-between"><span class="t-label">Up next · today</span><span class="t-small">Upper / Lower plan</span></div>
+        <div class="row" style="gap:14px;align-items:center"><div class="grow stack" style="gap:4px"><span class="dc-big">Upper A</span><span class="t-small">6 exercises · 22 sets · about 55 min</span><span class="t-small">Last done Fri 17 Oct</span></div><span style="width:84px;flex:none">${bodyMap(['chest', 'lats', 'frontdelts'], ['biceps', 'triceps'], true).replace('class="bmap"', 'class="bmap" style="width:84px;height:100px"')}</span></div>
+        <div class="row"><button class="btn btn-train grow" data-go="tr-preview">Start workout</button><button class="btn btn-secondary" data-go="tr-template">Edit</button></div></section>`;
+
+    const days = [['Mon', 'done', 'Lower A'], ['Tue', 'today', 'Upper A'], ['Wed', 'rest', ''], ['Thu', '', 'Lower B'], ['Fri', '', 'Upper B'], ['Sat', 'rest', ''], ['Sun', 'rest', '']];
+    const week = first ? '' : `<section class="card"><div class="card-head"><h2 class="t-head">This week</h2><button class="link" data-go="tr-plans">Plan</button></div>
+        <div class="weekplan" role="img" aria-label="This week: Monday Lower A done, today Upper A, Thursday Lower B, Friday Upper B, other days rest">${days.map(([d, st, t]) => `<div><span class="d ${st}">${st === 'done' ? ICON.check : t.replace(/(\w)\w* (\w)/, '$1$2')}</span>${d[0]}</div>`).join('')}</div>
+        <span class="t-small">1 of 4 done · plans suggest, they never lock a day</span></section>`;
+
+    const quick = `<div class="chips">${[['tr-library', 'search', 'Exercises'], ['tr-plans', 'list', 'Templates'], ['tr-history', 'clock', 'History'], ['tr-records', 'trophy', 'Records']].map(([to, i, l]) => `<button class="fchip" data-go="${to}">${ICON[i]}${l}</button>`).join('')}</div>`;
+
+    const recent = first
+      ? `<section class="card flat" style="text-align:center;justify-items:center"><span class="t-small">Finished workouts show up here, with your records.</span></section>`
+      : `<section class="card"><div class="card-head"><h2 class="t-head">Recent</h2><button class="link" data-go="tr-history">All</button></div><div class="list">
+          ${[['Lower A', 'Mon 20 Oct', '52 min · 18 sets · 9,840 kg', true], ['Upper B', 'Sat 18 Oct', '57 min · 21 sets · 8,215 kg', false], ['Upper A', 'Fri 17 Oct', '55 min · 22 sets · 10,960 kg', true]].map(([n, d, m, r]) => `<button class="rowlink" data-go="tr-session"><span class="grow"><strong>${n} <span class="t-small" style="font-weight:500">· ${d}</span></strong><span class="t-small num">${m}</span></span>${r ? pr('PR') : ''}${ICON.chevron}</button>`).join('')}</div></section>`;
+
+    const starters = first ? `<div class="section-h"><h2>Starter templates</h2></div><section class="card"><div class="list">${[['Full body · 3 days', 'A simple start. 5 exercises a session.'], ['Upper / Lower · 4 days', 'More volume, shorter sessions.']].map(([n, d]) => `<button class="rowlink" data-go="tr-template"><span class="grow"><strong>${n}</strong><span class="t-small">${d} Edit anything.</span></span>${ICON.chevron}</button>`).join('')}</div></section>` : '';
+
+    return `${statusbar(false)}${hdr('Train', { root: true, right: `<button class="iconbtn" data-go="tr-library" aria-label="Search exercises">${ICON.search}</button>` })}
+      <div class="scroll"><div class="page screen-anim">${hero}${quick}${week}${starters}${recent}
+      <p class="t-small" style="text-align:center">Everything in Train works offline. Your watch is not needed.</p></div></div>`;
+  }
+
+  function trLibrary(v) {
+    const filtered = v === 'filtered', none = v === 'noresults';
+    const search = `<div class="search" role="search">${ICON.search}${none ? '<b>zercher</b>' : 'Search exercises'}</div>`;
+    const chips = `<div class="chips"><button class="fchip" data-go="tr-muscles">${ICON.body}Muscles</button>${[['all', 'All'], ...GROUPS.map(g => [g[0], g[1]])].map(([k, l]) => `<button class="fchip" aria-pressed="${(filtered ? k === 'chest' : k === 'all') && !none}" data-go="tr-library" data-variant="${k === 'chest' ? 'filtered' : 'browse'}">${l}</button>`).join('')}</div>`;
+    let body;
+    if (none) body = `<section class="card flat" style="justify-items:center;text-align:center;padding:28px 18px"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.search}</span><strong>No exercise called “zercher”</strong><span class="t-small">Check the spelling, or add it as your own exercise. Custom exercises work everywhere built-in ones do.</span><button class="btn btn-secondary" data-go="tr-library">${ICON.plus}Create “zercher”</button></section>`;
+    else if (filtered) body = `<div class="t-small">14 chest exercises · equipment: any</div><section class="card"><div class="list">${['bench', 'incline'].map(id => exRow(id)).join('')}${[['Dumbbell fly', 'Dumbbell'], ['Cable crossover', 'Cable'], ['Push-up', 'Body weight'], ['Machine chest press', 'Machine']].map(([n, e]) => `<button class="rowlink" data-go="tr-exercise" data-variant="new"><span class="glyph">${bodyMap(['chest'], ['frontdelts'], true)}</span><span class="grow"><strong>${n}</strong><span class="t-small">${e} · Chest</span></span>${ICON.chevron}</button>`).join('')}</div></section>`;
+    else body = `<div class="section-h"><h2>Recent</h2></div><section class="card"><div class="list">${['bench', 'row', 'squat'].map(id => exRow(id)).join('')}</div></section>
+      <div class="section-h"><h2>All · A–Z</h2></div><section class="card"><div class="list">${['calf', 'curl', 'legpress', 'ohp', 'plank', 'rdl'].map(id => exRow(id, '', ['calf', 'plank'].includes(id) ? 'new' : 'history')).join('')}</div></section>`;
+    return `${statusbar(false)}${hdr('Exercises', { to: 'tr-home', right: `<button class="iconbtn" aria-label="Create custom exercise">${ICON.plus}</button>` })}
+      <div class="scroll"><div class="page screen-anim">${search}${chips}${body}
+      <p class="t-small">Exercise names and instructions: free-exercise-db (public domain). Body illustrations: drawn for Liftria.</p></div></div>`;
+  }
+
+  function trMuscles() {
+    const sel = ['chest'];
+    return `${statusbar(false)}${hdr('Muscles', { to: 'tr-library', sub: 'Tap a group, or pick below' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card">${bodyMap(sel, [])}<div class="legend-row"><span><i class="sw p"></i>Selected: Chest</span></div></section>
+        <div class="chips">${GROUPS.map(([k, l]) => `<button class="fchip" aria-pressed="${k === 'chest'}">${l}</button>`).join('')}</div>
+        <div class="section-h"><h2>Chest · 14 exercises</h2></div>
+        <section class="card"><div class="list">${['bench', 'incline'].map(id => exRow(id)).join('')}<button class="rowlink" data-go="tr-library" data-variant="filtered"><span class="grow"><strong>See all 14</strong></span>${ICON.chevron}</button></div></section>
+      </div></div>`;
+  }
+
+  function trExercise(v) {
+    const fresh = v === 'new';
+    const [n, eq, p, s] = EX.bench;
+    const pts = [88, 89, 90, 90.5, 92, 93, 94.5, 96];
+    const W = 300, H = 120, x = (i) => 28 + i * ((W - 40) / (pts.length - 1)), y = (val) => 12 + (98 - val) / 12 * (H - 34);
+    const path = pts.map((val, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(val).toFixed(1)}`).join(' ');
+    const chart = `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Estimated one-rep max, best set per session: rose from 88 to 96 kilograms over 8 sessions since 26 August">
+        ${[86, 92, 98].map(g => `<line class="grid" x1="28" x2="${W - 8}" y1="${y(g)}" y2="${y(g)}"/><text x="0" y="${y(g) + 4}">${g}</text>`).join('')}
+        <path class="area" d="${path} L${x(pts.length - 1)} ${H - 22} L${x(0)} ${H - 22} Z"/><path class="line" d="${path}"/>
+        ${pts.map((val, i) => `<circle class="pt ${i === pts.length - 1 ? 'last' : ''}" cx="${x(i)}" cy="${y(val)}" r="${i === pts.length - 1 ? 5 : 3}"/>`).join('')}
+        <text x="${x(0)}" y="${H - 4}">26 Aug</text><text x="${x(pts.length - 1) - 30}" y="${H - 4}">17 Oct</text></svg></div>`;
+    const yours = fresh
+      ? `<section class="card flat"><h2 class="t-head">Your progress</h2><p class="t-small">You haven't logged this yet. Records and the chart start after your first session with it.</p></section>`
+      : `<section class="card rim-train"><div class="card-head"><h2 class="t-head">Your best</h2>${pr('New 17 Oct')}</div>
+          <div class="stats"><div class="stat"><b>82.5</b><span>kg heaviest (× 5)</span></div><div class="stat"><b>96</b><span>kg est. 1RM</span></div><div class="stat"><b>14</b><span>sessions</span></div></div>
+          ${chart}<div class="row wrap" style="gap:6px">${chip('estimate', 'approx', 'Estimate')}<span class="t-small">1RM is estimated from your best set each session (Epley formula). It's a trend, not a test.</span></div></section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Recent sessions</h2><button class="link" data-go="tr-history">All</button></div><div class="list">
+          ${[['Fri 17 Oct', '80 × 8 · 82.5 × 5 · 80 × 7 · 80 × 6'], ['Tue 14 Oct', '80 × 8 · 80 × 7 · 80 × 7 · 77.5 × 8'], ['Fri 10 Oct', '77.5 × 8 · 77.5 × 8 · 77.5 × 7']].map(([d, sets]) => `<div class="list-item" style="display:grid;gap:2px"><strong style="font-size:14px">${d}</strong><span class="t-small num">${sets} kg</span></div>`).join('')}</div></section>`;
+    return `${statusbar(false)}${hdr(n, { to: 'tr-library', sub: `${eq} · ${names(p)}`, right: `<button class="iconbtn bare" aria-label="More options">${ICON.more}</button>` })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card">${bodyMap(p, s)}${legend(p, s)}</section>
+        <button class="btn btn-primary btn-block">${ICON.plus}Add to a workout</button>
+        ${yours}
+        <section class="card"><h2 class="t-head">How to</h2><ol class="steps-list"><li>Lie on the bench with your eyes under the bar, feet flat, shoulder blades pulled back.</li><li>Grip slightly wider than shoulder width. Unrack and lower the bar to mid-chest with control.</li><li>Press back up until your arms are straight. Keep your hips on the bench.</li></ol><span class="t-small">Text from free-exercise-db, lightly edited.</span></section>
+      </div></div>`;
+  }
+
+  function trTemplate(v) {
+    const fresh = v === 'new';
+    const list = fresh
+      ? `<button class="addrow">${ICON.plus}Add your first exercise</button>`
+      : `<section class="card"><div class="list">${UPPER_A.map(([id, sets, reps, rest]) => `<div class="tmpl-ex"><span class="handle" aria-hidden="true">${ICON.grip}</span>${glyph(id)}<span class="grow stack" style="gap:2px"><strong style="font-size:15px">${EX[id][0]}</strong><span class="t-small num">${sets} sets · ${reps} reps · rest ${rest}</span></span><button class="iconbtn bare" aria-label="Options for ${EX[id][0]}: edit sets, replace, move, remove">${ICON.more}</button></div>`).join('')}</div></section><button class="addrow">${ICON.plus}Add exercise</button>`;
+    return `${statusbar(false)}${hdr(fresh ? 'New template' : 'Edit template', { to: fresh ? 'tr-home' : 'tr-plans', right: `<button class="btn btn-primary btn-sm" ${fresh ? 'aria-disabled="true"' : 'data-go="tr-plans"'}>Save</button>` })}
+      <div class="scroll"><div class="page screen-anim">
+        <div class="field"><label for="t-name">Name</label><input id="t-name" ${fresh ? 'placeholder="For example, Push day"' : 'value="Upper A"'}></div>
+        ${list}
+        ${fresh ? `<p class="hint">${ICON.warn}<span>Add a name and at least one exercise to save.</span></p>` : ''}
+        <div class="field"><label>Default rest between sets</label><div class="stepper" style="max-width:220px"><button aria-label="Shorter rest">−</button><output><b>2:00</b><span>min</span></output><button aria-label="Longer rest">+</button></div></div>
+        <div class="field"><label for="t-notes">Notes (optional)</label><input id="t-notes" placeholder="Cues, machine settings…"></div>
+        ${fresh ? '' : `<button class="btn btn-text-danger" style="justify-self:start">${ICON.trash}Delete template</button><p class="t-small">Deleting a template keeps every workout you've logged with it.</p>`}
+      </div></div>`;
+  }
+
+  function trPlans() {
+    const plan = [['Mon', 'Lower A'], ['Tue', 'Upper A'], ['Wed', 'Rest'], ['Thu', 'Lower B'], ['Fri', 'Upper B'], ['Sat', 'Rest'], ['Sun', 'Rest']];
+    return `${statusbar(false)}${hdr('Plans & templates', { to: 'tr-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-train"><div class="card-head"><div class="stack" style="gap:0"><span class="t-label">Active plan</span><h2 class="t-head">Upper / Lower · 4 days</h2></div><button class="link">Change</button></div>
+          <div class="list">${plan.map(([d, t]) => `<div class="list-item" style="min-height:48px;padding:6px 0"><span class="num" style="width:44px;color:var(--color-text-tertiary);font-weight:700;font-size:13px">${d}</span><span class="grow" style="${t === 'Rest' ? 'color:var(--color-text-tertiary)' : 'font-weight:600'}">${t}</span>${d === 'Tue' ? '<span class="chip chip-phone">Today</span>' : ''}</div>`).join('')}</div>
+          <span class="t-small">A plan only suggests what's next. Train any template on any day; Liftria moves the plan along.</span></section>
+        <div class="section-h"><h2>Templates</h2><button class="link" data-go="tr-template" data-variant="new">New</button></div>
+        <section class="card"><div class="list">${[['Upper A', '6 exercises · 22 sets'], ['Upper B', '6 exercises · 21 sets'], ['Lower A', '5 exercises · 18 sets'], ['Lower B', '5 exercises · 17 sets']].map(([n, m]) => `<button class="rowlink" data-go="tr-template" data-variant="edit"><span class="grow"><strong>${n}</strong><span class="t-small">${m}</span></span>${ICON.chevron}</button>`).join('')}</div></section>
+      </div></div>`;
+  }
+
+  function trPreview() {
+    return `${statusbar(false)}${hdr('Upper A', { to: 'tr-home', sub: '6 exercises · 22 sets · about 55 min', right: `<button class="iconbtn bare" data-go="tr-template" aria-label="Edit template">${ICON.edit}</button>` })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:120px">
+        <section class="card">${bodyMap(['chest', 'lats', 'frontdelts'], ['biceps', 'triceps', 'traps', 'reardelts'])}${legend(['chest', 'lats', 'frontdelts'], ['biceps', 'triceps'])}</section>
+        <section class="card"><div class="list">${UPPER_A.map(([id, sets, reps, , last]) => exRow(id, `${sets} × ${reps} · last ${last} kg`)).join('')}</div></section>
+        <p class="t-small" style="text-align:center">Works offline. Your watch isn't needed: sets are logged on the phone.</p>
+      </div></div>
+      <div class="dock"><button class="btn btn-train btn-xl btn-block" data-go="tr-active">Start workout</button></div>`;
+  }
+
+  function trActive(v) {
+    const rest = v === 'rest', notif = v === 'notif', denied = v === 'denied', discard = v === 'discard';
+    const rail = UPPER_A.map(([id], i) => `<button class="fchip ${i === 0 ? 'done' : ''}" aria-pressed="${i === 1}" ${i === 0 ? 'aria-label="Bench press, done"' : ''}>${i === 0 ? ICON.check : `<span class="num">${i + 1}</span>`}${EX[id][0]}</button>`).join('');
+    const setsDone = rest ? 3 : 2;
+    const rows = [[70, 8, 70, 8], [70, 8, 72.5, 8], [70, 8, 72.5, 8], [70, 7, 72.5, null]].map(([pw, pr_, w, r], i) => {
+      const st = i < setsDone ? 'done' : i === setsDone ? 'cur' : 'todo';
+      return `<div class="set-row ${st}" ${st === 'cur' ? 'aria-current="step"' : ''}><span class="num" style="font-weight:700">${i + 1}</span><span class="prev num">${pw} × ${pr_}</span><span class="v num">${w}</span><span class="v num">${r ?? '—'}</span><button class="tick-btn" aria-label="${st === 'done' ? `Set ${i + 1} done. Tap to undo` : `Mark set ${i + 1} done`}">${ICON.check}</button></div>`;
+    }).join('');
+    const card = `<section class="card rim-train"><div class="row">${glyph('row')}<div class="grow stack" style="gap:0"><strong style="font-family:var(--font-display);font-stretch:108%;font-size:19px">Barbell row</strong><span class="t-small">4 × 8 · rest 2:00</span></div><button class="iconbtn bare" aria-label="Exercise options: notes, replace, history">${ICON.more}</button></div>
+        <div class="sets"><div class="set-row head"><span>Set</span><span>Last time</span><span style="text-align:end">kg</span><span style="text-align:end">Reps</span><span></span></div>${rows}</div>
+        <button class="link" style="justify-self:start">+ Add set</button></section>`;
+    const banner = denied ? `<div class="banner banner-warning" role="status">${ICON.bell}<span>Notifications are off, so the rest timer can only alert you inside the app. <button class="link" style="min-height:0">Turn on</button></span></div>` : '';
+    const dock = `<div class="dock">${banner}<div class="steppers"><div class="stepper"><button aria-label="Weight down 2.5 kilograms">−</button><output aria-live="polite"><b>72.5</b><span>kg</span></output><button aria-label="Weight up 2.5 kilograms">+</button></div><div class="stepper"><button aria-label="One fewer rep">−</button><output aria-live="polite"><b>8</b><span>reps</span></output><button aria-label="One more rep">+</button></div></div>
+        <button class="btn btn-train btn-xl btn-block" data-go="tr-active" data-variant="${denied ? 'denied' : 'rest'}">Log set ${setsDone + 1}</button></div>`;
+    let overlay = '';
+    if (rest) overlay = sheet(`<div class="orb-wrap sm" role="timer" aria-label="Rest, 1 minute 24 seconds left"><div class="orb rest"></div>
+        <svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--color-track)" stroke-width="4"/><circle cx="100" cy="100" r="88" fill="none" stroke="var(--color-domain-train)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${2 * Math.PI * 88}" stroke-dashoffset="${2 * Math.PI * 88 * (36 / 120)}"/></svg>
+        <div class="orb-label"><span class="orb-n" style="font-size:44px">1:24</span><span class="orb-u">rest</span></div></div>
+        <p class="t-small" style="text-align:center;margin-top:-4px">Next: Barbell row · set 4 · 72.5 kg × 8</p>
+        <div class="three"><button class="btn btn-secondary">−15 s</button><button class="btn btn-secondary">+15 s</button><button class="btn btn-primary" data-go="tr-active" data-variant="log">Skip rest</button></div>
+        <p class="t-small" style="text-align:center">Keeps counting with the screen off. You'll get a notification at 0:00.</p>`);
+    if (notif) overlay = sheet(`<span class="sheet-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.bell}</span><h2>Get a nudge when rest is over?</h2>
+        <p class="t-body">Liftria shows a local notification so the rest timer can reach you with the screen locked or while you're in another app. Nothing is sent anywhere.</p>
+        <button class="btn btn-primary btn-block" data-go="tr-active" data-variant="rest">Allow notifications</button><button class="btn btn-ghost btn-block" data-go="tr-active" data-variant="denied">Not now</button>
+        <p class="t-small">Next, Android asks for permission. You can change it later in Settings.</p>`);
+    if (discard) overlay = sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Discard this workout?</h2>
+        <p class="t-body">The 9 sets you've logged in Upper A will be deleted. This can't be undone.</p>
+        <button class="btn btn-primary btn-block" data-go="tr-active" data-variant="log">Keep training</button><button class="btn btn-danger btn-block" data-go="tr-home">Discard workout</button>`);
+    return `${statusbar(false)}<div class="wk-top"><button class="iconbtn bare" data-go="tr-home" data-variant="resume" aria-label="Minimize workout. It keeps running">${ICON.down}</button><div class="grow"><strong>Upper A</strong><span class="t-small num">23:10 · ${setsDone + 7} of 22 sets</span></div><button class="btn btn-secondary btn-sm" data-go="tr-summary">Finish</button></div>
+      <div class="wk-progress bar" aria-hidden="true"><i style="width:${(setsDone + 7) / 22 * 100}%;background:var(--color-domain-train)"></i></div>
+      <div class="rail" aria-label="Exercises in this workout">${rail}</div>
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${denied ? 230 : 180}px">${card}
+        <section class="card flat"><div class="row">${glyph('ohp')}<div class="grow stack" style="gap:0"><strong>Up next: Overhead press</strong><span class="t-small">4 × 8 · last 45 × 8, 8, 7, 7 kg</span></div></div></section>
+      </div></div>${dock}${overlay}`;
+  }
+
+  function trLock(v) {
+    const done = v === 'done';
+    return `<div class="lock"><div class="clock num">${done ? '9:59' : '9:58'}</div><div class="date">Tue, 21 October</div>
+      <div class="notif" role="img" aria-label="Android notification: ${done ? 'Rest over. Time for set 4' : 'Rest, 42 seconds left'}"><div class="app"><i>${ICON.train}</i>Liftria · Upper A · ${done ? 'now' : '23:58'}</div>
+        <strong>${done ? 'Rest over · time for set 4' : 'Rest · 0:42 left'}</strong><span style="font-size:14px;color:#C9CCD6">Barbell row · 72.5 kg × 8</span>
+        ${done ? '' : '<div class="bar" aria-hidden="true"><i style="width:65%;background:#FF8F6B"></i></div>'}
+        <div class="acts">${done ? '<button>Open</button>' : '<button>+30 s</button><button>Skip</button>'}</div></div>
+      <p class="sys-note">Android lock screen, for reference. The ongoing notification is the only thing Liftria shows outside the app.${done ? ' A short vibration plays at 0:00 (sound follows your phone\'s mode).' : ''}</p></div>`;
+  }
+
+  function trSummary(v) {
+    const prs = v !== 'nopr';
+    return `${statusbar(false)}${hdr('', { right: '' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:150px">
+        <div class="stack" style="justify-items:center;text-align:center;gap:6px"><span class="sheet-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.check}</span><h1 class="t-display" style="font-size:30px">Workout done</h1><span class="t-small">Upper A · Tue 21 Oct · 16:12–17:10</span></div>
+        <section class="card rim-train"><div class="stats"><div class="stat"><b>58:12</b><span>duration</span></div><div class="stat"><b>22</b><span>sets</span></div><div class="stat"><b>11,420</b><span>kg volume</span></div></div>
+          <span class="t-small">${prs ? 'Volume +4% vs. your last Upper A.' : 'Volume about the same as your last Upper A.'}</span></section>
+        ${prs ? `<section class="card rim-eat"><div class="card-head"><h2 class="t-head">2 new records</h2>${pr('PR')}</div><div class="list">
+            <div class="list-item" style="display:grid;gap:2px"><strong>Bench press · heaviest set</strong><span class="t-small num">82.5 kg × 5 (was 80 kg × 8)</span></div>
+            <div class="list-item" style="display:grid;gap:2px"><strong>Barbell row · most reps at 72.5 kg</strong><span class="t-small num">9 reps (was 8)</span></div></div></section>`
+          : `<section class="card flat"><p class="t-small">No new records today. Consistent sessions are what move them.</p></section>`}
+        <section class="card"><h2 class="t-head">Heart rate and calories</h2><div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Pending')}<span class="t-small">Not shown. Workout data from the watch hasn't been verified on your devices yet, and Liftria doesn't guess calories from sets.</span></div></section>
+        <div class="field"><label for="w-notes">How did it feel? (optional)</label><input id="w-notes" placeholder="Shoulder felt fine, bench moved fast"></div>
+      </div></div>
+      <div class="dock"><button class="btn btn-primary btn-xl btn-block" data-go="tr-home">Save workout</button><div class="row"><button class="btn btn-ghost grow" data-go="tr-active">Back to workout</button><button class="btn btn-text-danger grow" data-go="tr-active" data-variant="discard">Discard workout</button></div></div>`;
+  }
+
+  function trHistory(v) {
+    if (v === 'empty') return `${statusbar(false)}${hdr('History', { to: 'tr-home' })}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.clock}</span><h1 class="t-title">No workouts yet</h1><p class="t-body" style="max-width:260px">Finished workouts show up here, newest first. You can edit or delete any of them.</p><button class="btn btn-train" data-go="tr-active">Start a workout</button></div>`;
+    const deleted = v === 'deleted';
+    const rows = [['Tue 21 Oct', 'Upper A', '58 min · 22 sets · 11,420 kg', true], ['Mon 20 Oct', 'Lower A', '52 min · 18 sets · 9,840 kg', true], ['Sat 18 Oct', 'Upper B', '57 min · 21 sets · 8,215 kg', false], ['Fri 17 Oct', 'Upper A', '55 min · 22 sets · 10,960 kg', true], ['Thu 16 Oct', 'Lower B', '49 min · 17 sets · 9,105 kg', false]].filter(r => !(deleted && r[1] === 'Lower A'));
+    return `${statusbar(false)}${hdr('History', { to: 'tr-home', right: `<button class="iconbtn" data-go="tr-records" aria-label="Records">${ICON.trophy}</button>` })}
+      <div class="scroll"><div class="page screen-anim"><div class="stats card"><div class="stat"><b>${deleted ? 13 : 14}</b><span>workouts in Oct</span></div><div class="stat"><b>3.5</b><span>per week</span></div><div class="stat"><b>6</b><span>records</span></div></div>
+        <div class="section-h"><h2>October</h2></div><section class="card"><div class="list">${rows.map(([d, n, m, r]) => `<button class="rowlink" data-go="tr-session"><span class="grow"><strong>${n} <span class="t-small" style="font-weight:500">· ${d}</span></strong><span class="t-small num">${m}</span></span>${r ? pr('PR') : ''}${ICON.chevron}</button>`).join('')}</div></section>
+      </div></div>${deleted ? `<div class="snackbar" role="status">Lower A deleted. Records updated.<button class="btn btn-sm" data-go="tr-history" data-variant="list">Undo</button></div>` : ''}`;
+  }
+
+  function trSession(v) {
+    const edit = v === 'edit', del = v === 'delete';
+    const data = [['squat', [[100, 5], [100, 5], [100, 5], [105, 3]]], ['rdl', [[90, 8], [90, 8], [90, 8]]], ['legpress', [[180, 10], [180, 10], [180, 9]]]];
+    const ex = data.map(([id, sets]) => `<section class="card"><div class="row">${glyph(id)}<strong class="grow">${EX[id][0]}</strong>${id === 'squat' ? pr('PR') : ''}</div>
+        <div class="sets">${sets.map(([w, r], i) => edit
+          ? `<div class="set-row" style="grid-template-columns:26px 1fr 1fr 48px"><span class="num" style="font-weight:700">${i + 1}</span><input value="${w}" aria-label="Set ${i + 1} weight, kilograms" inputmode="decimal"><input value="${r}" aria-label="Set ${i + 1} reps" inputmode="numeric"><button class="tick-btn" aria-label="Remove set ${i + 1}">${ICON.x}</button></div>`
+          : `<div class="set-row" style="grid-template-columns:26px 1fr auto;min-height:36px"><span class="num" style="font-weight:700;color:var(--color-text-tertiary)">${i + 1}</span><span class="num">${w} kg × ${r}</span>${id === 'squat' && i === 3 ? pr() : ''}</div>`).join('')}
+        ${edit ? '<button class="link" style="justify-self:start">+ Add set</button>' : ''}</div></section>`).join('');
+    return `${statusbar(false)}${hdr('Lower A', { to: 'tr-history', sub: 'Mon 20 Oct · 18:05 · 52 min', right: edit ? '' : `<button class="iconbtn bare" data-go="tr-session" data-variant="edit" aria-label="Edit workout">${ICON.edit}</button>` })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${edit ? 150 : 110}px">
+        ${edit ? `<div class="banner banner-warning">${ICON.edit}<span>Editing. Records are recalculated when you save.</span></div>` : `<section class="card rim-train"><div class="stats"><div class="stat"><b>52:04</b><span>duration</span></div><div class="stat"><b>18</b><span>sets</span></div><div class="stat"><b>9,840</b><span>kg volume</span></div></div></section>`}
+        ${ex}
+        ${edit ? '' : `<button class="btn btn-text-danger" style="justify-self:start" data-go="tr-session" data-variant="delete">${ICON.trash}Delete workout</button>`}
+      </div></div>
+      ${edit ? `<div class="dock"><div class="row"><button class="btn btn-secondary grow" data-go="tr-session" data-variant="view">Cancel</button><button class="btn btn-primary grow" data-go="tr-session" data-variant="view">Save changes</button></div></div>` : ''}
+      ${del ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Delete Lower A from 20 Oct?</h2><p class="t-body">Its 18 sets are removed, and the back-squat record it set (105 kg × 3) goes back to your previous best.</p><button class="btn btn-danger btn-block" data-go="tr-history" data-variant="deleted">Delete workout</button><button class="btn btn-secondary btn-block" data-go="tr-session" data-variant="view">Cancel</button>`) : ''}`;
+  }
+
+  function trRecords() {
+    const recs = [['bench', '82.5 kg × 5', '96 kg', '17 Oct'], ['squat', '105 kg × 3', '115 kg', '20 Oct'], ['row', '72.5 kg × 9', '94 kg', '21 Oct'], ['ohp', '47.5 kg × 6', '57 kg', '10 Oct'], ['rdl', '95 kg × 8', '120 kg', '13 Oct']];
+    return `${statusbar(false)}${hdr('Records', { to: 'tr-history' })}
+      <div class="scroll"><div class="page screen-anim">
+        <p class="t-small">Your best set and estimated 1RM per exercise. Records recalculate when you edit or delete a workout.</p>
+        <section class="card"><div class="list">${recs.map(([id, best, e1, d]) => `<button class="rowlink" data-go="tr-exercise">${glyph(id)}<span class="grow"><strong>${EX[id][0]}</strong><span class="t-small num">Best ${best} · est. 1RM ${e1} · ${d}</span></span>${ICON.chevron}</button>`).join('')}</div></section>
+        <div class="row wrap" style="gap:6px">${chip('estimate', 'approx', 'Estimate')}<span class="t-small">1RM is calculated (Epley), never measured.</span></div>
+      </div></div>`;
+  }
+
+  const TRAIN = { 'tr-home': trHome, 'tr-library': trLibrary, 'tr-muscles': trMuscles, 'tr-exercise': trExercise, 'tr-template': trTemplate, 'tr-plans': trPlans, 'tr-preview': trPreview, 'tr-active': trActive, 'tr-lock': trLock, 'tr-summary': trSummary, 'tr-history': trHistory, 'tr-session': trSession, 'tr-records': trRecords };
+  // Screens that are focus flows hide the capsule nav (IA rule 1).
+  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary'];
+  const isFocus = (s, v) => FOCUS.includes(s) || (s === 'tr-session' && (v === 'edit' || v === 'delete'));
+  const minibar = () => `<div class="minibar" role="region" aria-label="Workout in progress"><i class="live" aria-hidden="true"></i><span class="grow"><strong style="font-size:14px">Upper A</strong> <span class="t-small num">· 23:10 · 9 of 22 sets</span></span><button class="btn btn-train btn-sm" data-go="tr-active">Resume</button></div>`;
+
+  // ---------- placeholders for later milestones ----------
+  const LATER = {
+    'tab-eat': ['eat', 'Eat', 'The food diary, local food search, portions and targets are designed in milestone 1C.'],
+    'tab-progress': ['health', 'Progress', 'Trends, body measurements and Health Connect details are designed in milestone 1D.'],
+    'tab-hiku': ['hiku', 'Hiku', 'Chat, photo meal analysis and confirm-before-saving are designed in milestone 1C.'],
+    'tab-settings': ['health', 'Settings', 'Profile, targets, API key, privacy and data management are designed in milestone 1D.'],
+  };
+  const later = (id) => {
+    const [c, t, d] = LATER[id];
+    const icon = { train: ICON.train, eat: ICON.eat, health: ICON.progress, hiku: ICON.hiku }[c];
+    return `${statusbar(false)}<div class="topbar">${id === 'tab-settings' ? back('home') : '<span></span>'}</div><div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${icon}</span><h1 class="t-title">${t}</h1><p class="t-body" style="max-width:260px">${d}</p></div>`;
+  };
+
+  const NAV = [['home', 'Today', 'home'], ['tr-home', 'Train', 'train'], ['tab-eat', 'Eat', 'eat'], ['tab-progress', 'Progress', 'progress'], ['tab-hiku', 'Hiku', 'hiku']];
+  const nav = (active) => `<nav class="capsule" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" aria-label="${label}" ${active === id ? 'aria-current="page"' : ''}>${ICON[icon]}<span>${label}</span></button>`).join('')}</nav>`;
+
+  const SCREENS = [
+    ['Onboarding', [['onb-welcome', '1 · Welcome'], ['onb-privacy', '2 · Privacy and local storage'], ['onb-profile', '3 · Profile (optional)'], ['onb-goals', '4 · Goal and activity'], ['onb-target', '5 · Estimated target'], ['onb-health', '6 · Health Connect'], ['onb-watch', '7 · Galaxy Watch guidance'], ['onb-key', '8 · Hiku API key (optional)'], ['onb-done', '9 · Done']]],
+    ['Today', [['home', 'TD · Today'], ['energy', 'DS-1 · Energy states sheet']]],
+    ['Train (1B)', [['tr-home', 'TR-1 · Train home'], ['tr-plans', 'TR-2 · Plans and templates'], ['tr-template', 'TR-3 · Template editor'], ['tr-library', 'TR-4 · Exercise library'], ['tr-muscles', 'TR-5 · Muscle browser'], ['tr-exercise', 'TR-6 · Exercise detail'], ['tr-preview', 'TR-7 · Workout preview'], ['tr-active', 'TR-8 · Active workout'], ['tr-lock', 'TR-9 · Rest timer on the lock screen'], ['tr-summary', 'TR-10 · Finish summary'], ['tr-history', 'TR-11 · History'], ['tr-session', 'TR-12 · Session detail'], ['tr-records', 'TR-13 · Records']]],
+    ['Later', [['tab-eat', 'Eat (1C)'], ['tab-progress', 'Progress (1D)'], ['tab-hiku', 'Hiku (1C)']]],
+  ];
+  const VARIANTS = {
+    home: [['rich', 'Populated day'], ['first', 'First day, nothing logged'], ['offline', 'Offline'], ['nokey', 'No Anthropic key'], ['hcoff', 'Health Connect off'], ['stale', 'Stale health data'], ['notarget', 'No calorie target']],
+    'tr-home': [['rich', 'Populated'], ['first', 'First time, no history'], ['resume', 'Workout in progress']],
+    'tr-template': [['edit', 'Edit Upper A'], ['new', 'New, not valid yet']],
+    'tr-library': [['browse', 'Browse'], ['filtered', 'Filtered: Chest'], ['noresults', 'Search, no results']],
+    'tr-exercise': [['history', 'With your history'], ['new', 'Never logged']],
+    'tr-active': [['log', 'Logging a set'], ['rest', 'Rest timer'], ['notif', 'Notification ask (first rest)'], ['denied', 'Notifications denied'], ['discard', 'Discard confirmation']],
+    'tr-lock': [['rest', 'Rest running'], ['done', 'Rest over']],
+    'tr-summary': [['pr', 'New records'], ['nopr', 'No records']],
+    'tr-history': [['list', 'Populated'], ['empty', 'Empty'], ['deleted', 'After delete, with Undo']],
+    'tr-session': [['view', 'View'], ['edit', 'Editing sets'], ['delete', 'Delete confirmation']],
+  };
+  const vOf = (s) => state.v[s] || (VARIANTS[s] ? VARIANTS[s][0][0] : '');
+  screenSelect.innerHTML = SCREENS.map(([g, items]) => `<optgroup label="${g}">${items.map(([id, l]) => `<option value="${id}">${l}</option>`).join('')}</optgroup>`).join('');
+
+  function render() {
+    const s = state.screen;
+    let html;
+    if (ONB[s]) html = statusbar(false) + ONB[s]();
+    else if (s === 'home') html = today(vOf('home')) + (vOf('tr-home') === 'resume' ? minibar() : '') + nav('home');
+    else if (s === 'energy') html = energyStates() + nav('home');
+    else if (TRAIN[s]) html = TRAIN[s](vOf(s)) + (isFocus(s, vOf(s)) ? '' : (s !== 'tr-home' && vOf('tr-home') === 'resume' ? minibar() : '') + nav('tr-home'));
+    else html = later(s) + (s === 'tab-settings' ? '' : nav(s));
+    screenEl.innerHTML = html;
+    screenEl.classList.toggle('has-mini', html.includes('class="minibar"'));
+    const deck = screenEl.querySelector('#deck'), dotsEl = screenEl.querySelector('#deck-dots');
+    if (deck && dotsEl) deck.addEventListener('scroll', () => {
+      const cardsEls = [...deck.children], i = cardsEls.reduce((best, el, idx) => Math.abs(el.offsetLeft - deck.scrollLeft - 18) < Math.abs(cardsEls[best].offsetLeft - deck.scrollLeft - 18) ? idx : best, 0);
+      [...dotsEl.children].forEach((d, j) => d.classList.toggle('on', j === i));
+    }, { passive: true });
+    screenEl.classList.toggle('glass', state.style === 'glass');
+    styleBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.styleBtn === state.style)));
+    screenSelect.value = s === 'tab-settings' ? 'home' : s;
+    variantCtl.hidden = !VARIANTS[s];
+    if (VARIANTS[s]) { variantSelect.innerHTML = VARIANTS[s].map(([k, l]) => `<option value="${k}">${l}</option>`).join(''); variantSelect.value = vOf(s); }
+    try { localStorage.setItem('liftria-app', JSON.stringify({ screen: s, v: state.v, style: state.style })); } catch (e) { /* storage may be blocked */ }
+  }
+
+  screenEl.addEventListener('click', (e) => {
+    const goal = e.target.closest('[data-goal]'), act = e.target.closest('[data-act]'), go = e.target.closest('[data-go]');
+    if (goal) { state.goal = goal.dataset.goal; render(); return; }
+    if (act) { state.activity = act.dataset.act; render(); return; }
+    if (go) { if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; state.screen = go.dataset.go; render(); screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
+  });
+  screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; render(); });
+  variantSelect.addEventListener('change', () => { state.v[state.screen] = variantSelect.value; render(); });
+
+  const styleBtns = document.querySelectorAll('[data-style-btn]');
+  styleBtns.forEach(b => b.addEventListener('click', () => { state.style = b.dataset.styleBtn; render(); }));
+  const themeBtns = document.querySelectorAll('[data-theme-btn]');
+  function setTheme(t) {
+    if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+    themeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === t)));
+  }
+  themeBtns.forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeBtn)));
+
+  try { const saved = JSON.parse(localStorage.getItem('liftria-app') || 'null'); if (saved) Object.assign(state, saved); } catch (e) { /* ignore */ }
+  const hash = location.hash.slice(1);
+  if (hash === 'today') state.screen = 'home'; else if (hash === 'train') state.screen = 'tr-home'; else if (hash === 'energy') state.screen = 'energy'; else if (hash === 'onboarding') state.screen = 'onb-welcome';
+  render();
+})();
+</script>
+
+</body>
+</html>

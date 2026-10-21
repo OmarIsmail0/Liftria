@@ -1,6 +1,6 @@
 # Interaction and States
 
-**Milestone:** 1A (cross-cutting states + Today). Screen-specific states for 1B–1D are added to this file in those milestones.
+**Milestone:** 1A (cross-cutting states + Today), 1B (Train). Screen-specific states for 1C–1D are added in those milestones.
 
 ## State vocabulary
 
@@ -45,6 +45,50 @@
 | Profile button | Opens Settings | — | |
 | Today tab (capsule nav) | Scrolls Today to top | Opens Quick add sheet | |
 | Pull down | Re-reads Health Connect | — | Feedback "Updated just now" or an error |
+
+## Train (1B)
+
+### States per screen
+
+| Screen | Loading | Empty | Error | Other states |
+|---|---|---|---|---|
+| TR-1 Train home | Skeleton hero (local read, usually < 100 ms) | First time: Start empty / Build a template + starter templates | DB read fails: "Couldn't load your workouts. Restart Liftria; your data is still on the phone." + Retry | Workout in progress (Resume / Discard) |
+| TR-3 Template editor | — | New: "Add your first exercise" | Save fails: inline error, form kept | Invalid: Save disabled + hint |
+| TR-4 Library | — (bundled pack) | No results: "Create '<query>'" | Pack missing or corrupt: list of custom exercises + "Exercise pack couldn't load" | Filtered by group |
+| TR-6 Exercise detail | — | Never logged: explanation in place of stats and chart | — | 1 session: single value instead of a chart |
+| TR-8 Active workout | — | Empty workout: "Add an exercise" as the first card | Set save fails: row stays unticked, "Couldn't save this set. Try again." (rare: disk full) | Rest, notification ask, notifications denied, discard confirmation, in progress after an app kill |
+| TR-9 Notification | — | — | Permission denied: no notification; in-app alert only | Running, over |
+| TR-10 Summary | — | — | Save fails: workout stays in progress, retry | Records / no records; dropped empty sets |
+| TR-11 History | Skeleton rows | "No workouts yet" + Start a workout | As TR-1 | After delete + Undo |
+| TR-12 Session | — | — | Save fails: edits kept, retry | View, edit, delete confirmation |
+
+### Special cases in Train
+
+| Case | Behavior |
+|---|---|
+| No internet | Nothing changes. Train never uses the network. |
+| No watch / watch unverified | Nothing in Train depends on it. TR-10 shows heart rate and calories as `pending` with the reason. No calorie burn is estimated from sets. |
+| Health Connect off | No effect on Train. |
+| First-time user | TR-1 first-time hero, starter templates, empty history, "never logged" exercise detail. |
+| Notifications denied | Rest timer works in-app (sheet, top-bar countdown, vibration while open); banner offers "Turn on". |
+| App killed or phone restarted mid-workout | Every logged set is already saved. Next launch shows the in-progress hero. The rest timer isn't restored; it was a transient state. |
+
+### Train interactions
+
+| Element | Tap | Long-press | Notes |
+|---|---|---|---|
+| Log set (64dp) | Saves the set, ticks it, starts rest | — | Light haptic. TalkBack announces "Set 3 logged, 72.5 kilograms, 8 reps. Rest 2 minutes." |
+| Stepper − / + | One step | Repeats every 150 ms after 400 ms | Value announced (`aria-live`) |
+| Stepper number | Opens the numeric keypad | — | Decimal keypad for kg |
+| Set tick | Logs the row as shown, or asks to undo if ticked | — | — |
+| Exercise rail chip | Switches exercise | Reorder mode | Done exercises keep a tick |
+| Rest sheet | −15 s / +15 s / Skip | — | Swipe down hides; timer keeps running in the top bar |
+| Minimize (chevron) | Leaves TR-8, shows mini bar | — | System back does the same; it never discards |
+| Finish | Opens summary | — | — |
+| Mini bar | Resume | — | Shown above the capsule nav on every tab |
+| Body map region | Selects that muscle group | — | The group chips are the accessible equivalent |
+| History row | Opens session | — | — |
+| Snackbar Undo | Restores the deleted workout | — | 8 s, longer than the 4 s default, because deletes matter |
 
 ## Feedback timing
 

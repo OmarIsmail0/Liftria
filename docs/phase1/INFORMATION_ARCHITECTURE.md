@@ -43,11 +43,13 @@ Today
 │   └── About · Help & troubleshooting
 ├── Quick add sheet → Log meal / Start workout / Log weight
 └── Cards link to → Eat diary · Workout · Progress → Health source details
-Train
-├── Workout home → Start workout → Active workout → Summary
-├── Templates & plans → Edit template
-├── Exercise library → Muscle group → Exercise detail
-└── History → Session detail · Exercise progress · Records
+Train (TR-1)
+├── Workout preview (TR-7) → Active workout (TR-8) → Summary (TR-10)
+│   └── Rest timer sheet · lock-screen notification (TR-9)
+├── Plans & templates (TR-2) → Template editor (TR-3) → Exercise library
+├── Exercise library (TR-4) → Muscles (TR-5) → Exercise detail (TR-6)
+├── History (TR-11) → Session detail (TR-12) → edit / delete
+└── Records (TR-13) → Exercise detail
 Eat
 ├── Diary (by meal) → Meal detail → Edit food entry
 ├── Add food → Search local pack / Recents / Custom food / Hiku photo
@@ -64,7 +66,7 @@ Hiku
 
 ## Navigation rules
 
-1. **Bottom bar** is visible on all tab roots and hidden during focus flows: onboarding, active workout, Hiku review-before-save, and destructive confirmations.
+1. **The navigation capsule** is visible on tab roots and their browse screens. It's hidden during focus flows: onboarding, template editor, workout preview, active workout, workout summary, session edit, Hiku review-before-save, and destructive confirmations.
 2. **Back** (Android gesture or system back) always goes one level up. It never discards entered data without a confirmation sheet.
 3. **The active workout persists.** If you leave it, a mini bar ("Upper A · 23:10 · Resume") shows above the navigation capsule on every screen until you finish or discard it. (1B)
 4. **Deep links** between tabs open the destination as its own stack, so back returns to where you were. Example: Today → "Log a meal" opens Eat's add-food screen with back to Today.

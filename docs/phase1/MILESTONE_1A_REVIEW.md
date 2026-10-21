@@ -1,6 +1,6 @@
 # Milestone 1A Review
 
-**Date:** 2026-10-21 · **Reviewer:** Claude (self-review; **owner sign-off pending**)
+**Date:** 2026-10-21 · **Reviewer:** Claude (self-review) · **Owner sign-off: approved 2026-10-21**
 
 ## Deliverables
 
@@ -51,7 +51,7 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 | Local-first feasibility | PASS | Every 1A screen works from local DB, SecureStore and on-device Health Connect; only Hiku needs network |
 | Contrast (WCAG AA) | PASS | 5 failing tokens found and fixed; ratios in ACCESSIBILITY.md |
 | Glass style (owner request) | PASS | Added as default with a Solid/Glass switch; worst-case contrast on the brightest glow measured and fixed (card opacity .76, dark tertiary `#8A94A3`); ring and bar tracks given their own token after they disappeared on light glass |
-| Touch targets ≥ 48dp | PASS | Small and ghost buttons raised from 40/44 to 48 during review |
+| Touch targets ≥ 48dp | PASS | Small and ghost buttons raised from 40/44 to 48 during review. The Today profile button (40dp) was missed and fixed during the 1B review |
 | Target formula vs. screens | PASS | Prototype showed 2,350 while the formula gives 2,650 for its sample profile; corrected |
 | Prototype runtime | PASS | Rendered in Chromium at 1100px and 384px, dark and light: no script errors, no horizontal overflow |
 | S22 Ultra one-handed reach | PASS | Primary actions pinned bottom; nav 56dp; profile/settings (rare) top-right |

@@ -75,3 +75,60 @@ Nutrition is no longer a card: the orb, target line and macro row above the deck
 **Refresh:** pull to refresh re-reads Health Connect and shows "Updated just now". Health Connect is also read on app foreground at most every 15 minutes. Local data always reflects the latest change instantly.
 
 **Quick add** (from "Log a meal" or a long-press on the Today tab): a bottom sheet with Log meal · Photo meal (Hiku) · Start workout · Log weight. Designed fully in 1C/1B.
+
+## Train (TR-1 … TR-13)
+
+**Shared rules**
+- **Units:** kg by default (lb in Settings, 1D). Weight steps are 2.5 kg for barbell and machine, 2 kg for dumbbells, 1.25 kg when the user turns on "small plates". Reps step by 1.
+- **Body weight** exercises log reps only, plus optional added weight.
+- **Volume** = Σ weight × reps of completed sets. Body-weight sets without added weight are excluded and the summary says so. Volume is a training-load signal, not a score.
+- **Estimated 1RM** uses the Epley formula, `weight × (1 + reps / 30)`, from the best completed set per session, and only for sets of 1–12 reps. It always carries the `estimate` chip and the words "a trend, not a test".
+- **Records** are recalculated from history whenever a session is edited or deleted. Types:
+  - heaviest weight
+  - best estimated 1RM
+  - most reps at a given weight
+  - best session volume per exercise
+
+  Records come from completed sets only.
+- **Exercise data:** names, muscles and instructions come from the bundled free-exercise-db pack (Unlicense). No images from it are used. Every illustration is Liftria's own geometric body map (DESIGN_SYSTEM §5).
+- **Custom exercises** have a name, equipment, primary and secondary muscles, and a weight or body-weight type. They behave like built-in exercises everywhere.
+- **No watch dependency:** nothing in Train reads Health Connect. Heart rate and calories from the watch are not shown (Pending; Phase 0 hasn't verified watch workouts).
+
+| Screen | Layout (top → bottom) | Rules |
+|---|---|---|
+| TR-1 Train home | Header (Train, search) → hero → shortcut chips → This week → Recent → offline note | Hero priority: **in-progress workout** (Resume / Discard) > **plan's next template** (Start / Edit) > **first time** (Start empty / Build a template, plus two starter templates). This week marks each day as done, today, planned or rest; the plan never blocks training on another day. |
+| TR-2 Plans and templates | Active plan by weekday → templates list | Plan types in V1: weekly (weekday-based) and rotation (next in order). Changing a plan never changes history. |
+| TR-3 Template editor | Name → exercises (drag handle, glyph, sets × reps, rest, options) → Add exercise → default rest → notes → Delete template | Save requires a name and at least one exercise. Until then Save is disabled and a hint explains why. Deleting a template keeps logged workouts. Back with unsaved changes asks "Discard changes?". Rep targets can be a range ("6–8"). |
+| TR-4 Exercise library | Search → chips (Muscles, All, groups) → Recent → A–Z | Search is local, prefix and fuzzy, and matches names and common aliases ("OHP"). No results offers "Create '<query>'". The data-source credit is always at the bottom. |
+| TR-5 Muscle browser | Front/back map → group chips → exercises for the group | Tapping a region and tapping its chip do the same thing; chips are the accessible path. |
+| TR-6 Exercise detail | Body map + legend → Add to a workout → Your best (3 stats, chart, estimate note) → Recent sessions → How to | Never logged: "Your progress" explains that records and the chart start after the first session. The chart needs at least 2 sessions; with only 1 it shows the single value. "Add to a workout" adds to the in-progress workout if there is one, otherwise it asks which template. |
+| TR-7 Workout preview | Title + meta → muscles map → exercise list with last time → Start workout (bottom) | One extra tap before starting prevents accidental starts from Today. The capsule nav is hidden. |
+| TR-8 Active workout | Top bar (minimize, name, elapsed, sets done, Finish) → progress bar → exercise rail → current exercise card (sets table) → up next → bottom dock (kg stepper, reps stepper, **Log set n**) | See "Active workout behavior" below. |
+| TR-9 Rest notification | System lock screen with Liftria's ongoing notification | Content: "Rest · 0:42 left", the next set, a progress bar, and +30 s / Skip. At 0:00: "Rest over · time for set 4", a short vibration, and sound per the phone's mode. Tapping it opens TR-8. |
+| TR-10 Finish summary | Done mark → stats (duration, sets, volume) with a neutral comparison → records card (honey rim) → HR and calories `pending` → notes → Save workout / Back to workout | Comparisons are neutral: "+4%" or "about the same", never "worse". With no records: "No new records today. Consistent sessions are what move them." Empty sets (no reps) are dropped on save, and the summary says how many. |
+| TR-11 History | Month stats → sessions newest first with PR badges | Empty: explanation + Start a workout. After a delete: snackbar "… deleted. Records updated." + **Undo** (8 s). |
+| TR-12 Session detail | Header (name, date, start, duration, edit) → stats → exercises with sets and record markers → Delete workout | Edit mode: an "Editing" banner, inline kg/reps inputs, remove set, add set, and Save changes / Cancel in a bottom bar. The capsule nav is hidden. Delete shows a confirmation sheet naming any records that will change. |
+| TR-13 Records | Explanation → one row per exercise (best set, est. 1RM, date) → estimate note | Sorted by most recent record. Tapping opens TR-6. |
+
+### Active workout behavior (TR-8)
+
+1. **Prefill:** each set starts with the weight and reps from the same set last time. If last time hit the top of the rep range on every set, the weight is suggested +1 step and labeled "Suggested +2.5 kg". It's never changed silently.
+2. **Log set** saves the set immediately to SQLite (it survives an app kill or reboot), ticks the row, gives a light haptic, moves to the next set and starts the rest timer.
+3. **Ticking a row** logs it as-is. Tapping a ticked row's tick asks "Undo this set?" inline (no sheet). Tapping a row's numbers loads them into the steppers.
+4. **Steppers** are 64dp tall. Long-press repeats. Tapping the number opens a numeric keypad for direct entry.
+5. **Exercise rail:**
+   - Tap to switch exercise (supersets: switching mid-rest is fine).
+   - The rail order can be changed from the exercise menu.
+   - The menu also offers notes, replace exercise, and history.
+6. **Rest timer:**
+   - Starts automatically with the exercise's rest time (template default, 2:00 if none).
+   - Shows as a bottom sheet with the **rest orb**: the Pulse Orb in training colors, a countdown ring, −15 s / +15 s / Skip rest, and the next set.
+   - Dismissing the sheet keeps the timer running in the top bar.
+7. **Screen off / app in background:** an ongoing notification (TR-9) shows the countdown; an alert fires at 0:00.
+8. **Notification permission:**
+   - Asked **in context, at the first rest**, with an in-app explanation (TR-8 "Notification ask"), then the Android dialog.
+   - If denied: a one-line banner in the dock ("…can only alert you inside the app. Turn on"). Logging is never blocked.
+9. **Minimize** (chevron or system back) returns to the previous screen and shows the **mini bar** ("Upper A · 23:10 · 9 of 22 sets · Resume") above the capsule nav on every tab.
+10. **Finish** goes to TR-10. Unfinished sets prompt: "3 sets have no reps. Finish anyway?" (they're dropped).
+11. **Discard** is on TR-1's in-progress hero and at the bottom of the Finish summary ("Discard workout"); it's kept off the active screen so it can't be hit mid-set. Its confirmation sheet names the number of logged sets. **Keep training** is the default (primary) button.
+12. **Screen stays on** while TR-8 is visible (it can be turned off in Settings).
