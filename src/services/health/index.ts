@@ -115,6 +115,8 @@ export const energyMetrics = ['active-calories', 'total-calories', 'basal-metabo
 export type EnergyMetric = typeof energyMetrics[number];
 export type DailyEnergyRow =
   | { metric: EnergyMetric; date: string; status: 'ok'; value: AggregateValue }
+  // Health Connect returned a total but no app contributed data (e.g. its default basal estimate).
+  | { metric: EnergyMetric; date: string; status: 'no-source'; value: AggregateValue }
   | { metric: EnergyMetric; date: string; status: 'empty' | 'unavailable' | 'permission-denied' | 'error'; message?: string };
 
 /** Convert a documented energy aggregate. Missing metric values are NOT zero calories. */
@@ -163,7 +165,8 @@ export async function readDailyEnergy(days = 7): Promise<DailyEnergyRow[]> {
         else if (metric === 'total-calories') raw = await aggregateRecord({ recordType: 'TotalCaloriesBurned', timeRangeFilter });
         else raw = await aggregateRecord({ recordType: 'BasalMetabolicRate', timeRangeFilter });
         const value = normalizeEnergyAggregate(metric, raw, timeRangeFilter.startTime, timeRangeFilter.endTime);
-        result.push(value ? { metric, date, status: 'ok', value } : { metric, date, status: 'empty' });
+        if (!value) result.push({ metric, date, status: 'empty' });
+        else result.push({ metric, date, status: value.dataOrigins?.length ? 'ok' : 'no-source', value });
       } catch {
         result.push({ metric, date, status: 'error', message: 'Health Connect daily aggregate failed.' });
       }

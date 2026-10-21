@@ -70,3 +70,16 @@ test('daily aggregate reads keep each metric separate and preserve missing value
   }
   expect(rows.filter(x => x.status === 'empty')).toHaveLength(2);
 });
+
+test('totals no app contributed to are flagged as estimates, never ok (S22 device test 2026-10-21)', async () => {
+  // Observed on the owner's phone with no Samsung Health sync: active 0, total = basal = 1564.5, no origins.
+  (HC.aggregateRecord as jest.Mock).mockImplementation(async ({ recordType }: { recordType: string }) => {
+    if (recordType === 'ActiveCaloriesBurned') return { ACTIVE_CALORIES_TOTAL: { inKilocalories: 0 }, dataOrigins: [] };
+    if (recordType === 'TotalCaloriesBurned') return { ENERGY_TOTAL: { inKilocalories: 1564.5 }, dataOrigins: [] };
+    return { BASAL_CALORIES_TOTAL: { inKilocalories: 1564.5 }, dataOrigins: [] };
+  });
+  const rows = await readDailyEnergy(1);
+  expect(rows.map(x => x.status)).toEqual(['no-source', 'no-source', 'no-source']);
+  const total = rows.find(x => x.metric === 'total-calories');
+  if (total?.status === 'no-source') expect(total.value.value).toBe(1564.5);
+});

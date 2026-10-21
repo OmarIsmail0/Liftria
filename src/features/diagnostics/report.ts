@@ -81,8 +81,8 @@ export function buildDiagnosticReport(input: ReportInput): string {
   else {
     lines.push('| Date | Metric | Result | kcal | Operation | Origin(s) |', '|---|---|---|---|---|---|');
     for (const row of input.daily) {
-      lines.push(row.status === 'ok'
-        ? `| ${row.date} | ${row.metric} | ok | ${row.value.value.toFixed(1)} | ${row.value.operation} | ${cell(row.value.dataOrigins?.join(', ') || 'unknown')} |`
+      lines.push(row.status === 'ok' || row.status === 'no-source'
+        ? `| ${row.date} | ${row.metric} | ${row.status} | ${row.value.value.toFixed(1)} | ${row.value.operation} | ${cell(row.value.dataOrigins?.join(', ') || 'none (Health Connect estimate)')} |`
         : `| ${row.date} | ${row.metric} | ${row.status} | — | — | — |`);
     }
   }

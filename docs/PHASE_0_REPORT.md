@@ -83,3 +83,27 @@ Record: machine versions, npm lock hash, `npx expo install --check`, `npm run ch
 ## APK static integrity audit (2026-10-20)
 
 [APK artifact audit run](https://github.com/OmarIsmail0/Liftria/actions/runs/39390684453) **PASS** for run #9 artifacts: both `app-debug.apk` and `app-release.apk` exist and pass Android `apksigner verify --verbose` with v2 signatures; release has `com.liftria.diagnostics`, `minSdkVersion 26`, `assets/index.android.bundle` and `lib/arm64-v8a/` binaries. Release SHA-256: `0b2fe93c551b3adb1eef0d6ef18a2673a0980d49b576e6b4c335ad9312b914be`; debug SHA-256: `60b1d97f4d8e4feb5c0fb517a0e28172de55e03cae876a2138c3b3864871b306`. These exact hashes belong to run #9 only. The audit workflow runs automatically for subsequent successful full CI. This demonstrates self-contained signed build *packaging*, not actual offline startup or watch/Claude functionality.
+
+## Device test 1: owner's S22 Ultra (2026-10-21)
+
+Source: in-app **Export report** generated 2026-10-21T12:02:04Z on `samsung SM-S908E`, Android 16 (API 36), app 0.0.1 (build 1, run #14 APK, commit `9ed3a86`). The pasted log was cut off after its first entries.
+
+| Check | Status | Evidence |
+|---|---|---|
+| Release APK installs and starts on S22 Ultra (C1) | **PASS** | Report generated on the device; `[App] Started` logged |
+| SQLite migration | **PASS** | `Schema v1 initialized` |
+| SQLite persistence across restart (C2) | **PASS** | 2026-10-21 Read shows 6 workouts / 6 sets / 6 meals with marker `2026-10-20T19:57:55Z` written the previous day |
+| SQLite Clear → 0 | **PENDING_DEVICE_TEST** | Not visible in the truncated log |
+| SecureStore save + restart + delete (C3) | **PENDING_DEVICE_TEST** | Key ends `ready (masked)`; one `malformed` save attempt logged; restart/delete sequence not visible |
+| Offline startup + offline API failure (C4) | **PENDING_DEVICE_TEST** | Offline section `Not tested` |
+| Claude Test A / Test B | **PENDING_OWNER_TEST** | Claude section `Not tested` |
+| Health Connect availability + permissions | **PASS** | `Availability: available`; all 10 read permissions `granted` |
+| History permission | **PENDING_DEVICE_TEST** | `unverified` |
+| Watch-originated data in Health Connect | **FAIL (config, fixable)** | Samsung Health (`com.sec.android.app.shealth`) contributed **no** records. Steps: 26 records, all from `com.android.healthconnect.phone.*` on device `SM-S908E`, which is Android 16's own phone step tracking, not the Watch 4. Heart rate, exercise, sleep, calories and body composition: `empty`. |
+| Daily energy aggregates | **NOT REAL DATA** | Every day: active 0.0, total 1564.5, basal 1564.5, `dataOrigins` empty, and today's partial day also 1564.5. These are Health Connect's own estimates with no contributing app. The app now labels such rows `no-source` and never caches them. |
+
+**Verdicts after device test 1**
+- **Core:** PENDING. C1 and C2 PASS; C3 (SecureStore restart/delete) and C4 (offline) not yet observed.
+- **Claude AI:** PENDING. Not tested on the device.
+- **Workout wearable:** PENDING. Fixable issue open: Samsung Health → Health Connect write sync appears off. Corrective action: Samsung Health → ⋮ → Settings → Health Connect → allow Samsung Health to write all types, confirm the watch has synced in Samsung Health, then re-run Read 7 days. If records still don't appear from `com.sec.android.app.shealth`, this becomes the Samsung Health Data SDK trigger in spec §6.2.
+- **Daily calorie tracking:** PENDING. No source data yet (same corrective action). The observed values must not be used as TDEE.

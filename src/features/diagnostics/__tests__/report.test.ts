@@ -54,3 +54,11 @@ test('log is bounded, flattened to one line and tolerant of corrupt storage', ()
   expect(parseStoredLog('[1,"ok"]')).toEqual(['ok']);
   expect(parseStoredLog(null)).toEqual([]);
 });
+
+test('estimate-only daily rows are labelled as such in the report', () => {
+  const report = buildDiagnosticReport({ ...base, daily: [{ metric: 'total-calories', date: '2026-10-21', status: 'no-source', value: {
+    kind: 'aggregate', metric: 'total-calories', adapter: 'health-connect', operation: 'ENERGY_TOTAL',
+    windowStart: 'a', windowEnd: 'b', value: 1564.5, unit: 'kcal', dataOrigins: [],
+  } }] });
+  expect(report).toContain('| 2026-10-21 | total-calories | no-source | 1564.5 | ENERGY_TOTAL | none (Health Connect estimate) |');
+});

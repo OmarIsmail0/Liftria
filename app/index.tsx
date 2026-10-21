@@ -256,14 +256,16 @@ export default function Diagnostics() {
     try {
       const rows = await readDailyEnergy(7);
       setDailyRows(rows);
-      note('Daily energy', `${rows.filter(row => row.status === 'ok').length}/${rows.length} windows returned values`);
+      note('Daily energy', `${rows.filter(row => row.status === 'ok').length}/${rows.length} windows with source data, ${rows.filter(row => row.status === 'no-source').length} estimate-only`);
       const values = rows.flatMap(row => row.status === 'ok' ? [row.value] : []);
       if (values.length) {
         const saved = await saveHealthValues(values);
         setHealthText(saved.ok
           ? `Cached ${saved.value} time-windowed energy aggregates (daily coverage NOT verified)`
           : saved.error.message);
-      } else setHealthText('No daily energy aggregates returned; check permission and Samsung Health sync.');
+      } else setHealthText(rows.some(row => row.status === 'no-source')
+        ? 'Only Health Connect estimates returned (no app wrote energy data); enable Samsung Health → Health Connect sync.'
+        : 'No daily energy aggregates returned; check permission and Samsung Health sync.');
     } catch { setHealthText('Daily energy diagnostic failed.'); }
     finally { setDailyBusy(false); }
   };
@@ -375,8 +377,12 @@ export default function Diagnostics() {
         <Text style={common.muted}>Local calendar day; the current window is partial. Aggregation reflects only available Health Connect sources; it can include exercise intervals without all-day calories. Never add basal, active, and total together.</Text>
         {dailyRows.map((row) => (
           <View key={`${row.date}:${row.metric}`} style={common.line}>
-            <Text style={common.body}>{row.date} · {row.metric}: {row.status === 'ok' ? `${row.value.value.toFixed(1)} kcal` : row.status}</Text>
-            {row.status === 'ok' &&
+            <Text style={common.body}>{row.date} · {row.metric}: {row.status === 'ok'
+              ? `${row.value.value.toFixed(1)} kcal`
+              : row.status === 'no-source'
+                ? `${row.value.value.toFixed(1)} kcal — estimate only, no app wrote data`
+                : row.status}</Text>
+            {(row.status === 'ok' || row.status === 'no-source') &&
               <Text style={common.muted}>{row.value.operation} · {row.value.windowStart} — {row.value.windowEnd} · origin(s): {row.value.dataOrigins?.join(', ') || 'unknown'}</Text>}
           </View>
         ))}
