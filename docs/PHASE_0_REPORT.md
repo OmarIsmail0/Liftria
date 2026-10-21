@@ -107,3 +107,23 @@ Source: in-app **Export report** generated 2026-10-21T12:02:04Z on `samsung SM-S
 - **Claude AI:** PENDING. Not tested on the device.
 - **Workout wearable:** PENDING. Fixable issue open: Samsung Health → Health Connect write sync appears off. Corrective action: Samsung Health → ⋮ → Settings → Health Connect → allow Samsung Health to write all types, confirm the watch has synced in Samsung Health, then re-run Read 7 days. If records still don't appear from `com.sec.android.app.shealth`, this becomes the Samsung Health Data SDK trigger in spec §6.2.
 - **Daily calorie tracking:** PENDING. No source data yet (same corrective action). The observed values must not be used as TDEE.
+
+## Device test 2: owner's S22 Ultra (2026-10-21, 12:18Z)
+
+Source: in-app Export report generated 2026-10-21T12:18:09Z (same device and APK as test 1; pre-`af72e6a` build, so daily rows still show `ok`/`unknown`). The pasted log was cut off after 8 of its 20 entries.
+
+| Check | Status | Evidence |
+|---|---|---|
+| Offline cold start + local DB (C4) | **PASS** | App started with `Network: Offline`; `Schema v1 initialized` while offline |
+| Offline Claude failure is graceful (C4) | **PASS** | `Offline Claude test: offline — You're offline. Claude requires internet.`; no crash |
+| SecureStore persists across restart (C3, part) | **PASS** | `API key: ready (masked)` logged at app start after restart |
+| SecureStore delete → restart → missing (C3, part) | **PENDING_DEVICE_TEST** | Not yet run |
+| Samsung Health → Health Connect sync | **STARTED** | First record from `com.sec.android.app.shealth`: 1 heart-rate series at 2026-10-21T12:15:08Z. No device metadata on the record; the S22 Ultra has no heart-rate sensor, so it almost certainly came from the Watch 4. |
+| Steps from Samsung Health / watch | **PENDING_DEVICE_TEST** | Steps still only from `com.android.healthconnect.phone.*` (phone) |
+| Exercise sessions, active/total energy from Samsung Health | **PENDING_DEVICE_TEST** | Still empty; daily totals still the Health Connect estimate (1564.5, no origin). Samsung Health appears to sync new data only after the connection was enabled, not history. |
+
+**Verdicts after device test 2**
+- **Core:** PENDING. C1, C2 and C4 PASS. Remaining: SecureStore delete → restart → `missing`, and Clear test data → Read shows 0.
+- **Claude AI:** PENDING. Test A / Test B not yet run online.
+- **Workout wearable:** PENDING. The sync now works (first Samsung Health heart-rate record). Corrective action: wear the watch for a day and record one workout on it, then re-read.
+- **Daily calorie tracking:** PENDING. Waiting for Samsung Health energy data.
