@@ -49,6 +49,7 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 | No energy double counting | PASS | One energy figure or none; rule in DESIGN_SYSTEM §6 |
 | Local-first feasibility | PASS | Every 1A screen works from local DB, SecureStore and on-device Health Connect; only Hiku needs network |
 | Contrast (WCAG AA) | PASS | 5 failing tokens found and fixed; ratios in ACCESSIBILITY.md |
+| Glass style (owner request) | PASS | Added as default with a Solid/Glass switch; worst-case contrast on the brightest glow measured and fixed (card opacity .76, dark tertiary `#8A94A3`); ring and bar tracks given their own token after they disappeared on light glass |
 | Touch targets ≥ 48dp | PASS | Small and ghost buttons raised from 40/44 to 48 during review |
 | Target formula vs. screens | PASS | Prototype showed 2,350 while the formula gives 2,650 for its sample profile; corrected |
 | Prototype runtime | PASS | Rendered in Chromium at 1100px and 384px, dark and light: no script errors, no horizontal overflow |
@@ -64,7 +65,7 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 
 ## Owner review asks
 
-1. Overall look: dark graphite with chalk buttons and four domain colors. Keep it, or push it bolder?
+1. Overall look: **Glass** (default) or Solid? Is the glow strong enough, or should it be bolder?
 2. Navigation: Today · Train · Eat · Progress · Hiku, with Health inside Progress. OK?
 3. Provenance chips on every health number. Too much, or right?
 4. Anything to change before 1B (Gym) starts?

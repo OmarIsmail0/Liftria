@@ -10,7 +10,7 @@ Ratios were computed with the WCAG formula on 2026-10-21. Requirement: 4.5:1 for
 |---|---|---|
 | `text.primary` | 15.41 | 18.15 |
 | `text.secondary` | 7.97 | 7.31 |
-| `text.tertiary` | 5.13 (4.64 on `bg.raised`) | 4.94 (4.52 on `bg.base`) |
+| `text.tertiary` | 5.69 (5.15 on `bg.raised`) | 4.94 (4.52 on `bg.base`) |
 | `domain.train` | 7.52 | 4.95 |
 | `domain.eat` / `macro.carbs` | 10.40 | 4.95 |
 | `domain.health` | 8.04 | 5.25 |
@@ -21,6 +21,19 @@ Ratios were computed with the WCAG formula on 2026-10-21. Requirement: 4.5:1 for
 | `border.strong` (control outline) | 3.33 | 3.54 |
 | Primary button (chalk) | 16.57 | 18.15 |
 | Train button text | 8.19 | 4.95 (white on `#C04A20`) |
+
+### Glass style, worst case
+
+Each glass card (dark `.76`, light `.76` opacity) was measured where it sits on top of the strongest ambient glow. The lowest text ratio is always tertiary text:
+
+| Theme | Over coral glow | Over lavender glow | Over teal glow |
+|---|---|---|---|
+| Dark (`#8A94A3`) | 4.83 | 4.87 | 4.99 |
+| Light (`#68717E`) | 4.59 | 4.56 | 4.64 |
+
+The first glass draft failed here (4.34–4.50), so card opacity and the dark tertiary color were adjusted. Primary and secondary text stay above 6.4:1 on glass in both themes.
+
+**Reduce transparency:** if Android's high-contrast text or "Reduce transparency" (where available) is on, Liftria switches to the Solid style automatically.
 
 The first palette draft failed in five places: tertiary text in both themes, and the light-theme train, health and success colors, at 4.14–4.38. Control borders were also at 1.55–1.69. All of these were corrected before this milestone was committed.
 

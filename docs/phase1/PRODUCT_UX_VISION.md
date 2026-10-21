@@ -31,7 +31,7 @@ The owner: trains in a gym, tracks food to hit body-composition goals, wears a G
 **Visual direction.** Dark graphite by default with a polished light theme. Neutral surfaces carry the content, and color is reserved for meaning:
 - Each domain has one hue: training coral, nutrition honey, health sage-teal, Hiku lavender.
 - Primary actions use high-contrast "chalk" (light on dark, ink on light), not a brand color. Color stays a signal, not decoration.
-- Glass blur appears in one place only, the bottom navigation, as a nod to the original glassmorphism brief without hurting legibility.
+- **Modern glass is the default style** (owner's choice). Frosted, translucent cards float over a soft, fixed glow in the four domain colors. Glass frames the content; numbers and controls stay solid and high-contrast. A Solid style remains available.
 - Wide, athletic display type (Archivo) for numbers and headings, and a friendly, readable face (Figtree) for text.
 
 **Signature element: provenance chips.** Small chips next to health and energy numbers: **Measured · Phone · Estimate · Pending · Stale · No data**. Users learn them once and can then trust every number at a glance. Most fitness apps don't do this, so it's the feature that sets Liftria apart.
