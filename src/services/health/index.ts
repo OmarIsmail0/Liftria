@@ -150,7 +150,9 @@ export async function readDailyEnergy(days = 7): Promise<DailyEnergyRow[]> {
   const count = Math.max(1, Math.min(Math.floor(days), 30));
   for (let index = count - 1; index >= 0; index--) {
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - index);
-    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() - index + 1);
+    // Today's interval must end at the instant of the read, not tomorrow's midnight.
+    // Otherwise an interpolated basal-energy aggregate can include future hours.
+    const end = index === 0 ? today : new Date(today.getFullYear(), today.getMonth(), today.getDate() - index + 1);
     const date = [start.getFullYear(), String(start.getMonth() + 1).padStart(2, '0'), String(start.getDate()).padStart(2, '0')].join('-');
     for (const metric of energyMetrics) {
       if (!granted) { result.push({ metric, date, status: 'unavailable' }); continue; }

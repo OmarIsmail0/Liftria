@@ -199,6 +199,8 @@ export default function Diagnostics() {
     const next: Partial<Record<MetricType, RowStatus>> = {};
     let all: HealthValue[] = [];
     try {
+      // Refresh on every read: the app may have restarted since the last permission check.
+      setPermissions(await healthConnect.getPermissionStatus([...metricTypes]));
       for (const metric of metricTypes) {
         const res = await healthConnect.read(metric, range);
         if (res.status === 'ok') {
@@ -254,6 +256,7 @@ export default function Diagnostics() {
     if (dailyBusy) return;
     setDailyBusy(true);
     try {
+      setPermissions(await healthConnect.getPermissionStatus([...metricTypes]));
       const rows = await readDailyEnergy(7);
       setDailyRows(rows);
       note('Daily energy', `${rows.filter(row => row.status === 'ok').length}/${rows.length} windows with source data, ${rows.filter(row => row.status === 'no-source').length} estimate-only`);

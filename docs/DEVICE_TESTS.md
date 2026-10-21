@@ -88,3 +88,11 @@ On the **physical phone** (not an emulator), use Samsung Health **6.30.2+**, And
 4. Tap **Read health cache** and verify imported samples display. Health Connect native reads may still work locally.
 5. Tap **Network status**, then **Test offline API failure**: result must be `offline`, with no actual API request.
 6. Record PASS/FAIL with evidence, return to online mode only after tests.
+
+## 2026-10-21 follow-up: first real S22 observations
+
+The first exported reports show 26 **phone-origin** step records and one Samsung Health heart-rate series with no watch model attached. Do not count that single series as verified Watch 4 provenance. Permissions may display `not checked` after app restart in the older APK; the updated diagnostics now refresh them during reads.
+
+The original APK showed seven identical full-day 1564.5 kcal totals with empty data origins, plus 0 active calories, even for the partial current day. **These are unverified outputs** and must not be used as energy expenditure. Newer Liftria builds mark absent-origin results `no-source` and avoid caching them. The current-day aggregate request is now bounded at the actual read time rather than the next midnight; however, Health Connect coverage must still be verified against Samsung Health. Previously cached unattributed rows on an older build are *historical test data*, not validated TDEE.
+
+Continue with actual S22 tests: Clear test data → Read zero workouts, sets, meals (cached Health records intentionally retained); key delete → force-stop → key missing; online Claude text and meal photo; verify Samsung Health writes steps, heart rate and exercise records and compare matching timestamps. Run the report again using a **new APK matching the latest code commit** and record its GitHub Actions run ID.

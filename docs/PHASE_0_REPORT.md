@@ -127,3 +127,7 @@ Source: in-app Export report generated 2026-10-21T12:18:09Z (same device and APK
 - **Claude AI:** PENDING. Test A / Test B not yet run online.
 - **Workout wearable:** PENDING. The sync now works (first Samsung Health heart-rate record). Corrective action: wear the watch for a day and record one workout on it, then re-read.
 - **Daily calorie tracking:** PENDING. Waiting for Samsung Health energy data.
+
+## Additional device feedback safeguard (2026-10-21)
+
+The first and second S22 exports were produced from an APK predating the `no-source` safeguard, with 21 unattributed cached aggregates. The current code makes no-source energy output ineligible for caching and an additional fix caps the current-day aggregation window at the read timestamp (avoiding next-midnight/future hours). Health Connect permission state now refreshes before each user-requested Health Connect reading, rather than remaining visually `not checked` after app restart. These are code changes, **not new phone evidence**. Android installation and Watch 4 provenance must be rechecked on the latest successfully built APK.

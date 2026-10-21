@@ -78,8 +78,17 @@ test('totals no app contributed to are flagged as estimates, never ok (S22 devic
     if (recordType === 'TotalCaloriesBurned') return { ENERGY_TOTAL: { inKilocalories: 1564.5 }, dataOrigins: [] };
     return { BASAL_CALORIES_TOTAL: { inKilocalories: 1564.5 }, dataOrigins: [] };
   });
+  const before = Date.now();
   const rows = await readDailyEnergy(1);
+  const after = Date.now();
   expect(rows.map(x => x.status)).toEqual(['no-source', 'no-source', 'no-source']);
+  // Today's aggregate ends at capture time; it never covers unelapsed hours.
+  for (const row of rows) {
+    if (row.status === 'no-source') {
+      expect(Date.parse(row.value.windowEnd)).toBeGreaterThanOrEqual(before);
+      expect(Date.parse(row.value.windowEnd)).toBeLessThanOrEqual(after);
+    }
+  }
   const total = rows.find(x => x.metric === 'total-calories');
   if (total?.status === 'no-source') expect(total.value.value).toBe(1564.5);
 });
