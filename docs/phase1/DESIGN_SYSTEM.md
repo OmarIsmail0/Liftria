@@ -17,8 +17,8 @@ The tokens in the prototype (`prototype/src/liftria-1a.html`, the `:root` blocks
 | `color.border.subtle` | `#272D37` | `#E1E5EB` | Dividers, card outlines (decorative) |
 | `color.border.strong` | `#636D7B` | `#808996` | Input, choice and secondary-button outlines (≥ 3:1) |
 | `color.text.primary` | `#EEF1F5` | `#12161C` | Headings, values |
-| `color.text.secondary` | `#A7B0BD` | `#4D5767` | Body and supporting text |
-| `color.text.tertiary` | `#8A94A3` | `#68717E` | Labels, timestamps, placeholders |
+| `color.text.secondary` | `#BFC6D1` | `#4D5767` | Body and supporting text |
+| `color.text.tertiary` | `#A3ACBA` | `#5E6878` | Labels, timestamps, placeholders |
 | `color.track` | `rgba(255,255,255,.09)` | `rgba(18,22,28,.09)` | Empty part of rings and bars (works on solid and glass) |
 | `color.action.primary.bg` / `.fg` | `#EEF1F5` / `#0F1216` | `#12161C` / `#FFFFFF` | Primary "chalk" buttons |
 
@@ -28,10 +28,10 @@ Neutrals lean slightly blue-grey, so the warm domain colors read clearly against
 
 | Token | Dark | Light | Means |
 |---|---|---|---|
-| `color.domain.train` | `#FF8A5C` | `#C04A20` | Workouts, sets, records |
-| `color.domain.eat` | `#F2C14E` | `#946800` | Calories eaten, meals |
-| `color.domain.health` | `#4CC3A6` | `#167A63` | Activity, heart rate, measured health data |
-| `color.domain.hiku` | `#A99CFF` | `#6150D8` | Hiku and AI-generated content |
+| `color.domain.train` | `#FF8F6B` | `#A83E18` | Workouts, sets, records |
+| `color.domain.eat` | `#FFCF5E` | `#855D00` | Calories eaten, meals |
+| `color.domain.health` | `#46E0BC` | `#126B57` | Activity, heart rate, measured health data |
+| `color.domain.hiku` | `#BDB1FF` | `#6150D8` | Hiku and AI-generated content |
 | `color.on.train` / `color.on.hiku` | `#1A0D06` / `#120E2B` | `#FFFFFF` / `#FFFFFF` | Text on filled domain buttons |
 | `color.tint.{domain}` | domain at 14–15% alpha | domain at 10% alpha | Icon tiles, soft backgrounds |
 
@@ -39,9 +39,9 @@ Neutrals lean slightly blue-grey, so the warm domain colors read clearly against
 
 | Token | Dark | Light |
 |---|---|---|
-| `color.macro.protein` | `#7FB2FF` | `#2E6BD3` |
-| `color.macro.carbs` | `#F2C14E` | `#946800` |
-| `color.macro.fat` | `#F08FB0` | `#B8406F` |
+| `color.macro.protein` | `#8CBEFF` | `#2E6BD3` |
+| `color.macro.carbs` | `#FFCF5E` | `#855D00` |
+| `color.macro.fat` | `#FF9AC0` | `#B8406F` |
 | `color.status.success` | `#5BD08F` | `#177A45` |
 | `color.status.warning` | `#F2B44C` | `#946300` |
 | `color.status.danger` | `#FF6B6B` | `#C93636` |
@@ -51,23 +51,39 @@ Neutrals lean slightly blue-grey, so the warm domain colors read clearly against
 - Domain colors never carry meaning alone. Every colored element also has a label, icon or position (see ACCESSIBILITY.md).
 - All text colors meet WCAG AA (4.5:1) on `bg.base`, `bg.surface` and `bg.raised` in both themes. The measured ratios are in ACCESSIBILITY.md.
 
-### Glass style (default)
+### Aurora Rim style (default)
 
-The owner chose a modern glass look. Glass is the **default style**; Solid stays as an option in Settings → Appearance and a fallback for low-power devices.
+**Chosen by the owner on 2026-10-21** from the direction board (`prototype/liftria-directions.html`, option 5). It combines Aurora's frosted glass over color glows with Neon rim's section-colored card edges. **Solid** stays available in Settings → Appearance and is the automatic fallback (see rule 2).
 
 | Token | Dark | Light | Use |
 |---|---|---|---|
-| `glass.card` | `rgba(24,29,37,.76)` | `rgba(255,255,255,.76)` | Card, choice and banner fill |
-| `glass.border` | `rgba(255,255,255,.10)` | `rgba(255,255,255,.85)` | 1px card edge |
-| `glass.highlight` | `rgba(255,255,255,.07)` | `rgba(255,255,255,.70)` | Top-down sheen, fading out by 38% of card height |
-| `glass.shadow` | `0 12px 32px rgba(0,0,0,.30)` | `0 10px 28px rgba(40,52,80,.12)` | Lift off the glow |
-| `ambient.train` / `.hiku` / `.health` / `.eat` | coral .40 / lavender .36 / teal .30 / honey .22 | coral .30 / violet .24 / teal .24 / honey .24 | Four soft radial glows behind the content (top-left, right, lower-left, bottom-right) |
+| `aurora.base` | `#06070C` | `#EEF0F7` | Background under the glow |
+| `glass.card` | `rgba(12,13,24,.62)` | `rgba(255,255,255,.78)` | Card, choice and banner fill |
+| `glass.highlight` | `rgba(255,255,255,.10)` | `rgba(255,255,255,.75)` | Diagonal sheen, fading out by 45% of the card |
+| `glass.border` | `rgba(255,255,255,.08)` | `rgba(255,255,255,.90)` | Base 1px edge (under the rim) |
+| `glass.shadow` | inset top highlight + `0 18px 44px rgba(0,0,0,.5)` | inset white + `0 14px 34px rgba(60,70,120,.14)` | Lift |
+| `rim.strength` / `rim.glow` | 25% / 12% | 15% / 7% | How strongly the section color shows in the edge, and in the soft outer glow |
+| `ambient.train` / `.hiku` / `.health` / `.eat` | pink-coral .45 / violet .50 / teal .38 / honey .26 | peach .60 / lavender .55 / mint .50 / butter .50 | Four radial glows (top-left, right, lower-left, bottom-right) |
+| `train.gradEnd` | `#FF6A6A` | `#B8322E` | The training Start button is a coral gradient (the only gradient button) |
+
+**The rim.** Each section card gets a 1.2px edge in its section color, brightest at the top-left corner and fading along the card, plus a soft glow in the same color:
+
+| Card | Rim |
+|---|---|
+| Nutrition, target | `domain.eat` (honey) |
+| Training | `domain.train` (coral) |
+| Activity, health | `domain.health` (teal) |
+| Hiku | `domain.hiku` (lavender) |
+| Neutral cards (week, getting started) | faint white |
+
+Like every color in Liftria, the rim is backed by the card's title and dot, so it never carries meaning alone.
 
 **Rules for glass**
 1. **Glass frames, never fills, the data.** Numbers, chips, inputs, macro bars and buttons stay solid and high-contrast. Only cards, choice rows, banners, the bottom navigation and sheets are glass.
 2. **The ambient glow is fixed** (it doesn't scroll or animate). That lets Phase 2 build cards as plain translucent views over one pre-rendered background, with **no live blur under cards**: cheap, smooth and battery-friendly on Android. Live blur (e.g. `expo-blur`) is used only for the bottom navigation and bottom sheets, where content moves underneath. It falls back to a more opaque fill if blur is unavailable or "Reduce transparency" is on.
-3. **Contrast is checked against the worst case**: a card sitting on the brightest glow. Card opacity was raised from .62/.66 to .76, and dark tertiary text from `#828C9B` to `#8A94A3`, until every text token passes 4.5:1 there (see ACCESSIBILITY.md).
-4. **The glow carries no meaning.** It is decoration in the four domain hues at low strength, so it never signals state.
+3. **Contrast is checked against the worst case**: a card's sheen sitting on the brightest glow. To pass, dark text tokens were brightened (secondary `#BFC6D1`, tertiary `#A3ACBA`), dark domain colors were brightened, and light-mode domain and tertiary colors were darkened. Every text token now passes 4.5:1 there (see ACCESSIBILITY.md).
+4. **The glow carries no meaning.** It is decoration, so it never signals state.
+5. **Only one gradient button**: the training Start. The primary action stays solid chalk, so the eye goes to it first.
 
 ## 2. Typography
 

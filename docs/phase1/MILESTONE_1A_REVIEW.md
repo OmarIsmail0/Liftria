@@ -65,7 +65,7 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 
 ## Owner review asks
 
-1. Overall look: **Glass** (default) or Solid? Is the glow strong enough, or should it be bolder?
+1. ~~Overall look~~ **Decided: Aurora Rim** (from the 5-option direction board). Check it on your phone for a few days; if it's too loud, dial back `rim.glow` and the ambient strengths.
 2. Navigation: Today · Train · Eat · Progress · Hiku, with Health inside Progress. OK?
 3. Provenance chips on every health number. Too much, or right?
 4. Anything to change before 1B (Gym) starts?

@@ -9,29 +9,34 @@ Ratios were computed with the WCAG formula on 2026-10-21. Requirement: 4.5:1 for
 | Token | Dark on `bg.surface` `#161A20` | Light on `bg.surface` `#FFFFFF` |
 |---|---|---|
 | `text.primary` | 15.41 | 18.15 |
-| `text.secondary` | 7.97 | 7.31 |
-| `text.tertiary` | 5.69 (5.15 on `bg.raised`) | 4.94 (4.52 on `bg.base`) |
-| `domain.train` | 7.52 | 4.95 |
-| `domain.eat` / `macro.carbs` | 10.40 | 4.95 |
-| `domain.health` | 8.04 | 5.25 |
-| `domain.hiku` | 7.39 | 5.76 |
-| `macro.protein` | 8.08 | 5.05 |
-| `macro.fat` | 7.70 | 5.25 |
+| `text.secondary` | 10.15 | 7.31 |
+| `text.tertiary` | 7.62 (6.89 on `bg.raised`) | 5.63 (5.16 on `bg.base`) |
+| `domain.train` | 7.81 | 6.24 |
+| `domain.eat` / `macro.carbs` | 11.92 | 5.89 |
+| `domain.health` | 10.52 | 6.43 |
+| `domain.hiku` | 9.06 | 5.76 |
+| `macro.protein` | 9.08 | 5.05 |
+| `macro.fat` | 8.84 | 5.25 |
 | `status.success` / `warning` / `danger` | 9.03 / 9.49 / 6.29 | 5.38 / 5.19 / 5.17 |
 | `border.strong` (control outline) | 3.33 | 3.54 |
 | Primary button (chalk) | 16.57 | 18.15 |
-| Train button text | 8.19 | 4.95 (white on `#C04A20`) |
+| Train button text (gradient, both ends) | 8.51 / 6.81 | 6.24 / 5.94 (white) |
 
-### Glass style, worst case
+### Aurora Rim, worst case
 
-Each glass card (dark `.76`, light `.76` opacity) was measured where it sits on top of the strongest ambient glow. The lowest text ratio is always tertiary text:
+Each card was measured where its brightest part (the top sheen) sits over each glow at full strength. Lowest ratios:
 
-| Theme | Over coral glow | Over lavender glow | Over teal glow |
-|---|---|---|---|
-| Dark (`#8A94A3`) | 4.83 | 4.87 | 4.99 |
-| Light (`#68717E`) | 4.59 | 4.56 | 4.64 |
+| Token | Dark (card .62 + sheen .10) | Light (card .78) |
+|---|---|---|
+| `text.secondary` | ≥ 6.45 | ≥ 6.77 |
+| `text.tertiary` | ≥ 4.99 (`#A3ACBA`) | ≥ 5.05 (`#5E6878`) |
+| Domain colors used as text (chips) | ≥ 5.12 (train) | ≥ 5.28 (eat) |
+| Macro colors | ≥ 5.79 | ≥ 4.52 (protein) |
 
-The first glass draft failed here (4.34–4.50), so card opacity and the dark tertiary color were adjusted. Primary and secondary text stay above 6.4:1 on glass in both themes.
+**History:**
+- The first glass draft failed (tertiary 4.34–4.50).
+- The first Aurora Rim draft failed in light mode for eat, train and health used as text (4.12–4.47), and for tertiary over the lavender glow (4.42).
+- All of these were fixed by darkening the light tokens and brightening the dark ones.
 
 **Reduce transparency:** if Android's high-contrast text or "Reduce transparency" (where available) is on, Liftria switches to the Solid style automatically.
 
