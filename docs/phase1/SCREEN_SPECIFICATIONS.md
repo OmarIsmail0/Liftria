@@ -80,8 +80,18 @@ Nutrition is no longer a card: the orb, target line and macro row above the deck
 
 **Shared rules**
 - **Units:** kg by default (lb in Settings, 1D). Weight steps are 2.5 kg for barbell and machine, 2 kg for dumbbells, 1.25 kg when the user turns on "small plates". Reps step by 1.
-- **Body weight** exercises log reps only, plus optional added weight.
-- **Volume** = Σ weight × reps of completed sets. Body-weight sets without added weight are excluded and the summary says so. Volume is a training-load signal, not a score.
+- **Exercise types:** each exercise has one type, which decides what the kg column means. The prototype's "Other exercise types" state shows all four.
+
+  | Type | kg column | Volume | Records |
+  |---|---|---|---|
+  | Weighted (barbell, machine, cable) | total load | weight × reps | heaviest, best est. 1RM, most reps at a weight |
+  | Dumbbell / per hand | **kg each** (one dumbbell) | weight × 2 × reps | as weighted, on the per-dumbbell weight |
+  | Assisted (machine or band) | **assist kg**, shown as −25 | excluded | **lowest** assistance at a rep count |
+  | Body weight | "BW" or **+ added kg** | added weight × reps only | most reps; heaviest added weight |
+
+  **Unilateral** is a flag on top of any type: each set has L and R rows, each side keeps its own records, and the set counts once toward the set total.
+- **Set kinds:** working (default) and **warm-up**. Warm-ups are labeled "W" in honey, sit before set 1, and are excluded from records, volume and the "sets" count. A set's kind can be changed from the exercise menu.
+- **Volume** = Σ volume of completed working sets, per the table above. Volume is a training-load signal, not a score.
 - **Estimated 1RM** uses the Epley formula, `weight × (1 + reps / 30)`, from the best completed set per session, and only for sets of 1–12 reps. It always carries the `estimate` chip and the words "a trend, not a test".
 - **Records** are recalculated from history whenever a session is edited or deleted. Types:
   - heaviest weight
@@ -112,19 +122,30 @@ Nutrition is no longer a card: the orb, target line and macro row above the deck
 
 ### Active workout behavior (TR-8)
 
-1. **Prefill:** each set starts with the weight and reps from the same set last time. If last time hit the top of the rep range on every set, the weight is suggested +1 step and labeled "Suggested +2.5 kg". It's never changed silently.
+1. **Prefill is a suggestion, never data.**
+   - Each unlogged set shows last time's weight and reps in the *suggested* style: tertiary color and italic, with a one-line key under the table.
+   - They become data only when the user taps **Log set** or the current row's tick. Nothing is logged automatically: not by the timer, not by Finish (untouched sets are dropped), and not by leaving the screen.
+   - If last time hit the top of the rep range on every set, the weight is suggested +1 step and labeled "Suggested +2.5 kg".
 2. **Log set** saves the set immediately to SQLite (it survives an app kill or reboot), ticks the row, gives a light haptic, moves to the next set and starts the rest timer.
-3. **Ticking a row** logs it as-is. Tapping a ticked row's tick asks "Undo this set?" inline (no sheet). Tapping a row's numbers loads them into the steppers.
+3. **Only the current row has a tick.** Future rows have none, so a stray tap can't log a set ahead.
+   - **Undo right away:** the rest sheet opens with "Set 3 logged · 72.5 kg × 8 · **Undo**". Undo removes the set and returns to it.
+   - **Undo later:** tapping a logged row's tick asks "Undo this set?" inline.
+   - **Correcting a logged set:** tapping its numbers loads them into the steppers under an "Editing set 2" label, with Save and Cancel instead of Log set.
+   - After Finish, sets change only through TR-12's edit mode.
 4. **Steppers** are 64dp tall. Long-press repeats. Tapping the number opens a numeric keypad for direct entry.
 5. **Exercise rail:**
    - Tap to switch exercise (supersets: switching mid-rest is fine).
    - The rail order can be changed from the exercise menu.
    - The menu also offers notes, replace exercise, and history.
 6. **Rest timer:**
+   - **Contract: it counts down from a stored deadline** (the absolute end time, saved with the set). The time left is always deadline − now, so the in-app timer is correct after a screen lock, Doze, a process kill or a reboot. If the deadline is still in the future when Liftria reopens, the timer resumes; if it has passed, it shows "Rest over".
    - Starts automatically with the exercise's rest time (template default, 2:00 if none).
    - Shows as a bottom sheet with the **rest orb**: the Pulse Orb in training colors, a countdown ring, −15 s / +15 s / Skip rest, and the next set.
    - Dismissing the sheet keeps the timer running in the top bar.
-7. **Screen off / app in background:** an ongoing notification (TR-9) shows the countdown; an alert fires at 0:00.
+7. **Screen off / app in background (enhancement, not a guarantee):**
+   - An ongoing notification (TR-9) shows the countdown and tries to alert at 0:00.
+   - Until the Phase 3 device spike proves on-time delivery under Doze and screen lock, the UI says so ("Lock-screen alert at 0:00 is being tested on your phone", `pending` chip). It never promises an exact alert.
+   - The in-app timer (rule 6) is the reliable path.
 8. **Notification permission:**
    - Asked **in context, at the first rest**, with an in-app explanation (TR-8 "Notification ask"), then the Android dialog.
    - If denied: a one-line banner in the dock ("…can only alert you inside the app. Turn on"). Logging is never blocked.
@@ -132,3 +153,26 @@ Nutrition is no longer a card: the orb, target line and macro row above the deck
 10. **Finish** goes to TR-10. Unfinished sets prompt: "3 sets have no reps. Finish anyway?" (they're dropped).
 11. **Discard** is on TR-1's in-progress hero and at the bottom of the Finish summary ("Discard workout"); it's kept off the active screen so it can't be hit mid-set. Its confirmation sheet names the number of logged sets. **Keep training** is the default (primary) button.
 12. **Screen stays on** while TR-8 is visible (it can be turned off in Settings).
+
+### Workout data contract (for Phase 3, and for Today, Eat and Health later)
+
+1. **Stable IDs:**
+   - Built-in exercises keep their free-exercise-db `id` string forever.
+   - Custom exercises get a UUID.
+   - Renaming changes the display name, never the ID.
+   - If the pack updates and drops an exercise, it stays in the database as "retired", so history never loses its exercise.
+2. **Sessions are append-only in practice:** a finished session changes only through TR-12's explicit edit or delete. Each edit stores `edited_at`. Records are derived data, recalculated from sets, and never edited directly.
+3. **Every workout has a `source`:**
+   - `manual`: logged in Liftria. The only source in V1.
+   - `imported`: a Health Connect `ExerciseSession`, for example from the watch. Pending verification.
+   - `estimate`: anything Liftria calculates, such as est. 1RM. Never stored as a measurement.
+4. **No double counting:** when an imported session overlaps a manual Liftria workout in time (≥ 50% overlap), they're **linked, not added**.
+   - The Liftria workout owns the sets.
+   - The import may add only measured heart rate and duration, labeled with its source.
+   - Totals (sessions per week, minutes) count the pair once.
+5. **Energy:** Liftria doesn't estimate calories from sets. Workout energy appears only if a measured `ActiveCaloriesBurned` record exists for that session's window, and it follows the one-figure energy rule (DESIGN_SYSTEM §6).
+6. **What other tabs may read:**
+   - Today: today's planned or finished workout (name, done or not).
+   - Eat (1C): whether today is a training day, as context for Hiku only if the user allows it.
+   - Progress (1D): sessions, volume, records.
+   - None of them may write workout data.

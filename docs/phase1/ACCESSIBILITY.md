@@ -88,11 +88,17 @@ The first palette draft failed in five places: tertiary text in both themes, and
 - The rest orb doesn't breathe, and the countdown ring updates without easing.
 - Sheets appear without sliding.
 
-**Font scaling:**
-- At 200% the set table switches to two lines per set (number + last time on top, kg · reps · tick below).
-- Steppers stack vertically. The exercise rail chips wrap their text.
+**Font scaling (rendered and checked at 200% for TR-8):**
+- Text grows (nonlinearly above about 20sp, as Android 14 does); dp sizes don't.
+- Each set becomes two lines: "Set 2 · last 70 × 8" over "72.5 kg × 8", with the tick on the right.
+- The steppers stay side by side, with the − and + buttons kept at 52dp.
+- The current set is scrolled into view above the dock.
+- First render finding, now fixed: stacked steppers took about 45% of the screen and hid the current set, and narrowing the buttons to fit made them 44dp.
+- Other Train screens use standard rows that wrap; they're specified, not drawn, and get the same check in Phase 3.
 
 **Fixed during this review:** the Today profile button was 40dp (1A); it's now 48dp.
+
+**Suggested vs. logged values** differ by color *and* style (italic), and the screen reader says "suggested" before a suggested value.
 
 ## Testing plan (Phase 2+)
 

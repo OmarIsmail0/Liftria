@@ -165,12 +165,12 @@ The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C c
 
 | Component | Variants | Notes |
 |---|---|---|
-| **Set row** | done / current / to do / editing | Columns: set, last time, kg, reps, tick (48dp). Current row has a train tint and a 1.5px train outline (not color alone: it's also `aria-current`). Done ticks are filled train color. |
+| **Set row** | done / current / to do / editing / warm-up / large text | Columns: set, last time, kg (or *kg each*, *assist kg*, *+ kg*), reps, tick (48dp, current and logged rows only). Unlogged values use the **suggested** style (tertiary, italic) until logged. Warm-up rows are labeled "W" in honey. At large font scales a row becomes two lines: "Set 2 · last 70 × 8" over "72.5 kg × 8". Current row has a train tint and a 1.5px train outline (not color alone: it's also `aria-current`). Done ticks are filled train color. |
 | **Stepper** | kg / reps / duration | 64dp tall, − and + 52dp wide, number in `type.metric.m` with a unit label. Glass fill in Aurora Rim. |
 | **Log set button** | `train`, size `xl` | 64dp, full width, in the bottom dock, the one gradient button. |
 | **Bottom dock** | with or without banner | Fixed to the bottom of focus screens, fading into the background (`dock-bg`); holds the screen's primary action in thumb reach. |
 | **Rest orb** | running / over | The Pulse Orb in training colors (`rest.1–3`) with a countdown ring. 200px. |
-| **Body map** | full (front + back) / mini glyph | Liftria's own geometric figure: one rounded block per muscle group. Primary = solid train color; secondary = 30% train fill **with a dashed outline**, so it doesn't rely on color alone. Always paired with a text legend ("Primary: Chest · Secondary: Triceps, Front delts"). The mini glyph shows whichever side holds the primary muscles. |
+| **Body map** | full (front + back) / mini glyph | Liftria's own geometric figure. Its **17 regions match free-exercise-db's 17 muscle categories one-to-one** (table below), so nothing is guessed. Primary = solid train color; secondary = 30% train fill **with a dashed outline**, so it doesn't rely on color alone. Always paired with a text legend ("Primary: Chest · Secondary: Triceps, Front delts"). The mini glyph shows whichever side holds the primary muscles. |
 | **Exercise row** | default / with detail | Glyph tile, name, equipment · muscles, chevron. 64dp. |
 | **Filter chip** | off / on | 48dp tall pill; on = chalk fill. Scrolls horizontally, edge to edge. |
 | **Week plan strip** | done / today / planned / rest | 7 cells: done = filled with a tick; today = train outline; planned = template initials (UA, LB); rest = dashed. Plus a text alternative. |
@@ -187,6 +187,20 @@ The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C c
 | `rest.1` / `rest.2` / `rest.3` | `#FFC2A3` / `#FF8F6B` / `#D9487A` | `#FFD9C7` / `#FFB496` / `#F08DB0` | Rest orb fill (centre → edge); ink is `orb.ink` |
 | `sheet.glass` | `rgba(16,17,30,.94)` | `rgba(255,255,255,.95)` | Bottom sheets and the mini bar in Aurora Rim |
 | `dock.bg` | `aurora.base` (Solid: `bg.base`) | same | The fade behind the bottom dock |
+
+**Body map regions = free-exercise-db categories.** Region key = the category with spaces removed. A rendered test in the prototype checks that the set of drawn regions equals the 17 categories. Phase 3 keeps this as a unit test on the bundled pack.
+
+| Category | Drawn as | Category | Drawn as |
+|---|---|---|---|
+| abdominals | front: centre block + two side blocks | lats | back: two outer back blocks |
+| abductors | back: outer-hip slivers | lower back | back: block above the glutes |
+| adductors | front: inner-thigh slivers | middle back | back: centre block between the lats |
+| biceps | front: upper arms | neck | front and back: neck block |
+| calves | front and back: lower legs | quadriceps | front: thighs |
+| chest | front: two blocks | shoulders | front and back: shoulder caps (the data has no front/rear split) |
+| forearms | front and back | traps | back: upper block |
+| glutes | back: two blocks | triceps | back: upper arms |
+| hamstrings | back: thighs | | |
 
 Components for food search, Hiku messages, more chart types and dialogs are added in 1C–1D.
 

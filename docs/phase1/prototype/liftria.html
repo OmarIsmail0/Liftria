@@ -430,6 +430,23 @@ button, input, select { font: inherit; color: inherit; }
 .set-row.done .v { color: var(--color-text-secondary); }
 .set-row.cur { background: var(--color-tint-train); box-shadow: inset 0 0 0 1.5px var(--color-domain-train); }
 .set-row.todo .v { color: var(--color-text-tertiary); }
+.set-row .lab { font-weight: 700; }
+.set-row.warm .lab { color: var(--color-domain-eat); }
+.sug { color: var(--color-text-tertiary) !important; font-style: italic; font-weight: 600; }
+.sug-note { display: flex; gap: 8px; align-items: baseline; }
+.ex-title { font-family: var(--font-display); font-stretch: 108%; font-size: 19px; }
+/* Android font scale 200%: text grows (nonlinear above ~20sp, per Android 14), dp sizes don't; layout reflows */
+.screen.fs200 .t-small, .screen.fs200 .rail .fchip, .screen.fs200 .btn-sm { font-size: 24px; line-height: 1.3; }
+.screen.fs200 .wk-top strong { font-size: 26px; }
+.screen.fs200 .rail .fchip { min-height: 56px; }
+.screen.fs200 .ex-title { font-size: 28px; }
+.screen.fs200 .set-row.big { grid-template-columns: 1fr 48px; padding: 8px 4px 8px 12px; min-height: 64px; }
+.screen.fs200 .set-row.big .lab { font-size: 22px; font-weight: 600; color: var(--color-text-secondary); }
+.screen.fs200 .set-row.big .vals { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.screen.fs200 .stepper output b { font-size: 30px; }
+.screen.fs200 .stepper output span { font-size: 18px; }
+.screen.fs200 .btn-xl { font-size: 28px; }
+.screen.fs200 .wk-top .grow { text-align: start; }
 .tick-btn { width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--color-border-strong); display: grid; place-items: center; background: transparent; color: var(--color-text-tertiary); padding: 0; cursor: pointer; }
 .tick-btn svg { width: 18px; height: 18px; }
 .set-row.done .tick-btn { background: var(--color-domain-train); color: var(--color-on-train); border-color: transparent; }
@@ -840,13 +857,14 @@ button, input, select { font: inherit; color: inherit; }
 
 
   // ---------- 1B: Train ----------
-  const MUSCLE = { chest: 'Chest', frontdelts: 'Front delts', reardelts: 'Rear delts', biceps: 'Biceps', triceps: 'Triceps', forearms: 'Forearms', abs: 'Abs', obliques: 'Obliques', quads: 'Quads', hamstrings: 'Hamstrings', glutes: 'Glutes', calves: 'Calves', lats: 'Lats', traps: 'Traps', lowerback: 'Lower back' };
-  // Liftria's own body map: rounded geometric blocks, one per muscle group (front, then back). Not derived from any third-party artwork.
-  const FRONT = [['frontdelts', 'e', 26, 44, 8, 7], ['frontdelts', 'e', 74, 44, 8, 7], ['chest', 'r', 31, 37, 18, 19, 7], ['chest', 'r', 51, 37, 18, 19, 7], ['biceps', 'r', 17, 53, 9, 22, 4.5], ['biceps', 'r', 74, 53, 9, 22, 4.5], ['forearms', 'r', 13, 78, 9, 26, 4.5], ['forearms', 'r', 78, 78, 9, 26, 4.5], ['abs', 'r', 40, 59, 20, 34, 6], ['obliques', 'r', 32, 60, 7, 28, 3.5], ['obliques', 'r', 61, 60, 7, 28, 3.5], ['quads', 'r', 32, 100, 16, 46, 8], ['quads', 'r', 52, 100, 16, 46, 8], ['calves', 'r', 34, 152, 12, 38, 6], ['calves', 'r', 54, 152, 12, 38, 6]];
-  const BACK = [['traps', 'r', 37, 29, 26, 14, 7], ['reardelts', 'e', 26, 44, 8, 7], ['reardelts', 'e', 74, 44, 8, 7], ['lats', 'r', 31, 46, 17, 28, 8], ['lats', 'r', 52, 46, 17, 28, 8], ['triceps', 'r', 17, 53, 9, 22, 4.5], ['triceps', 'r', 74, 53, 9, 22, 4.5], ['forearms', 'r', 13, 78, 9, 26, 4.5], ['forearms', 'r', 78, 78, 9, 26, 4.5], ['lowerback', 'r', 40, 76, 20, 16, 5], ['glutes', 'r', 33, 94, 16, 17, 7], ['glutes', 'r', 51, 94, 16, 17, 7], ['hamstrings', 'r', 33, 114, 15, 36, 7], ['hamstrings', 'r', 52, 114, 15, 36, 7], ['calves', 'r', 34, 154, 12, 34, 6], ['calves', 'r', 54, 154, 12, 34, 6]];
+  // Regions map 1:1 to free-exercise-db's 17 muscle categories (key = category without spaces), so no mapping is assumed.
+  const MUSCLE = { abdominals: 'Abs', abductors: 'Abductors (outer hip)', adductors: 'Adductors (inner thigh)', biceps: 'Biceps', calves: 'Calves', chest: 'Chest', forearms: 'Forearms', glutes: 'Glutes', hamstrings: 'Hamstrings', lats: 'Lats', lowerback: 'Lower back', middleback: 'Middle back', neck: 'Neck', quadriceps: 'Quads', shoulders: 'Shoulders', traps: 'Traps', triceps: 'Triceps' };
+  // Liftria's own body map: rounded geometric blocks, one or more per muscle category (front, then back). Not derived from any third-party artwork.
+  const FRONT = [['neck', 'r', 45, 24, 10, 8, 3], ['shoulders', 'e', 26, 44, 8, 7], ['shoulders', 'e', 74, 44, 8, 7], ['chest', 'r', 31, 37, 18, 19, 7], ['chest', 'r', 51, 37, 18, 19, 7], ['biceps', 'r', 17, 53, 9, 22, 4.5], ['biceps', 'r', 74, 53, 9, 22, 4.5], ['forearms', 'r', 13, 78, 9, 26, 4.5], ['forearms', 'r', 78, 78, 9, 26, 4.5], ['abdominals', 'r', 40, 59, 20, 34, 6], ['abdominals', 'r', 32, 60, 7, 28, 3.5], ['abdominals', 'r', 61, 60, 7, 28, 3.5], ['quadriceps', 'r', 30, 100, 15, 46, 7.5], ['quadriceps', 'r', 55, 100, 15, 46, 7.5], ['adductors', 'r', 45.5, 102, 4, 28, 2], ['adductors', 'r', 50.5, 102, 4, 28, 2], ['calves', 'r', 34, 152, 12, 38, 6], ['calves', 'r', 54, 152, 12, 38, 6]];
+  const BACK = [['neck', 'r', 45, 22, 10, 7, 3], ['traps', 'r', 37, 29, 26, 14, 7], ['shoulders', 'e', 26, 44, 8, 7], ['shoulders', 'e', 74, 44, 8, 7], ['middleback', 'r', 43, 45, 14, 21, 5], ['lats', 'r', 30, 46, 12, 28, 6], ['lats', 'r', 58, 46, 12, 28, 6], ['triceps', 'r', 17, 53, 9, 22, 4.5], ['triceps', 'r', 74, 53, 9, 22, 4.5], ['forearms', 'r', 13, 78, 9, 26, 4.5], ['forearms', 'r', 78, 78, 9, 26, 4.5], ['lowerback', 'r', 40, 76, 20, 15, 5], ['abductors', 'r', 27, 95, 5, 18, 2.5], ['abductors', 'r', 68, 95, 5, 18, 2.5], ['glutes', 'r', 33, 94, 16, 17, 7], ['glutes', 'r', 51, 94, 16, 17, 7], ['hamstrings', 'r', 33, 114, 15, 36, 7], ['hamstrings', 'r', 52, 114, 15, 36, 7], ['calves', 'r', 34, 154, 12, 34, 6], ['calves', 'r', 54, 154, 12, 34, 6]];
   function figure(parts, prim, sec, x = 0) {
     const cls = (k) => prim.includes(k) ? 'm p' : sec.includes(k) ? 'm s' : 'm';
-    return `<g transform="translate(${x} 0)"><circle class="m n" cx="50" cy="14" r="10"/><rect class="m n" x="45" y="24" width="10" height="8" rx="3"/>${parts.map(([k, t, a, b, c, d, r]) => t === 'e' ? `<ellipse class="${cls(k)}" cx="${a}" cy="${b}" rx="${c}" ry="${d}"/>` : `<rect class="${cls(k)}" x="${a}" y="${b}" width="${c}" height="${d}" rx="${r}"/>`).join('')}</g>`;
+    return `<g transform="translate(${x} 0)"><circle class="m n" cx="50" cy="12" r="10"/>${parts.map(([k, t, a, b, c, d, r]) => t === 'e' ? `<ellipse class="${cls(k)}" data-m="${k}" cx="${a}" cy="${b}" rx="${c}" ry="${d}"/>` : `<rect class="${cls(k)}" data-m="${k}" x="${a}" y="${b}" width="${c}" height="${d}" rx="${r}"/>`).join('')}</g>`;
   }
   const names = (ks) => [...new Set(ks)].map(k => MUSCLE[k]).join(', ');
   function bodyMap(prim, sec = [], mini = false) {
@@ -860,20 +878,23 @@ button, input, select { font: inherit; color: inherit; }
   const legend = (prim, sec) => `<div class="legend-row"><span><i class="sw p"></i>Primary: ${names(prim)}</span>${sec.length ? `<span><i class="sw s"></i>Secondary: ${names(sec)}</span>` : ''}</div>`;
 
   const EX = {
-    bench: ['Bench press', 'Barbell', ['chest'], ['triceps', 'frontdelts']],
-    row: ['Barbell row', 'Barbell', ['lats'], ['biceps', 'reardelts', 'traps']],
-    ohp: ['Overhead press', 'Barbell', ['frontdelts'], ['triceps', 'traps']],
-    pulldown: ['Lat pulldown', 'Cable', ['lats'], ['biceps']],
+    bench: ['Bench press', 'Barbell', ['chest'], ['triceps', 'shoulders']],
+    row: ['Barbell row', 'Barbell', ['middleback'], ['lats', 'biceps', 'shoulders']],
+    ohp: ['Overhead press', 'Barbell', ['shoulders'], ['triceps']],
+    pulldown: ['Lat pulldown', 'Cable', ['lats'], ['biceps', 'middleback']],
     curl: ['Dumbbell curl', 'Dumbbell', ['biceps'], ['forearms']],
     pushdown: ['Triceps pushdown', 'Cable', ['triceps'], []],
-    incline: ['Incline dumbbell press', 'Dumbbell', ['chest', 'frontdelts'], ['triceps']],
-    squat: ['Back squat', 'Barbell', ['quads', 'glutes'], ['hamstrings', 'lowerback']],
-    rdl: ['Romanian deadlift', 'Barbell', ['hamstrings', 'glutes'], ['lowerback']],
-    legpress: ['Leg press', 'Machine', ['quads'], ['glutes']],
+    incline: ['Incline dumbbell press', 'Dumbbell', ['chest'], ['shoulders', 'triceps']],
+    squat: ['Back squat', 'Barbell', ['quadriceps'], ['glutes', 'hamstrings', 'lowerback']],
+    rdl: ['Romanian deadlift', 'Barbell', ['hamstrings'], ['glutes', 'lowerback']],
+    legpress: ['Leg press', 'Machine', ['quadriceps'], ['glutes', 'hamstrings']],
     calf: ['Standing calf raise', 'Machine', ['calves'], []],
-    plank: ['Plank', 'Body weight', ['abs'], ['obliques']],
+    plank: ['Plank', 'Body weight', ['abdominals'], []],
+    assisted: ['Assisted pull-up', 'Machine', ['lats'], ['biceps', 'middleback']],
+    split: ['Bulgarian split squat', 'Dumbbell', ['quadriceps'], ['glutes', 'hamstrings']],
+    pullup: ['Pull-up', 'Body weight', ['lats'], ['biceps', 'middleback']],
   };
-  const GROUPS = [['chest', 'Chest', ['chest']], ['back', 'Back', ['lats', 'traps', 'lowerback']], ['shoulders', 'Shoulders', ['frontdelts', 'reardelts']], ['arms', 'Arms', ['biceps', 'triceps', 'forearms']], ['legs', 'Legs', ['quads', 'hamstrings', 'glutes', 'calves']], ['core', 'Core', ['abs', 'obliques']]];
+  const GROUPS = [['chest', 'Chest', ['chest']], ['back', 'Back', ['lats', 'middleback', 'lowerback', 'traps']], ['shoulders', 'Shoulders', ['shoulders']], ['arms', 'Arms', ['biceps', 'triceps', 'forearms']], ['legs', 'Legs', ['quadriceps', 'hamstrings', 'glutes', 'calves', 'abductors', 'adductors']], ['core', 'Core', ['abdominals']], ['neck', 'Neck', ['neck']]];
   const glyph = (id) => `<span class="glyph">${bodyMap(EX[id][2], EX[id][3], true)}</span>`;
   // Upper A: [exercise, sets, reps, rest, last time]
   const UPPER_A = [['bench', 4, '6–8', '2:30', '80 × 8, 8, 7, 6'], ['row', 4, '8', '2:00', '70 × 8, 8, 8, 7'], ['ohp', 4, '8', '2:00', '45 × 8, 8, 7, 7'], ['pulldown', 4, '10', '1:30', '60 × 10, 10, 9, 9'], ['curl', 3, '12', '1:00', '14 × 12, 11, 10'], ['pushdown', 3, '12', '1:00', '30 × 12, 12, 11']];
@@ -892,7 +913,7 @@ button, input, select { font: inherit; color: inherit; }
     else if (first) hero = `<section class="card rim-train"><span class="t-label">Get going</span><span class="dc-big">No workouts yet</span><p class="t-small">Start an empty session and add exercises as you go, or build a template you can repeat.</p>
         <div class="row wrap"><button class="btn btn-train" data-go="tr-active">Start empty workout</button><button class="btn btn-secondary" data-go="tr-template" data-variant="new">Build a template</button></div></section>`;
     else hero = `<section class="card rim-train"><div class="row" style="justify-content:space-between"><span class="t-label">Up next · today</span><span class="t-small">Upper / Lower plan</span></div>
-        <div class="row" style="gap:14px;align-items:center"><div class="grow stack" style="gap:4px"><span class="dc-big">Upper A</span><span class="t-small">6 exercises · 22 sets · about 55 min</span><span class="t-small">Last done Fri 17 Oct</span></div><span style="width:84px;flex:none">${bodyMap(['chest', 'lats', 'frontdelts'], ['biceps', 'triceps'], true).replace('class="bmap"', 'class="bmap" style="width:84px;height:100px"')}</span></div>
+        <div class="row" style="gap:14px;align-items:center"><div class="grow stack" style="gap:4px"><span class="dc-big">Upper A</span><span class="t-small">6 exercises · 22 sets · about 55 min</span><span class="t-small">Last done Fri 17 Oct</span></div><span style="width:84px;flex:none">${bodyMap(['chest', 'middleback', 'shoulders'], ['lats', 'biceps', 'triceps'], true).replace('class="bmap"', 'class="bmap" style="width:84px;height:100px"')}</span></div>
         <div class="row"><button class="btn btn-train grow" data-go="tr-preview">Start workout</button><button class="btn btn-secondary" data-go="tr-template">Edit</button></div></section>`;
 
     const days = [['Mon', 'done', 'Lower A'], ['Tue', 'today', 'Upper A'], ['Wed', 'rest', ''], ['Thu', '', 'Lower B'], ['Fri', '', 'Upper B'], ['Sat', 'rest', ''], ['Sun', 'rest', '']];
@@ -920,7 +941,7 @@ button, input, select { font: inherit; color: inherit; }
     const chips = `<div class="chips"><button class="fchip" data-go="tr-muscles">${ICON.body}Muscles</button>${[['all', 'All'], ...GROUPS.map(g => [g[0], g[1]])].map(([k, l]) => `<button class="fchip" aria-pressed="${(filtered ? k === 'chest' : k === 'all') && !none}" data-go="tr-library" data-variant="${k === 'chest' ? 'filtered' : 'browse'}">${l}</button>`).join('')}</div>`;
     let body;
     if (none) body = `<section class="card flat" style="justify-items:center;text-align:center;padding:28px 18px"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.search}</span><strong>No exercise called “zercher”</strong><span class="t-small">Check the spelling, or add it as your own exercise. Custom exercises work everywhere built-in ones do.</span><button class="btn btn-secondary" data-go="tr-library">${ICON.plus}Create “zercher”</button></section>`;
-    else if (filtered) body = `<div class="t-small">14 chest exercises · equipment: any</div><section class="card"><div class="list">${['bench', 'incline'].map(id => exRow(id)).join('')}${[['Dumbbell fly', 'Dumbbell'], ['Cable crossover', 'Cable'], ['Push-up', 'Body weight'], ['Machine chest press', 'Machine']].map(([n, e]) => `<button class="rowlink" data-go="tr-exercise" data-variant="new"><span class="glyph">${bodyMap(['chest'], ['frontdelts'], true)}</span><span class="grow"><strong>${n}</strong><span class="t-small">${e} · Chest</span></span>${ICON.chevron}</button>`).join('')}</div></section>`;
+    else if (filtered) body = `<div class="t-small">14 chest exercises · equipment: any</div><section class="card"><div class="list">${['bench', 'incline'].map(id => exRow(id)).join('')}${[['Dumbbell fly', 'Dumbbell'], ['Cable crossover', 'Cable'], ['Push-up', 'Body weight'], ['Machine chest press', 'Machine']].map(([n, e]) => `<button class="rowlink" data-go="tr-exercise" data-variant="new"><span class="glyph">${bodyMap(['chest'], ['shoulders'], true)}</span><span class="grow"><strong>${n}</strong><span class="t-small">${e} · Chest</span></span>${ICON.chevron}</button>`).join('')}</div></section>`;
     else body = `<div class="section-h"><h2>Recent</h2></div><section class="card"><div class="list">${['bench', 'row', 'squat'].map(id => exRow(id)).join('')}</div></section>
       <div class="section-h"><h2>All · A–Z</h2></div><section class="card"><div class="list">${['calf', 'curl', 'legpress', 'ohp', 'plank', 'rdl'].map(id => exRow(id, '', ['calf', 'plank'].includes(id) ? 'new' : 'history')).join('')}</div></section>`;
     return `${statusbar(false)}${hdr('Exercises', { to: 'tr-home', right: `<button class="iconbtn" aria-label="Create custom exercise">${ICON.plus}</button>` })}
@@ -997,7 +1018,7 @@ button, input, select { font: inherit; color: inherit; }
   function trPreview() {
     return `${statusbar(false)}${hdr('Upper A', { to: 'tr-home', sub: '6 exercises · 22 sets · about 55 min', right: `<button class="iconbtn bare" data-go="tr-template" aria-label="Edit template">${ICON.edit}</button>` })}
       <div class="scroll"><div class="page screen-anim" style="padding-bottom:120px">
-        <section class="card">${bodyMap(['chest', 'lats', 'frontdelts'], ['biceps', 'triceps', 'traps', 'reardelts'])}${legend(['chest', 'lats', 'frontdelts'], ['biceps', 'triceps'])}</section>
+        <section class="card">${bodyMap(['chest', 'middleback', 'shoulders', 'lats'], ['biceps', 'triceps'])}${legend(['chest', 'middleback', 'shoulders', 'lats'], ['biceps', 'triceps'])}</section>
         <section class="card"><div class="list">${UPPER_A.map(([id, sets, reps, , last]) => exRow(id, `${sets} × ${reps} · last ${last} kg`)).join('')}</div></section>
         <p class="t-small" style="text-align:center">Works offline. Your watch isn't needed: sets are logged on the phone.</p>
       </div></div>
@@ -1005,39 +1026,61 @@ button, input, select { font: inherit; color: inherit; }
   }
 
   function trActive(v) {
-    const rest = v === 'rest', notif = v === 'notif', denied = v === 'denied', discard = v === 'discard';
-    const rail = UPPER_A.map(([id], i) => `<button class="fchip ${i === 0 ? 'done' : ''}" aria-pressed="${i === 1}" ${i === 0 ? 'aria-label="Bench press, done"' : ''}>${i === 0 ? ICON.check : `<span class="num">${i + 1}</span>`}${EX[id][0]}</button>`).join('');
-    const setsDone = rest ? 3 : 2;
-    const rows = [[70, 8, 70, 8], [70, 8, 72.5, 8], [70, 8, 72.5, 8], [70, 7, 72.5, null]].map(([pw, pr_, w, r], i) => {
+    const rest = v === 'rest', notif = v === 'notif', denied = v === 'denied', discard = v === 'discard', types = v === 'types', large = v === 'large';
+    const rail = UPPER_A.map(([id], i) => `<button class="fchip ${i === 0 ? 'done' : ''}" aria-pressed="${i === (types ? 4 : 1)}" ${i === 0 ? 'aria-label="Bench press, done"' : ''}>${i === 0 ? ICON.check : `<span class="num">${i + 1}</span>`}${EX[id][0]}</button>`).join('');
+    const setsDone = rest ? 4 : 2; // index into SETS (0 is the warm-up)
+    // [label, last kg, last reps, kg, reps]; W = warm-up (not counted in records or volume)
+    const SETS = [['W', 40, 10, 40, 10], ['1', 70, 8, 70, 8], ['2', 70, 8, 72.5, 8], ['3', 70, 8, 72.5, 8], ['4', 70, 7, 72.5, 8]];
+    const rows = SETS.map(([lab, pw, pr_, w, r], i) => {
       const st = i < setsDone ? 'done' : i === setsDone ? 'cur' : 'todo';
-      return `<div class="set-row ${st}" ${st === 'cur' ? 'aria-current="step"' : ''}><span class="num" style="font-weight:700">${i + 1}</span><span class="prev num">${pw} × ${pr_}</span><span class="v num">${w}</span><span class="v num">${r ?? '—'}</span><button class="tick-btn" aria-label="${st === 'done' ? `Set ${i + 1} done. Tap to undo` : `Mark set ${i + 1} done`}">${ICON.check}</button></div>`;
+      const warm = lab === 'W';
+      const said = `${warm ? 'Warm-up set' : 'Set ' + lab}`;
+      const tick = st === 'todo' ? '<span aria-hidden="true"></span>'
+        : `<button class="tick-btn" aria-label="${st === 'done' ? `${said} logged. Undo` : `Log ${said.toLowerCase()} as shown`}">${ICON.check}</button>`;
+      if (large) return `<div class="set-row big ${st}" ${st === 'cur' ? 'aria-current="step"' : ''}><div class="stack" style="gap:0"><span class="lab">${warm ? 'Warm-up' : 'Set ' + lab} · last ${pw} × ${pr_}</span><span class="vals ${st === 'done' ? '' : 'sug'}">${w} kg × ${r}</span></div>${tick}</div>`;
+      return `<div class="set-row ${st} ${warm ? 'warm' : ''}" ${st === 'cur' ? 'aria-current="step"' : ''}><span class="num lab" ${warm ? 'title="Warm-up: not counted in records or volume"' : ''}>${lab}</span><span class="prev num">${pw} × ${pr_}</span><span class="v num ${st === 'done' ? '' : 'sug'}">${w}</span><span class="v num ${st === 'done' ? '' : 'sug'}">${r}</span>${tick}</div>`;
     }).join('');
-    const card = `<section class="card rim-train"><div class="row">${glyph('row')}<div class="grow stack" style="gap:0"><strong style="font-family:var(--font-display);font-stretch:108%;font-size:19px">Barbell row</strong><span class="t-small">4 × 8 · rest 2:00</span></div><button class="iconbtn bare" aria-label="Exercise options: notes, replace, history">${ICON.more}</button></div>
-        <div class="sets"><div class="set-row head"><span>Set</span><span>Last time</span><span style="text-align:end">kg</span><span style="text-align:end">Reps</span><span></span></div>${rows}</div>
+    const head = large ? '' : `<div class="set-row head"><span>Set</span><span>Last time</span><span style="text-align:end">kg</span><span style="text-align:end">Reps</span><span></span></div>`;
+    const card = `<section class="card rim-train"><div class="row">${glyph('row')}<div class="grow stack" style="gap:0"><strong class="ex-title">Barbell row</strong><span class="t-small">W + 4 × 8 · rest 2:00</span></div><button class="iconbtn bare" aria-label="Exercise options: set type, notes, replace, history">${ICON.more}</button></div>
+        <div class="sets">${head}${rows}</div>
+        <p class="t-small sug-note"><span class="sug">72.5</span> Suggestions from last time look like this. They're saved only when you log the set.</p>
         <button class="link" style="justify-self:start">+ Add set</button></section>`;
+
+    // other exercise types: per-dumbbell, assisted, one side at a time, body weight
+    const tcard = (id, unitHead, rowsHtml, note) => `<section class="card"><div class="row">${glyph(id)}<div class="grow stack" style="gap:0"><strong>${EX[id][0]}</strong><span class="t-small">${EX[id][1]}</span></div></div>
+        <div class="sets"><div class="set-row head"><span>Set</span><span>Last time</span><span style="text-align:end">${unitHead}</span><span style="text-align:end">Reps</span><span></span></div>${rowsHtml}</div><p class="t-small">${note}</p></section>`;
+    const trow = (lab, prev, a, b, st = 'done') => `<div class="set-row ${st}"><span class="num lab">${lab}</span><span class="prev num">${prev}</span><span class="v num ${st === 'done' ? '' : 'sug'}">${a}</span><span class="v num ${st === 'done' ? '' : 'sug'}">${b}</span>${st === 'todo' ? '<span></span>' : `<button class="tick-btn" aria-label="${st === 'done' ? 'Logged. Undo' : 'Log as shown'}">${ICON.check}</button>`}</div>`;
+    const typeCards = [
+      tcard('curl', 'kg each', trow('1', '14 × 12', '14', '12') + trow('2', '14 × 11', '14', '12', 'cur'), 'Weight is <strong>per dumbbell</strong>. Volume counts both: 14 kg × 2 × 12.'),
+      tcard('assisted', 'Assist kg', trow('1', '−30 × 8', '−25', '8') + trow('2', '−30 × 8', '−25', '8', 'cur'), 'Less assistance is progress, so records track the <strong>lowest</strong> assist. Excluded from volume.'),
+      tcard('split', 'kg each', trow('1 L', '12 × 8', '12', '8') + trow('1 R', '12 × 8', '12', '8') + trow('2 L', '12 × 8', '12', '8', 'cur') + trow('2 R', '12 × 8', '12', '8', 'todo'), 'Logged <strong>per side</strong>. Each side keeps its own records; the set counts once.'),
+      tcard('pullup', '+ kg', trow('1', 'BW × 9', 'BW', '9') + trow('2', 'BW × 8', '+0', '8', 'cur'), 'Body weight. Add weight with + when you use a belt. Volume uses only added weight.'),
+    ].join('');
+
     const banner = denied ? `<div class="banner banner-warning" role="status">${ICON.bell}<span>Notifications are off, so the rest timer can only alert you inside the app. <button class="link" style="min-height:0">Turn on</button></span></div>` : '';
     const dock = `<div class="dock">${banner}<div class="steppers"><div class="stepper"><button aria-label="Weight down 2.5 kilograms">−</button><output aria-live="polite"><b>72.5</b><span>kg</span></output><button aria-label="Weight up 2.5 kilograms">+</button></div><div class="stepper"><button aria-label="One fewer rep">−</button><output aria-live="polite"><b>8</b><span>reps</span></output><button aria-label="One more rep">+</button></div></div>
-        <button class="btn btn-train btn-xl btn-block" data-go="tr-active" data-variant="${denied ? 'denied' : 'rest'}">Log set ${setsDone + 1}</button></div>`;
+        <button class="btn btn-train btn-xl btn-block" data-go="tr-active" data-variant="${denied ? 'denied' : 'rest'}">Log set ${setsDone}</button></div>`;
     let overlay = '';
-    if (rest) overlay = sheet(`<div class="orb-wrap sm" role="timer" aria-label="Rest, 1 minute 24 seconds left"><div class="orb rest"></div>
+    if (rest) overlay = sheet(`<div class="row" style="justify-content:space-between;margin-top:-4px" role="status"><span class="t-small"><strong style="color:var(--color-text-primary)">Set 3 logged</strong> · 72.5 kg × 8</span><button class="btn btn-ghost btn-sm" data-go="tr-active" data-variant="log" style="text-decoration:underline;color:var(--color-text-primary)">Undo</button></div>
+        <div class="orb-wrap sm" role="timer" aria-label="Rest, 1 minute 24 seconds left"><div class="orb rest"></div>
         <svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--color-track)" stroke-width="4"/><circle cx="100" cy="100" r="88" fill="none" stroke="var(--color-domain-train)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${2 * Math.PI * 88}" stroke-dashoffset="${2 * Math.PI * 88 * (36 / 120)}"/></svg>
         <div class="orb-label"><span class="orb-n" style="font-size:44px">1:24</span><span class="orb-u">rest</span></div></div>
         <p class="t-small" style="text-align:center;margin-top:-4px">Next: Barbell row · set 4 · 72.5 kg × 8</p>
         <div class="three"><button class="btn btn-secondary">−15 s</button><button class="btn btn-secondary">+15 s</button><button class="btn btn-primary" data-go="tr-active" data-variant="log">Skip rest</button></div>
-        <p class="t-small" style="text-align:center">Keeps counting with the screen off. You'll get a notification at 0:00.</p>`);
+        <div class="row wrap" style="gap:6px;justify-content:center">${chip('pending', 'clock', 'Pending')}<span class="t-small">Lock-screen alert at 0:00 is being tested on your phone. Inside Liftria the timer is always right.</span></div>`);
     if (notif) overlay = sheet(`<span class="sheet-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.bell}</span><h2>Get a nudge when rest is over?</h2>
-        <p class="t-body">Liftria shows a local notification so the rest timer can reach you with the screen locked or while you're in another app. Nothing is sent anywhere.</p>
+        <p class="t-body">Liftria can show a notification so the rest timer reaches you with the screen locked or in another app. The notification is made on this phone; your workout data stays here.</p>
         <button class="btn btn-primary btn-block" data-go="tr-active" data-variant="rest">Allow notifications</button><button class="btn btn-ghost btn-block" data-go="tr-active" data-variant="denied">Not now</button>
         <p class="t-small">Next, Android asks for permission. You can change it later in Settings.</p>`);
     if (discard) overlay = sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Discard this workout?</h2>
         <p class="t-body">The 9 sets you've logged in Upper A will be deleted. This can't be undone.</p>
         <button class="btn btn-primary btn-block" data-go="tr-active" data-variant="log">Keep training</button><button class="btn btn-danger btn-block" data-go="tr-home">Discard workout</button>`);
-    return `${statusbar(false)}<div class="wk-top"><button class="iconbtn bare" data-go="tr-home" data-variant="resume" aria-label="Minimize workout. It keeps running">${ICON.down}</button><div class="grow"><strong>Upper A</strong><span class="t-small num">23:10 · ${setsDone + 7} of 22 sets</span></div><button class="btn btn-secondary btn-sm" data-go="tr-summary">Finish</button></div>
-      <div class="wk-progress bar" aria-hidden="true"><i style="width:${(setsDone + 7) / 22 * 100}%;background:var(--color-domain-train)"></i></div>
+    const body = types ? `<p class="t-small">How other kinds of exercise log. Same table, different meaning per column.</p>${typeCards}`
+      : `${card}${large ? '' : `<section class="card flat"><div class="row">${glyph('ohp')}<div class="grow stack" style="gap:0"><strong>Up next: Overhead press</strong><span class="t-small">4 × 8 · last 45 × 8, 8, 7, 7 kg</span></div></div></section>`}`;
+    return `${statusbar(false)}<div class="wk-top"><button class="iconbtn bare" data-go="tr-home" data-variant="resume" aria-label="Minimize workout. It keeps running">${ICON.down}</button><div class="grow"><strong>Upper A</strong><span class="t-small num">23:10 · ${setsDone + 6} of 22 sets</span></div><button class="btn btn-secondary btn-sm" data-go="tr-summary">Finish</button></div>
+      <div class="wk-progress bar" aria-hidden="true"><i style="width:${(setsDone + 6) / 22 * 100}%;background:var(--color-domain-train)"></i></div>
       <div class="rail" aria-label="Exercises in this workout">${rail}</div>
-      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${denied ? 230 : 180}px">${card}
-        <section class="card flat"><div class="row">${glyph('ohp')}<div class="grow stack" style="gap:0"><strong>Up next: Overhead press</strong><span class="t-small">4 × 8 · last 45 × 8, 8, 7, 7 kg</span></div></div></section>
-      </div></div>${dock}${overlay}`;
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${large ? 260 : denied ? 230 : 180}px">${body}</div></div>${types ? '' : dock}${overlay}`;
   }
 
   function trLock(v) {
@@ -1139,7 +1182,7 @@ button, input, select { font: inherit; color: inherit; }
     'tr-template': [['edit', 'Edit Upper A'], ['new', 'New, not valid yet']],
     'tr-library': [['browse', 'Browse'], ['filtered', 'Filtered: Chest'], ['noresults', 'Search, no results']],
     'tr-exercise': [['history', 'With your history'], ['new', 'Never logged']],
-    'tr-active': [['log', 'Logging a set'], ['rest', 'Rest timer'], ['notif', 'Notification ask (first rest)'], ['denied', 'Notifications denied'], ['discard', 'Discard confirmation']],
+    'tr-active': [['log', 'Logging a set'], ['rest', 'Rest timer + Undo'], ['notif', 'Notification ask (first rest)'], ['denied', 'Notifications denied'], ['discard', 'Discard confirmation'], ['types', 'Other exercise types'], ['large', 'Text size 200%']],
     'tr-lock': [['rest', 'Rest running'], ['done', 'Rest over']],
     'tr-summary': [['pr', 'New records'], ['nopr', 'No records']],
     'tr-history': [['list', 'Populated'], ['empty', 'Empty'], ['deleted', 'After delete, with Undo']],
@@ -1157,6 +1200,7 @@ button, input, select { font: inherit; color: inherit; }
     else if (TRAIN[s]) html = TRAIN[s](vOf(s)) + (isFocus(s, vOf(s)) ? '' : (s !== 'tr-home' && vOf('tr-home') === 'resume' ? minibar() : '') + nav('tr-home'));
     else html = later(s) + (s === 'tab-settings' ? '' : nav(s));
     screenEl.innerHTML = html;
+    screenEl.classList.toggle('fs200', s === 'tr-active' && vOf(s) === 'large');
     screenEl.classList.toggle('has-mini', html.includes('class="minibar"'));
     const deck = screenEl.querySelector('#deck'), dotsEl = screenEl.querySelector('#deck-dots');
     if (deck && dotsEl) deck.addEventListener('scroll', () => {
@@ -1164,6 +1208,10 @@ button, input, select { font: inherit; color: inherit; }
       [...dotsEl.children].forEach((d, j) => d.classList.toggle('on', j === i));
     }, { passive: true });
     screenEl.classList.toggle('glass', state.style === 'glass');
+    // Keep the current set in view (the app does the same when a workout opens or a set is logged).
+    const cur = screenEl.querySelector('.set-row.cur'), sc = screenEl.querySelector('.scroll');
+    if (cur && sc) sc.scrollTop = Math.max(0, cur.offsetTop - sc.offsetTop - 120);
+
     styleBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.styleBtn === state.style)));
     screenSelect.value = s === 'tab-settings' ? 'home' : s;
     variantCtl.hidden = !VARIANTS[s];
@@ -1175,7 +1223,7 @@ button, input, select { font: inherit; color: inherit; }
     const goal = e.target.closest('[data-goal]'), act = e.target.closest('[data-act]'), go = e.target.closest('[data-go]');
     if (goal) { state.goal = goal.dataset.goal; render(); return; }
     if (act) { state.activity = act.dataset.act; render(); return; }
-    if (go) { if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; state.screen = go.dataset.go; render(); screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
+    if (go) { if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
   });
   screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; render(); });
   variantSelect.addEventListener('change', () => { state.v[state.screen] = variantSelect.value; render(); });

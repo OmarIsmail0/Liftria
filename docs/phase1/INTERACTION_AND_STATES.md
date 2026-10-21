@@ -71,7 +71,8 @@
 | Health Connect off | No effect on Train. |
 | First-time user | TR-1 first-time hero, starter templates, empty history, "never logged" exercise detail. |
 | Notifications denied | Rest timer works in-app (sheet, top-bar countdown, vibration while open); banner offers "Turn on". |
-| App killed or phone restarted mid-workout | Every logged set is already saved. Next launch shows the in-progress hero. The rest timer isn't restored; it was a transient state. |
+| App killed or phone restarted mid-workout | Every logged set is already saved. Next launch shows the in-progress hero. The rest timer resumes from its stored deadline if that's still in the future; otherwise it shows "Rest over". |
+| Accidental Log set | Undo on the rest sheet, or the logged row's tick. Suggested values are styled differently and are never logged automatically. |
 
 ### Train interactions
 
@@ -80,7 +81,9 @@
 | Log set (64dp) | Saves the set, ticks it, starts rest | — | Light haptic. TalkBack announces "Set 3 logged, 72.5 kilograms, 8 reps. Rest 2 minutes." |
 | Stepper − / + | One step | Repeats every 150 ms after 400 ms | Value announced (`aria-live`) |
 | Stepper number | Opens the numeric keypad | — | Decimal keypad for kg |
-| Set tick | Logs the row as shown, or asks to undo if ticked | — | — |
+| Set tick | Current row: logs it as shown. Logged row: asks to undo | — | Future rows have no tick |
+| Logged set's numbers | Loads them into the steppers to correct (Save / Cancel) | — | — |
+| Undo (rest sheet) | Removes the set just logged | — | Shown for the whole rest |
 | Exercise rail chip | Switches exercise | Reorder mode | Done exercises keep a tick |
 | Rest sheet | −15 s / +15 s / Skip | — | Swipe down hides; timer keeps running in the top bar |
 | Minimize (chevron) | Leaves TR-8, shows mini bar | — | System back does the same; it never discards |
