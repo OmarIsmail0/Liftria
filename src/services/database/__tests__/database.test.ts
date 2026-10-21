@@ -166,11 +166,18 @@ test('legacy source-less energy entries are filtered and purged without removing
     windowStart: '2026-10-20T00:00:00Z', windowEnd: '2026-10-21T00:00:00Z',
     value: 1564.5, unit: 'kcal' as const, dataOrigins: [],
   };
-  const key = `${legacy.adapter}:${legacy.operation}:${legacy.windowStart}:${legacy.windowEnd}`;
-  state.aggregates.set(key, {
-    adapter: legacy.adapter, operation: legacy.operation,
-    window_start: legacy.windowStart, window_end: legacy.windowEnd, payload_json: JSON.stringify(legacy),
-  });
+  // A source-backed aggregate seeded here, so this test doesn't depend on rows left by earlier tests.
+  const sourced = { ...legacy, operation: 'ACTIVE_CALORIES_TOTAL', value: 260, dataOrigins: ['com.sec.android.app.shealth'] };
+  const seed = (v: Omit<typeof legacy, 'dataOrigins'> & { dataOrigins: string[] }) => {
+    const k = `${v.adapter}:${v.operation}:${v.windowStart}:${v.windowEnd}`;
+    state.aggregates.set(k, {
+      adapter: v.adapter, operation: v.operation,
+      window_start: v.windowStart, window_end: v.windowEnd, payload_json: JSON.stringify(v),
+    });
+    return k;
+  };
+  const key = seed(legacy);
+  const sourcedKey = seed(sourced);
   expect(state.aggregates.has(key)).toBe(true);
   const cached = await listCachedHealth();
   expect(cached.ok).toBe(true);
@@ -179,6 +186,7 @@ test('legacy source-less energy entries are filtered and purged without removing
     expect(cached.value.some(value => value.kind === 'aggregate' && value.value === 260)).toBe(true);
   }
   expect(state.aggregates.has(key)).toBe(false);
+  expect(state.aggregates.has(sourcedKey)).toBe(true);
 });
 
 test('clear removes diagnostic data but keeps imported health records', async () => {
