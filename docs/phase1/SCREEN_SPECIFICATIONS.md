@@ -57,18 +57,20 @@ Skipping ON-3 skips ON-5's calculation. Today then shows "No target yet · Set t
 
 ---
 
-## Today (TD-1 … TD-6)
+## Today (TD-1 … TD-7): Pulse Orb
 
-**Layout (top to bottom, priority order):** header (date, greeting, profile button) → banners (offline, stale) → Getting started (first day only) → Nutrition → Training → Activity → Hiku → This week.
+**Layout (top to bottom):** header (date, greeting, profile button) → offline banner → **Pulse Orb** (calories) → target line with Estimate chip → macro row → actions (Log a meal, Photo) → **deck** of swipeable cards: Getting started (first day only) · Training · Activity · Hiku · Meals today → capsule navigation.
+
+Nutrition is no longer a card: the orb, target line and macro row above the deck *are* the Nutrition summary, and tapping them opens the Eat diary. "This week" moves to Progress (1D); Today stays about today.
 
 | Card | Data source | Empty state | Rules |
 |---|---|---|---|
 | Header | Device clock, profile name | "Good morning/afternoon/evening"; "Welcome to Liftria" on first day | The profile button opens Settings. |
-| Nutrition | Local diary (Phase 4), target (local estimate or manual) | Ring at 0, "Nothing logged today" | Target chip always "Estimated target" or "Your target". Over target: "+180 kcal over", neutral color. No target: ring shows eaten only, plus "Set target". Hide-numbers setting replaces values with progress words. |
+| Nutrition (orb) | Local diary (Phase 4), target (local estimate or manual) | Empty glass orb, "0 kcal eaten", "Your first meal lights it up." | Target chip always "Estimate" or "Your target". Over target: "+180 kcal over", same honey color. No target (TD-7): no ring, "kcal eaten", "No target yet · Set a target", macros in grams with no `/target`. Hide-numbers setting replaces values with progress words. |
 | Training | Templates and plan (Phase 3) | "Start empty workout" + Templates | Shows the planned or last workout. An unfinished workout shows "Resume" instead. |
 | Activity | Health Connect | Not connected: "Connect Health Connect"; HC off: TD-5 banner | Steps: one row per origin (phone / Samsung Health); the watch source isn't assumed. HR: latest value + source chip + pending chip until verified. Energy: one figure only if measured; otherwise the "No measured source" text. The HC estimate is never shown here. |
 | Hiku | Key presence, connectivity | No key: TD-4; offline: TD-3 | The suggestion is context-free in V1 (e.g. "Dinner still open" uses only local diary state, no AI call). |
-| This week | Local diary + workout history | Hidden on first day | Dot = any meal logged; train tint = workout. Accessible summary sentence. |
+| Meals today | Local diary | "Nothing logged yet" + Log a meal | One row per meal with kcal; unlogged meals say "not logged yet". |
 
 **Refresh:** pull to refresh re-reads Health Connect and shows "Updated just now". Health Connect is also read on app foreground at most every 15 minutes. Local data always reflects the latest change instantly.
 

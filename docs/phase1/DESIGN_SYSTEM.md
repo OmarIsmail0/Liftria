@@ -79,11 +79,26 @@ Neutrals lean slightly blue-grey, so the warm domain colors read clearly against
 Like every color in Liftria, the rim is backed by the card's title and dot, so it never carries meaning alone.
 
 **Rules for glass**
-1. **Glass frames, never fills, the data.** Numbers, chips, inputs, macro bars and buttons stay solid and high-contrast. Only cards, choice rows, banners, the bottom navigation and sheets are glass.
-2. **The ambient glow is fixed** (it doesn't scroll or animate). That lets Phase 2 build cards as plain translucent views over one pre-rendered background, with **no live blur under cards**: cheap, smooth and battery-friendly on Android. Live blur (e.g. `expo-blur`) is used only for the bottom navigation and bottom sheets, where content moves underneath. It falls back to a more opaque fill if blur is unavailable or "Reduce transparency" is on.
+1. **Glass frames, never fills, the data.** Numbers, chips, inputs, macro bars and buttons stay solid and high-contrast. Only cards, choice rows, banners, the navigation capsule and sheets are glass.
+2. **The ambient glow is fixed** (it doesn't scroll or animate). That lets Phase 2 build cards as plain translucent views over one pre-rendered background, with **no live blur under cards**: cheap, smooth and battery-friendly on Android. Live blur (e.g. `expo-blur`) is used only for the navigation capsule and bottom sheets, where content moves underneath. It falls back to a more opaque fill if blur is unavailable or "Reduce transparency" is on.
 3. **Contrast is checked against the worst case**: a card's sheen sitting on the brightest glow. To pass, dark text tokens were brightened (secondary `#BFC6D1`, tertiary `#A3ACBA`), dark domain colors were brightened, and light-mode domain and tertiary colors were darkened. Every text token now passes 4.5:1 there (see ACCESSIBILITY.md).
 4. **The glow carries no meaning.** It is decoration, so it never signals state.
 5. **Only one gradient button**: the training Start. The primary action stays solid chalk, so the eye goes to it first.
+
+### The Pulse Orb (Today's hero)
+
+The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C concept board). Today's calorie number sits in a glowing orb, wrapped by a progress ring, with the rest of the day in a swipeable deck of rimmed cards below it.
+
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `orb.1` / `orb.2` / `orb.3` | `#FFCF5E` / `#FF8F6B` / `#7B5CFF` | `#FFE09A` / `#FFB496` / `#B9A8FF` | Radial fill: honey centre, coral middle, violet edge |
+| `orb.ink` | `#120B22` | `#120B22` | Number and unit inside the orb |
+
+- **Size:** 236px orb area; the ring uses `domain.eat` on `color.track`.
+- **Orb ink contrast** (measured on the fill where text can sit): dark ≥ 6.28 (13.07 at the centre), light ≥ 10.19.
+- **Label:** "1,230 kcal left" with a target; "1,420 kcal eaten" with no target (no ring, and macros show grams only, never `/target`); first day shows an empty glass orb, "0 kcal eaten" and "Your first meal lights it up."
+- The orb is a summary. The Estimate chip and "eaten of target" line sit right below it, so the number's origin is never more than a glance away.
+- **Over target:** the ring stays full in the same honey color and the label reads "+180 kcal over". Never red (principle 6).
 
 ## 2. Typography
 
@@ -134,11 +149,13 @@ Like every color in Liftria, the rim is backed by the card's title and dot, so i
 | **Card** | `default` (raised), `flat` (no shadow) | Header row: domain dot, title, optional chip or link. |
 | **Provenance chip** | `measured`, `phone`, `estimate` (dashed), `pending`, `stale`, `off` | Always icon + text. See §6. |
 | **Banner** | `offline`, `warning`, `info` | Inline in content, never a blocking modal. Starts with an icon. |
-| **Calorie ring** | with target / without target | 132px, 12px stroke. With no target, it shows only the eaten value and a "Set target" action. Never a ring against an invented target. |
+| **Calorie ring** | with target / without target | 132px, 12px stroke (Solid style, Eat diary). On Today it wraps the Pulse Orb. With no target, it shows only the eaten value and a "Set target" action. Never a ring against an invented target. |
+| **Pulse Orb** | with target / no target / empty | Today's hero. See §1 "The Pulse Orb". |
+| **Deck card** | rim per section | Today's horizontal, snapping card deck (Training, Activity, Hiku, Meals; Getting started first on day one). Cards are 85% of screen width so the next one peeks. Dots below show position; every card is also reachable by TalkBack swipe. |
 | **Macro bar** | protein, carbs, fat | Label + bar + "96/155 g". Over-target continues in the same color with a "+12 g" label, never red. |
 | **Metric row** | with chip | Icon tile, value, unit, provenance chip row. |
 | **Week strip** | 7 days | A dot means logged; a train-tinted cell means workout day. Also has a text alternative. |
-| **Bottom navigation** | 5 items | 56px targets, active pill, glass background. |
+| **Capsule navigation** | 5 items | Floating glass capsule above the gesture bar, 16px from the edges. Icons only, except the active tab, which shows its label in a chalk pill. 56px targets; every item has an accessible label. |
 | **Choice list** | single-select | Full-width rows, at least 56px, pressed state shown by an outline (not color alone). |
 | **Unit input** | number + unit suffix | Numeric keyboard; units switch in Settings. |
 | **Step indicator** | n of 8 | Segmented bar with an accessible label "Step n of 8". |
@@ -173,4 +190,4 @@ Components for workout logging, the rest timer, food search, Hiku messages, char
 | `motion.slow` | 500–600 ms | same | Ring and bar fills on first show |
 
 - Under Android's "Remove animations" setting (`prefers-reduced-motion`), there are no transitions, and values appear at their final state.
-- No looping animations. Haptics for set logged, timer done and destructive confirmations (specified in 1B).
+- No looping animations, with **one exception**: the Pulse Orb "breathes" (3% scale and slight saturation, 5 s cycle). It is off under "Remove animations", paused when Today isn't visible, and carries no meaning. Haptics for set logged, timer done and destructive confirmations (specified in 1B).

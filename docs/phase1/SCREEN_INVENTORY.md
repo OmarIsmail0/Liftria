@@ -27,12 +27,13 @@ Phase 0 evidence is in `docs/PHASE_0_REPORT.md`.
 
 | ID | Screen / state | Purpose | Shows | Actions | Depends on | Status |
 |---|---|---|---|---|---|---|
-| TD-1 | Today, populated | Daily overview | Greeting, date; Nutrition card (ring, kcal left, macros, meals); Training (planned workout); Activity (steps with phone/watch chip, latest HR with provenance, energy "no measured source"); Hiku card; This week | Log a meal, Photo (Hiku), Start workout, Sources, Profile | Local DB; HC steps/HR; Claude | Mixed: logging Future (Phase 2–4); HC steps Confirmed (phone origin); HR Pending; energy NOT measured |
-| TD-2 | Today, first day | Make an empty app useful | Getting-started checklist, empty ring with "Nothing logged", empty training card, phone steps, "No watch data yet" | Log a meal, Start empty workout, Templates, Check setup, Add API key | as TD-1 | as TD-1 |
+| TD-1 | Today, populated | Daily overview | Greeting, date; Pulse Orb (kcal left, ring, Estimate chip, macros); deck: Training (planned workout), Activity (steps with phone/watch chip, latest HR with provenance, energy "no measured source"), Hiku, Meals today | Log a meal, Photo (Hiku), Start workout, Sources, Profile | Local DB; HC steps/HR; Claude | Mixed: logging Future (Phase 2–4); HC steps Confirmed (phone origin); HR Pending; energy NOT measured |
+| TD-2 | Today, first day | Make an empty app useful | Getting-started checklist first in the deck, empty glass orb with "0 kcal eaten", empty training card, phone steps, "No watch data yet" | Log a meal, Start empty workout, Templates, Check setup, Add API key | as TD-1 | as TD-1 |
 | TD-3 | Today, offline | Keep working | Offline banner; Hiku card "Needs internet"; Photo button hidden | Same as TD-1 except Hiku | — | Offline core Confirmed (C4 PASS) |
 | TD-4 | Today, no API key | Explain Hiku without blocking | Hiku card "No API key" + Add API key | Add API key | SecureStore | Confirmed |
 | TD-5 | Today, Health Connect off | Hide, don't zero | Activity card banner: steps and HR hidden, not zero | Turn on, Not now | HC availability/permission | Confirmed (availability check works) |
 | TD-6 | Today, stale health data | Show age honestly | Stale chips "2 d ago", sync hint | Sources | HC timestamps | Pending (freshness rules are new) |
+| TD-7 | Today, no calorie target | Never compare against an invented target | Orb shows "kcal eaten" with no ring; "No target yet · Set a target"; macros in grams only | Set a target | Profile/targets | Future (Phase 4) |
 | DS-1 | Energy states sheet (design reference, not an app screen) | Specify every energy-value state | Measured, measured zero, HC estimate not used, no source, not allowed, pending | — | — | Reference |
 
 ## Stubs in the 1A prototype (designed later)

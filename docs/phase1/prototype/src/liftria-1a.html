@@ -52,6 +52,7 @@
   --ambient-eat: rgba(255, 190, 80, 0.26);
   --color-track: rgba(255, 255, 255, 0.09);
   --card-fill: var(--color-bg-surface);
+  --orb-1: #FFCF5E; --orb-2: #FF8F6B; --orb-3: #7B5CFF; --orb-ink: #120B22;
   --shadow-raised: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.35);
   --font-display: "Archivo", "Roboto Condensed", system-ui, sans-serif;
   --font-body: "Figtree", "Roboto", system-ui, sans-serif;
@@ -73,7 +74,7 @@
     --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
     --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
     --color-board-bg: #E4E8EE;
-    --aurora-base: #EEF0F7; --glass-card: rgba(255, 255, 255, 0.78); --glass-border: rgba(255, 255, 255, 0.90); --rim-strength: 15%; --rim-glow: 7%; --train-grad-end: #B8322E;
+    --aurora-base: #EEF0F7; --glass-card: rgba(255, 255, 255, 0.78); --glass-border: rgba(255, 255, 255, 0.90); --rim-strength: 15%; --rim-glow: 7%; --train-grad-end: #B8322E; --orb-1: #FFE09A; --orb-2: #FFB496; --orb-3: #B9A8FF;
     --glass-highlight: rgba(255, 255, 255, 0.75); --color-track: rgba(18, 22, 28, 0.09); --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 14px 34px rgba(60, 70, 120, 0.14);
     --ambient-train: rgba(255, 170, 140, 0.60); --ambient-health: rgba(120, 225, 200, 0.50);
     --ambient-hiku: rgba(170, 150, 255, 0.55); --ambient-eat: rgba(255, 215, 130, 0.50);
@@ -95,7 +96,7 @@
   --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
   --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
   --color-board-bg: #E4E8EE;
-  --aurora-base: #EEF0F7; --glass-card: rgba(255, 255, 255, 0.78); --glass-border: rgba(255, 255, 255, 0.90); --rim-strength: 15%; --rim-glow: 7%; --train-grad-end: #B8322E;
+  --aurora-base: #EEF0F7; --glass-card: rgba(255, 255, 255, 0.78); --glass-border: rgba(255, 255, 255, 0.90); --rim-strength: 15%; --rim-glow: 7%; --train-grad-end: #B8322E; --orb-1: #FFE09A; --orb-2: #FFB496; --orb-3: #B9A8FF;
   --glass-highlight: rgba(255, 255, 255, 0.75); --color-track: rgba(18, 22, 28, 0.09); --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 14px 34px rgba(60, 70, 120, 0.14);
   --ambient-train: rgba(255, 170, 140, 0.60); --ambient-health: rgba(120, 225, 200, 0.50);
   --ambient-hiku: rgba(170, 150, 255, 0.55); --ambient-eat: rgba(255, 215, 130, 0.50);
@@ -149,7 +150,7 @@ button, input, select { font: inherit; color: inherit; }
 .statusbar { height: 32px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
 .scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
 .scroll::-webkit-scrollbar { display: none; }
-.page { padding: 8px 18px 24px; display: flex; flex-direction: column; gap: 14px; }
+.page { padding: 8px 18px 104px; display: flex; flex-direction: column; gap: 14px; }
 
 @media (max-width: 760px) {
   .board { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 12px; }
@@ -234,6 +235,49 @@ button, input, select { font: inherit; color: inherit; }
 .nav button .pill { width: 56px; height: 30px; border-radius: var(--radius-pill); display: grid; place-items: center; }
 .nav button[aria-current="page"] { color: var(--color-text-primary); }
 .nav button[aria-current="page"] .pill { background: var(--color-bg-raised); border: 1px solid var(--color-border-strong); }
+
+/* floating capsule nav: icons, label only on the active tab */
+.capsule { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px; border-radius: var(--radius-pill); background: var(--glass-card); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); backdrop-filter: blur(26px) saturate(1.6); -webkit-backdrop-filter: blur(26px) saturate(1.6); z-index: 5; }
+.capsule button { border: 0; background: transparent; min-width: 48px; height: 48px; padding: 0 12px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--color-text-tertiary); cursor: pointer; font-size: 13px; font-weight: 700; }
+.capsule button svg { width: 22px; height: 22px; flex: none; }
+.capsule button span { display: none; }
+.capsule button[aria-current="page"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); padding: 0 16px 0 14px; }
+.capsule button[aria-current="page"] span { display: inline; }
+
+/* Pulse Orb Today */
+.orb-page { padding: 4px 0 104px; display: flex; flex-direction: column; gap: 12px; }
+.orb-page > .orb-top, .orb-page > .banner, .orb-page > .orb-sub, .orb-page > .orb-macros, .orb-page > .orb-actions { margin-inline: 18px; }
+.orb-top { display: flex; justify-content: space-between; align-items: center; }
+.orb-greet { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 24px; line-height: 1.15; }
+.orb-wrap { position: relative; width: 236px; height: 236px; margin: 2px auto 0; display: grid; place-items: center; flex: none; }
+.orb { position: absolute; inset: 24px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.5), transparent 30%), radial-gradient(circle at 50% 62%, var(--orb-1) 0%, var(--orb-2) 46%, var(--orb-3) 100%);
+  box-shadow: 0 0 60px color-mix(in srgb, var(--orb-2) 45%, transparent), 0 0 120px color-mix(in srgb, var(--orb-3) 35%, transparent), inset 0 -20px 40px rgba(20, 10, 60, .45); }
+.orb-wrap.is-empty .orb { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.35), transparent 32%), var(--glass-card); border: 1px solid var(--glass-border); box-shadow: inset 0 -16px 36px rgba(0,0,0,.25), 0 0 40px color-mix(in srgb, var(--orb-3) 20%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.orb-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.orb-label { position: relative; display: grid; justify-items: center; color: var(--orb-ink); text-align: center; }
+.orb-wrap.is-empty .orb-label { color: var(--color-text-primary); }
+.orb-n { font-family: var(--font-display); font-stretch: 120%; font-weight: 900; font-size: 46px; letter-spacing: -0.03em; line-height: .95; font-variant-numeric: tabular-nums; }
+.orb-u { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.orb-sub { margin: 0; display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; color: var(--color-text-secondary); text-align: center; }
+.orb-sub b { color: var(--color-text-primary); }
+.link { border: 0; background: transparent; padding: 0; min-height: 44px; font-weight: 700; color: var(--color-text-primary); text-decoration: underline; cursor: pointer; }
+.orb-macros { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--color-text-secondary); }
+.orb-macros > span { display: inline-flex; align-items: center; gap: 6px; }
+.orb-macros i { width: 8px; height: 8px; border-radius: 50%; }
+.orb-macros b { color: var(--color-text-primary); }
+.orb-actions { display: flex; gap: 10px; }
+.deck { display: grid; grid-auto-flow: column; grid-auto-columns: 262px; gap: 12px; overflow-x: auto; padding: 4px 18px 6px; scroll-snap-type: x mandatory; scroll-padding-inline: 18px; scrollbar-width: none; }
+.deck::-webkit-scrollbar { display: none; }
+.dcard { scroll-snap-align: start; min-height: 168px; align-content: start; }
+.dc-big { font-family: var(--font-display); font-stretch: 112%; font-weight: 900; font-size: 26px; line-height: 1.05; }
+.deck-dots { display: flex; justify-content: center; gap: 6px; }
+.deck-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--color-track); transition: width 200ms; }
+.deck-dots i.on { width: 18px; background: var(--color-text-primary); }
+@media (prefers-reduced-motion: no-preference) {
+  .orb { animation: breathe 5s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { transform: scale(1); filter: saturate(1); } 50% { transform: scale(1.03); filter: saturate(1.18); } }
+}
 
 /* top bar */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 18px 8px; flex: none; }
@@ -322,6 +366,7 @@ button, input, select { font: inherit; color: inherit; }
         <option value="nokey">No Anthropic key</option>
         <option value="hcoff">Health Connect off</option>
         <option value="stale">Stale health data</option>
+        <option value="notarget">No calorie target</option>
       </select>
     </div>
     <div class="ctl">
@@ -530,102 +575,75 @@ button, input, select { font: inherit; color: inherit; }
       </div>`,
   };
 
-  // ---------- Today ----------
-  function ring(eaten, target) {
-    const r = 56, c = 2 * Math.PI * r, pct = target ? Math.min(eaten / target, 1) : 0;
-    return `<div class="ring" role="img" aria-label="${target ? `${eaten} of ${target} kilocalories eaten` : 'No target set'}">
-      <svg viewBox="0 0 132 132"><circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="12"/>
-      ${target ? `<circle class="val" cx="66" cy="66" r="${r}" fill="none" stroke="var(--color-domain-eat)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>` : ''}</svg>
-      <div class="center"><span class="t-metric" style="font-size:30px">${eaten.toLocaleString('en-US')}</span><span class="t-small">kcal eaten</span></div></div>`;
+  // ---------- Today: Pulse Orb ----------
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  function orb(v) {
+    const first = v === 'first', noTarget = v === 'notarget';
+    const eaten = first ? 0 : 1420, target = noTarget ? null : 2650;
+    const r = 104, c = 2 * Math.PI * r, pct = target ? Math.min(eaten / target, 1) : 0;
+    const label = first
+      ? `<span class="orb-n" style="font-size:40px">0</span><span class="orb-u">kcal eaten</span>`
+      : noTarget
+        ? `<span class="orb-n">${fmt(eaten)}</span><span class="orb-u">kcal eaten</span>`
+        : `<span class="orb-n">${fmt(target - eaten)}</span><span class="orb-u">kcal left</span>`;
+    const aria = first ? 'Nothing eaten yet today' : noTarget ? `${fmt(eaten)} kilocalories eaten, no target set` : `${fmt(target - eaten)} kilocalories left, ${fmt(eaten)} of an estimated ${fmt(target)} eaten`;
+    return `<div class="orb-wrap ${first ? 'is-empty' : ''}" role="img" aria-label="${aria}">
+        <div class="orb"></div>
+        <svg viewBox="0 0 236 236" aria-hidden="true"><circle cx="118" cy="118" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="4"/>
+        ${target && eaten ? `<circle class="val" cx="118" cy="118" r="${r}" fill="none" stroke="var(--color-domain-eat)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>` : ''}</svg>
+        <div class="orb-label">${label}</div>
+      </div>`;
   }
+  const dcard = (rim, label, body, extra = '') => `<article class="dcard card ${rim ? 'rim-' + rim : ''}" ${extra}><span class="t-label">${label}</span>${body}</article>`;
 
   function today(v) {
-    const first = v === 'first', offline = v === 'offline';
-    const eaten = first ? 0 : 1420, target = 2650;
-    const meals = first ? [] : [['Breakfast', 520, '07:40'], ['Lunch', 680, '13:05'], ['Snack', 220, '16:30']];
-    const greet = first ? 'Welcome to Liftria' : 'Good afternoon';
+    const first = v === 'first', offline = v === 'offline', noKey = v === 'nokey' || first, noTarget = v === 'notarget';
+    const hikuReady = !offline && !noKey;
 
-    const nutrition = `
-      <section class="card rim-eat" aria-labelledby="nut-h">
-        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-eat)"></span><h2 class="t-head" id="nut-h">Nutrition</h2></div>${chip('estimate', 'approx', 'Estimated target')}</div>
-        <div class="ring-wrap">${ring(eaten, target)}
-          <div class="stack" style="gap:8px">
-            <div><span class="t-metric" style="font-size:24px">${(target - eaten).toLocaleString('en-US')}</span> <span class="t-small">kcal left of 2,650</span></div>
-            ${[['Protein', first ? 0 : 96, 155, 'protein'], ['Carbs', first ? 0 : 152, 340, 'carbs'], ['Fat', first ? 0 : 41, 75, 'fat']]
-              .map(([n, g, t, k]) => `<div class="stack" style="gap:4px"><div class="row" style="justify-content:space-between;font-size:12px"><span style="color:var(--color-text-secondary)">${n}</span><span class="num">${g}/${t} g</span></div><div class="bar" style="height:6px"><i style="width:${(g / t) * 100}%;background:var(--color-macro-${k})"></i></div></div>`).join('')}
-          </div>
-        </div>
-        ${meals.length ? `<div class="list">${meals.map(([m, k, t]) => `<div class="list-item" style="min-height:48px;padding:8px 0"><div class="grow"><div style="font-weight:600;font-size:15px">${m}</div><div class="t-small num">${t}</div></div><span class="num" style="font-weight:600">${k} kcal</span></div>`).join('')}
-          <div class="list-item" style="min-height:48px;padding:8px 0"><div class="grow" style="color:var(--color-text-tertiary)">Dinner, not logged yet</div></div></div>`
-          : `<p class="t-small">Nothing logged today. Your first meal fills the ring.</p>`}
-        <div class="row"><button class="btn btn-primary btn-sm grow">Log a meal</button>${!offline && v !== 'nokey' ? `<button class="btn btn-secondary btn-sm" aria-label="Log a meal by photo with Hiku">${ICON.camera.replace('<svg', '<svg width="18" height="18"')}Photo</button>` : ''}</div>
-      </section>`;
+    const sub = first
+      ? `<p class="orb-sub">Your first meal lights it up.</p>`
+      : noTarget
+        ? `<p class="orb-sub">No target yet · <button class="link" type="button">Set a target</button></p>`
+        : `<p class="orb-sub"><b class="num">1,420</b> eaten of <b class="num">2,650</b> ${chip('estimate', 'approx', 'Estimate')}</p>`;
+    const macros = first ? '' : `<div class="orb-macros" aria-label="${noTarget ? 'Protein 96 grams, carbs 152, fat 41' : 'Protein 96 of 155 grams, carbs 152 of 340, fat 41 of 75'}">
+        ${[['protein', 96, 155, 'P'], ['carbs', 152, 340, 'C'], ['fat', 41, 75, 'F']].map(([k, g, t, l]) => `<span><i style="background:var(--color-macro-${k})"></i><b class="num">${g}</b><span class="num">${noTarget ? 'g' : '/' + t} ${l}</span></span>`).join('')}
+      </div>`;
+    const actions = `<div class="orb-actions"><button class="btn btn-primary grow" type="button">Log a meal</button>${hikuReady ? `<button class="btn btn-secondary" type="button" aria-label="Log a meal by photo with Hiku">${ICON.camera}Photo</button>` : ''}</div>`;
 
-    const training = first ? `
-      <section class="card rim-train" aria-labelledby="tr-h">
-        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-train)"></span><h2 class="t-head" id="tr-h">Training</h2></div></div>
-        <p class="t-small">No workouts yet. Start an empty session or build a template you can repeat.</p>
-        <div class="row"><button class="btn btn-train btn-sm grow">Start empty workout</button><button class="btn btn-secondary btn-sm">Templates</button></div>
-      </section>` : `
-      <section class="card rim-train" aria-labelledby="tr-h">
-        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-train)"></span><h2 class="t-head" id="tr-h">Training</h2></div><span class="t-small">Planned today</span></div>
-        <div class="row"><div class="grow"><div style="font-family:var(--font-display);font-stretch:108%;font-weight:800;font-size:22px">Upper A</div><div class="t-small">6 exercises · about 55 min · last done Thu</div></div></div>
-        <button class="btn btn-train btn-block">Start workout</button>
-        <p class="t-small">Works offline and without the watch.</p>
-      </section>`;
+    const cards = [];
+    if (first) cards.push(dcard('', 'Getting started', `<div class="stack" style="gap:8px">${[['done', 'Calorie target set'], ['todo', 'Log your first meal'], ['todo', 'Plan a first workout']].map(([st, t]) => `<div class="check"><span class="tick" style="${st === 'done' ? 'background:var(--color-tint-health);color:var(--color-domain-health)' : 'border:1px solid var(--color-border-strong)'}">${st === 'done' ? ICON.check : ''}</span><span style="font-size:14px">${t}</span></div>`).join('')}</div>`));
+    cards.push(first
+      ? dcard('train', 'Training', `<span class="dc-big">No workouts yet</span><span class="t-small">Start empty or build a template.</span><button class="btn btn-train btn-sm" type="button" style="justify-self:start">Start empty workout</button>`)
+      : dcard('train', "Today's training", `<span class="dc-big">Upper A</span><span class="t-small">6 exercises · about 55 min · works offline</span><button class="btn btn-train btn-sm" type="button" style="justify-self:start">Start workout</button>`));
 
-    let activityBody;
-    if (v === 'hcoff') {
-      activityBody = `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero. Logging still works.</span></div>
-        <div class="row"><button class="btn btn-secondary btn-sm grow">Turn on</button><button class="btn btn-ghost btn-sm">Not now</button></div>`;
-    } else if (first) {
-      activityBody = `<div class="list-item" style="border:0;padding:0"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.steps}</span><div class="grow"><div class="row" style="gap:8px"><span class="t-metric" style="font-size:24px">1,208</span><span class="t-small">steps</span></div><div class="row wrap" style="gap:6px;margin-top:4px">${chip('phone', 'phone', 'Phone')}<span class="t-small">updated just now</span></div></div></div>
-        <div class="banner banner-offline">${ICON.watch.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span>No watch data yet. Samsung Health shares from the day you connect. <u>Check setup</u></span></div>`;
-    } else {
+    let act;
+    if (v === 'hcoff') act = `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero.</span></div><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Turn on</button>`;
+    else if (first) act = `<div><span class="dc-big num">1,208</span> <span class="t-small">steps</span></div><div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}<span class="t-small">just now</span></div><p class="t-small">No watch data yet. It starts from the day you connect Samsung Health.</p>`;
+    else {
       const stale = v === 'stale';
-      activityBody = `
-        <div class="list">
-          <div class="list-item" style="padding-top:0"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.steps}</span><div class="grow"><div class="row" style="gap:8px"><span class="t-metric" style="font-size:24px">6,214</span><span class="t-small">steps</span></div><div class="row wrap" style="gap:6px;margin-top:4px">${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '2 d ago') : '<span class="t-small">12 min ago</span>'}</div></div></div>
-          <div class="list-item"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.heart}</span><div class="grow"><div class="row" style="gap:8px"><span class="t-metric" style="font-size:24px">72</span><span class="t-small">bpm, latest</span></div><div class="row wrap" style="gap:6px;margin-top:4px">${chip('measured', 'dot', 'Samsung Health')}${stale ? chip('stale', 'clock', '2 d ago') : chip('pending', 'clock', 'Watch unverified')}</div></div></div>
-          <div class="list-item"><span class="icon-tile" style="background:var(--color-bg-raised);color:var(--color-text-tertiary)">${ICON.flame}</span><div class="grow"><div style="font-weight:600;font-size:15px">Energy burned</div><div class="t-small">No measured source yet. Health Connect only has its own estimate, so Liftria doesn't show it as data.</div></div></div>
-        </div>
-        ${stale ? `<div class="banner banner-warning">${ICON.warn}<span>Nothing new from Samsung Health for 2 days. Open Samsung Health on the phone to sync, then pull to refresh.</span></div>` : ''}`;
+      act = `<div><span class="dc-big num">6,214</span> <span class="t-small">steps</span></div>
+        <div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '2 d ago') : '<span class="t-small">12 min ago</span>'}</div>
+        <div class="row wrap" style="gap:6px"><span class="num" style="font-weight:700">72 bpm</span>${chip('measured', 'dot', 'Samsung Health')}${stale ? '' : chip('pending', 'clock', 'Unverified')}</div>
+        <p class="t-small">Energy burned: no measured source yet.</p>`;
     }
-    const activity = `
-      <section class="card rim-health" aria-labelledby="ac-h">
-        <div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-health)"></span><h2 class="t-head" id="ac-h">Activity</h2></div><button class="btn btn-ghost btn-sm" aria-label="Activity sources">Sources ${ICON.chevron.replace('<svg', '<svg width="16" height="16"')}</button></div>
-        ${activityBody}
-      </section>`;
+    cards.push(dcard('health', 'Activity', act));
 
-    let hikuCard;
-    if (offline) hikuCard = `<section class="card flat rim-hiku" aria-labelledby="hk-h"><div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-hiku)"></span><h2 class="t-head" id="hk-h">Hiku</h2></div>${chip('off', 'off', 'Needs internet')}</div><p class="t-small">You're offline. Log meals manually now; Hiku will be ready when you reconnect.</p></section>`;
-    else if (v === 'nokey' || first) hikuCard = `<section class="card flat rim-hiku" aria-labelledby="hk-h"><div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-hiku)"></span><h2 class="t-head" id="hk-h">Hiku</h2></div>${chip('off', 'lock', 'No API key')}</div><p class="t-small">Add your Anthropic API key to estimate meals from a description or photo. Everything else works without it.</p><button class="btn btn-secondary btn-sm">Add API key</button></section>`;
-    else hikuCard = `<section class="card rim-hiku" aria-labelledby="hk-h"><div class="card-head"><div class="lhs"><span class="dot" style="background:var(--color-domain-hiku)"></span><h2 class="t-head" id="hk-h">Hiku</h2></div><span class="t-small">Claude · your key</span></div><p style="margin:0;font-size:15px">Dinner still open. Snap it and I'll estimate it for you to check before saving.</p><div class="row"><button class="btn btn-hiku btn-sm grow">${ICON.camera.replace('<svg', '<svg width="18" height="18"')}Photo of dinner</button><button class="btn btn-secondary btn-sm">Describe it</button></div></section>`;
-
-    const week = first ? '' : `
-      <section class="card flat" aria-labelledby="wk-h">
-        <div class="card-head"><h2 class="t-head" id="wk-h">This week</h2><span class="t-small">3 workouts · 6 of 7 days logged</span></div>
-        <div class="week" role="img" aria-label="Monday to Sunday: meals logged six days, workouts Monday, Wednesday and Thursday">
-          ${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => { const w = [0, 2, 3].includes(i), l = i !== 4, t = i === 1; return `<div class="day"><span>${d}</span><span class="pip ${t ? 'today' : ''}" style="${w ? 'background:var(--color-tint-train)' : ''}">${l ? `<i style="background:${w ? 'var(--color-domain-train)' : 'var(--color-domain-eat)'}"></i>` : ''}</span></div>`; }).join('')}
-        </div>
-      </section>`;
-
-    const setup = first ? `
-      <section class="card flat" aria-labelledby="su-h">
-        <h2 class="t-head" id="su-h">Getting started</h2>
-        ${[['done', 'Set a calorie target'], ['todo', 'Log your first meal'], ['todo', 'Plan a first workout'], ['skip', 'Add a Hiku API key (optional)']]
-          .map(([s, t]) => `<div class="check"><span class="tick" style="background:${s === 'done' ? 'var(--color-tint-health);color:var(--color-domain-health)' : 'var(--color-bg-raised);color:var(--color-text-tertiary);border:1px solid var(--color-border-strong)'}">${s === 'done' ? ICON.check : ''}</span><span style="font-size:15px;${s === 'done' ? 'color:var(--color-text-tertiary);text-decoration:line-through' : ''}">${t}</span></div>`).join('')}
-      </section>` : '';
+    const hiku = offline
+      ? `<span class="dc-big">Offline</span><span class="t-small">Log meals manually now. Hiku comes back when you reconnect.</span>`
+      : noKey
+        ? `<span class="dc-big">Add Hiku</span><span class="t-small">Your Anthropic key unlocks meal estimates from a photo or a description.</span><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Add API key</button>`
+        : `<span class="dc-big">Snap dinner</span><span class="t-small">Hiku estimates it, you check it before saving.</span><button class="btn btn-hiku btn-sm" type="button" style="justify-self:start">${ICON.camera}Photo</button>`;
+    cards.push(dcard('hiku', 'Hiku', hiku));
+    if (!first) cards.push(dcard('eat', 'Meals today', `<div class="stack" style="gap:6px">${[['Breakfast', 520], ['Lunch', 680], ['Snack', 220]].map(([m, k]) => `<div class="row" style="justify-content:space-between"><span style="font-size:14px">${m}</span><span class="num" style="font-weight:700">${k}</span></div>`).join('')}<div class="t-small">Dinner, not logged yet</div></div>`));
 
     return `
       ${statusbar(offline)}
-      <div class="topbar">
-        <div class="stack" style="gap:0"><span class="t-small num">Tue 21 Oct</span><span style="font-family:var(--font-display);font-stretch:110%;font-weight:800;font-size:26px;line-height:1.15">${greet}</span></div>
-        <button class="avatar" aria-label="Profile and settings" data-go="tab-settings">L</button>
-      </div>
-      <div class="scroll"><div class="page screen-anim">
-        ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Logging, workouts and your history work as usual. Hiku needs internet.</span></div>` : ''}
-        ${setup}${nutrition}${training}${activity}${hikuCard}${week}
+      <div class="scroll"><div class="orb-page screen-anim">
+        <div class="orb-top"><div class="stack" style="gap:0"><span class="t-small num">Tue 21 Oct</span><span class="orb-greet">${first ? 'Welcome to Liftria' : 'Good afternoon'}</span></div><button class="avatar" aria-label="Profile and settings" data-go="tab-settings">L</button></div>
+        ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Everything works except Hiku.</span></div>` : ''}
+        ${orb(v)}${sub}${macros}${actions}
+        <div class="deck" id="deck" aria-label="Today cards, swipe for more">${cards.join('')}</div>
+        <div class="deck-dots" id="deck-dots" aria-hidden="true">${cards.map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('')}</div>
       </div></div>`;
   }
 
@@ -660,7 +678,7 @@ button, input, select { font: inherit; color: inherit; }
   };
 
   const NAV = [['home', 'Today', 'home'], ['tab-train', 'Train', 'train'], ['tab-eat', 'Eat', 'eat'], ['tab-progress', 'Progress', 'progress'], ['tab-hiku', 'Hiku', 'hiku']];
-  const nav = (active) => `<nav class="nav" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" ${active === id ? 'aria-current="page"' : ''}><span class="pill">${ICON[icon]}</span>${label}</button>`).join('')}</nav>`;
+  const nav = (active) => `<nav class="capsule" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" aria-label="${label}" ${active === id ? 'aria-current="page"' : ''}>${ICON[icon]}<span>${label}</span></button>`).join('')}</nav>`;
 
   const SCREENS = [
     ['Onboarding', [['onb-welcome', '1 · Welcome'], ['onb-privacy', '2 · Privacy and local storage'], ['onb-profile', '3 · Profile (optional)'], ['onb-goals', '4 · Goal and activity'], ['onb-target', '5 · Estimated target'], ['onb-health', '6 · Health Connect'], ['onb-watch', '7 · Galaxy Watch guidance'], ['onb-key', '8 · Hiku API key (optional)'], ['onb-done', '9 · Done']]],
@@ -676,6 +694,11 @@ button, input, select { font: inherit; color: inherit; }
     else if (s === 'energy') html = energyStates() + nav('home');
     else html = later(s) + (s === 'tab-settings' ? '' : nav(s));
     screenEl.innerHTML = html;
+    const deck = screenEl.querySelector('#deck'), dotsEl = screenEl.querySelector('#deck-dots');
+    if (deck && dotsEl) deck.addEventListener('scroll', () => {
+      const cardsEls = [...deck.children], i = cardsEls.reduce((best, el, idx) => Math.abs(el.offsetLeft - deck.scrollLeft - 18) < Math.abs(cardsEls[best].offsetLeft - deck.scrollLeft - 18) ? idx : best, 0);
+      [...dotsEl.children].forEach((d, j) => d.classList.toggle('on', j === i));
+    }, { passive: true });
     screenEl.classList.toggle('glass', state.style === 'glass');
     styleBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.styleBtn === state.style)));
     screenSelect.value = s === 'tab-settings' ? 'home' : s;

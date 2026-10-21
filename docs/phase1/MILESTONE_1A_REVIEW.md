@@ -38,6 +38,7 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 | TD-4 No API key | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | n/a | PASS |
 | TD-5 Health Connect off | ✓ | ✓ | ✓ | ✓ | ✓ | n/a | ✓ hidden, not zero | PASS |
 | TD-6 Stale data | ✓ | ✓ | ✓ | ✓ | ✓ | n/a | ✓ | PASS (freshness limits need Phase 2 tuning) |
+| TD-7 No calorie target | ✓ | ✓ | ✓ | ✓ | ✓ | n/a | ✓ no invented target | PASS |
 | DS-1 Energy states | ✓ | all 6 | ✓ | ✓ | n/a | n/a | ✓ | PASS |
 
 ## Cross-checks
@@ -54,6 +55,7 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 | Target formula vs. screens | PASS | Prototype showed 2,350 while the formula gives 2,650 for its sample profile; corrected |
 | Prototype runtime | PASS | Rendered in Chromium at 1100px and 384px, dark and light: no script errors, no horizontal overflow |
 | S22 Ultra one-handed reach | PASS | Primary actions pinned bottom; nav 56dp; profile/settings (rare) top-right |
+| Pulse Orb redesign | PASS | Today rebuilt as orb + deck + capsule nav in all 7 states, dark and light; rendered in Chromium with no script errors. Found and fixed: the no-target state still showed macro targets (`/155 P`), now grams only |
 | Safety guardrails | PARTIAL | Floor and wording specified; warning UI not yet drawn (ON-5 revision) |
 
 ## Open issues carried forward
@@ -68,4 +70,5 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 1. ~~Overall look~~ **Decided: Aurora Rim** (from the 5-option direction board). Check it on your phone for a few days; if it's too loud, dial back `rim.glow` and the ambient strengths.
 2. Navigation: Today · Train · Eat · Progress · Hiku, with Health inside Progress. OK?
 3. Provenance chips on every health number. Too much, or right?
-4. Anything to change before 1B (Gym) starts?
+4. ~~Today layout~~ **Decided: A · Pulse Orb** (from the A/B/C concept board), with a capsule nav. Note: "This week" moved off Today into Progress.
+5. Anything to change before 1B (Gym) starts?

@@ -4,7 +4,7 @@
 
 ## Primary navigation
 
-A five-item bottom navigation bar, always visible on top-level screens:
+A five-item navigation bar, always visible on top-level screens. It's drawn as a floating glass **capsule**: icons for every tab, plus a label on the active one (see DESIGN_SYSTEM §5):
 
 | Tab | Purpose | Why it's a top-level tab | Designed in |
 |---|---|---|---|
@@ -66,7 +66,7 @@ Hiku
 
 1. **Bottom bar** is visible on all tab roots and hidden during focus flows: onboarding, active workout, Hiku review-before-save, and destructive confirmations.
 2. **Back** (Android gesture or system back) always goes one level up. It never discards entered data without a confirmation sheet.
-3. **The active workout persists.** If you leave it, a mini bar ("Upper A · 23:10 · Resume") shows above the bottom navigation on every screen until you finish or discard it. (1B)
+3. **The active workout persists.** If you leave it, a mini bar ("Upper A · 23:10 · Resume") shows above the navigation capsule on every screen until you finish or discard it. (1B)
 4. **Deep links** between tabs open the destination as its own stack, so back returns to where you were. Example: Today → "Log a meal" opens Eat's add-food screen with back to Today.
 5. **Settings** opens as a pushed stack from Today with its own back button. No bottom bar inside Settings.
 6. **No dead ends.** Every empty, error and permission state has at least one forward action (set up, retry, log manually) and a way back.

@@ -38,6 +38,10 @@ Each card was measured where its brightest part (the top sheen) sits over each g
 - The first Aurora Rim draft failed in light mode for eat, train and health used as text (4.12–4.47), and for tertiary over the lavender glow (4.42).
 - All of these were fixed by darkening the light tokens and brightening the dark ones.
 
+### Pulse Orb
+
+Orb ink `#120B22` on the orb fill, measured where text can sit: dark ≥ 6.28 (13.07 at the centre, 8.57 on coral), light ≥ 10.19. The ring is backed by the "eaten of target" text line, so it never carries the value alone.
+
 **Reduce transparency:** if Android's high-contrast text or "Reduce transparency" (where available) is on, Liftria switches to the Solid style automatically.
 
 The first palette draft failed in five places: tertiary text in both themes, and the light-theme train, health and success colors, at 4.14–4.38. Control borders were also at 1.55–1.69. All of these were corrected before this milestone was committed.
@@ -48,13 +52,15 @@ The first palette draft failed in five places: tertiary text in both themes, and
 2. **Color is never the only signal.** Provenance chips have an icon *and* text. Macro bars have text values. Week-strip days have an accessible text summary. The pressed state of a choice adds an outline, not just a color.
 3. **Screen reader labels** (TalkBack):
    - Each metric reads as one sentence: "Steps, 6,214, counted by the phone, updated 12 minutes ago".
-   - The calorie ring reads "1,420 of 2,650 kilocalories eaten, estimated target".
+   - The Pulse Orb reads "1,230 kilocalories left. 1,420 of 2,650 eaten, estimated target". With no target: "1,420 kilocalories eaten, no target set".
+   - Capsule navigation items are icon-only when inactive, so each has a label ("Train", "Eat"…) and announces "selected" on the active tab. The visible label on the active tab tells sighted users where they are.
+   - The deck is a horizontal list: TalkBack reads "Training, 1 of 4", and every card is reachable by swipe navigation.
    - Icon-only buttons have labels ("Profile and settings", "Back").
 4. **Font scaling up to 200%:**
    - Cards grow vertically. Two-column layouts (ring + macros, onboarding unit fields) stack into one column when the system font scale is ≥ 1.3.
    - Metric numbers scale and may wrap to their own line. Text is never truncated without an expand action.
-5. **Reduced motion:** honor Android's "Remove animations". There are no ring or bar fill animations, and screen changes are instant.
-6. **Focus order** follows visual order. The bottom navigation is last. Dialogs and sheets trap focus and return it on close.
+5. **Reduced motion:** honor Android's "Remove animations". There are no ring or bar fill animations, the orb doesn't breathe, and screen changes are instant.
+6. **Focus order** follows visual order. The navigation capsule is last. Dialogs and sheets trap focus and return it on close.
 7. **Language:** plain, short sentences. Errors say what happened and what to do next. Health language is nonjudgmental (no "bad", "cheat" or "failed").
 8. **One-handed reach on the S22 Ultra:** primary actions sit in the lower half or the bottom bar; the top area is for reading, not for frequent actions.
 9. **Right-to-left readiness:** layouts use start/end, not left/right. Icons that imply direction (back, chevron) mirror in RTL. V1 ships English only.
