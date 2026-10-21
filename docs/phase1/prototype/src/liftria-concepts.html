@@ -1,0 +1,210 @@
+<title>Liftria Today Concepts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: three phones in a swipe rail, each a different structural idea for Today; the board stays dark and neutral. */
+:root {
+  --board: #08090C; --board-fg: #EDEFF3; --board-muted: #9AA3B0; --board-line: #2A2F38;
+  --font-display: "Archivo", "Roboto Condensed", system-ui, sans-serif;
+  --font-body: "Figtree", "Roboto", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--board); color: var(--board-fg); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid #BDB1FF; outline-offset: 3px; }
+
+.wrap { padding-block: 28px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; max-width: 1280px; margin: 0 auto; }
+.intro { display: grid; gap: 6px; max-width: 62ch; }
+.intro .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--board-muted); }
+.intro h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(26px, 4vw, 36px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--board-muted); font-size: 15px; line-height: 1.5; }
+.rail { display: grid; grid-auto-flow: column; grid-auto-columns: 360px; gap: 28px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; }
+.slot { scroll-snap-align: center; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.slot header { display: grid; gap: 3px; }
+.slot header b { font-family: var(--font-display); font-stretch: 110%; font-weight: 800; font-size: 20px; }
+.slot header span, .slot .why { font-size: 13px; color: var(--board-muted); line-height: 1.45; }
+.slot .why b { color: var(--board-fg); }
+@media (max-width: 760px) { .rail { grid-auto-columns: min(360px, 88vw); gap: 16px; } }
+
+.phone { width: 100%; aspect-ratio: 360 / 760; min-height: 0; overflow: hidden; contain: layout paint; border-radius: 40px; padding: 8px; background: #000; box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06); }
+.app { position: relative; height: 100%; min-width: 0; width: 100%; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; isolation: isolate; }
+.status { height: 30px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font-size: 11px; font-weight: 600; opacity: .75; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+/* ================= A · Pulse Orb ================= */
+.orb-app { background: #05060B; color: #F4F6FA; }
+.orb-app .aura { position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 40% at 50% 34%, rgba(123,92,255,.35), transparent 70%), radial-gradient(50% 30% at 20% 90%, rgba(25,194,160,.25), transparent 70%); }
+.orb-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 20px 0; font-size: 12px; color: #BFC6D1; font-weight: 600; }
+.orb-wrap { position: relative; width: 216px; height: 216px; margin: 8px auto 4px; flex: none; display: grid; place-items: center; }
+.orb { position: absolute; inset: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.45), transparent 32%), radial-gradient(circle at 50% 60%, #FFCF5E 0%, #FF8F6B 45%, #7B5CFF 100%); box-shadow: 0 0 60px rgba(255,143,107,.45), 0 0 120px rgba(123,92,255,.35), inset 0 -20px 40px rgba(20,10,60,.55); }
+.orb-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.orb-label { position: relative; text-align: center; color: #120B22; }
+.orb-label .n { font-family: var(--font-display); font-stretch: 120%; font-weight: 900; font-size: 46px; letter-spacing: -0.03em; line-height: .95; display: block; }
+.orb-label .u { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.orb-sub { text-align: center; font-size: 13px; color: #BFC6D1; }
+.orb-sub b { color: #fff; }
+.orb-macros { display: flex; justify-content: center; gap: 18px; margin: 12px 0 14px; font-size: 12px; color: #BFC6D1; }
+.orb-macros span { display: inline-flex; align-items: center; gap: 6px; }
+.orb-macros i { width: 8px; height: 8px; border-radius: 50%; }
+.orb-macros b { color: #fff; font-variant-numeric: tabular-nums; }
+.deck { display: grid; grid-auto-flow: column; grid-auto-columns: 236px; min-width: 0; gap: 10px; overflow-x: auto; padding: 0 16px 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.deck::-webkit-scrollbar { display: none; }
+.dcard { scroll-snap-align: start; border-radius: 26px; padding: 16px; min-height: 150px; display: grid; gap: 8px; align-content: space-between; background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.03) 55%), rgba(14,14,28,.55); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+.dcard .k { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #BFC6D1; }
+.dcard .big { font-family: var(--font-display); font-stretch: 114%; font-weight: 900; font-size: 30px; line-height: 1; }
+.dcard .btn { justify-self: start; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; font-weight: 800; font-size: 14px; background: linear-gradient(135deg, #FF9A6B, #FF6A6A); color: #1B0710; display: inline-flex; align-items: center; }
+.dots { display: flex; justify-content: center; gap: 6px; padding: 4px 0 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.25); }
+.dots i.on { width: 18px; border-radius: 3px; background: #fff; }
+.capsule { margin: auto auto 14px; display: flex; gap: 4px; padding: 6px; border-radius: 999px; background: rgba(20,20,36,.6); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+.capsule span { width: 48px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #A3ACBA; }
+.capsule span.on { background: #F4F6FA; color: #06070C; }
+.capsule svg { width: 20px; height: 20px; }
+@media (prefers-reduced-motion: no-preference) {
+  .orb { animation: breathe 5s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { transform: scale(1); filter: saturate(1); } 50% { transform: scale(1.035); filter: saturate(1.2); } }
+}
+
+/* ================= B · Editorial ================= */
+.ed-app { background: #0A0A0A; color: #F5F5F2; }
+.ed-top { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 20px 0; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #A8A8A2; }
+.ed-hero { padding: 6px 16px 0; }
+.ed-hero .n { font-family: var(--font-display); font-stretch: 62%; font-weight: 900; font-size: 128px; line-height: .82; letter-spacing: -0.02em; display: block; font-variant-numeric: tabular-nums; }
+.ed-hero .cap { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #A8A8A2; padding: 10px 2px 12px; border-bottom: 1px solid #2A2A27; }
+.ed-hero .cap b { color: #FF8F6B; }
+.ed-row { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #2A2A27; }
+.ed-row .k { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #A8A8A2; }
+.ed-row .v { font-family: var(--font-display); font-stretch: 75%; font-weight: 900; font-size: 40px; line-height: .9; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.ed-row .v small { font-size: 14px; font-stretch: 100%; font-weight: 700; color: #A8A8A2; margin-left: 4px; letter-spacing: 0; }
+.ed-row .side { text-align: right; font-size: 12px; color: #A8A8A2; line-height: 1.5; }
+.ed-macro { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid #2A2A27; }
+.ed-macro > div { padding: 12px 18px; border-right: 1px solid #2A2A27; }
+.ed-macro > div:last-child { border-right: 0; }
+.ed-macro .v { font-family: var(--font-display); font-stretch: 75%; font-weight: 900; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ed-macro .k { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #A8A8A2; margin-top: 4px; }
+.ed-macro .bar { height: 3px; background: #2A2A27; margin-top: 8px; }
+.ed-macro .bar i { display: block; height: 100%; background: #F5F5F2; }
+.ed-train { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; background: #FF8F6B; color: #160803; }
+.ed-train .t { font-family: var(--font-display); font-stretch: 70%; font-weight: 900; font-size: 34px; line-height: .9; text-transform: uppercase; }
+.ed-train .s { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.ed-train .arrow { width: 48px; height: 48px; border-radius: 50%; background: #160803; color: #FF8F6B; display: grid; place-items: center; font-size: 22px; font-weight: 900; }
+.ed-tag { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #A8A8A2; border: 1px solid #3A3A36; border-radius: 999px; padding: 2px 8px; }
+.ed-nav { margin-top: auto; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid #2A2A27; }
+.ed-nav span { padding: 14px 0 16px; text-align: center; font-size: 10.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #8A8A84; }
+.ed-nav span.on { color: #F5F5F2; box-shadow: inset 0 2px 0 #FF8F6B; }
+
+/* ================= C · Day Timeline ================= */
+.tl-app { background: #06070C; color: #F4F6FA; }
+.tl-app .aura { position: absolute; inset: 0; z-index: -1; background: radial-gradient(55% 32% at 10% 5%, rgba(255,94,126,.38), transparent 70%), radial-gradient(60% 34% at 100% 45%, rgba(123,92,255,.42), transparent 70%), radial-gradient(60% 30% at 0% 95%, rgba(25,194,160,.30), transparent 70%); }
+.tl-head { padding: 4px 18px 10px; display: grid; gap: 8px; }
+.tl-head .d { font-size: 12px; color: #BFC6D1; font-weight: 600; }
+.tl-head .sum { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: baseline; gap: 5px; padding: 8px 12px; border-radius: 16px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); font-size: 12px; color: #BFC6D1; }
+.pill b { font-family: var(--font-display); font-stretch: 114%; font-weight: 900; font-size: 18px; color: #fff; font-variant-numeric: tabular-nums; }
+.tl { position: relative; flex: 1; overflow: hidden; padding: 0 16px 0 62px; }
+.tl::before { content: ""; position: absolute; left: 46px; top: 0; bottom: 0; width: 2px; background: linear-gradient(#FFCF5E, #FF8F6B 55%, rgba(255,255,255,.12) 56%, rgba(255,255,255,.08)); }
+.ev { position: relative; margin-bottom: 10px; }
+.ev .time { position: absolute; left: -58px; top: 12px; width: 38px; text-align: right; font-size: 11px; color: #A3ACBA; font-variant-numeric: tabular-nums; font-weight: 600; }
+.ev .node { position: absolute; left: -21px; top: 14px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #06070C; }
+.ev .card { border-radius: 18px; padding: 10px 12px; background: linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 55%), rgba(14,14,28,.55); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ev .card b { font-size: 14px; }
+.ev .card .m { font-size: 11.5px; color: #A3ACBA; }
+.ev .card .kc { font-family: var(--font-display); font-stretch: 112%; font-weight: 900; font-size: 18px; font-variant-numeric: tabular-nums; }
+.ev.future .card { background: transparent; border: 1px dashed rgba(255,255,255,.22); backdrop-filter: none; }
+.ev.train .card { border-color: rgba(255,143,107,.5); box-shadow: 0 0 24px rgba(255,143,107,.18); }
+.now { position: relative; margin: 4px 0 14px -16px; height: 2px; background: linear-gradient(90deg, #fff, rgba(255,255,255,.1)); }
+.now span { position: absolute; left: -44px; top: -9px; font-size: 10px; font-weight: 800; letter-spacing: .1em; background: #fff; color: #06070C; padding: 2px 7px; border-radius: 999px; }
+.now::after { content: ""; position: absolute; left: -2px; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 0 14px #fff; }
+.tl-cta { position: absolute; right: 16px; bottom: 16px; min-height: 52px; padding: 0 20px; border-radius: 999px; background: #F4F6FA; color: #06070C; border: 0; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+@media (prefers-reduced-motion: no-preference) {
+  .now::after { animation: ping 2s ease-in-out infinite; }
+  @keyframes ping { 0%, 100% { box-shadow: 0 0 6px #fff; } 50% { box-shadow: 0 0 18px #fff; } }
+}
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <span class="eyebrow">Phase 1A · structure concepts</span>
+    <h1>Three different ideas for Today</h1>
+    <p>Not new colors: new ways to show your day. Swipe through. You can also say "concept C's timeline, in the bento style".</p>
+  </div>
+  <div class="rail">
+
+    <article class="slot" aria-label="Concept A, Pulse Orb">
+      <header><b>A · Pulse Orb</b><span>Your day is one living orb that fills as you eat. Everything else lives in swipeable cards below.</span></header>
+      <div class="phone"><div class="app orb-app"><div class="aura"></div>
+        <div class="status"><span>9:41</span><span>5G · 82%</span></div>
+        <div class="orb-head"><span>Tue 21 Oct</span><span>Good afternoon</span></div>
+        <div class="orb-wrap" role="img" aria-label="1,230 kilocalories left of an estimated 2,650">
+          <div class="orb"></div>
+          <svg viewBox="0 0 236 236" aria-hidden="true"><circle cx="118" cy="118" r="112" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3"/><circle cx="118" cy="118" r="112" fill="none" stroke="#FFCF5E" stroke-width="3" stroke-linecap="round" stroke-dasharray="703.7" stroke-dashoffset="326.5"/></svg>
+          <div class="orb-label"><span class="n">1,230</span><span class="u">kcal left</span></div>
+        </div>
+        <div class="orb-sub"><b>1,420</b> eaten of 2,650 · <span class="chip" style="border:1px dashed rgba(255,255,255,.35);color:#BFC6D1">≈ Estimate</span></div>
+        <div class="orb-macros"><span><i style="background:#8CBEFF"></i><b>96</b>/155 P</span><span><i style="background:#FFCF5E"></i><b>152</b>/340 C</span><span><i style="background:#FF9AC0"></i><b>41</b>/75 F</span></div>
+        <div class="deck">
+          <div class="dcard" style="border-color:rgba(255,143,107,.45)"><span class="k">Today's training</span><span class="big">Upper A</span><span style="font-size:12px;color:#BFC6D1">6 exercises · 55 min</span><span class="btn">Start</span></div>
+          <div class="dcard" style="border-color:rgba(70,224,188,.45)"><span class="k">Steps · Phone</span><span class="big">6,214</span><span style="font-size:12px;color:#BFC6D1">Heart 72 bpm · unverified</span></div>
+          <div class="dcard" style="border-color:rgba(189,177,255,.45)"><span class="k">Hiku</span><span class="big" style="font-size:22px">Snap dinner</span></div>
+        </div>
+        <div class="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+        <div class="capsule" aria-hidden="true">
+          <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M6 15l4-4 3 3 5-6"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg></span>
+        </div>
+      </div></div>
+      <p class="why"><b>Feels:</b> futuristic, calm, very few numbers on screen. <b>Risk:</b> less info at a glance; you swipe for the rest.</p>
+    </article>
+
+    <article class="slot" aria-label="Concept B, Editorial">
+      <header><b>B · Editorial</b><span>A sports-magazine page. Giant condensed numbers, no cards, thin rules, black and white with one coral accent.</span></header>
+      <div class="phone"><div class="app ed-app">
+        <div class="status"><span>9:41</span><span>5G · 82%</span></div>
+        <div class="ed-top"><span>Tue 21 Oct</span><span>Liftria</span></div>
+        <div class="ed-hero">
+          <span class="n">1,230</span>
+          <div class="cap"><span>kcal left · <b>1,420</b> eaten</span><span class="ed-tag">Est. target 2,650</span></div>
+        </div>
+        <div class="ed-macro">
+          <div><div class="v">96</div><div class="k">Protein g</div><div class="bar"><i style="width:62%"></i></div></div>
+          <div><div class="v">152</div><div class="k">Carbs g</div><div class="bar"><i style="width:45%"></i></div></div>
+          <div><div class="v">41</div><div class="k">Fat g</div><div class="bar"><i style="width:55%"></i></div></div>
+        </div>
+        <div class="ed-train"><div><div class="s">Today · 6 exercises · 55 min</div><div class="t">Upper A</div></div><span class="arrow" aria-label="Start workout">→</span></div>
+        <div class="ed-row"><div><div class="k">Steps · phone</div><div class="v">6,214</div></div><div class="side">12 min ago</div></div>
+        <div class="ed-row"><div><div class="k">Heart rate · Samsung Health</div><div class="v">72<small>bpm</small></div></div><div class="side"><span class="ed-tag">Unverified</span></div></div>
+        <div class="ed-nav" aria-hidden="true"><span class="on">Today</span><span>Train</span><span>Eat</span><span>Stats</span><span>Hiku</span></div>
+      </div></div>
+      <p class="why"><b>Feels:</b> bold, confident, premium sportswear brand. <b>Risk:</b> no glass; very stark, especially in light mode.</p>
+    </article>
+
+    <article class="slot" aria-label="Concept C, Day Timeline">
+      <header><b>C · Day Timeline</b><span>Your day from top to bottom: what you ate and did, a glowing "now" line, then what's still planned.</span></header>
+      <div class="phone"><div class="app tl-app"><div class="aura"></div>
+        <div class="status"><span>9:41</span><span>5G · 82%</span></div>
+        <div class="tl-head">
+          <span class="d">Tue 21 Oct · Good afternoon</span>
+          <div class="sum"><span class="pill"><b>1,230</b>kcal left</span><span class="pill"><b>96</b>g protein</span><span class="pill"><b>6,214</b>steps</span></div>
+        </div>
+        <div class="tl">
+          <div class="ev"><span class="time">07:40</span><i class="node" style="background:#FFCF5E"></i><div class="card"><div><b>Breakfast</b><div class="m">Oats, eggs, coffee</div></div><span class="kc">520</span></div></div>
+          <div class="ev"><span class="time">10:15</span><i class="node" style="background:#46E0BC"></i><div class="card"><div><b>Walk</b><div class="m">3,100 steps · phone</div></div><span class="kc" style="font-size:14px;color:#46E0BC">steps</span></div></div>
+          <div class="ev"><span class="time">13:05</span><i class="node" style="background:#FFCF5E"></i><div class="card"><div><b>Lunch</b><div class="m">Chicken rice bowl</div></div><span class="kc">680</span></div></div>
+          <div class="ev"><span class="time">16:30</span><i class="node" style="background:#FFCF5E"></i><div class="card"><div><b>Snack</b><div class="m">Greek yogurt</div></div><span class="kc">220</span></div></div>
+          <div class="now"><span>NOW</span></div>
+          <div class="ev future train"><span class="time">18:00</span><i class="node" style="background:#FF8F6B"></i><div class="card"><div><b>Upper A</b><div class="m">6 exercises · 55 min</div></div><span class="kc" style="font-size:13px;color:#FF8F6B">Planned</span></div></div>
+          <div class="ev future"><span class="time">20:00</span><i class="node" style="background:rgba(255,255,255,.3)"></i><div class="card"><div><b>Dinner</b><div class="m">Not logged yet</div></div><span class="kc" style="font-size:13px;color:#A3ACBA">—</span></div></div>
+        </div>
+        <span class="tl-cta">+ Log</span>
+      </div></div>
+      <p class="why"><b>Feels:</b> personal, like a diary of your day; shows <b>when</b>, not just how much. <b>Risk:</b> totals are smaller; best paired with a summary strip (shown at top).</p>
+    </article>
+
+  </div>
+</div>
