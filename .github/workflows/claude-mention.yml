@@ -1,0 +1,41 @@
+name: Claude on mention
+
+# Answers "@claude …" in PR or issue comments, for the owner or the build agent.
+# Read-only on code: it explains and reviews, it doesn't push. Inert until ANTHROPIC_API_KEY exists.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  respond:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    env:
+      HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: Skip when the API key isn't configured
+        if: env.HAS_KEY != 'true'
+        run: echo "ANTHROPIC_API_KEY secret not set; skipping."
+
+      - uses: actions/checkout@v6
+        if: env.HAS_KEY == 'true'
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        if: env.HAS_KEY == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 25
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*),Read,Grep,Glob"
+            --append-system-prompt "You are the design lead for Liftria. Answer using docs/phase1 (PHASE_2_PROMPT.md, PHASE_1_HANDOFF.md, the specs and DESIGN_SYSTEM.md) and docs/TECHNICAL_DECISIONS.md as the sources of truth. Be concrete and brief. Never claim a check passed unless you saw it."

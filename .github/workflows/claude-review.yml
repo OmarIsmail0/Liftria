@@ -1,0 +1,81 @@
+name: Claude design review
+
+# Reviews every pull request against the Phase 1 design and the build handoff.
+# The review is posted on the PR so the build agent (ChatGPT, through its GitHub connector) can read it.
+# Inert until the ANTHROPIC_API_KEY repository secret exists.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Same-repository PRs only (forks never get the key), and not Claude's own branches.
+    if: github.event.pull_request.head.repo.full_name == github.repository && !startsWith(github.head_ref, 'claude/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    env:
+      HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: Skip when the API key isn't configured
+        if: env.HAS_KEY != 'true'
+        run: echo "ANTHROPIC_API_KEY secret not set; skipping the Claude review."
+
+      - uses: actions/checkout@v6
+        if: env.HAS_KEY == 'true'
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        if: env.HAS_KEY == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            The PR branch is checked out in the current directory.
+
+            You are the design lead and reviewer for Liftria, a local-first fitness app for Android 9+ (iPhone later).
+            Another agent builds the app from the Phase 1 design. Review this pull request against:
+            - docs/phase1/PHASE_2_PROMPT.md (scope, allowed packages, rules, definition of done)
+            - docs/phase1/PHASE_1_HANDOFF.md (gates, feature map, cross-cutting rules)
+            - docs/phase1/DESIGN_SYSTEM.md, SCREEN_SPECIFICATIONS.md, INTERACTION_AND_STATES.md, ACCESSIBILITY.md
+            - docs/TECHNICAL_DECISIONS.md and the existing src/services code
+            Read the diff with `gh pr diff` and the CI state with `gh pr checks`. Read any spec you need.
+
+            Check, in order:
+            1. Correctness bugs and data loss risks.
+            2. Data honesty: sources and ages on health numbers, no data is not zero, phone steps labeled Phone,
+               the Health Connect calorie estimate never shown as data, nothing unverified presented as working.
+            3. Scope: only the current phase; no unapproved dependencies; no backend, accounts or analytics.
+            4. Design fidelity: tokens instead of hard-coded values, the specified states, copy and TalkBack labels,
+               48dp touch targets, contrast, reduced motion, no device lock-in, platform code behind adapters.
+            5. Secrets: the API key or signing material must never appear in code, logs or commits.
+            6. Tests and CI: claims in the PR description must match real CI results.
+
+            Post your review:
+            - Inline comments for specific lines with `mcp__github_inline_comment__create_inline_comment` (confirmed: true).
+            - Then exactly one top-level comment with `gh pr comment`, in this format:
+              ## Claude review: APPROVE / CHANGES NEEDED
+              One-paragraph summary.
+              ### Blocking (must fix before merge)
+              Numbered list, each with the file, the problem and the expected fix. Write "None" if there are none.
+              ### Non-blocking
+              Short list, or "None".
+              ### For the build agent
+              Plain, numbered instructions the build agent can follow without reading anything else.
+              ### Not verified
+              What you couldn't check (for example anything that needs the physical phone).
+            Only report problems you can point to in the diff or the docs. Don't invent issues to fill sections,
+            and never claim a check passed unless you saw it. Only post GitHub comments; don't reply with chat text.
+          claude_args: |
+            --max-turns 40
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr checks:*),Read,Grep,Glob"
