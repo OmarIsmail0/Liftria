@@ -141,7 +141,7 @@ export function Snackbar({ message, onUndo, onDismiss }: {
     </Pressable>}
     {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel="Dismiss message" onPress={onDismiss}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: theme.color.action.primary.fg }}>×</Text>
+      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>×</Text>
     </Pressable>}
   </View>;
 }
