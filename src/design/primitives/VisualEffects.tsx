@@ -3,23 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import type { LiftriaTheme } from '../tokens';
 import type { CardRim } from './contracts';
-
-/** Percentages in the prototype are relative to screen width/height. */
-export const ambientGlows = [
-  { key: 'train', cx: 12, cy: 6, rx: 55, ry: 32 },
-  { key: 'hiku', cx: 98, cy: 32, rx: 60, ry: 34 },
-  { key: 'health', cx: 2, cy: 72, rx: 60, ry: 34 },
-  { key: 'eat', cx: 92, cy: 96, rx: 55, ry: 30 },
-] as const;
-
-/** All RGB values come from the theme. No raw hard-coded shadow colors. */
-export function withOpacity(hex: string, alpha: number): string {
-  const clean = hex.replace('#', '');
-  if (clean.length !== 6) return hex;
-  return 'rgba(' + parseInt(clean.slice(0, 2), 16) + ',' +
-    parseInt(clean.slice(2, 4), 16) + ',' + parseInt(clean.slice(4, 6), 16) +
-    ',' + alpha + ')';
-}
+import { ambientGlows, cardRimStops, ringGeometry, withOpacity } from './VisualGeometry';
 
 export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme: LiftriaTheme }) {
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
@@ -61,10 +45,10 @@ export function AuroraCardDecoration({ theme, rim, width, height }: {
         <Stop offset="100%" stopColor={theme.glass.highlight} stopOpacity={0} />
       </LinearGradient>
       <LinearGradient id="card-rim" x1="0%" y1="0%" x2="100%" y2="100%">
-        <Stop offset="0%" stopColor={edgeColor} stopOpacity={1} />
-        <Stop offset="30%" stopColor={edgeColor} stopOpacity={theme.rim.strength} />
-        <Stop offset="55%" stopColor={edgeColor} stopOpacity={0} />
-        <Stop offset="100%" stopColor={edgeColor} stopOpacity={0.08} />
+        <Stop offset={(cardRimStops[0] * 100) + '%'} stopColor={edgeColor} stopOpacity={1} />
+        <Stop offset={(cardRimStops[1] * 100) + '%'} stopColor={edgeColor} stopOpacity={theme.rim.strength} />
+        <Stop offset={(cardRimStops[2] * 100) + '%'} stopColor={edgeColor} stopOpacity={0} />
+        <Stop offset={(cardRimStops[3] * 100) + '%'} stopColor={edgeColor} stopOpacity={0.08} />
       </LinearGradient>
     </Defs>
     <Rect width={width} height={height} rx={theme.radius.lg} fill="url(#card-sheen)" />
@@ -86,12 +70,6 @@ export function TrainGradient({ theme }: { theme: LiftriaTheme }) {
     </Defs>
     <Rect width="100%" height="100%" rx={theme.radius.pill} fill="url(#train-button)" />
   </Svg>;
-}
-
-export function ringGeometry(size: number, stroke: number, progress: number) {
-  const radius = size / 2 - stroke / 2 - stroke;
-  const circumference = 2 * Math.PI * radius;
-  return { radius, circumference, offset: circumference * (1 - Math.min(1, Math.max(0, progress))) };
 }
 
 /** A radial sphere, highlight and ONE continuous progress arc (no tick segments). */
