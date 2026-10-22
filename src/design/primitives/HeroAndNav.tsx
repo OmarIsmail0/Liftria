@@ -25,7 +25,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   const size = theme.orbSize.today;
   const center = size / 2;
   const radius = center - theme.orbSize.ringStroke;
-  const segments = theme.size.touch.min;
+  const segments = theme.orbSize.segments;
   const filled = Math.round(segments * (summary.progress ?? 0));
   // Native fallback: segmented ring without requiring a new SVG dependency/lockfile.
   // The native SVG gradient and continuous arc are a visual-fidelity follow-up for Claude.
@@ -81,7 +81,7 @@ export function CapsuleNav({ active, onSelect }: {
     <View style={{
       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
       minHeight: theme.size.touch.nav, borderRadius: theme.radius.pill,
-      padding: theme.space[1], borderWidth: 1, borderColor: theme.controlOutline,
+      padding: theme.space[1], borderWidth: theme.size.border.thin, borderColor: theme.controlOutline,
       backgroundColor: theme.effectiveStyle === 'aurora' ? theme.glass.card : theme.color.bg.glass,
     }}>
       {capsuleTabs.map(tab => {
