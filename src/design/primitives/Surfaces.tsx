@@ -1,18 +1,29 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
+import { fontFamilyFor } from '../fonts';
+import { AmbientBackdrop, AuroraCardDecoration, cardOuterGlow } from './VisualEffects';
 import type { CardRim } from './contracts';
 
-export function Typography({ children, tone = 'primary', size = 'body', bold = false }:{
-  children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: 'body'|'small'|'title'|'head'|'label'; bold?: boolean;
+export type TypographySize = 'display' | 'title' | 'head' | 'metric-xl' | 'metric-l' |
+  'metric-m' | 'body' | 'small' | 'label' | 'button';
+
+export function Typography({ children, tone = 'primary', size = 'body', bold = false }: {
+  children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: TypographySize; bold?: boolean;
 }) {
   const { theme } = useTheme();
-  const face = size === 'small' ? theme.type.small : size === 'label' ? theme.type.label :
-    size === 'title' ? theme.type.title : size === 'head' ? theme.type.head :
-      bold ? theme.type.body.strong : theme.type.body;
+  const face = size === 'display' ? theme.type.display : size === 'title' ? theme.type.title :
+    size === 'head' ? theme.type.head : size === 'metric-xl' ? theme.type.metric.xl :
+    size === 'metric-l' ? theme.type.metric.l : size === 'metric-m' ? theme.type.metric.m :
+    size === 'small' ? theme.type.small : size === 'label' ? theme.type.label :
+    size === 'button' ? theme.type.button : bold ? theme.type.body.strong : theme.type.body;
+  const metric = size === 'metric-xl' || size === 'metric-l' || size === 'metric-m';
   return <Text allowFontScaling style={{
-    fontSize: face.size, lineHeight: face.line, fontWeight: face.weight as '400' | '600' | '700',
+    fontFamily: fontFamilyFor(face.face, face.weight), fontSize: face.size, lineHeight: face.line,
+    fontVariant: metric ? ['tabular-nums'] : undefined,
+    letterSpacing: size === 'label' ? theme.type.label.letterSpacingEm * theme.type.label.size : undefined,
+    textTransform: size === 'label' ? 'uppercase' : undefined,
     color: theme.color.text[tone], flexShrink: 1, textAlign: 'auto',
   }}>{children}</Text>;
 }
@@ -26,17 +37,7 @@ export function Screen({ children, scroll = true, padded = true }: {
   const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
   return <View style={[layout, { backgroundColor: theme.background }]}>
-    {theme.effectiveStyle === 'aurora' && <View pointerEvents="none" importantForAccessibility="no-hide-descendants"
-      style={{ ...({ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0 } as ViewStyle), overflow: 'hidden' }}>
-      <View style={{ position: 'absolute', width: theme.orbSize.today, height: theme.orbSize.today,
-        borderRadius: theme.radius.pill, backgroundColor: theme.ambient.train, top: -theme.orbSize.compact / 2, start: -theme.orbSize.compact / 2 }} />
-      <View style={{ position: 'absolute', width: theme.orbSize.today, height: theme.orbSize.today,
-        borderRadius: theme.radius.pill, backgroundColor: theme.ambient.hiku, top: theme.space[10], end: -theme.orbSize.compact / 2 }} />
-      <View style={{ position: 'absolute', width: theme.orbSize.today, height: theme.orbSize.today,
-        borderRadius: theme.radius.pill, backgroundColor: theme.ambient.health, bottom: theme.space[8], start: -theme.orbSize.compact / 2 }} />
-      <View style={{ position: 'absolute', width: theme.orbSize.today, height: theme.orbSize.today,
-        borderRadius: theme.radius.pill, backgroundColor: theme.ambient.eat, bottom: -theme.orbSize.compact / 2, end: -theme.orbSize.compact / 2 }} />
-    </View>}
+    {theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     {scroll
       ? <ScrollView contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}
@@ -65,18 +66,29 @@ export function Card({ children, rim = 'none', title, flat = false }: {
   children: ReactNode; rim?: CardRim; title?: string; flat?: boolean;
 }) {
   const { theme } = useTheme();
-  const border = rim === 'none' ? (theme.effectiveStyle === 'aurora' ? theme.glass.border : theme.color.border.subtle) : theme.color.domain[rim];
-  return <View style={{
-    backgroundColor: theme.cardFill, borderColor: border,
-    borderWidth: rim === 'none' ? theme.size.border.thin : theme.size.border.rim, borderRadius: theme.radius.lg,
-    padding: theme.space[4], gap: theme.space[3],
-    ...(flat ? {} : { elevation: theme.size.border.thin }),
-  }}>
-    {title && <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-      {rim !== 'none' && <View style={{ width: theme.space[2], height: theme.space[2], borderRadius: theme.radius.pill, backgroundColor: border }} />}
-      <Typography size="head">{title}</Typography>
-    </View>}
-    {children}
+  const aurora = theme.effectiveStyle === 'aurora';
+  const [frame, setFrame] = useState({ width: 0, height: 0 });
+  const border = rim === 'none' ? theme.color.border.subtle : theme.color.domain[rim];
+  return <View style={{ borderRadius: theme.radius.lg, ...cardOuterGlow(theme, rim, flat) }}>
+    <View onLayout={event => {
+      const { width, height } = event.nativeEvent.layout;
+      setFrame(previous => previous.width === width && previous.height === height
+        ? previous : { width, height });
+    }} style={{
+      backgroundColor: theme.cardFill, borderRadius: theme.radius.lg,
+      borderWidth: aurora ? 0 : theme.size.border.thin,
+      borderColor: border, overflow: 'hidden',
+      padding: theme.space[4], gap: theme.space[3],
+      ...(!aurora && !flat ? { elevation: theme.size.border.thin } : {}),
+    }}>
+      {aurora && <AuroraCardDecoration theme={theme} rim={rim} width={frame.width} height={frame.height} />}
+      {title && <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
+        {!aurora && rim !== 'none' && <View style={{ width: theme.space[2], height: theme.space[2],
+          borderRadius: theme.radius.pill, backgroundColor: border }} />}
+        <Typography size="head">{title}</Typography>
+      </View>}
+      {children}
+    </View>
   </View>;
 }
 
