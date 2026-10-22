@@ -1,10 +1,10 @@
 # Screen Inventory
 
-**Milestone:** 1A (onboarding and Today). Later milestones add the Train (1B), Eat and Hiku (1C), and Progress, Health and Settings (1D) sections.
+**Milestone:** 1A (onboarding and Today), 1B (Train), 1C (Eat, Hiku and Quick add). A later milestone adds Progress, Health and Settings (1D).
 
 **Verification status** of the capability each screen depends on:
 - **Confirmed:** proven by the Phase 0 code and device tests.
-- **Pending:** designed, but waiting on a device or owner test.
+- **Pending:** designed, but waiting on a device or owner test (written "Pending device test" where a device test is the blocker).
 - **Future:** not yet built or proven; planned for a later phase.
 
 Phase 0 evidence is in `docs/PHASE_0_REPORT.md`.
@@ -56,11 +56,38 @@ Status key for this section: everything in Train is local (SQLite) and **works o
 | TR-12 | Session detail: view / edit / delete confirmation | Fix or remove a logged workout | TR-11, TR-1 Recent | Stats, exercises with sets and record markers; editable sets in edit mode | Edit, Save changes, Cancel, Delete workout | Local; record recalculation | Future |
 | TR-13 | Records | Personal bests per exercise | TR-1 shortcut, TR-11 trophy | Best set and est. 1RM per exercise with dates | Open exercise | Local | Future |
 
-## Stubs in the 1A prototype (designed later)
+## Eat (1C)
+
+Status key for this section: the diary, food search and targets are all local (SQLite plus a bundled USDA pack) and **work offline**. The offline local database is **Confirmed** (Phase 0, C4); the screens themselves are built in Phase 4, so they read **Future (Phase 4)**. Anything that needs Hiku is marked on the Hiku table.
+
+| ID | Screen / state | Purpose | Entry | Shows | Actions | Depends on | Status |
+|---|---|---|---|---|---|---|---|
+| EA-1 | Eat home: populated / first day / over target / no target / numbers hidden (plus after add, delete and Hiku save, with Undo) | Today's diary, one number | Eat tab; Today orb; Today "Log a meal" after saving | Date switcher, Pulse Orb (200px), Estimate chip, read-only training-day chip, macro bars, four meal cards with items and totals, History and Targets rows | Add (per meal), Quick add (+), open a meal, History, Targets, Show numbers, Set a target | Local diary; target | Future (Phase 4) |
+| EA-2 | Add food: recents / search / no results / offline (plus after one-tap add, with Undo) | Find food and add it fast | Eat "Add"; Today "Log a meal"; Quick add; Today meals card "Add" | Meal selector, search, Hiku Photo and Describe, Recents / Favorites / My foods, rows with source chip and one-tap "+", Quick add calories, Create a food | Search, "+" (last-used portion), open EA-3, Photo, Describe, Quick add calories, Create a food | Bundled USDA FoodData Central pack; local recents | Future (Phase 4); pack size and subset open (review concern 1) |
+| EA-3 | Portion picker: default / text 200% | Choose an amount with live macros | EA-2 row | Food name and source chip, unit control (g, cup, piece, serving), amount stepper (64dp), kcal and P/C/F, per-100 g line, meal selector | Change unit and amount, Add to meal | Pack portion list | Future (Phase 4); portion coverage open (concern 2) |
+| EA-4 | Meal detail: view / editing an item / delete confirmation | Fix or remove a logged meal | EA-1 item or meal | Meal kcal and macros, items with portion, kcal and source chip, Add item, Move to another meal, Delete meal | Edit a portion, Remove item, Add item, Move, Delete (8 s Undo) | Local diary | Future (Phase 4) |
+| EA-5 | Create a food: empty / calories and macros differ / quick add | Add a food that isn't in the pack | EA-2 links | Name, brand, serving g, kcal, P/C/F; mismatch hint; calories-only variant | Save food, Save anyway, Fix the numbers, Add (quick) | Local diary | Future (Phase 4) |
+| EA-6 | Targets: estimate / your own / below the floor / deficit over 25% | See or change the daily target | EA-1 Targets row; Today "Set a target" | Target with Estimate or Your target chip, how it is calculated, macro split with editable percentages, hide-numbers switch, safety-floor and deficit sheets | Set my own numbers, change kcal and split, Use the safe value, Keep (with a tick), Save target | Profile (Mifflin-St Jeor, local) | Future (Phase 2/4) |
+| EA-7 | History and trends: week / empty | See weeks without false zeros | EA-1 History row or date switcher | Week bars against a dashed target line, unlogged days as dashed outlines, averages over logged days, protein average, per-day list | Open a day | Local diary | Future (Phase 4) |
+| QA-1 | Quick add sheet: default / offline / no key | One shared place to start anything | Eat "+"; long-press on Today "Log a meal" or the Today tab | Log a meal, Photo a meal, Describe a meal, Start workout, Log weight (disabled, "Coming in Progress, 1D") | Pick a row, Close | Claude for the Hiku rows; Train for Start workout | Future (Phase 4); the Hiku rows depend on the Hiku status below |
+
+## Hiku (1C)
+
+Status key for this section: **a Hiku request is Pending device test.** Phase 0 proved key storage and the offline failure on the S22, but **a real Claude request has not been run on the device**. The chat is **Future**: not designed as a working feature.
+
+| ID | Screen / state | Purpose | Entry | Shows | Actions | Depends on | Status |
+|---|---|---|---|---|---|---|---|
+| HK-1 | Hiku home: ready / no key / offline / first time | Start an estimate; see what Hiku is | Hiku tab; Quick add; Today Hiku card | Hero with Photo and Describe, a "Pending" note, recent analyses (saved or discarded), Chat card ("Pending", coming later), monthly usage line; how-it-works steps on first use | Photo, Describe, Usage, Add API key, Log manually | SecureStore (Confirmed); Claude (Pending device test) | Confirmed for no key and offline states; Pending device test for ready |
+| HK-2 | Before sending: photo / description | Show exactly what will be sent | HK-1, EA-2, Quick add, Today Photo | Plate placeholder or text field, optional note, "What's sent" panel with two context switches (off), estimated cost, privacy line | Toggle context, Retake, Choose another, Send to Hiku | Android photo picker; image resize on the phone | Pending device test |
+| HK-3 | Analyzing: working / still working (after 10 s) | Wait, with a way out | HK-2 Send | Shimmering plate (static under reduced motion), status text, Cancel | Cancel | Claude request | Pending device test |
+| HK-4 | Result review: result / editing / after editing / text 200% / discard confirmation | Check and correct before saving | HK-3 | "Estimate" and "Hiku estimate" chips, items with grams, kcal and a confidence word, total and macros, "After saving" preview, Add item, Describe instead | Edit an item, Remove, Add item, Save to Dinner, Discard | Claude structured output; local diary | Pending device test |
+| HK-5 | Errors: offline / key rejected / rate limit / server / refusal / cut off / timeout | Fail without losing anything | HK-3 or HK-4 | One card: cause, "your photo is still here", actions; rate-limit countdown | Retry, Check key, Describe instead, Log manually | HTTP status mapping | Offline Confirmed (Phase 0); the rest Pending device test |
+| HK-6 | Usage and privacy | Make cost and data use visible | HK-1 Usage | Monthly estimate, per-request list (type, tokens, estimated cost), context defaults, what is never sent, key link | Change context defaults, Open API key (Settings) | Local usage log; Anthropic's published prices | Future (Phase 4); prices source open (concern 4) |
+| HK-C | Chat (marker only, no screen) | Later: multi-turn questions with personal context | HK-1 Chat card | "Pending" chip, "Coming later" | None | Needs device testing and its own design | **Future** |
+
+## Stubs in the prototype (designed later)
 
 | ID | Screen | Milestone |
 |---|---|---|
-| EA-* | Eat tab, diary, food search, targets | 1C |
-| HK-* | Hiku tab, chat, photo analysis, review-before-save | 1C |
 | PR-*, HE-* | Progress and Health screens | 1D |
-| ST-* | Settings, privacy, data management | 1D |
+| ST-* | Settings, privacy, data management (API key, Keep photos, units) | 1D |

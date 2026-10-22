@@ -1,6 +1,6 @@
 # Screen Specifications
 
-**Milestone:** 1A · Screen IDs match [SCREEN_INVENTORY.md](SCREEN_INVENTORY.md). The prototype shows each screen; this file covers what the prototype can't: rules, validation, edge cases and data sources.
+**Milestone:** 1A, 1B, 1C · Screen IDs match [SCREEN_INVENTORY.md](SCREEN_INVENTORY.md). The prototype shows each screen; this file covers what the prototype can't: rules, validation, edge cases and data sources.
 
 ---
 
@@ -74,7 +74,9 @@ Nutrition is no longer a card: the orb, target line and macro row above the deck
 
 **Refresh:** pull to refresh re-reads Health Connect and shows "Updated just now". Health Connect is also read on app foreground at most every 15 minutes. Local data always reflects the latest change instantly.
 
-**Quick add** (from "Log a meal" or a long-press on the Today tab): a bottom sheet with Log meal · Photo meal (Hiku) · Start workout · Log weight. Designed fully in 1C/1B.
+**Quick add** (a long-press on "Log a meal" or on the Today tab): the shared bottom sheet QA-1, designed in 1C (see below). Tapping "Log a meal" opens Add food (EA-2) directly.
+
+**1C integration:** the orb, the target line, the macro row and the Meals today card all read the same diary total as Eat (one source). Meals logged in Eat show on Today at once. The Meals today card's "Dinner, not logged yet" row has an **Add** link to EA-2 (dinner). "Photo" opens HK-2 (before sending). Nothing else on Today changed in 1C.
 
 ## Train (TR-1 … TR-13)
 
@@ -176,3 +178,75 @@ Nutrition is no longer a card: the orb, target line and macro row above the deck
    - Eat (1C): whether today is a training day, as context for Hiku only if the user allows it.
    - Progress (1D): sessions, volume, records.
    - None of them may write workout data.
+
+---
+
+## Eat (EA-1 … EA-7, QA-1) (1C)
+
+**Shared rules**
+- **One number, one source.** Today's orb, Eat's orb, every meal total and Hiku's "After saving" preview read the same diary. The example day: **Breakfast 520 + Lunch 680 + Snacks 220 = 1,420 kcal**, target 2,650 (Estimate), dinner not logged. A saved Hiku dinner of 624 kcal makes it **2,044**.
+- **Rounding.** Each item's kcal is rounded to a whole number; a meal is the sum of its rounded items; the day is the sum of its meals, so any total can be checked by adding the rows above it. Macros are summed unrounded and shown to the whole gram (to 0.1 g in the portion picker).
+- **Not logged is not zero.** A meal with no items reads "Not logged yet", never "0 kcal". Days with nothing logged are left out of averages and drawn as a dashed outline with "—", never as a zero bar. Averages say how many days they cover ("5 of 7 days logged").
+- **Calm food language.** No "bad", "cheat", "junk" or "over budget", no red for eating, no shame copy. Over target is honey: the orb keeps its palette, the ring stays full, and the label reads "180 kcal over" (and "+180 kcal over" on the line below). Delete buttons are the only red on these screens, because they are destructive actions.
+- **Food data.** Foods come from a **bundled USDA FoodData Central pack that works offline**. Values are per 100 g. **Grams are the canonical unit in storage;** household units (cup, piece, serving) come from the pack's portion list, and a custom unit isn't in V1. There is no barcode scanner in V1 (Open Food Facts is a possible later add-on).
+- **Source chips** (always icon + text) mark where every number came from:
+
+  | Source | Chip | Meaning |
+  |---|---|---|
+  | USDA FoodData Central | `measured` style, "USDA" | From the bundled pack |
+  | Created by the user | `phone` style, "My food" | Typed in by the user, saved on the phone |
+  | Hiku | `chip-hiku`, sparkle, "Hiku estimate" | Proposed by Hiku and confirmed by the user |
+  | Quick add | `estimate` style, dashed, "Calories only" | A calorie number with no macros |
+
+- **Training is context only.** EA-1 shows "Training day · Upper A" as a read-only chip. Training **never adds calories** to the target: Liftria has no measured energy source (Phase 0), so the target doesn't auto-adjust until Daily calories is READY. Nutrition never writes workout data, and Train never writes nutrition data.
+- **Hide numbers** (set in EA-6) applies to **Today, Eat home and History**. The orb shows "On track" or "A bit over" instead of a number, macro bars show without values, and meal and item calories are hidden (an item count is shown instead). A "Show numbers" link is always in reach. EA-6 itself always shows numbers, because you are there to change them. The ring still shows progress.
+- **Meal preset.** Opening Add food from Today's "Log a meal" or Quick add presets the meal by time of day: **dinner after 17:00** (from the brief). The other cut-offs are a proposal: breakfast before 10:30, lunch 10:30–15:00, snacks 15:00–17:00. The user can change the meal with the selector chip.
+- **Undo.** Adding with "+" and deleting both show a snackbar with Undo: 4 s for an add, 8 s for a delete. A whole-day clear isn't in V1.
+
+| Screen | Layout (top → bottom) | Rules |
+|---|---|---|
+| EA-1 Eat home | Header (Eat, Quick add "+") → date switcher → orb → Estimate line → training-day chip → macro card → four meal cards (Breakfast, Lunch, Dinner, Snacks) → History and Targets rows | **Populated:** orb "1,230 kcal left", "1,420 eaten of 2,650". **First day:** empty glass orb, "0 kcal eaten", macros replaced by one sentence, four meals "Not logged yet". **Over:** "2,830 eaten", orb "180 kcal over". **No target:** no ring, "kcal eaten", macros as grams with no target, "Set a target" link. **Hidden:** words and bars only, "Show numbers" link. The date switcher's earlier-day arrow opens the week view; the next-day arrow is disabled on today. Meal cards have a honey rim, a total or "Not logged yet", an Add button (48dp) and one row per item; tapping an item opens EA-4. After an add, a delete or a Hiku save the screen shows an Undo snackbar. |
+| EA-2 Add food | Back + title → meal selector chip → search → Photo and Describe (lavender) → Recents / Favorites / My foods → rows → Quick add calories and Create a food | The capsule nav stays (it's a browse screen). Each row: name, portion and kcal, source chip, and a 48dp "+" that adds the **last-used portion** to the selected meal at once, with a 4 s Undo snackbar. Tapping the row opens EA-3. Search is local and offline; results show per-100 g kcal. **No results:** "Not in the food pack" with Create a food, Quick add calories and Describe it to Hiku. **Offline:** Hiku buttons disabled with "Needs internet"; everything else works. |
+| EA-3 Portion picker | Back → food name + source chip → unit control (g, cup, piece, serving) → amount stepper → "stored in grams" line → result card (kcal, P/C/F, per-100 g) → meal selector → dock (Add to \<meal\>) | Focus screen: no capsule nav. The amount stepper is 64dp with 52dp buttons; tapping the number opens a keypad. Changing unit converts the shown amount; the stored amount stays in grams. Example: Greek yogurt, plain, nonfat · 170 g = **100 kcal, P 17.3 / C 6.1 / F 0.7**. At 200% text the unit control becomes two rows, the result card wraps, and the dock stays visible. |
+| EA-4 Meal detail | Back + meal name → kcal and macros card → item rows → Add item → Move to another meal → Delete meal | One item row per food with portion, kcal and source chip. **Editing:** tapping a row expands it in place with a gram stepper, **Remove item** and **Done**; the meal total updates live and shows "was 680". **Delete:** a confirmation sheet ("Delete lunch? 4 items, 680 kcal. You can undo for 8 s.") with **Keep** as the primary button; Delete returns to EA-1 with an 8 s Undo. |
+| EA-5 Create a food | Back + title → name → brand (optional) → serving g → kcal → protein, carbs, fat → hint → dock | **Name is required;** until it's there Save is disabled and a hint says so. **Mismatch check:** if the kcal differs from 4·P + 4·C + 9·F by more than 20%, show "Calories and macros don't match (macros add up to ~260 kcal). Check the label." Save is still allowed (**Save anyway**); labels can be rounded. **Quick add** variant: name (optional) + calories, with the "Calories only" chip; it counts toward calories, not macros. |
+| EA-6 Targets | Back + title → target card → macro split → hide-numbers switch → (dock: Save target when editing) | **Estimate:** 2,650 kcal with the Estimate chip. How it's calculated: Mifflin-St Jeor (about 1,740 kcal at rest) × 1.375 ("On my feet some") + 10% to build muscle, rounded to 50 kcal. Macro split P 155 g (23%) / C 340 g (51%) / F 75 g (25%), each editable in 1% steps; grams follow the calories (4, 4 and 9 kcal per gram). **Your own target** carries the "Your target" chip. **Safety floor:** a target under **1,200 kcal**, or a deficit of more than **25%** below the estimate, opens a calm sheet: "That's below 1,200 kcal a day" (or "…a deficit of about 28%") with a plain reason, **Use 1,200** (or the 25% value) as the primary button, and **Keep …** as secondary. Keep is disabled until the user ticks "I'm doing this with professional guidance". A target under 1,000 kcal can't be saved. Liftria never changes the target by itself. |
+| EA-7 History and trends | Back + title → week card (averages, chart, target line) → per-day list | Last 7 days, bars in honey against a dashed target line. **Unlogged days are dashed outlines with "—", not zero bars.** Headline: "avg 2,210 kcal · 5 of 7 days logged" (logged days only); protein average on logged days. Tapping a day opens that day in EA-1. **Empty:** "Log a few days to see trends." The chart has a text alternative that states every day, and the list under it repeats the values. |
+| QA-1 Quick add | Bottom sheet over the screen it was opened from | Five rows (icon tile, label, one-line hint): **Log a meal**, **Photo a meal** (Hiku), **Describe a meal** (Hiku), **Start workout**, **Log weight** (disabled: "Coming in Progress, 1D"). The Hiku rows are disabled with a reason when offline ("Needs internet") or there is no key ("Add your API key first"). Opened from Eat's "+", a long-press on Today's "Log a meal", or a long-press on the Today tab. Scrim tap or Close dismisses it. |
+
+### Eat data contract (for Phase 4, and for Today and Progress later)
+
+1. **Diary items** store `food_id` (or a user food id), `grams`, `kcal` and macros as computed at save time, `meal`, `logged_at` and a **`source`**: `usda`, `my-food`, `hiku-estimate` or `quick-add`. Quick-add items have kcal only and no macros.
+2. **Pack data is not copied into the diary** beyond what's needed to show history: if the pack is updated, saved entries keep the numbers they were logged with.
+3. **Hiku items** keep the **original estimate alongside the user's edits**, so trends can later show how often estimates were corrected. No photo is stored unless the user turns on "Keep photos" (default off, 1D Settings).
+4. **What other tabs may read:** Today reads the day total, macros and meal totals. Progress (1D) reads daily totals and logged-day flags. Hiku reads the diary only through the opt-in "Today's totals" switch. Eat reads whether today is a training day, for the read-only chip. None of them may write to the other domain.
+
+---
+
+## Hiku (HK-1 … HK-6) (1C)
+
+**Shared rules**
+- **AI proposes, you decide.** Nothing Hiku returns is saved until the user taps **Save to \<meal\>**. Every item can be edited or removed, and totals update live. Results carry the `estimate` chip and "Check before saving." Hiku never claims perfect recognition, never diagnoses, and never fills in data it didn't return.
+- **Honest status.** A Hiku request is **Pending device test**: Phase 0 proved key storage and the offline failure on the S22, but not a real Claude request. HK-1 says so ("Pending · Still being tested on your phone"). **Chat is Future** and is only a marker.
+- **Feature-scoped privacy.** The food diary stays on the phone. A request sends only the photo or text the user chose, plus any context they allowed, to Anthropic's Claude API with the user's own key, and **only when they tap Send**. The Phase 1 prototype never names a model.
+- **Confidence is words, never a percentage:** "Sure" (plain secondary text), "Check amount" and "Guess" (the `stale` chip style, warning tint). Never red.
+- **Offline and no key** are states of HK-1 (and disable the Hiku rows in EA-2 and QA-1), not dead ends: each offers "Log manually".
+
+| Screen | Layout (top → bottom) | Rules |
+|---|---|---|
+| HK-1 Hiku home | Header (Hiku, Usage) → hero (Estimate a meal: Photo, Describe, Pending note) → Recent → Chat card → usage line | **Ready:** as listed. **No key:** explains Hiku and offers Add API key (Settings, 1D stub) and "Log a meal manually"; the Photo and Describe buttons are not shown. **Offline:** banner, disabled buttons, "Hiku needs internet. Log manually meanwhile." and Log manually. **First time:** a three-step "How Hiku works" card (Send, Check, Save) replaces Recent. Recent rows show saved or discarded. The Chat card is a `pending` marker, not a button. The usage line reads "This month ≈ $0.42 · 61 requests" with an Estimate chip. |
+| HK-2 Before sending | Back + title → the input (plate placeholder and note, or a multiline field) → "What's sent" panel → dock (Send to Hiku) | Focus screen. **Photo:** the photo is resized on the phone before upload (Phase 4). **What's sent:** the photo or text (always), plus two switches, **Today's totals** (adds "1,420 kcal eaten, 2,650 target") and **Training day** (adds "today is Upper A"). **Both switches reset to off for every request** unless the user changes the defaults in HK-6. Shows "Estimated cost ≈ $0.007" (photo) or "≈ $0.002" (text) with an Estimate chip, the same model as HK-6, and the privacy line: "Sent to Anthropic's Claude API with your key, only when you tap Send. Not stored by Liftria anywhere but this phone." |
+| HK-3 Analyzing | Shimmering plate (or the text) → status → dock (Cancel) | Focus screen. **Cancel is always visible.** Cancel aborts the request, returns to HK-2 with the input intact, and says it may still be billed. After **10 s**: "Still working… This can take up to 45 s." The shimmer is static under reduced motion. |
+| HK-4 Result review | Back + "Dinner · Hiku estimate" → chips and note → item card with total and macros → Add item → "After saving" preview → "Describe instead" link → dock (Save to Dinner, Discard) | Focus screen. Items: **Chicken breast, roasted · 150 g · 248 kcal · Sure; White rice, cooked · 200 g · 260 · Sure; Broccoli, steamed · 80 g · 28 · Sure; Olive oil · 10 g · 88 · Check amount.** Total **624 kcal, P 54 / C 62 / F 16**. "After saving: Today 2,044 of 2,650 kcal", drawn as a two-segment bar. **Editing:** tapping a row expands it with a gram stepper, Remove and Done; the olive oil at 15 g makes the total **669 kcal** (P 54 / C 62 / F 21) and "After saving" **2,089**, with "Hiku said 624" kept visible. **Discard** asks only if something was edited ("You changed 1 item. Nothing from this estimate has been saved." with Keep editing as the primary button). At 200% text the rows wrap to two lines (name, then grams, kcal and confidence). |
+| HK-5 Errors | One card in place of the result | Each card has a title, one sentence of cause, a **"what was kept"** line ("Your photo is still here. Nothing was saved."), and actions. The capsule nav stays visible (see the open question on focus). **No partial result is ever shown as complete.** Cases are in INTERACTION_AND_STATES. |
+| HK-6 Usage and privacy | Back + title → month card with per-request list → context defaults → what is never sent → API key link | The monthly figure and every per-request cost are labeled **Estimate**: "Prices come from Anthropic's published rates; your Anthropic console shows the exact bill." A cancelled request **may still be billed**, and the list says so. Context defaults (both off) can be changed here. "What is never sent": the diary and history, Health Connect and heart-rate data, workouts, records and body measurements, and the profile, unless a switch is on for one request. |
+
+### Hiku request behavior
+
+1. **One request = one image or text, plus the opt-in context.** No conversation history is sent in V1.
+2. **Timing:** progress appears after 300 ms; "Still working" at **10 s**; the request times out at **45 s**; **Cancel** aborts it at any time.
+3. **Result parsing:** the response must be valid structured JSON that matches the schema (items with name, grams, kcal, protein, carbs, fat, confidence; a meal name). If it isn't, show the **cut-off** or **refusal** state. **Never guess-fill** a missing or invalid field.
+4. **Saving** creates diary items with `source = hiku-estimate`, keeps the original estimate beside the user's edits, and stores **no photo** unless "Keep photos" is on (default off, 1D).
+5. **Context switches** reset to off for every request unless the user changes the defaults in HK-6. When on, the added numbers are shown before sending.
+6. **Cost** is an estimate computed from the token counts the API returns and Anthropic's published prices. It is always labeled Estimate.
+7. **Failure handling** never loses input: the photo or text stays, and every failure card offers Retry or "Log manually" (INTERACTION_AND_STATES).

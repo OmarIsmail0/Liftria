@@ -1,6 +1,6 @@
 # Information Architecture
 
-**Milestone:** 1A · **Status:** for owner review
+**Milestone:** 1A, 1B, 1C · **Status:** for owner review
 
 ## Primary navigation
 
@@ -12,7 +12,7 @@ A five-item navigation bar, always visible on top-level screens. It's drawn as a
 | **Train** | Workouts, templates, plans, exercise library, history, records | Used every gym session; needs one-tap access | 1B |
 | **Eat** | Food diary, add food, targets, nutrition history | Used several times a day | 1C |
 | **Progress** | Trends for strength, nutrition, body and activity, plus Health Connect details and sources | Where history and health data are explored | 1D |
-| **Hiku** | AI meal analysis and chat | Distinct mode (online, costs money), so it gets its own clearly labeled place | 1C |
+| **Hiku** | AI meal analysis (chat is pending, later) | Distinct mode (online, costs money), so it gets its own clearly labeled place | 1C |
 
 **Settings** sits behind the profile button in the Today header, not in the bar. It's used rarely, and keeping it out leaves room for daily destinations.
 
@@ -41,7 +41,7 @@ Today
 │   ├── Health Connect permissions · Sources
 │   ├── Local data: storage · delete all · export/backup (future)
 │   └── About · Help & troubleshooting
-├── Quick add sheet → Log meal / Start workout / Log weight
+├── Quick add sheet (QA-1) → Log a meal / Photo a meal / Describe a meal / Start workout / Log weight (1D)
 └── Cards link to → Eat diary · Workout · Progress → Health source details
 Train (TR-1)
 ├── Workout preview (TR-7) → Active workout (TR-8) → Summary (TR-10)
@@ -50,26 +50,33 @@ Train (TR-1)
 ├── Exercise library (TR-4) → Muscles (TR-5) → Exercise detail (TR-6)
 ├── History (TR-11) → Session detail (TR-12) → edit / delete
 └── Records (TR-13) → Exercise detail
-Eat
-├── Diary (by meal) → Meal detail → Edit food entry
-├── Add food → Search local pack / Recents / Custom food / Hiku photo
-├── Targets & settings
-└── History & trends
+Eat (EA-1)
+├── Quick add (QA-1, the "+" in the header)
+├── Add food (EA-2) → Portion picker (EA-3)
+│   ├── Create a food (EA-5) / Quick add calories → Portion picker
+│   └── Hiku Photo / Describe → Before sending (HK-2)
+├── Meal detail (EA-4) → edit an item · delete (confirmation sheet)
+├── Targets (EA-6) → safety-floor sheet · hide numbers
+└── History and trends (EA-7) → a day's EA-1
 Progress
 ├── Strength · Nutrition · Body · Activity
 └── Health → Steps · Heart rate · Exercise sessions · Energy · Sleep → Source & provenance detail
-Hiku
-├── Welcome / setup (no key)
-├── Conversation → Meal analysis result (editable) → Confirm & save to Eat
-└── Usage & privacy
+Hiku (HK-1)
+├── Welcome / no key / offline / first time (states of HK-1)
+├── Before sending (HK-2) → Analyzing (HK-3) → Result review (HK-4) → Save to Eat
+│   └── Errors (HK-5): Retry · Check key · Describe instead · Log manually
+├── Usage and privacy (HK-6) → API key (Settings, 1D)
+└── Chat (pending, marker only; not designed as a working feature)
 ```
 
 ## Navigation rules
 
-1. **The navigation capsule** is visible on tab roots and their browse screens. It's hidden during focus flows: onboarding, template editor, workout preview, active workout, workout summary, session edit, Hiku review-before-save, and destructive confirmations.
+1. **The navigation capsule** is visible on tab roots and their browse screens. It's hidden during focus flows: onboarding, template editor, workout preview, active workout, workout summary, session edit, and every confirmation sheet. **1C focus flows:** the portion picker (EA-3), Create a food (EA-5), Before sending (HK-2), Analyzing (HK-3), Result review (HK-4) and the confirmation sheets (delete meal, safety floor, discard an edited estimate). Add food (EA-2), Eat home, Targets, History, Hiku home, Usage and the error cards (HK-5) keep the capsule.
 2. **Back** (Android gesture or system back) always goes one level up. It never discards entered data without a confirmation sheet.
 3. **The active workout persists.** If you leave it, a mini bar ("Upper A · 23:10 · Resume") shows above the navigation capsule on every screen until you finish or discard it. (1B)
-4. **Deep links** between tabs open the destination as its own stack, so back returns to where you were. Example: Today → "Log a meal" opens Eat's add-food screen with back to Today.
+4. **Deep links** between tabs open the destination as its own stack, so back returns to where you were. Example: Today → "Log a meal" opens Eat's add-food screen with back to Today; Today → "Photo" opens Hiku's Before sending screen.
+   - **Quick add** is one shared sheet (QA-1): Eat's "+", a long-press on Today's "Log a meal", or a long-press on the Today tab.
+   - Training reaches Eat and Hiku only as a read-only chip or an opt-in context switch. Nutrition and Train never write each other's data.
 5. **Settings** opens as a pushed stack from Today with its own back button. No bottom bar inside Settings.
 6. **No dead ends.** Every empty, error and permission state has at least one forward action (set up, retry, log manually) and a way back.
 

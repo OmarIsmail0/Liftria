@@ -77,7 +77,7 @@
     --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
     --color-domain-train: #A83E18; --color-domain-eat: #855D00; --color-domain-health: #126B57; --color-domain-hiku: #6150D8;
     --color-macro-protein: #2E6BD3; --color-macro-carbs: #855D00; --color-macro-fat: #B8406F;
-    --color-status-success: #177A45; --color-status-warning: #946300; --color-status-danger: #C93636;
+    --color-status-success: #177A45; --color-status-warning: #8A5C00; --color-status-danger: #C93636;
     --color-tint-train: rgba(210, 85, 42, 0.10); --color-tint-eat: rgba(154, 108, 0, 0.10);
     --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
     --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
@@ -99,7 +99,7 @@
   --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
   --color-domain-train: #A83E18; --color-domain-eat: #855D00; --color-domain-health: #126B57; --color-domain-hiku: #6150D8;
   --color-macro-protein: #2E6BD3; --color-macro-carbs: #855D00; --color-macro-fat: #B8406F;
-  --color-status-success: #177A45; --color-status-warning: #946300; --color-status-danger: #C93636;
+  --color-status-success: #177A45; --color-status-warning: #8A5C00; --color-status-danger: #C93636;
   --color-tint-train: rgba(210, 85, 42, 0.10); --color-tint-eat: rgba(154, 108, 0, 0.10);
   --color-tint-health: rgba(27, 138, 112, 0.10); --color-tint-hiku: rgba(97, 80, 216, 0.10);
   --color-tint-warning: rgba(148, 99, 0, 0.10); --color-tint-danger: rgba(201, 54, 54, 0.10);
@@ -269,7 +269,7 @@ button, input, select { font: inherit; color: inherit; }
 .orb-u { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .orb-sub { margin: 0; display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; color: var(--color-text-secondary); text-align: center; }
 .orb-sub b { color: var(--color-text-primary); }
-.link { border: 0; background: transparent; padding: 0; min-height: 44px; font-weight: 700; color: var(--color-text-primary); text-decoration: underline; cursor: pointer; }
+.link { border: 0; background: transparent; padding: 0; min-height: 48px; font-weight: 700; color: var(--color-text-primary); text-decoration: underline; cursor: pointer; }
 .orb-macros { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--color-text-secondary); }
 .orb-macros > span { display: inline-flex; align-items: center; gap: 6px; }
 .orb-macros i { width: 8px; height: 8px; border-radius: 50%; }
@@ -532,14 +532,144 @@ button, input, select { font: inherit; color: inherit; }
   .screen-anim { animation: enter 220ms cubic-bezier(.2,.8,.2,1); }
   @keyframes enter { from { opacity: .6; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 }
+
+/* ---------- 1C: Eat and Hiku ---------- */
+/* Source chip for Hiku estimates: tint-hiku / domain-hiku (same pair as chip-pending), always with the sparkle glyph. */
+.chip-hiku { background: var(--color-tint-hiku); color: var(--color-domain-hiku); }
+.iconbtn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.snackbar.low { bottom: 16px; }
+button.search { width: 100%; text-align: start; cursor: pointer; }
+.field textarea { min-height: 104px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); background: var(--color-bg-surface); padding: 12px 14px; width: 100%; font: inherit; color: inherit; resize: none; line-height: 1.45; }
+.screen.glass .field textarea, .screen.glass .field input { background: var(--glass-card); border-color: var(--glass-border); }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.trio .unit-input span { padding: 0 8px; }
+.trio .unit-input input { min-width: 0; padding: 0 8px; }
+
+/* Eat home */
+.datesw { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; }
+.datesw strong { text-align: center; font-family: var(--font-display); font-stretch: 106%; font-weight: 700; font-size: 17px; line-height: 1.2; }
+.datesw .t-small { display: block; font-family: var(--font-body); font-weight: 500; }
+.mi { min-height: 56px; }
+.mi .k { font-weight: 700; font-variant-numeric: tabular-nums; }
+.mtot { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
+.honey { color: var(--color-domain-eat); font-weight: 700; }
+
+/* Add food: a row with a one-tap add */
+.foodrow { display: flex; align-items: center; gap: 4px; border-top: 1px solid var(--color-border-subtle); }
+.foodrow:first-child { border-top: 0; }
+.foodrow .rowlink { border-top: 0; flex: 1; min-width: 0; }
+.foodrow .iconbtn { background: var(--color-tint-eat); border-color: transparent; color: var(--color-domain-eat); }
+.screen.glass .foodrow .iconbtn:not(.bare) { background: var(--color-tint-eat); }
+
+/* Portion picker */
+.unitseg { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--color-border-strong); border-radius: 18px; overflow: hidden; }
+.unitseg button { min-height: 52px; border: 0; background: transparent; font-weight: 700; font-size: 15px; color: var(--color-text-secondary); cursor: pointer; padding: 0 4px; }
+.unitseg button + button { border-left: 1px solid var(--color-border-subtle); }
+.unitseg button[aria-checked="true"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); }
+.screen.glass .unitseg { background: var(--glass-card); border-color: var(--glass-border); }
+.res-macros { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--color-text-secondary); }
+.res-macros > span { display: inline-flex; align-items: center; gap: 6px; }
+.res-macros i { width: 8px; height: 8px; border-radius: 50%; }
+.res-macros b { color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+
+/* Switch (hide numbers, Hiku context) */
+.switch-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 0; border-top: 1px solid var(--color-border-subtle); }
+.switch-row:first-child { border-top: 0; }
+.toggle { width: 56px; height: 48px; border: 0; background: transparent; padding: 0; cursor: pointer; flex: none; display: grid; place-items: center; }
+.toggle i { position: relative; width: 48px; height: 28px; border-radius: 14px; background: var(--color-track); border: 1.5px solid var(--color-text-tertiary); }
+.toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: var(--color-text-secondary); }
+.toggle[aria-checked="true"] i { background: var(--color-domain-hiku); border-color: transparent; }
+.toggle.eat[aria-checked="true"] i { background: var(--color-domain-eat); }
+.toggle[aria-checked="true"] i::after { left: 23px; background: var(--color-text-inverse); }
+.tick-row { display: flex; gap: 12px; align-items: center; width: 100%; min-height: 56px; border: 0; background: transparent; text-align: start; cursor: pointer; padding: 0; color: inherit; font-size: 14px; }
+.tick-row .tick { width: 24px; height: 24px; border-radius: 7px; border: 1.5px solid var(--color-border-strong); display: grid; place-items: center; flex: none; }
+.tick-row[aria-checked="true"] .tick { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); border-color: transparent; }
+.tick-row .tick svg { width: 14px; height: 14px; }
+.macrorow { display: grid; grid-template-columns: 64px 1fr auto auto; align-items: center; gap: 6px; min-height: 52px; font-size: 14px; }
+.macrorow .pct { font-weight: 700; min-width: 40px; text-align: end; font-variant-numeric: tabular-nums; }
+.macrorow .iconbtn { width: 48px; height: 48px; }
+
+/* Plate illustration (original, geometric) and the analyzing shimmer */
+.plate { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-bg-raised); border: 1px solid var(--color-border-subtle); aspect-ratio: 4 / 3; }
+.plate svg { width: 100%; height: 100%; display: block; }
+.plate.sm { aspect-ratio: auto; width: 72px; height: 54px; flex: none; border-radius: 12px; }
+.plate .shim { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--color-domain-hiku) 40%, transparent) 50%, transparent 70%); background-size: 220% 100%; background-position: 50% 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .plate .shim { animation: shim 1.8s linear infinite; }
+  @keyframes shim { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+}
+
+/* Hiku result: one row per item, with a confidence word */
+.ritem { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; text-align: start; color: inherit; cursor: pointer; }
+.ritem:first-child { border-top: 0; }
+.ritem .nm { display: grid; gap: 2px; min-width: 0; }
+.ritem .nm strong { font-weight: 600; font-size: 15px; }
+.ritem .kc { display: grid; justify-items: end; gap: 3px; text-align: end; }
+.ritem .kc b { font-family: var(--font-display); font-stretch: 108%; font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; }
+.ritem.open { cursor: default; align-content: start; }
+.ritem .ed { grid-column: 1 / -1; display: grid; gap: 10px; padding: 6px 0 4px; }
+.bar.two { display: flex; height: 10px; }
+.bar.two > i { flex: none; }
+.bar.two > i + i { border-left: 2px solid var(--color-bg-base); }
+.tot { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--color-border-subtle); }
+.stepper.u-low output span { text-transform: none; letter-spacing: 0; font-size: 13px; }
+.screen.fs200 .stepper.u-low output span { font-size: 20px; }
+.err-ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--color-tint-warning); color: var(--color-status-warning); }
+.err-ic svg { width: 26px; height: 26px; }
+.kept { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: var(--radius-md); background: var(--color-bg-raised); border: 1px solid var(--color-border-subtle); }
+.kept .t-small b { color: var(--color-text-primary); }
+.usage-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 0; border-top: 1px solid var(--color-border-subtle); min-height: 56px; align-items: center; }
+.usage-row:first-child { border-top: 0; }
+.usage-row .c { font-weight: 700; font-variant-numeric: tabular-nums; text-align: end; }
+.qa-row[aria-disabled="true"] { cursor: not-allowed; }
+.qa-row[aria-disabled="true"] .icon-tile, .qa-row[aria-disabled="true"] strong { opacity: .55; }
+
+/* Week chart */
+.chart .bar-eat { fill: var(--color-domain-eat); }
+.chart .bar-none { fill: none; stroke: var(--color-text-tertiary); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.chart .tline { stroke: var(--color-text-tertiary); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.chart .dash-lbl { fill: var(--color-text-tertiary); text-anchor: middle; font-size: 13px; }
+.chart .tl-lbl { text-anchor: end; }
+.chart .day-lbl { text-anchor: middle; }
+
+.page .link { min-height: 48px; }
+
+/* 200% text emulation for the portion picker and the Hiku result */
+.screen.fs200 .t-body { font-size: 26px; line-height: 1.35; }
+.screen.fs200 .t-title { font-size: 32px; }
+.screen.fs200 .hdr h1 { font-size: 30px; }
+.screen.fs200 .hdr .sub { font-size: 22px; }
+.screen.fs200 .chip { font-size: 20px; line-height: 28px; white-space: normal; }
+.screen.fs200 .chip svg { width: 18px; height: 18px; }
+.screen.fs200 .unitseg { grid-template-columns: 1fr 1fr; }
+.screen.fs200 .unitseg button { font-size: 26px; min-height: 56px; }
+.screen.fs200 .unitseg button:nth-child(n+3) { border-top: 1px solid var(--color-border-subtle); }
+.screen.fs200 .unitseg button:nth-child(3) { border-left: 0; }
+.screen.fs200 .fchip, .screen.fs200 .btn:not(.btn-xl) { font-size: 24px; line-height: 1.25; }
+.screen.fs200 .res-macros { font-size: 24px; }
+.screen.fs200 .t-metric { font-size: 52px !important; }
+.screen.fs200 .field label { font-size: 22px; }
+.screen.fs200 .ritem { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; }
+.screen.fs200 .ritem .nm { display: contents; }
+.screen.fs200 .ritem .nm strong { font-size: 26px; flex-basis: 100%; }
+.screen.fs200 .ritem .ed { flex-basis: 100%; }
+.screen.fs200 .ritem .kc { display: flex; align-items: baseline; gap: 12px; }
+.screen.fs200 .ritem .kc b { font-size: 28px; }
+.screen.fs200 .stat b { font-size: 30px; }
+.screen.fs200 .stat span { font-size: 22px; }
+.screen.fs200 .rowlink strong { font-size: 26px; }
+.screen.fs200 .section-h h2, .screen.fs200 .t-head { font-size: 26px; }
+.screen.fs200 .t-label { font-size: 18px; }
+.screen.fs200 .link { font-size: 24px; }
+.screen.fs200 .addrow { font-size: 24px; }
 </style>
 
 <div class="board">
   <aside class="panel" aria-label="Prototype controls">
     <div class="stack">
-      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B</span>
+      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B + 1C</span>
       <h1>Liftria</h1>
-      <p>Onboarding, Today and the whole Train tab. Tap through the phone, or jump to any screen and state.</p>
+      <p>Onboarding, Today, the whole Train tab, Eat and Hiku. Tap through the phone, or jump to any screen and state.</p>
     </div>
     <div class="ctl">
       <label for="screen-select">Screen</label>
@@ -572,6 +702,7 @@ button, input, select { font: inherit; color: inherit; }
       <span><span class="chip chip-estimate" data-icon="approx">Estimate</span> calculated, never measured</span>
       <span><span class="chip chip-pending" data-icon="clock">Pending</span> awaiting device verification</span>
       <span><span class="chip chip-stale" data-icon="clock">2 d ago</span> older than the freshness limit</span>
+      <span><span class="chip chip-hiku" data-icon="spark">Hiku estimate</span> proposed by Hiku, check before saving</span>
     </div>
   </aside>
 
@@ -616,6 +747,9 @@ button, input, select { font: inherit; color: inherit; }
     list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01"/></svg>',
     trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5h8v5a4 4 0 0 1-8 0zM8 6.5H5v1.5a3 3 0 0 0 3 3M16 6.5h3v1.5a3 3 0 0 1-3 3M12 13.5v3.5M8.5 20h7M9.5 17h5v3h-5z"/></svg>',
     body: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M6 8.5h12M12 8.5v6M9 21l3-6.5 3 6.5"/></svg>',
+    spark: '<svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 1l1.2 3.3L10.5 5.5 7.2 6.7 6 10 4.8 6.7 1.5 5.5l3.3-1.2z"/></svg>',
+    describe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h8"/></svg>',
+    scale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4.5" width="16" height="15" rx="4"/><path d="M8.5 9.5a4.5 4 0 0 1 7 0M12 9.5l1.5-1.5"/></svg>',
     brand: '<svg viewBox="0 0 64 64"><rect x="6" y="34" width="14" height="24" rx="4" fill="var(--color-domain-eat)"/><rect x="25" y="20" width="14" height="38" rx="4" fill="var(--color-domain-train)"/><rect x="44" y="6" width="14" height="52" rx="4" fill="var(--color-domain-health)"/></svg>',
   };
   const chip = (kind, icon, text) => `<span class="chip chip-${kind}">${ICON[icon]}${text}</span>`;
@@ -626,7 +760,7 @@ button, input, select { font: inherit; color: inherit; }
   const screenSelect = document.getElementById('screen-select');
   const variantSelect = document.getElementById('variant-select');
   const variantCtl = document.getElementById('variant-ctl');
-  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass' };
+  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass', meal: 'Dinner', day: 'base', qaFrom: 'home' };
 
   const statusbar = (offline) => `<div class="statusbar"><span class="num">9:41</span><span>${offline ? 'Airplane mode' : '5G · 82%'}</span></div>`;
   const dots = (n, total = 8) => `<div class="progress-dots" aria-label="Step ${n} of ${total}">${Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>`;
@@ -769,20 +903,25 @@ button, input, select { font: inherit; color: inherit; }
 
   // ---------- Today: Pulse Orb ----------
   const fmt = (n) => Math.round(n).toLocaleString('en-US');
-  function orb(v) {
-    const first = v === 'first', noTarget = v === 'notarget';
-    const eaten = first ? 0 : 1420, target = noTarget ? null : 2650;
-    const r = 104, c = 2 * Math.PI * r, pct = target ? Math.min(eaten / target, 1) : 0;
+  function orb(v, o = {}) {
+    const first = v === 'first', noTarget = v === 'notarget', hidden = !!o.hidden, sm = !!o.sm;
+    const eaten = first ? 0 : (o.eaten ?? dayOf().kcal), target = noTarget ? null : 2650, over = !!target && eaten > target;
+    const S = sm ? 200 : 236, m = S / 2, r = sm ? 88 : 104, c = 2 * Math.PI * r, pct = target ? Math.min(eaten / target, 1) : 0;
+    const big = sm ? ' style="font-size:42px"' : '';
     const label = first
-      ? `<span class="orb-n" style="font-size:40px">0</span><span class="orb-u">kcal eaten</span>`
-      : noTarget
-        ? `<span class="orb-n">${fmt(eaten)}</span><span class="orb-u">kcal eaten</span>`
-        : `<span class="orb-n">${fmt(target - eaten)}</span><span class="orb-u">kcal left</span>`;
-    const aria = first ? 'Nothing eaten yet today' : noTarget ? `${fmt(eaten)} kilocalories eaten, no target set` : `${fmt(target - eaten)} kilocalories left, ${fmt(eaten)} of an estimated ${fmt(target)} eaten`;
-    return `<div class="orb-wrap ${first ? 'is-empty' : ''}" role="img" aria-label="${aria}">
+      ? `<span class="orb-n" style="font-size:${sm ? 36 : 40}px">0</span><span class="orb-u">kcal eaten</span>`
+      : hidden
+        ? `<span class="orb-n" style="font-size:26px;max-width:130px;line-height:1.05">${over ? 'A bit over' : 'On track'}</span><span class="orb-u">today</span>`
+        : noTarget
+          ? `<span class="orb-n"${big}>${fmt(eaten)}</span><span class="orb-u">kcal eaten</span>`
+          : over
+            ? `<span class="orb-n"${big}>${fmt(eaten - target)}</span><span class="orb-u">kcal over</span>`
+            : `<span class="orb-n"${big}>${fmt(target - eaten)}</span><span class="orb-u">kcal left</span>`;
+    const aria = first ? 'Nothing eaten yet today' : hidden ? `${over ? 'A bit over' : 'On track for'} today's target. Numbers are hidden.` : noTarget ? `${fmt(eaten)} kilocalories eaten, no target set` : over ? `${fmt(eaten - target)} kilocalories over an estimated target of ${fmt(target)}, ${fmt(eaten)} eaten` : `${fmt(target - eaten)} kilocalories left, ${fmt(eaten)} of an estimated ${fmt(target)} eaten`;
+    return `<div class="orb-wrap ${sm ? 'sm' : ''} ${first ? 'is-empty' : ''}" role="img" aria-label="${aria}">
         <div class="orb"></div>
-        <svg viewBox="0 0 236 236" aria-hidden="true"><circle cx="118" cy="118" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="4"/>
-        ${target && eaten ? `<circle class="val" cx="118" cy="118" r="${r}" fill="none" stroke="var(--color-domain-eat)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>` : ''}</svg>
+        <svg viewBox="0 0 ${S} ${S}" aria-hidden="true"><circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="4"/>
+        ${target && eaten ? `<circle class="val" cx="${m}" cy="${m}" r="${r}" fill="none" stroke="var(--color-domain-eat)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>` : ''}</svg>
         <div class="orb-label">${label}</div>
       </div>`;
   }
@@ -791,16 +930,17 @@ button, input, select { font: inherit; color: inherit; }
   function today(v) {
     const first = v === 'first', offline = v === 'offline', noKey = v === 'nokey' || first, noTarget = v === 'notarget';
     const hikuReady = !offline && !noKey;
+    const d = first ? DAYS.empty : dayOf();
 
     const sub = first
       ? `<p class="orb-sub">Your first meal lights it up.</p>`
       : noTarget
         ? `<p class="orb-sub">No target yet · <button class="link" type="button">Set a target</button></p>`
-        : `<p class="orb-sub"><b class="num">1,420</b> eaten of <b class="num">2,650</b> ${chip('estimate', 'approx', 'Estimate')}</p>`;
-    const macros = first ? '' : `<div class="orb-macros" aria-label="${noTarget ? 'Protein 96 grams, carbs 152, fat 41' : 'Protein 96 of 155 grams, carbs 152 of 340, fat 41 of 75'}">
-        ${[['protein', 96, 155, 'P'], ['carbs', 152, 340, 'C'], ['fat', 41, 75, 'F']].map(([k, g, t, l]) => `<span><i style="background:var(--color-macro-${k})"></i><b class="num">${g}</b><span class="num">${noTarget ? 'g' : '/' + t} ${l}</span></span>`).join('')}
+        : `<p class="orb-sub"><b class="num">${fmt(d.kcal)}</b> eaten of <b class="num">2,650</b> ${chip('estimate', 'approx', 'Estimate')}</p>`;
+    const macros = first ? '' : `<div class="orb-macros" aria-label="${noTarget ? `Protein ${Math.round(d.p)} grams, carbs ${Math.round(d.c)}, fat ${Math.round(d.f)}` : `Protein ${Math.round(d.p)} of 155 grams, carbs ${Math.round(d.c)} of 340, fat ${Math.round(d.f)} of 75`}">
+        ${[['protein', Math.round(d.p), 155, 'P'], ['carbs', Math.round(d.c), 340, 'C'], ['fat', Math.round(d.f), 75, 'F']].map(([k, g, t, l]) => `<span><i style="background:var(--color-macro-${k})"></i><b class="num">${g}</b><span class="num">${noTarget ? 'g' : '/' + t} ${l}</span></span>`).join('')}
       </div>`;
-    const actions = `<div class="orb-actions"><button class="btn btn-primary grow" type="button">Log a meal</button>${hikuReady ? `<button class="btn btn-secondary" type="button" aria-label="Log a meal by photo with Hiku">${ICON.camera}Photo</button>` : ''}</div>`;
+    const actions = `<div class="orb-actions"><button class="btn btn-primary grow" type="button" data-go="ea-add" data-meal="Dinner" data-longpress="qa-sheet">Log a meal</button>${hikuReady ? `<button class="btn btn-secondary" type="button" data-go="hk-send" data-variant="photo" aria-label="Log a meal by photo with Hiku">${ICON.camera}Photo</button>` : ''}</div>`;
 
     const cards = [];
     if (first) cards.push(dcard('', 'Getting started', `<div class="stack" style="gap:8px">${[['done', 'Calorie target set'], ['todo', 'Log your first meal'], ['todo', 'Plan a first workout']].map(([st, t]) => `<div class="check"><span class="tick" style="${st === 'done' ? 'background:var(--color-tint-health);color:var(--color-domain-health)' : 'border:1px solid var(--color-border-strong)'}">${st === 'done' ? ICON.check : ''}</span><span style="font-size:14px">${t}</span></div>`).join('')}</div>`));
@@ -824,9 +964,12 @@ button, input, select { font: inherit; color: inherit; }
       ? `<span class="dc-big">Offline</span><span class="t-small">Log meals manually now. Hiku comes back when you reconnect.</span>`
       : noKey
         ? `<span class="dc-big">Add Hiku</span><span class="t-small">Your Anthropic key unlocks meal estimates from a photo or a description.</span><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Add API key</button>`
-        : `<span class="dc-big">Snap dinner</span><span class="t-small">Hiku estimates it, you check it before saving.</span><button class="btn btn-hiku btn-sm" type="button" style="justify-self:start">${ICON.camera}Photo</button>`;
+        : `<span class="dc-big">Snap dinner</span><span class="t-small">Hiku estimates it, you check it before saving.</span><button class="btn btn-hiku btn-sm" type="button" style="justify-self:start" data-go="hk-send" data-variant="photo">${ICON.camera}Photo</button>`;
     cards.push(dcard('hiku', 'Hiku', hiku));
-    if (!first) cards.push(dcard('eat', 'Meals today', `<div class="stack" style="gap:6px">${[['Breakfast', 520], ['Lunch', 680], ['Snack', 220]].map(([m, k]) => `<div class="row" style="justify-content:space-between"><span style="font-size:14px">${m}</span><span class="num" style="font-weight:700">${k}</span></div>`).join('')}<div class="t-small">Dinner, not logged yet</div></div>`));
+    if (!first) {
+      const logged = MEALS.filter(n => d.meals[n].length);
+      cards.push(dcard('eat', 'Meals today', `<div class="stack" style="gap:6px">${logged.map(n => `<div class="row" style="justify-content:space-between"><span style="font-size:14px">${n}</span><span class="num" style="font-weight:700">${fmt(sumOf(d.meals[n]).kcal)}</span></div>`).join('')}${d.meals.Dinner.length ? '' : `<div class="row" style="justify-content:space-between"><span class="t-small">Dinner, not logged yet</span><button class="link" type="button" style="min-height:48px;min-width:48px;font-size:14px" data-go="ea-add" data-meal="Dinner" aria-label="Add dinner">Add</button></div>`}</div>`));
+    }
 
     return `
       ${statusbar(offline)}
@@ -901,7 +1044,7 @@ button, input, select { font: inherit; color: inherit; }
 
   const hdr = (title, { to, sub, right = '', root = false } = {}) => `<div class="hdr ${root ? 'root' : ''}">${to ? `<button class="iconbtn bare" data-go="${to}" aria-label="Back">${ICON.back}</button>` : ''}<h1>${title}${sub ? `<span class="sub">${sub}</span>` : ''}</h1>${right}</div>`;
   const exRow = (id, extra = '', variant = '') => `<button class="rowlink" type="button" data-go="tr-exercise" ${variant ? `data-variant="${variant}"` : ''}>${glyph(id)}<span class="grow"><strong>${EX[id][0]}</strong><span class="t-small">${extra || `${EX[id][1]} · ${names(EX[id][2])}`}</span></span>${ICON.chevron}</button>`;
-  const sheet = (body) => `<div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true"><div class="grabber" aria-hidden="true"></div>${body}</div>`;
+  const sheet = (body, closeTo) => `<div class="scrim" ${closeTo ? `data-go="${closeTo}"` : ''}></div><div class="sheet" role="dialog" aria-modal="true"><div class="grabber" aria-hidden="true"></div>${body}</div>`;
   const pr = (t = 'Record') => `<span class="badge-pr">${ICON.trophy}${t}</span>`;
 
   function trHome(v) {
@@ -1150,15 +1293,376 @@ button, input, select { font: inherit; color: inherit; }
 
   const TRAIN = { 'tr-home': trHome, 'tr-library': trLibrary, 'tr-muscles': trMuscles, 'tr-exercise': trExercise, 'tr-template': trTemplate, 'tr-plans': trPlans, 'tr-preview': trPreview, 'tr-active': trActive, 'tr-lock': trLock, 'tr-summary': trSummary, 'tr-history': trHistory, 'tr-session': trSession, 'tr-records': trRecords };
   // Screens that are focus flows hide the capsule nav (IA rule 1).
-  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary'];
-  const isFocus = (s, v) => FOCUS.includes(s) || (s === 'tr-session' && (v === 'edit' || v === 'delete'));
+  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary', 'ea-portion', 'ea-food', 'hk-send', 'hk-analyze', 'hk-result'];
+  const isFocus = (s, v) => FOCUS.includes(s) || (s === 'tr-session' && (v === 'edit' || v === 'delete')) || (s === 'ea-meal' && v === 'delete') || (s === 'ea-targets' && (v === 'floor' || v === 'deficit'));
   const minibar = () => `<div class="minibar" role="region" aria-label="Workout in progress"><i class="live" aria-hidden="true"></i><span class="grow"><strong style="font-size:14px">Upper A</strong> <span class="t-small num">· 23:10 · 9 of 22 sets</span></span><button class="btn btn-train btn-sm" data-go="tr-active">Resume</button></div>`;
+
+  // ---------- 1C: Eat and Hiku ----------
+  // USDA FoodData Central, per 100 g (approximations): name, kcal, protein, carbs, fat. Example data only.
+  const FOOD = {
+    yogurt: ['Greek yogurt, plain, nonfat', 59, 10.2, 3.6, 0.4],
+    oats: ['Oats, rolled, dry', 379, 13.2, 67.7, 6.5],
+    banana: ['Banana, raw', 89, 1.1, 22.8, 0.3],
+    egg: ['Egg, whole, hard-boiled', 155, 12.6, 1.1, 10.6],
+    chicken: ['Chicken breast, roasted', 165, 31.0, 0, 3.6],
+    rice: ['White rice, cooked', 130, 2.7, 28.2, 0.3],
+    broccoli: ['Broccoli, steamed', 35, 2.4, 7.2, 0.4],
+    oil: ['Olive oil', 884, 0, 0, 100],
+    almonds: ['Almonds', 579, 21.2, 21.6, 49.9],
+    bread: ['Whole-wheat bread', 252, 12.5, 42.7, 3.5],
+  };
+  // One diary item. kcal is rounded per item, and a meal's kcal is the sum of its rounded items, so the arithmetic is always checkable.
+  const item = (id, g, src = 'usda') => { const f = FOOD[id]; return { id, g, src, name: f[0], kcal: Math.round(f[1] * g / 100), p: f[2] * g / 100, c: f[3] * g / 100, f: f[4] * g / 100 }; };
+  const sumOf = (items) => items.reduce((a, i) => ({ kcal: a.kcal + i.kcal, p: a.p + i.p, c: a.c + i.c, f: a.f + i.f }), { kcal: 0, p: 0, c: 0, f: 0 });
+  const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+  // The example day: Breakfast 520 + Lunch 680 + Snacks 220 = 1,420 kcal. Dinner is not logged.
+  const BASE = {
+    Breakfast: [item('oats', 55), item('yogurt', 150), item('banana', 120), item('almonds', 20)],
+    Lunch: [item('chicken', 130), item('rice', 120), item('bread', 70), item('oil', 15, 'hiku')],
+    Dinner: [],
+    Snacks: [item('yogurt', 140), item('almonds', 15), item('bread', 20)],
+  };
+  const hikuDinner = (oilG) => [item('chicken', 150, 'hiku'), item('rice', 200, 'hiku'), item('broccoli', 80, 'hiku'), item('oil', oilG, 'hiku')];
+  const mkDay = (meals) => ({ meals, ...sumOf(MEALS.flatMap(n => meals[n])) });
+  const DAYS = {
+    base: mkDay(BASE),
+    empty: mkDay({ Breakfast: [], Lunch: [], Dinner: [], Snacks: [] }),
+    deleted: mkDay({ ...BASE, Lunch: [] }),
+    hikusaved: mkDay({ ...BASE, Dinner: hikuDinner(10) }),
+    hikuedited: mkDay({ ...BASE, Dinner: hikuDinner(15) }),
+    // Over target by 180: a large dinner (1,073) plus two evening snacks (337), not one oversized meal.
+    over: mkDay({ ...BASE, Dinner: [item('chicken', 200), item('rice', 300), item('bread', 70), item('oil', 20)], Snacks: [...BASE.Snacks, item('almonds', 40), item('banana', 118)] }),
+  };
+  // "added" depends on the meal the owner picked in the prototype, so Today and Eat stay in step.
+  const dayFor = (k) => k === 'added' ? mkDay({ ...BASE, [state.meal]: [...BASE[state.meal], item('yogurt', 170)] }) : DAYS[k] || DAYS.base;
+  const dayOf = () => dayFor(state.day);
+  const MACRO_T = { protein: 155, carbs: 340, fat: 75 };
+  const srcChip = (s) => ({ usda: chip('measured', 'dot', 'USDA'), my: chip('phone', 'phone', 'My food'), hiku: chip('hiku', 'spark', 'Hiku estimate'), quick: chip('estimate', 'approx', 'Calories only') })[s];
+  const words = (pct) => pct < 0.4 ? 'just started' : pct < 0.9 ? 'partway to target' : 'near target';
+  const mealChip = () => `<button class="fchip" type="button" data-cycle-meal aria-label="Meal: ${state.meal}. Tap to change">Adding to ${state.meal}${ICON.down}</button>`;
+  const switchRow = (title, desc, on = false, cls = '') => `<div class="switch-row"><div class="grow stack" style="gap:2px"><strong style="font-size:15px">${title}</strong><span class="t-small">${desc}</span></div><button class="toggle ${cls}" type="button" role="switch" aria-checked="${on}" aria-label="${title}"><i></i></button></div>`;
+  // Original geometric plate: a plate circle with three rounded food shapes in coral, honey and teal tints. A drawing, not a photo.
+  const plate = (cls = '', shimmer = false) => `<div class="plate ${cls}" role="img" aria-label="Illustration of a plate with three foods. A drawing, not a photo.">
+      <svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="240" height="180" fill="var(--color-bg-raised)"/>
+        <circle cx="120" cy="92" r="74" fill="var(--color-bg-surface)" stroke="var(--color-border-strong)" stroke-width="2"/>
+        <circle cx="120" cy="92" r="58" fill="none" stroke="var(--color-border-subtle)" stroke-width="2"/>
+        <rect x="82" y="86" width="52" height="34" rx="17" transform="rotate(-20 108 103)" fill="var(--color-domain-train)" fill-opacity=".85"/>
+        <rect x="124" y="84" width="42" height="40" rx="16" fill="var(--color-domain-eat)" fill-opacity=".85"/>
+        <g fill="var(--color-domain-health)" fill-opacity=".9"><circle cx="100" cy="64" r="11"/><circle cx="118" cy="57" r="12"/><circle cx="136" cy="65" r="10"/><rect x="108" y="64" width="20" height="14" rx="7"/></g>
+      </svg>${shimmer ? '<div class="shim" aria-hidden="true"></div>' : ''}</div>`;
+
+  // EA-1 ------------------------------------------------------------------------------------------------------------
+  function eaHome(v) {
+    const first = v === 'first', noTarget = v === 'notarget', hidden = v === 'hidden';
+    const dk = { first: 'empty', over: 'over', added: 'added', deleted: 'deleted', hikusaved: 'hikusaved', hikuedited: 'hikuedited' }[v] || state.day;
+    const d = dayFor(dk), over = !noTarget && d.kcal > 2650;
+    const toast = { added: [`Greek yogurt added to ${state.meal}.`, 'rich'], deleted: ['Lunch deleted. 4 items, 680 kcal.', 'rich'], hikusaved: ['Dinner saved from Hiku, 624 kcal.', 'rich'], hikuedited: ['Dinner saved from Hiku, 669 kcal.', 'rich'] }[v];
+    const sub = first ? `<p class="orb-sub">Your first meal lights it up.</p>`
+      : noTarget ? `<p class="orb-sub">No target yet · <button class="link" type="button" data-go="ea-targets" data-variant="estimate">Set a target</button></p>`
+      : hidden ? `<p class="orb-sub">Numbers are hidden · <button class="link" type="button" data-go="ea-home" data-variant="rich">Show numbers</button></p>`
+      : `<p class="orb-sub"><b class="num">${fmt(d.kcal)}</b> eaten of <b class="num">2,650</b> ${chip('estimate', 'approx', 'Estimate')}</p>${over ? `<p class="orb-sub"><span class="honey num">+${fmt(d.kcal - 2650)} kcal over</span> <span>· one day doesn't change your week</span></p>` : ''}`;
+    const training = `<div class="row wrap" style="justify-content:center;gap:8px">${chip('phone', 'train', 'Training day · Upper A')}<span class="t-small">Context only. Training doesn't change your target.</span></div>`;
+    const rows = [['protein', 'Protein', d.p], ['carbs', 'Carbs', d.c], ['fat', 'Fat', d.f]];
+    const macros = first ? `<p class="t-small" style="text-align:center">Protein, carbs and fat appear after your first meal.</p>`
+      : noTarget ? `<div class="orb-macros" aria-label="Protein ${Math.round(d.p)} grams, carbs ${Math.round(d.c)}, fat ${Math.round(d.f)}">${rows.map(([k, l, g]) => `<span><i style="background:var(--color-macro-${k})"></i><b class="num">${Math.round(g)}</b><span class="num">g ${l[0]}</span></span>`).join('')}</div>`
+      : `<section class="card"><div class="stack" style="gap:8px">${rows.map(([k, l, g]) => { const pct = g / MACRO_T[k]; return `<div class="macro"><b>${l}</b><div class="bar" role="img" aria-label="${hidden ? `${l}: ${words(pct)}` : `${l}: ${Math.round(g)} of ${MACRO_T[k]} grams`}"><i style="width:${Math.min(pct, 1) * 100}%;background:var(--color-macro-${k})"></i></div><span class="num">${hidden ? '' : `${Math.round(g)} / ${MACRO_T[k]} g`}</span></div>`; }).join('')}</div></section>`;
+    const mealCard = (name) => {
+      const items = d.meals[name], t = sumOf(items);
+      const subl = items.length ? (hidden ? `<span class="t-small">${items.length} item${items.length > 1 ? 's' : ''}</span>` : `<span class="mtot num">${fmt(t.kcal)} kcal</span>`) : `<span class="t-small">Not logged yet</span>`;
+      return `<section class="card rim-eat"><div class="card-head"><div class="stack" style="gap:0"><h2 class="t-head">${name}</h2>${subl}</div><button class="btn btn-secondary btn-sm" type="button" data-go="ea-add" data-meal="${name}" aria-label="Add food to ${name}">${ICON.plus}Add</button></div>
+        ${items.length ? `<div class="list">${items.map(i => `<button class="rowlink mi" type="button" data-go="ea-meal" data-variant="view"><span class="grow"><strong>${i.name}</strong><span class="row wrap" style="gap:6px"><span class="t-small num">${i.g} g</span>${i.src === 'hiku' ? srcChip('hiku') : ''}</span></span>${hidden ? '' : `<span class="k num">${i.kcal}</span>`}</button>`).join('')}</div>` : ''}</section>`;
+    };
+    return `${statusbar(false)}${hdr('Eat', { root: true, right: `<button class="iconbtn" data-go="qa-sheet" aria-label="Quick add">${ICON.plus}</button>` })}
+      <div class="scroll"><div class="page screen-anim">
+        <div class="datesw"><button class="iconbtn bare" data-go="ea-history" data-variant="week" aria-label="Earlier days, open the week view">${ICON.back}</button><strong>Today<span class="t-small num">Tue 21 Oct</span></strong><button class="iconbtn bare" aria-disabled="true" aria-label="Next day, not available. This is today">${ICON.chevron}</button></div>
+        ${orb(first ? 'first' : noTarget ? 'notarget' : 'rich', { sm: true, eaten: d.kcal, hidden })}${sub}${training}${macros}
+        ${MEALS.map(mealCard).join('')}
+        <section class="card"><div class="list">
+          <button class="rowlink" type="button" data-go="ea-history" data-variant="week"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.progress}</span><span class="grow"><strong>History and trends</strong><span class="t-small">Week view, averages</span></span>${ICON.chevron}</button>
+          <button class="rowlink" type="button" data-go="ea-targets" data-variant="estimate"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.list}</span><span class="grow"><strong>Targets</strong><span class="t-small">${noTarget ? 'Not set' : '2,650 kcal · Estimate'}</span></span>${ICON.chevron}</button>
+        </div></section>
+      </div></div>${toast ? `<div class="snackbar" role="status">${toast[0]}<button class="btn btn-sm" data-go="ea-home" data-variant="${toast[1]}" data-day="base">Undo</button></div>` : ''}`;
+  }
+
+  // EA-2 ------------------------------------------------------------------------------------------------------------
+  function eaAdd(v) {
+    const offline = v === 'offline', search = v === 'search', none = v === 'noresults', added = v === 'added';
+    const q = search ? 'greek yog' : none ? 'shawarma wrap' : '';
+    const field = `<button class="search" type="button" data-go="ea-add" data-variant="search" aria-label="Search the food pack">${ICON.search}${q ? `<b>${q}</b>` : 'Search the food pack'}</button>`;
+    const hk = (icon, label, variant) => offline ? `<button class="btn btn-hiku" type="button" aria-disabled="true">${icon}${label}</button>` : `<button class="btn btn-hiku" type="button" data-go="hk-send" data-variant="${variant}">${icon}${label}</button>`;
+    const row = (name, line, chips, label) => `<div class="foodrow"><button class="rowlink" type="button" data-go="ea-portion"><span class="grow"><strong>${name}</strong><span class="row wrap" style="gap:6px"><span class="t-small num">${line}</span>${chips}</span></span></button><button class="iconbtn" type="button" data-go="ea-add" data-variant="added" data-day="added" aria-label="Add ${label} to ${state.meal}">${ICON.plus}</button></div>`;
+    const recents = [row(FOOD.yogurt[0], '170 g · 100 kcal', srcChip('usda'), '170 g of ' + FOOD.yogurt[0]), row(FOOD.chicken[0], '150 g · 248 kcal', srcChip('usda'), '150 g of ' + FOOD.chicken[0]), row(FOOD.rice[0], '200 g · 260 kcal', srcChip('usda'), '200 g of ' + FOOD.rice[0]), row(FOOD.banana[0], '120 g · 107 kcal', srcChip('usda'), '120 g of ' + FOOD.banana[0]),
+      row('Protein shake', '1 scoop, 30 g · 120 kcal', srcChip('my'), '1 scoop of Protein shake'), row('Chicken and rice bowl', '1 serving · 560 kcal', srcChip('hiku'), '1 serving of Chicken and rice bowl'), row('Dinner out', '650 kcal', srcChip('quick'), 'Dinner out, 650 kcal')];
+    const results = [[FOOD.yogurt[0], 59], ['Greek yogurt, plain, low-fat', 73], ['Greek yogurt, plain, whole milk', 97], ['Greek yogurt, vanilla, nonfat', 80]].map(([n, k]) => row(n, `Per 100 g · ${k} kcal`, srcChip('usda'), '100 g of ' + n));
+    let body;
+    if (none) body = `<section class="card flat" style="justify-items:center;text-align:center;padding:24px 18px"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.search}</span><strong>Not in the food pack</strong><span class="t-small">“shawarma wrap” has no match in the bundled USDA foods. You can still log it.</span>
+        <button class="btn btn-secondary btn-block" type="button" data-go="ea-food" data-variant="empty">Create a food</button><button class="btn btn-secondary btn-block" type="button" data-go="ea-food" data-variant="quick">Quick add calories</button>${hk(ICON.hiku, 'Describe it to Hiku', 'text').replace('btn-hiku', 'btn-hiku btn-block')}</section>`;
+    else if (search) body = `<div class="t-small">4 results · USDA food pack, works offline</div><section class="card"><div class="list">${results.join('')}</div></section>`;
+    else body = `<section class="card"><div class="list">${recents.join('')}</div></section>
+        <div class="two"><button class="btn btn-secondary" type="button" data-go="ea-food" data-variant="quick">Quick add calories</button><button class="btn btn-secondary" type="button" data-go="ea-food" data-variant="empty">Create a food</button></div>`;
+    return `${statusbar(offline)}${hdr('Add food', { to: 'ea-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Search and logging work. Hiku needs internet.</span></div>` : ''}
+        ${mealChip()}${field}
+        <div class="two">${hk(ICON.camera, 'Photo', 'photo')}${hk(ICON.describe, 'Describe', 'text')}</div>
+        ${offline ? `<p class="t-small" style="text-align:center">Needs internet</p>` : ''}
+        ${none || search ? '' : `<div class="chips" role="group" aria-label="Lists">${['Recents', 'Favorites', 'My foods'].map((t, i) => `<button class="fchip" type="button" aria-pressed="${i === 0}" data-go="ea-add" data-variant="recents">${t}</button>`).join('')}</div>`}
+        ${body}
+      </div></div>${added ? `<div class="snackbar" role="status">Greek yogurt, 170 g added to ${state.meal}.<button class="btn btn-sm" data-go="ea-add" data-variant="recents" data-day="base">Undo</button></div>` : ''}`;
+  }
+
+  // EA-3 ------------------------------------------------------------------------------------------------------------
+  function eaPortion(v) {
+    const large = v === 'large', f = item('yogurt', 170);
+    const units = [['g', '170', 'g'], ['cup', '0.7', 'cup'], ['piece', '1', 'piece'], ['serving', '1', 'serving']];
+    return `${statusbar(false)}${hdr('Add food', { to: 'ea-add' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${large ? 280 : 190}px">
+        <div class="stack" style="gap:8px"><h1 class="t-title">${f.name}</h1><div>${chip('measured', 'dot', 'USDA FoodData Central')}</div></div>
+        <div class="unitseg" role="radiogroup" aria-label="Unit">${units.map(([u, a, l], i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-unit="${a}|${l}">${u}</button>`).join('')}</div>
+        <div class="stepper u-low" role="group" aria-label="Amount"><button aria-label="Less, 10 grams">−</button><output aria-live="polite"><b id="amt">170</b><span id="amt-u">g</span></output><button aria-label="More, 10 grams">+</button></div>
+        <p class="t-small" style="text-align:center">Tap the number to type an amount. Stored in grams: <span class="num">170 g</span>.</p>
+        <section class="card rim-eat"><div class="card-head"><span class="t-label">This portion</span>${chip('measured', 'dot', 'USDA')}</div>
+          <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:44px">${f.kcal}</span><span class="t-small">kcal</span></div>
+          <div class="res-macros" aria-label="Protein ${f.p.toFixed(1)} grams, carbs ${f.c.toFixed(1)}, fat ${f.f.toFixed(1)}">${[['protein', 'P', f.p], ['carbs', 'C', f.c], ['fat', 'F', f.f]].map(([k, l, g]) => `<span><i style="background:var(--color-macro-${k})"></i>${l} <b>${g.toFixed(1)} g</b></span>`).join('')}</div>
+          <span class="t-small">Per 100 g: ${FOOD.yogurt[1]} kcal</span></section>
+        <div>${mealChip()}</div>
+      </div></div>
+      <div class="dock"><button class="btn btn-primary btn-xl btn-block" data-go="ea-home" data-variant="added">Add to ${state.meal}</button></div>`;
+  }
+
+  // EA-4 ------------------------------------------------------------------------------------------------------------
+  function eaMeal(v) {
+    const edit = v === 'edit', del = v === 'delete';
+    const items = BASE.Lunch.map((i, n) => edit && n === 0 ? item('chicken', 140) : i), t = sumOf(items), t0 = sumOf(BASE.Lunch);
+    const row = (i, n) => {
+      if (edit && n === 0) return `<div class="ritem open"><span class="nm"><strong>${i.name}</strong><span class="t-small num">130 g before</span></span><span class="kc"><b>${i.kcal}</b><span class="t-small">kcal</span></span>
+          <div class="ed"><div class="stepper u-low" role="group" aria-label="Amount of ${i.name}"><button aria-label="Less, 10 grams">−</button><output aria-live="polite"><b>${i.g}</b><span>g</span></output><button aria-label="More, 10 grams">+</button></div>
+          <div class="row"><button class="btn btn-text-danger" type="button">${ICON.trash}Remove item</button><button class="btn btn-primary grow" type="button" data-go="ea-meal" data-variant="view">Done</button></div></div></div>`;
+      return `<button class="ritem" type="button" data-go="ea-meal" data-variant="edit" aria-label="${i.name}, ${i.g} grams, ${i.kcal} kilocalories. Edit portion"><span class="nm"><strong>${i.name}</strong><span class="row wrap" style="gap:6px"><span class="t-small num">${i.g} g</span>${srcChip(i.src)}</span></span><span class="kc"><b>${i.kcal}</b><span class="t-small">kcal</span></span></button>`;
+    };
+    return `${statusbar(false)}${hdr('Lunch', { to: 'ea-home', sub: 'Tue 21 Oct · 4 items' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-eat"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:40px">${fmt(t.kcal)}</span><span class="t-small">kcal${edit ? ` · was ${fmt(t0.kcal)}` : ''}</span></div>
+          <div class="stats"><div class="stat"><b>${Math.round(t.p)} g</b><span>protein</span></div><div class="stat"><b>${Math.round(t.c)} g</b><span>carbs</span></div><div class="stat"><b>${Math.round(t.f)} g</b><span>fat</span></div></div></section>
+        <section class="card"><div class="list">${items.map(row).join('')}</div></section>
+        <button class="addrow" type="button" data-go="ea-add" data-meal="Lunch">${ICON.plus}Add item</button>
+        <button class="btn btn-secondary btn-block" type="button">Move to another meal</button>
+        <button class="btn btn-text-danger" type="button" style="justify-self:start" data-go="ea-meal" data-variant="delete">${ICON.trash}Delete meal</button>
+      </div></div>
+      ${del ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Delete lunch?</h2><p class="t-body">4 items, 680 kcal. You can undo for 8 s.</p><button class="btn btn-primary btn-block" data-go="ea-meal" data-variant="view">Keep</button><button class="btn btn-text-danger btn-block" data-go="ea-home" data-variant="deleted">Delete</button>`) : ''}`;
+  }
+
+  // EA-5 ------------------------------------------------------------------------------------------------------------
+  function eaFood(v) {
+    const empty = v === 'empty', bad = v === 'invalid', quick = v === 'quick';
+    const fld = (id, label, val, ph, unit) => `<div class="field"><label for="${id}">${label}</label>${unit ? `<div class="unit-input"><input id="${id}" inputmode="decimal" value="${val}" placeholder="${ph}"><span>${unit}</span></div>` : `<input id="${id}" value="${val}" placeholder="${ph}">`}</div>`;
+    if (quick) return `${statusbar(false)}${hdr('Quick add calories', { to: 'ea-add' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:150px">
+        <p class="t-body">For when you know the calories but not the food. It counts toward your calories, not toward protein, carbs or fat.</p>
+        ${fld('q-name', 'Name (optional)', 'Dinner out', 'For example, Dinner out')}${fld('q-kcal', 'Calories', '650', 'kcal', 'kcal')}
+        <div class="row wrap" style="gap:8px">${mealChip()}${srcChip('quick')}</div>
+      </div></div><div class="dock"><button class="btn btn-primary btn-xl btn-block" data-go="ea-home" data-variant="added">Add to ${state.meal}</button></div>`;
+    const val = (a, b) => (empty ? '' : bad ? a : b);
+    return `${statusbar(false)}${hdr('Create a food', { to: 'ea-add' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:170px">
+        ${fld('c-name', 'Name', val('Protein bar', ''), 'For example, Protein bar')}${fld('c-brand', 'Brand (optional)', '', '')}
+        ${fld('c-serv', 'Serving size', val('60', ''), '', 'g')}${fld('c-kcal', 'Calories per serving', val('150', ''), '', 'kcal')}
+        <div class="trio">${fld('c-p', 'Protein', val('20', ''), '', 'g')}${fld('c-c', 'Carbs', val('20', ''), '', 'g')}${fld('c-f', 'Fat', val('11', ''), '', 'g')}</div>
+        ${bad ? `<p class="hint">${ICON.warn}<span>Calories and macros don't match (macros add up to ~260 kcal). Check the label.</span></p>` : ''}
+        ${empty ? `<p class="hint">${ICON.warn}<span>Add a name to save.</span></p>` : ''}
+        <p class="t-small">Saved on this phone, as “My food”. It shows up in search and recents.</p>
+      </div></div>
+      <div class="dock">${bad ? `<button class="btn btn-primary btn-xl btn-block" data-go="ea-portion">Save anyway</button><button class="btn btn-ghost btn-block" data-go="ea-food" data-variant="empty">Fix the numbers</button>` : `<button class="btn btn-primary btn-xl btn-block" ${empty ? 'aria-disabled="true"' : 'data-go="ea-portion"'}>Save food</button>`}</div>`;
+  }
+
+  // EA-6 ------------------------------------------------------------------------------------------------------------
+  function eaTargets(v) {
+    const est = v === 'estimate', floor = v === 'floor', deficit = v === 'deficit';
+    const kcal = est ? '2,650' : floor ? '1,100' : deficit ? '1,900' : '2,400';
+    const split = est ? [['protein', 'Protein', 23, 155], ['carbs', 'Carbs', 51, 340], ['fat', 'Fat', 25, 75]] : [['protein', 'Protein', 25, 150], ['carbs', 'Carbs', 50, 300], ['fat', 'Fat', 25, 67]];
+    const head = est ? chip('estimate', 'approx', 'Estimate') : chip('phone', 'edit', 'Your target');
+    let sh = '';
+    if (floor) sh = sheet(`<span class="sheet-tile" style="background:var(--color-tint-warning);color:var(--color-status-warning)">${ICON.warn}</span><h2>That's below 1,200 kcal a day</h2>
+        <p class="t-body">Eating this little is hard to keep up, and it makes it harder to get enough protein and other nutrients. Liftria can't know your situation, so it suggests at least 1,200.</p>
+        <button class="btn btn-primary btn-block" data-go="ea-targets" data-variant="manual">Use 1,200</button>
+        <button class="tick-row" type="button" role="checkbox" aria-checked="false" data-tick="#keep-btn"><span class="tick"></span><span>I'm doing this with professional guidance</span></button>
+        <button class="btn btn-secondary btn-block" id="keep-btn" type="button" aria-disabled="true">Keep 1,100</button>`);
+    if (deficit) sh = sheet(`<span class="sheet-tile" style="background:var(--color-tint-warning);color:var(--color-status-warning)">${ICON.warn}</span><h2>That's a deficit of about 28%</h2>
+        <p class="t-body">Your estimated need is 2,650 kcal. A gap bigger than 25% below it is hard to keep up and can cost muscle. A gentler 25% would be 1,990.</p>
+        <button class="btn btn-primary btn-block" data-go="ea-targets" data-variant="manual">Use 1,990</button>
+        <button class="tick-row" type="button" role="checkbox" aria-checked="false" data-tick="#keep-btn"><span class="tick"></span><span>I'm doing this with professional guidance</span></button>
+        <button class="btn btn-secondary btn-block" id="keep-btn" type="button" aria-disabled="true">Keep 1,900</button>`);
+    return `${statusbar(false)}${hdr('Targets', { to: 'ea-home' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:130px">
+        <section class="card rim-eat"><div class="card-head"><span class="t-label">Daily calories</span>${head}</div>
+          <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:52px">${kcal}</span><span class="t-small">kcal / day</span></div>
+          ${est ? `<details><summary class="link" style="display:flex;align-items:center">How this is calculated</summary><p class="t-small" style="padding-bottom:8px">Mifflin-St Jeor from your profile (about 1,740 kcal at rest) × 1.375 for “On my feet some”, plus 10% to build muscle, rounded to 50 kcal. Training and watch data don't change it, because Liftria has no measured energy source yet.</p></details>
+          <button class="btn btn-secondary btn-block" type="button" data-go="ea-targets" data-variant="manual">Set my own numbers</button>`
+            : `<div class="stepper" role="group" aria-label="Daily calories"><button aria-label="Lower, 50 kilocalories">−</button><output aria-live="polite"><b>${kcal}</b><span>kcal</span></output><button aria-label="Higher, 50 kilocalories">+</button></div>
+          <button class="link" type="button" data-go="ea-targets" data-variant="estimate" style="justify-self:start">Go back to the estimate</button>`}</section>
+        <section class="card"><h2 class="t-head">Macro split</h2>
+          ${split.map(([k, l, p, g]) => `<div class="macrorow"><b style="font-size:14px">${l}</b><span class="t-small num">${g} g</span><span class="pct">${p}%</span><span class="row" style="gap:0"><button class="iconbtn bare" aria-label="${l}, 1 percent less">−</button><button class="iconbtn bare" aria-label="${l}, 1 percent more">+</button></span></div>`).join('')}
+          <span class="t-small">${est ? 'Percentages are rounded. Grams come from the calorie target.' : 'Adjust the percentages; grams follow the calories.'}</span></section>
+        <section class="card"><div class="list">${switchRow('Hide numbers', 'Shows words such as “On track” instead of calorie and macro numbers on Today, Eat and History. This screen always shows numbers.', false, 'eat')}</div></section>
+        ${est ? '' : `<p class="t-small">Liftria never changes your target by itself, and never adds calories for workouts.</p>`}
+      </div></div>
+      ${est ? '' : `<div class="dock"><button class="btn btn-primary btn-xl btn-block" data-go="ea-home" data-variant="rich">Save target</button></div>`}${sh}`;
+  }
+
+  // EA-7 ------------------------------------------------------------------------------------------------------------
+  function eaHistory(v) {
+    if (v === 'empty') return `${statusbar(false)}${hdr('History and trends', { to: 'ea-home' })}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.progress}</span><h1 class="t-title">Log a few days to see trends</h1><p class="t-body" style="max-width:260px">Weekly averages show up here after you log some meals. Days you skip stay blank, never zero.</p><button class="btn btn-primary" data-go="ea-add">Log a meal</button></div>`;
+    // Last 7 days, Tue 14 to Mon 20 Oct. null = nothing logged that day.
+    const days = [['Tue', 14, 2540, 128], ['Wed', 15, 2310, 119], ['Thu', 16, null], ['Fri', 17, 1980, 104], ['Sat', 18, 2430, 131], ['Sun', 19, null], ['Mon', 20, 1790, 118]];
+    const logged = days.filter(d => d[2] != null), avg = logged.reduce((a, d) => a + d[2], 0) / logged.length, pAvg = logged.reduce((a, d) => a + d[3], 0) / logged.length;
+    const W = 320, H = 190, base = 150, top = 14, y = (k) => base - k / 3000 * (base - top), bw = 30, x = (i) => 36 + i * 40;
+    const alt = `Calories per day, 14 to 20 October, against a target of 2,650: ${days.map(d => `${d[0]} ${d[1]}, ${d[2] == null ? 'not logged' : fmt(d[2]) + ' kilocalories'}`).join('; ')}.`;
+    const chart = `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+        <line class="grid" x1="30" x2="${W - 6}" y1="${base}" y2="${base}"/>
+        <line class="tline" x1="30" x2="${W - 6}" y1="${y(2650)}" y2="${y(2650)}"/><text class="tl-lbl" x="${W - 6}" y="${y(2650) - 5}">Target 2,650</text>
+        ${days.map((d, i) => d[2] == null
+          ? `<rect class="bar-none" x="${x(i)}" y="${base - 34}" width="${bw}" height="34" rx="6"/><text class="dash-lbl" x="${x(i) + bw / 2}" y="${base - 12}">—</text>`
+          : `<rect class="bar-eat" x="${x(i)}" y="${y(d[2])}" width="${bw}" height="${base - y(d[2])}" rx="6"/>`).join('')}
+        ${days.map((d, i) => `<text class="day-lbl" x="${x(i) + bw / 2}" y="${base + 18}">${d[0]}</text><text class="day-lbl" x="${x(i) + bw / 2}" y="${base + 33}">${d[1]}</text>`).join('')}</svg></div>`;
+    return `${statusbar(false)}${hdr('History and trends', { to: 'ea-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-eat"><div class="card-head"><div class="stack" style="gap:0"><span class="t-label">Last 7 days</span><span class="t-small num">Tue 14 – Mon 20 Oct</span></div>${chip('estimate', 'approx', 'Estimate')}</div>
+          <div class="stack" style="gap:2px"><span class="t-metric" style="font-size:32px">avg ${fmt(avg)} kcal</span><span class="t-small">${logged.length} of 7 days logged. Days with nothing logged are left out, not counted as zero.</span></div>
+          ${chart}<span class="t-small">Target line: 2,650 kcal (Estimate). Protein averages ${Math.round(pAvg)} g on logged days, against a 155 g target.</span></section>
+        <section class="card"><div class="list">${days.map(d => `<button class="rowlink" type="button" data-go="ea-home" data-variant="rich" aria-label="${d[0]} ${d[1]} October, ${d[2] == null ? 'not logged' : fmt(d[2]) + ' kilocalories'}. Open that day"><span class="grow"><strong>${d[0]} ${d[1]} Oct</strong><span class="t-small num">${d[2] == null ? 'Not logged' : `${fmt(d[2])} kcal · protein ${d[3]} g`}</span></span>${ICON.chevron}</button>`).join('')}</div></section>
+      </div></div>`;
+  }
+
+  // QA-1 ------------------------------------------------------------------------------------------------------------
+  function qaSheet(v) {
+    const from = state.qaFrom === 'ea-home' ? 'ea-home' : 'home';
+    const bg = (from === 'ea-home' ? eaHome(vOf('ea-home')) : today(vOf('home'))) + nav(from);
+    const off = v === 'offline' ? 'Needs internet' : v === 'nokey' ? 'Add your API key first' : '';
+    const rows = [['eat', 'eat', 'Log a meal', 'Search foods, or quick add calories', 'ea-add', '', ''], ['camera', 'hiku', 'Photo a meal', 'Hiku estimates, you check', 'hk-send', 'photo', off], ['describe', 'hiku', 'Describe a meal', 'Type it, Hiku estimates', 'hk-send', 'text', off],
+      ['train', 'train', 'Start workout', 'Upper A, about 55 min', 'tr-preview', '', ''], ['scale', 'health', 'Log weight', 'Coming in Progress (1D)', '', '', 'Coming in Progress (1D)']];
+    return bg + sheet(`<h2>Quick add</h2><div class="list">${rows.map(([i, c, l, h, to, vv, dis]) => `<button class="rowlink qa-row" type="button" ${dis ? 'aria-disabled="true"' : `data-go="${to}" ${vv ? `data-variant="${vv}"` : ''} ${to === 'ea-add' ? 'data-meal="Dinner"' : ''}`}><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${ICON[i]}</span><span class="grow"><strong>${l}</strong><span class="t-small">${dis || h}</span></span></button>`).join('')}</div><button class="btn btn-ghost btn-block" data-go="${from}">Close</button>`, from);
+  }
+
+  // HK-1 ------------------------------------------------------------------------------------------------------------
+  function hkHome(v) {
+    const noKey = v === 'nokey', offline = v === 'offline', first = v === 'first';
+    const two = (dis) => `<div class="two">${dis ? `<button class="btn btn-hiku" type="button" aria-disabled="true">${ICON.camera}Photo</button><button class="btn btn-hiku" type="button" aria-disabled="true">${ICON.describe}Describe</button>` : `<button class="btn btn-hiku" type="button" data-go="hk-send" data-variant="photo">${ICON.camera}Photo</button><button class="btn btn-hiku" type="button" data-go="hk-send" data-variant="text">${ICON.describe}Describe</button>`}</div>`;
+    let hero;
+    if (noKey) hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Add your key to start</span><p class="t-small">Hiku turns a photo or a description of a meal into calories and macros you can edit. It uses Anthropic's Claude with your own API key. Logging meals by hand works without it.</p><button class="btn btn-hiku" type="button" data-go="tab-settings">Add API key</button><button class="btn btn-secondary" type="button" data-go="ea-add" data-meal="Dinner">Log a meal manually</button></section>`;
+    else if (offline) hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Estimate a meal</span><p class="t-small">Hiku needs internet. Log manually meanwhile.</p>${two(true)}<button class="btn btn-secondary" type="button" data-go="ea-add" data-meal="Dinner">Log manually</button></section>`;
+    else hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Estimate a meal</span><p class="t-small">Send a photo or describe it. Hiku proposes numbers; you check them before anything is saved.</p>${two(false)}<div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Pending')}<span class="t-small">Still being tested on your phone.</span></div></section>`;
+    const how = `<section class="card"><h2 class="t-head">How Hiku works</h2><div class="stack" style="gap:12px">${[['Send', 'A photo or a description, only when you tap Send.'], ['Check', 'Every item is editable. Hiku can be wrong about amounts.'], ['Save', 'Nothing is saved until you confirm.']].map(([t, d], i) => `<div class="check"><span class="tick num" style="background:var(--color-bg-raised);border:1px solid var(--color-border-strong);font-size:12px;font-weight:700">${i + 1}</span><div class="stack" style="gap:2px"><strong>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}</div></section>`;
+    const recent = `<div class="section-h"><h2>Recent</h2></div><section class="card"><div class="list">${[['Dinner', 'Mon 20 Oct', '612 kcal', chip('phone', 'phone', 'Saved')], ['Lunch', 'Sat 18 Oct', '540 kcal · edited', chip('phone', 'phone', 'Saved')], ['Snack', 'Fri 17 Oct', '180 kcal', chip('off', 'off', 'Discarded')]].map(([m, d, k, c]) => `<div class="list-item"><span class="grow stack" style="gap:0"><strong style="font-size:15px">${m} <span class="t-small" style="font-weight:500">· ${d}</span></strong><span class="t-small num">${k}</span></span>${c}</div>`).join('')}</div></section>`;
+    return `${statusbar(offline)}${hdr('Hiku', { root: true, right: `<button class="btn btn-ghost btn-sm" data-go="hk-usage">Usage</button>` })}
+      <div class="scroll"><div class="page screen-anim">
+        ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Everything in Liftria works except Hiku.</span></div>` : ''}
+        ${hero}${first ? how : noKey ? '' : recent}
+        <section class="card flat"><div class="card-head"><h2 class="t-head">Chat</h2>${chip('pending', 'clock', 'Pending')}</div><p class="t-small">Coming later. Asking Hiku about your training and food needs more testing before it becomes a feature.</p></section>
+        ${noKey ? '' : `<button class="rowlink" type="button" data-go="hk-usage"><span class="grow"><strong>This month ≈ $0.42 · 61 requests</strong><span class="t-small">Cost and what is sent</span></span>${chip('estimate', 'approx', 'Estimate')}${ICON.chevron}</button>`}
+      </div></div>`;
+  }
+
+  // HK-2 ------------------------------------------------------------------------------------------------------------
+  function hkSend(v) {
+    const text = v === 'text', sample = '2 eggs, 2 slices of toast with butter, a coffee with milk';
+    const input = text
+      ? `<div class="field"><label for="h-text">Describe your meal</label><textarea id="h-text" rows="3">${sample}</textarea></div>`
+      : `${plate()}<div class="two"><button class="btn btn-secondary" type="button">Retake</button><button class="btn btn-secondary" type="button">Choose another</button></div><p class="t-small" style="text-align:center">Example photo (a drawing).</p>
+         <div class="field"><label for="h-note">Note (optional)</label><input id="h-note" placeholder="e.g. cooked in a little olive oil"></div>`;
+    const panel = `<section class="card rim-hiku"><h2 class="t-head">What's sent</h2><div class="list">
+        <div class="switch-row"><span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${text ? ICON.describe : ICON.camera}</span><div class="grow stack" style="gap:2px"><strong style="font-size:15px">${text ? 'Your description' : 'This photo and note'}</strong><span class="t-small">${text ? `${sample.length} characters` : 'Resized on this phone first'} · always sent</span></div></div>
+        ${switchRow("Today's totals", 'adds: 1,420 kcal eaten, 2,650 target')}${switchRow('Training day', 'adds: today is Upper A')}</div>
+        <div class="row wrap" style="gap:8px"><span class="t-small">Estimated cost ≈ <b class="num" style="color:var(--color-text-primary)">${text ? '$0.002' : '$0.007'}</b></span>${chip('estimate', 'approx', 'Estimate')}</div>
+        <p class="t-small">Sent to Anthropic's Claude API with your key, only when you tap Send. Not stored by Liftria anywhere but this phone.</p></section>`;
+    return `${statusbar(false)}${hdr('Before sending', { to: 'hk-home', sub: `Dinner · ${text ? 'description' : 'photo'}` })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:130px">${input}${panel}</div></div>
+      <div class="dock"><button class="btn btn-hiku btn-xl btn-block" data-go="hk-analyze" data-variant="working">${ICON.hiku}Send to Hiku</button></div>`;
+  }
+
+  // HK-3 ------------------------------------------------------------------------------------------------------------
+  function hkAnalyze(v) {
+    const slow = v === 'slow', text = vOf('hk-send') === 'text';
+    return `${statusbar(false)}${hdr('Hiku', { root: true, sub: 'Estimating your meal' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:130px">
+        ${text ? `<section class="card rim-hiku"><span class="t-label">Your description</span><p class="t-body">2 eggs, 2 slices of toast with butter, a coffee with milk</p><div class="bar" aria-hidden="true"><i style="width:40%;background:var(--color-domain-hiku)"></i></div></section>` : plate('', true)}
+        <div class="stack" style="text-align:center;justify-items:center"><h2 class="t-title" role="status">${slow ? 'Still working…' : 'Hiku is looking…'}</h2><p class="t-body">${slow ? 'This can take up to 45 s.' : 'Working out the items and amounts.'}</p></div>
+        <p class="t-small" style="text-align:center">Prototype: moves on by itself after a moment.</p>
+      </div></div>
+      <div class="dock"><button class="btn btn-secondary btn-xl btn-block" data-go="hk-send" data-variant="${text ? 'text' : 'photo'}">Cancel</button><p class="t-small" style="text-align:center">Cancel stops the request. It may still be billed.</p></div>`;
+  }
+
+  // HK-4 ------------------------------------------------------------------------------------------------------------
+  function hkResult(v) {
+    const editing = v === 'editing', edited = v === 'edited', large = v === 'large', disc = v === 'discard';
+    const oilG = editing || edited || disc ? 15 : 10, its = hikuDinner(oilG), t = sumOf(its), t0 = sumOf(hikuDinner(10));
+    const conf = ['Sure', 'Sure', 'Sure', 'Check amount'];
+    const cw = (c) => c === 'Sure' ? `<span class="t-small">Sure</span>` : chip('stale', 'warn', c);
+    const row = (i, n) => {
+      if (editing && n === 3) return `<div class="ritem open"><span class="nm"><strong>${i.name}</strong><span class="t-small num">Hiku said 10 g</span></span><span class="kc"><b>${i.kcal}</b>${cw(conf[n])}</span>
+          <div class="ed"><div class="stepper u-low" role="group" aria-label="Amount of ${i.name}"><button aria-label="Less, 1 gram">−</button><output aria-live="polite"><b>${i.g}</b><span>g</span></output><button aria-label="More, 1 gram">+</button></div>
+          <div class="row"><button class="btn btn-text-danger" type="button">${ICON.trash}Remove item</button><button class="btn btn-primary grow" type="button" data-go="hk-result" data-variant="edited">Done</button></div></div></div>`;
+      return `<button class="ritem" type="button" data-go="hk-result" data-variant="editing" aria-label="${i.name}, ${i.g} grams, ${i.kcal} kilocalories, ${conf[n] === 'Sure' ? 'Hiku is sure' : 'check the amount'}. Edit"><span class="nm"><strong>${i.name}</strong><span class="t-small num">${i.g} g${edited && n === 3 ? ' · edited' : ''}</span></span><span class="kc"><b>${i.kcal}</b>${cw(conf[n])}</span></button>`;
+    };
+    const before = DAYS.base.kcal, after = before + t.kcal;
+    const save = oilG === 15 ? 'hikuedited' : 'hikusaved', changed = editing || edited || disc;
+    const dockHtml = `<div class="dock"><button class="btn btn-primary btn-xl btn-block" data-go="ea-home" data-variant="${save}">Save to Dinner</button><button class="btn btn-ghost btn-block" data-go="${changed ? 'hk-result' : 'hk-home'}" ${changed ? 'data-variant="discard"' : ''}>Discard</button></div>`;
+    return `${statusbar(false)}${hdr('Dinner · Hiku estimate', { to: 'hk-send' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${large ? 320 : 220}px">
+        <div class="row wrap" style="gap:8px">${chip('estimate', 'approx', 'Estimate')}${srcChip('hiku')}<span class="t-small"><strong style="color:var(--color-text-primary)">Check before saving.</strong> Hiku can be wrong about amounts.</span></div>
+        <section class="card rim-hiku"><div class="list">${its.map(row).join('')}</div>
+          <div class="tot"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:40px">${t.kcal}</span><span class="t-small">kcal total${changed ? ` · Hiku said ${t0.kcal}` : ''}</span></div>
+          <div class="res-macros" aria-label="Protein ${Math.round(t.p)} grams, carbs ${Math.round(t.c)}, fat ${Math.round(t.f)}">${[['protein', 'P', t.p], ['carbs', 'C', t.c], ['fat', 'F', t.f]].map(([k, l, g]) => `<span><i style="background:var(--color-macro-${k})"></i>${l} <b>${Math.round(g)} g</b></span>`).join('')}</div></div></section>
+        <button class="addrow" type="button">${ICON.plus}Add item</button>
+        <section class="card flat"><div class="stack" style="gap:6px"><span class="t-small">After saving · Today <b class="num" style="color:var(--color-text-primary)">${fmt(after)}</b> of 2,650 kcal</span>
+            <div class="bar two" role="img" aria-label="Today after saving: ${fmt(before)} eaten plus ${t.kcal} from this meal, of 2,650"><i style="width:${before / 2650 * 100}%;background:var(--color-domain-eat)"></i><i style="width:${t.kcal / 2650 * 100}%;background:var(--color-domain-hiku)"></i></div></div></section>
+        <button class="link" type="button" data-go="hk-send" data-variant="text" style="justify-self:start">Not what you ate? Describe instead</button>
+      </div></div>${dockHtml}
+      ${disc ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-warning);color:var(--color-status-warning)">${ICON.warn}</span><h2>Discard this estimate?</h2><p class="t-body">You changed 1 item. Nothing from this estimate has been saved.</p><button class="btn btn-primary btn-block" data-go="hk-result" data-variant="editing">Keep editing</button><button class="btn btn-text-danger btn-block" data-go="hk-home">Discard</button>`) : ''}`;
+  }
+
+  // HK-5 ------------------------------------------------------------------------------------------------------------
+  const HKERR = {
+    offline: ['cloudoff', 'No internet', 'Hiku needs a connection to estimate this meal.', [['Retry', 'hk-analyze', 'working', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    auth: ['lock', 'Your API key was rejected', 'Anthropic did not accept the key saved on this phone. It may be mistyped, expired or removed.', [['Check key', 'tab-settings', '', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    ratelimit: ['clock', 'Too many requests right now', 'Anthropic is limiting requests. Try again in about 30 s.', [['Retry', '', '', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    server: ['warn', 'Anthropic had a problem', 'The service returned an error on its side. Your key and your input are fine.', [['Retry', 'hk-analyze', 'working', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    refusal: ['hiku', "Hiku couldn't estimate this", 'It works best with a clear photo of food.', [['Describe instead', 'hk-send', 'text', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    cutoff: ['warn', 'The answer was cut off', 'So nothing was filled in. A half answer is never shown as a result.', [['Retry', 'hk-analyze', 'working', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    timeout: ['clock', 'Hiku took too long', 'There was no answer after 45 s.', [['Retry', 'hk-analyze', 'working', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+  };
+  function hkError(v) {
+    const [ic, title, cause, acts] = HKERR[v] || HKERR.offline, text = vOf('hk-send') === 'text', rate = v === 'ratelimit';
+    return `${statusbar(v === 'offline')}${hdr('Dinner · Hiku', { to: 'hk-send', sub: 'Nothing was saved' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-hiku"><span class="err-ic" aria-hidden="true">${ICON[ic]}</span><h1 class="t-title" role="alert">${title}</h1><p class="t-body">${cause}</p>
+          ${rate ? `<div class="row" style="gap:8px"><span class="t-metric num" id="cd" role="timer" style="font-size:34px">0:30</span><span class="t-small">until you can retry</span></div>` : ''}
+          <div class="kept">${text ? '<span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">' + ICON.describe + '</span>' : plate('sm')}<span class="t-small"><b>${text ? 'Your description is still here.' : 'Your photo is still here.'}</b> Nothing was saved.</span></div>
+          ${acts.map(([l, to, vv, k]) => `<button class="btn ${k === 'hiku' ? 'btn-hiku' : 'btn-secondary'} btn-block" type="button" ${rate && l === 'Retry' ? 'id="retry" aria-disabled="true"' : to ? `data-go="${to}" ${vv ? `data-variant="${vv}"` : ''} ${to === 'ea-add' ? 'data-meal="Dinner"' : ''}` : ''}>${l}</button>`).join('')}
+        </section>
+      </div></div>`;
+  }
+
+  // HK-6 ------------------------------------------------------------------------------------------------------------
+  function hkUsage() {
+    const rows = [['Mon 20 Oct', 'photo', '1,420 in · 340 out', '$0.008'], ['Sat 18 Oct', 'photo', '1,390 in · 310 out', '$0.007'], ['Sat 18 Oct', 'text', '240 in · 260 out', '$0.002'], ['Fri 17 Oct', 'photo', 'Cancelled, may still be billed', '$0.004'], ['Thu 16 Oct', 'text', '210 in · 240 out', '$0.002']];
+    return `${statusbar(false)}${hdr('Usage and privacy', { to: 'hk-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-hiku"><div class="card-head"><span class="t-label">This month</span>${chip('estimate', 'approx', 'Estimate')}</div>
+          <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:40px">≈ $0.42</span><span class="t-small">61 requests</span></div>
+          <div class="list">${rows.map(([d, ty, tk, c]) => `<div class="usage-row"><span class="stack" style="gap:0"><strong style="font-size:14px">${d} · ${ty}</strong><span class="t-small num">${tk.includes(' in ') ? `${tk} tokens` : tk}</span></span><span class="c">≈ ${c}</span></div>`).join('')}</div>
+          <p class="t-small">Prices come from Anthropic's published rates; your Anthropic console shows the exact bill. A cancelled request may still be billed.</p></section>
+        <section class="card"><h2 class="t-head">Context for each request</h2><div class="list">${switchRow("Today's totals", 'Off by default. Adds your eaten and target calories.')}${switchRow('Training day', 'Off by default. Adds today\'s planned workout.')}</div><span class="t-small">These switch back to your defaults for every request.</span></section>
+        <section class="card"><h2 class="t-head">What is never sent</h2><div class="stack" style="gap:6px">${['Your food diary and history', 'Health Connect data and heart rate', 'Workouts, records and body measurements', 'Your name and profile'].map(t => `<div class="check"><span class="tick" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.check}</span><span style="font-size:14px">${t}</span></div>`).join('')}</div><span class="t-small">Unless you switch context on for one request.</span></section>
+        <button class="rowlink" type="button" data-go="tab-settings"><span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${ICON.lock}</span><span class="grow"><strong>API key</strong><span class="t-small">Stored on this phone. Manage in Settings</span></span>${ICON.chevron}</button>
+      </div></div>`;
+  }
+
+  const EAT = { 'ea-home': eaHome, 'ea-add': eaAdd, 'ea-portion': eaPortion, 'ea-meal': eaMeal, 'ea-food': eaFood, 'ea-targets': eaTargets, 'ea-history': eaHistory };
+  const HIKU = { 'hk-home': hkHome, 'hk-send': hkSend, 'hk-analyze': hkAnalyze, 'hk-result': hkResult, 'hk-error': hkError, 'hk-usage': hkUsage };
 
   // ---------- placeholders for later milestones ----------
   const LATER = {
-    'tab-eat': ['eat', 'Eat', 'The food diary, local food search, portions and targets are designed in milestone 1C.'],
     'tab-progress': ['health', 'Progress', 'Trends, body measurements and Health Connect details are designed in milestone 1D.'],
-    'tab-hiku': ['hiku', 'Hiku', 'Chat, photo meal analysis and confirm-before-saving are designed in milestone 1C.'],
     'tab-settings': ['health', 'Settings', 'Profile, targets, API key, privacy and data management are designed in milestone 1D.'],
   };
   const later = (id) => {
@@ -1167,14 +1671,16 @@ button, input, select { font: inherit; color: inherit; }
     return `${statusbar(false)}<div class="topbar">${id === 'tab-settings' ? back('home') : '<span></span>'}</div><div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${icon}</span><h1 class="t-title">${t}</h1><p class="t-body" style="max-width:260px">${d}</p></div>`;
   };
 
-  const NAV = [['home', 'Today', 'home'], ['tr-home', 'Train', 'train'], ['tab-eat', 'Eat', 'eat'], ['tab-progress', 'Progress', 'progress'], ['tab-hiku', 'Hiku', 'hiku']];
-  const nav = (active) => `<nav class="capsule" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" aria-label="${label}" ${active === id ? 'aria-current="page"' : ''}>${ICON[icon]}<span>${label}</span></button>`).join('')}</nav>`;
+  const NAV = [['home', 'Today', 'home'], ['tr-home', 'Train', 'train'], ['ea-home', 'Eat', 'eat'], ['tab-progress', 'Progress', 'progress'], ['hk-home', 'Hiku', 'hiku']];
+  const nav = (active) => `<nav class="capsule" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" aria-label="${label}" ${id === 'home' ? 'data-longpress="qa-sheet"' : ''} ${active === id ? 'aria-current="page"' : ''}>${ICON[icon]}<span>${label}</span></button>`).join('')}</nav>`;
 
   const SCREENS = [
     ['Onboarding', [['onb-welcome', '1 · Welcome'], ['onb-privacy', '2 · Privacy and local storage'], ['onb-profile', '3 · Profile (optional)'], ['onb-goals', '4 · Goal and activity'], ['onb-target', '5 · Estimated target'], ['onb-health', '6 · Health Connect'], ['onb-watch', '7 · Galaxy Watch guidance'], ['onb-key', '8 · Hiku API key (optional)'], ['onb-done', '9 · Done']]],
     ['Today', [['home', 'TD · Today'], ['energy', 'DS-1 · Energy states sheet']]],
     ['Train (1B)', [['tr-home', 'TR-1 · Train home'], ['tr-plans', 'TR-2 · Plans and templates'], ['tr-template', 'TR-3 · Template editor'], ['tr-library', 'TR-4 · Exercise library'], ['tr-muscles', 'TR-5 · Muscle browser'], ['tr-exercise', 'TR-6 · Exercise detail'], ['tr-preview', 'TR-7 · Workout preview'], ['tr-active', 'TR-8 · Active workout'], ['tr-lock', 'TR-9 · Rest timer on the lock screen'], ['tr-summary', 'TR-10 · Finish summary'], ['tr-history', 'TR-11 · History'], ['tr-session', 'TR-12 · Session detail'], ['tr-records', 'TR-13 · Records']]],
-    ['Later', [['tab-eat', 'Eat (1C)'], ['tab-progress', 'Progress (1D)'], ['tab-hiku', 'Hiku (1C)']]],
+    ['Eat (1C)', [['ea-home', 'EA-1 · Eat home'], ['ea-add', 'EA-2 · Add food'], ['ea-portion', 'EA-3 · Portion picker'], ['ea-meal', 'EA-4 · Meal detail'], ['ea-food', 'EA-5 · Create a food'], ['ea-targets', 'EA-6 · Targets'], ['ea-history', 'EA-7 · History and trends'], ['qa-sheet', 'QA-1 · Quick add sheet']]],
+    ['Hiku (1C)', [['hk-home', 'HK-1 · Hiku home'], ['hk-send', 'HK-2 · Before sending'], ['hk-analyze', 'HK-3 · Analyzing'], ['hk-result', 'HK-4 · Result review'], ['hk-error', 'HK-5 · Errors'], ['hk-usage', 'HK-6 · Usage and privacy']]],
+    ['Later', [['tab-progress', 'Progress (1D)']]],
   ];
   const VARIANTS = {
     home: [['rich', 'Populated day'], ['first', 'First day, nothing logged'], ['offline', 'Offline'], ['nokey', 'No Anthropic key'], ['hcoff', 'Health Connect off'], ['stale', 'Stale health data'], ['notarget', 'No calorie target']],
@@ -1187,20 +1693,42 @@ button, input, select { font: inherit; color: inherit; }
     'tr-summary': [['pr', 'New records'], ['nopr', 'No records']],
     'tr-history': [['list', 'Populated'], ['empty', 'Empty'], ['deleted', 'After delete, with Undo']],
     'tr-session': [['view', 'View'], ['edit', 'Editing sets'], ['delete', 'Delete confirmation']],
+    'ea-home': [['rich', 'Populated day'], ['first', 'First day, nothing logged'], ['over', 'Over target'], ['notarget', 'No calorie target'], ['hidden', 'Numbers hidden'], ['added', 'After adding food, with Undo'], ['deleted', 'After deleting a meal, with Undo'], ['hikusaved', 'After saving a Hiku estimate'], ['hikuedited', 'After saving an edited estimate']],
+    'ea-add': [['recents', 'Recents'], ['search', 'Search: greek yog'], ['noresults', 'Search, no results'], ['offline', 'Offline'], ['added', 'After one-tap add, with Undo']],
+    'ea-portion': [['default', 'Default'], ['large', 'Text size 200%']],
+    'ea-meal': [['view', 'View'], ['edit', 'Editing an item'], ['delete', 'Delete confirmation']],
+    'ea-food': [['empty', 'Empty, name missing'], ['invalid', 'Calories and macros differ'], ['quick', 'Quick add calories only']],
+    'ea-targets': [['estimate', 'Estimate'], ['manual', 'Your own target'], ['floor', 'Below the 1,200 floor'], ['deficit', 'Deficit over 25%']],
+    'ea-history': [['week', 'Week'], ['empty', 'Empty']],
+    'qa-sheet': [['default', 'Default'], ['offline', 'Offline'], ['nokey', 'No Anthropic key']],
+    'hk-home': [['ready', 'Ready'], ['nokey', 'No Anthropic key'], ['offline', 'Offline'], ['first', 'First time']],
+    'hk-send': [['photo', 'Photo'], ['text', 'Description']],
+    'hk-analyze': [['working', 'Working'], ['slow', 'Still working (after 10 s)']],
+    'hk-result': [['result', 'Result'], ['editing', 'Editing an item'], ['edited', 'After editing'], ['large', 'Text size 200%'], ['discard', 'Discard after edits']],
+    'hk-error': [['offline', 'Offline'], ['auth', 'Key rejected (401/403)'], ['ratelimit', 'Rate limit (429)'], ['server', 'Server error (5xx)'], ['refusal', 'Refusal'], ['cutoff', 'Cut-off answer'], ['timeout', 'Timeout (45 s)']],
   };
   const vOf = (s) => state.v[s] || (VARIANTS[s] ? VARIANTS[s][0][0] : '');
   screenSelect.innerHTML = SCREENS.map(([g, items]) => `<optgroup label="${g}">${items.map(([id, l]) => `<option value="${id}">${l}</option>`).join('')}</optgroup>`).join('');
 
+  let timer = null, autoAdvance = false, lpTimer = null, lpFired = false;
+  const goTo = (dest, variant) => { if (variant) state.v[dest] = variant; if (dest === 'qa-sheet') state.qaFrom = state.screen; state.screen = dest; render(); };
+  // Eat and Hiku screens share the Train chrome rules: focus flows hide the capsule, the workout mini bar stays above it elsewhere.
+  const chrome = (s, navId) => isFocus(s, vOf(s)) ? '' : (vOf('tr-home') === 'resume' ? minibar() : '') + nav(navId);
+
   function render() {
     const s = state.screen;
+    clearTimeout(timer); clearInterval(timer);
     let html;
     if (ONB[s]) html = statusbar(false) + ONB[s]();
     else if (s === 'home') html = today(vOf('home')) + (vOf('tr-home') === 'resume' ? minibar() : '') + nav('home');
     else if (s === 'energy') html = energyStates() + nav('home');
+    else if (EAT[s]) { const dv = { over: 'over', added: 'added', deleted: 'deleted', hikusaved: 'hikusaved', hikuedited: 'hikuedited' }[vOf(s)]; if (s === 'ea-home' && dv) state.day = dv; html = EAT[s](vOf(s)) + chrome(s, 'ea-home'); }
+    else if (HIKU[s]) html = HIKU[s](vOf(s)) + chrome(s, 'hk-home');
+    else if (s === 'qa-sheet') html = qaSheet(vOf(s));
     else if (TRAIN[s]) html = TRAIN[s](vOf(s)) + (isFocus(s, vOf(s)) ? '' : (s !== 'tr-home' && vOf('tr-home') === 'resume' ? minibar() : '') + nav('tr-home'));
     else html = later(s) + (s === 'tab-settings' ? '' : nav(s));
     screenEl.innerHTML = html;
-    screenEl.classList.toggle('fs200', s === 'tr-active' && vOf(s) === 'large');
+    screenEl.classList.toggle('fs200', ['tr-active', 'ea-portion', 'hk-result'].includes(s) && vOf(s) === 'large');
     screenEl.classList.toggle('has-mini', html.includes('class="minibar"'));
     const deck = screenEl.querySelector('#deck'), dotsEl = screenEl.querySelector('#deck-dots');
     if (deck && dotsEl) deck.addEventListener('scroll', () => {
@@ -1212,6 +1740,18 @@ button, input, select { font: inherit; color: inherit; }
     const cur = screenEl.querySelector('.set-row.cur'), sc = screenEl.querySelector('.scroll');
     if (cur && sc) sc.scrollTop = Math.max(0, cur.offsetTop - sc.offsetTop - 120);
 
+    // Prototype behavior: Send moves on to the result after a moment; a rate-limit error counts down and then unlocks Retry.
+    if (s === 'hk-analyze' && vOf(s) === 'working' && autoAdvance) timer = setTimeout(() => goTo('hk-result', 'result'), 3000);
+    if (s === 'hk-error' && vOf(s) === 'ratelimit') {
+      let n = 30;
+      timer = setInterval(() => {
+        n--; const cd = screenEl.querySelector('#cd'), rb = screenEl.querySelector('#retry');
+        if (cd) cd.textContent = `0:${String(Math.max(n, 0)).padStart(2, '0')}`;
+        if (n <= 0 && rb) { rb.removeAttribute('aria-disabled'); rb.dataset.go = 'hk-analyze'; rb.dataset.variant = 'working'; clearInterval(timer); }
+      }, 1000);
+    }
+    autoAdvance = false;
+
     styleBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.styleBtn === state.style)));
     screenSelect.value = s === 'tab-settings' ? 'home' : s;
     variantCtl.hidden = !VARIANTS[s];
@@ -1221,12 +1761,28 @@ button, input, select { font: inherit; color: inherit; }
 
   screenEl.addEventListener('click', (e) => {
     const goal = e.target.closest('[data-goal]'), act = e.target.closest('[data-act]'), go = e.target.closest('[data-go]');
+    if (lpFired) { lpFired = false; return; }
+    const cyc = e.target.closest('[data-cycle-meal]'), sw = e.target.closest('[role="switch"]'), tk = e.target.closest('[data-tick]'), un = e.target.closest('[data-unit]');
+    if (cyc) { const sc = screenEl.querySelector('.scroll'), top = sc ? sc.scrollTop : 0; state.meal = MEALS[(MEALS.indexOf(state.meal) + 1) % MEALS.length]; render(); const sc2 = screenEl.querySelector('.scroll'); if (sc2) sc2.scrollTop = top; return; }
+    if (sw) { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); return; }
+    if (tk) {
+      const on = tk.getAttribute('aria-checked') !== 'true', target = screenEl.querySelector(tk.dataset.tick);
+      tk.setAttribute('aria-checked', String(on)); tk.querySelector('.tick').innerHTML = on ? ICON.check : '';
+      if (target) { if (on) { target.removeAttribute('aria-disabled'); target.dataset.go = 'ea-targets'; target.dataset.variant = 'manual'; } else { target.setAttribute('aria-disabled', 'true'); delete target.dataset.go; delete target.dataset.variant; } }
+      return;
+    }
+    if (un) { const [a, l] = un.dataset.unit.split('|'); un.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b === un))); screenEl.querySelector('#amt').textContent = a; screenEl.querySelector('#amt-u').textContent = l; return; }
     if (goal) { state.goal = goal.dataset.goal; render(); return; }
     if (act) { state.activity = act.dataset.act; render(); return; }
-    if (go) { if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
+    if (go) { if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; if (go.dataset.meal) state.meal = go.dataset.meal; if (go.dataset.day) state.day = go.dataset.day; if (go.dataset.go === 'qa-sheet') state.qaFrom = state.screen; autoAdvance = go.dataset.go === 'hk-analyze'; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
   });
-  screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; render(); });
-  variantSelect.addEventListener('change', () => { state.v[state.screen] = variantSelect.value; render(); });
+  // Long-press (or right-click) on "Log a meal" or the Today tab opens the shared Quick add sheet.
+  screenEl.addEventListener('pointerdown', (e) => { const el = e.target.closest('[data-longpress]'); if (!el) return; lpFired = false; lpTimer = setTimeout(() => { lpFired = true; goTo(el.dataset.longpress); }, 550); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => screenEl.addEventListener(t, () => clearTimeout(lpTimer)));
+  screenEl.addEventListener('contextmenu', (e) => { const el = e.target.closest('[data-longpress]'); if (el) { e.preventDefault(); goTo(el.dataset.longpress); } });
+  // Jumping with the screen picker starts from the example day; only taps inside the phone carry a changed diary along.
+  screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; state.day = 'base'; render(); });
+  variantSelect.addEventListener('change', () => { state.v[state.screen] = variantSelect.value; if (state.screen === 'ea-home' && ['rich', 'notarget', 'hidden'].includes(variantSelect.value)) state.day = 'base'; render(); });
 
   const styleBtns = document.querySelectorAll('[data-style-btn]');
   styleBtns.forEach(b => b.addEventListener('click', () => { state.style = b.dataset.styleBtn; render(); }));
@@ -1239,7 +1795,7 @@ button, input, select { font: inherit; color: inherit; }
 
   try { const saved = JSON.parse(localStorage.getItem('liftria-app') || 'null'); if (saved) Object.assign(state, saved); } catch (e) { /* ignore */ }
   const hash = location.hash.slice(1);
-  if (hash === 'today') state.screen = 'home'; else if (hash === 'train') state.screen = 'tr-home'; else if (hash === 'energy') state.screen = 'energy'; else if (hash === 'onboarding') state.screen = 'onb-welcome';
+  if (hash === 'today') state.screen = 'home'; else if (hash === 'train') state.screen = 'tr-home'; else if (hash === 'energy') state.screen = 'energy'; else if (hash === 'eat') state.screen = 'ea-home'; else if (hash === 'hiku') state.screen = 'hk-home'; else if (hash === 'onboarding') state.screen = 'onb-welcome';
   render();
 })();
 </script>

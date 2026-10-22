@@ -1,19 +1,19 @@
 # User Flows
 
-**Milestone 1A** covers flows 1, 6 (setup part) and 7. **Milestone 1B** adds flow 2 and the workout part of flow 10. Flows 3–5, 8, 9 and the rest of 10 are added in 1C–1D.
+**Milestone 1A** covers flows 1, 6 (setup part) and 7. **Milestone 1B** adds flow 2 and the workout part of flow 10. **Milestone 1C** adds flows 3, 4, the request part of flow 6, and the meal part of flow 10. Flows 5, 8, 9 and the rest of 10 are added in 1D.
 
 | # | Flow | Milestone |
 |---|---|---|
 | 1 | First launch → onboarding → Today | **1A** |
 | 2 | Create workout → start → log sets → finish | **1B** |
-| 3 | Add meal manually → edit → save | 1C |
-| 4 | Meal photo → Hiku → review → save | 1C |
+| 3 | Add meal manually → edit → save | **1C** |
+| 4 | Meal photo → Hiku → review → save | **1C** |
 | 5 | Connect Health Connect → permissions → inspect sources | 1D (entry in 1A, ON-6) |
-| 6 | Set up API key → first AI request | **1A** (setup), 1C (request) |
+| 6 | Set up API key → first AI request | **1A** (setup), **1C** (request) |
 | 7 | Open with no internet → continue offline | **1A** |
 | 8 | Investigate missing watch data | 1D |
 | 9 | Review progress | 1D |
-| 10 | Edit or delete data | **1B** (workouts), 1C (meals), 1D (all data) |
+| 10 | Edit or delete data | **1B** (workouts), **1C** (meals), 1D (all data) |
 
 ---
 
@@ -73,7 +73,7 @@ The key never appears again after saving: only "Key saved · ending ••a1b2".
 2. Offline banner appears at the top of Today: "Offline. Logging, workouts and your history work as usual. Hiku needs internet."
 3. **Hiku entry points:**
    - The Today Hiku card turns into the offline state, and the Photo button is hidden.
-   - The Hiku tab shows an offline state with "Log manually instead" (1C).
+   - The Hiku tab shows an offline state with "Log manually" (HK-1, 1C).
 4. Health Connect still works offline: it's on-device, so steps and HR update normally.
 5. Connectivity returns → the banner disappears within 5 s → Hiku re-enables. **No automatic AI requests are sent on reconnect.**
 6. If the user starts a Hiku request just as the connection drops, it fails as "You're offline. Nothing was saved." Their text or photo stays in the composer to retry.
@@ -133,3 +133,110 @@ flowchart TD
 | Edit | Pencil → change kg/reps, remove or add sets → Save changes | "Saved. Records updated." Changed records are listed if any moved | Same limits as logging; an exercise with all sets removed asks "Remove Barbell row from this workout?" | Cancel or back → "Discard changes?" |
 | Delete | Delete workout → Delete | The sheet names the records that will revert; history shows the snackbar with Undo | — | Cancel is always available; Undo within 8 s restores the workout and its records exactly |
 | After Undo expires | — | Deletion is final (local data, no trash in V1) | — | Export/backup is a future feature (1D) |
+
+---
+
+## Flow 3: Add a meal manually → edit → save (1C)
+
+```mermaid
+flowchart TD
+  T[Today: Log a meal / Dinner Add] --> B
+  E[EA-1 Eat home: Add] --> B[EA-2 Add food]
+  B -- tap "+" --> U[Added to meal + Undo snackbar]
+  B -- tap row --> C[EA-3 Portion picker]
+  C -- Add to Dinner --> D[EA-1 + Undo snackbar]
+  B -- no result / link --> F[EA-5 Create a food or Quick add]
+  F -- Save --> C
+  D -- tap a meal item --> G[EA-4 Meal detail]
+  G -- tap an item --> H[Inline edit: stepper, Remove item]
+  H -- Done --> G
+  U -- Undo within 4 s --> B
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Start | Today "Log a meal" (dinner after 17:00), Today meals card "Add", or Eat "Add" on a meal | EA-2 opens with the meal preset and the capsule nav still visible | — | Back returns to where the user came from |
+| EA-2 | Types in search, or taps Recents | Local results with per-100 g kcal and a source chip; works offline | No match: "Not in the food pack" with Create a food, Quick add calories and Describe it to Hiku (the last disabled offline) | Back |
+| One-tap add | Taps "+" on a row | The last-used portion is added to the selected meal; snackbar "Greek yogurt, 170 g added to Dinner. Undo" (4 s) | — | **Undo** within 4 s |
+| EA-3 | Taps the row, picks a unit, sets the amount | kcal and macros update live; the stored amount is always grams | 0 g can't be added; more than 2,000 g asks "Is that right?" | Back returns to EA-2 with nothing added |
+| Save | Add to Dinner | EA-1 with the meal total, the orb and Today updated at once; snackbar with Undo | — | Undo within 4 s |
+| EA-5 | Fills in a food (or Quick add) | The new food opens in EA-3 as "My food" | Name required; calories and macros that differ by more than 20% show a hint and **Save anyway** | Back keeps the typed values |
+| EA-4 | Taps a meal item, changes the portion | The meal total updates live ("was 680") | Same limits as EA-3 | **Done** or Back; Remove item removes it |
+
+## Flow 4: Meal photo → Hiku → review and correct → save (1C)
+
+Status: **Pending device test** (no real Claude request has been run on the S22).
+
+```mermaid
+flowchart TD
+  S[Today Photo / EA-2 Photo / Quick add / HK-1] --> A[HK-2 Before sending]
+  A -- context switches (off by default) --> A
+  A -- Send to Hiku --> B[HK-3 Analyzing]
+  B -- Cancel --> A
+  B -- 10 s --> B2[Still working]
+  B2 -- Cancel --> A
+  B -- valid result --> C[HK-4 Result review]
+  C -- edit item --> C2[HK-4 editing] -- Done --> C
+  C -- Save to Dinner --> D[EA-1 with Undo; Today updated]
+  C -- Discard --> X{Edited?}
+  X -- no --> H[HK-1]
+  X -- yes --> Y{Confirm sheet} -- Keep editing --> C
+  Y -- Discard --> H
+  B -- failure --> E[HK-5 error card]
+  E -- Retry --> B
+  E -- Describe instead --> A
+  E -- Log manually --> M[EA-2]
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| HK-2 | Picks or takes a photo, adds an optional note, optionally turns on Today's totals or Training day | "What's sent" lists exactly what leaves the phone, with the estimated cost (≈ $0.007 for a photo) | Offline or no key: the entry points are disabled with a reason before this screen | Back; nothing was sent |
+| Send | Send to Hiku | HK-3 with Cancel; the photo is resized on the phone first | — | Cancel returns to HK-2 with the input intact; the request may still be billed |
+| HK-3 | Waits | After 10 s: "Still working… This can take up to 45 s." | 45 s: timeout card | Cancel is always visible |
+| HK-4 | Reviews items; taps one to edit (grams stepper) or Remove; Add item | Totals and the "After saving" line update live; the original estimate stays visible ("Hiku said 624") | Invalid or cut-off response never reaches this screen | Discard asks only if something was edited |
+| Save | Save to Dinner | EA-1 shows the dinner and the new total; snackbar with Undo; the diary items are saved with `source = hiku-estimate` and the original estimate | — | **Undo**; or delete from EA-4 |
+| Failure | — | HK-5 card with the cause, what was kept, and actions | See INTERACTION_AND_STATES (seven cases) | Retry, fix the key, describe instead, or log manually |
+
+## Flow 6 (request): The first AI request after adding a key (1C)
+
+Entry: the user added a key in ON-8 or Settings, then taps Photo or Describe for the first time. Status: **Pending device test.**
+
+```mermaid
+flowchart TD
+  K[Key saved] --> A[HK-1 ready] --> B[HK-2: What's sent shown first time] --> C[HK-3 Analyzing]
+  C -- ok --> D[HK-4 Result review]
+  C -- 401/403 --> E[HK-5 key rejected]
+  E -- Check key --> S[Settings: replace key] --> A
+  E -- Log manually --> M[EA-2]
+  C -- 429 --> R[HK-5 rate limit: countdown] -- Retry when it ends --> C
+  C -- offline --> O[HK-5 offline] -- Retry --> C
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| First request | Photo or Describe → Send | The privacy line and cost estimate are shown on HK-2 as always. Nothing is sent before Send. | — | Back |
+| Key rejected (401/403) | — | "Your API key was rejected. Anthropic did not accept the key saved on this phone." The input is kept. | The key is never shown again, only "Key saved · ending ••a1b2" | **Check key** (Settings, replace it) or **Log manually** |
+| Rate limit (429) | — | "Too many requests right now. Try again in about 30 s." with a countdown | Retry unlocks when the countdown ends | Log manually meanwhile |
+| Success | — | HK-4; the HK-1 usage line gains the request | — | Discard |
+
+## Flow 10 (meals): Edit or delete a meal or item, with Undo (1C)
+
+```mermaid
+flowchart TD
+  A[EA-1 Eat home] -- tap an item --> B[EA-4 Meal detail]
+  B -- tap an item --> C[Inline edit]
+  C -- Done --> B
+  C -- Remove item --> B
+  B -- Delete meal --> D{Confirm sheet}
+  D -- Keep --> B
+  D -- Delete --> E[EA-1 + snackbar Undo 8 s]
+  E -- Undo --> A
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Edit an item | Tap its row → change grams → Done | Item kcal, meal total and the day total update live; Today updates at once | Same limits as EA-3 | Back before Done discards the change |
+| Remove an item | Remove item | The row leaves the list; the meal total drops | A meal with no items reads "Not logged yet", not 0 | Undo snackbar, 8 s |
+| Move a meal's items | Move to another meal | The items change meal; totals follow | — | Undo snackbar, 8 s |
+| Delete a meal | Delete meal → Delete | Sheet "Delete lunch? 4 items, 680 kcal. You can undo for 8 s." then EA-1 with "Lunch deleted. 4 items, 680 kcal. Undo" | — | **Keep** is the default button; Undo within 8 s restores the meal exactly |
+| After Undo expires | — | Deletion is final (local data, no trash in V1) | — | Export is a future feature (1D). A whole-day clear isn't in V1. |

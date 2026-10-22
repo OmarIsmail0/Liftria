@@ -1,6 +1,6 @@
 # Liftria Design System
 
-**Milestone:** 1A (foundation; components are extended in 1B to 1D) · **Status:** for owner review
+**Milestone:** 1A (foundation; components are extended in 1B to 1D), 1C added below · **Status:** for owner review
 
 The tokens in the prototype (`prototype/src/liftria-1a.html`, the `:root` blocks) are the source of truth for values. Token names use the form `category.role.variant`. In CSS they become `--category-role-variant`; in the React Native theme object (Phase 2) they become `theme.color.text.primary`.
 
@@ -43,7 +43,7 @@ Neutrals lean slightly blue-grey, so the warm domain colors read clearly against
 | `color.macro.carbs` | `#FFCF5E` | `#855D00` |
 | `color.macro.fat` | `#FF9AC0` | `#B8406F` |
 | `color.status.success` | `#5BD08F` | `#177A45` |
-| `color.status.warning` | `#F2B44C` | `#946300` |
+| `color.status.warning` | `#F2B44C` | `#8A5C00` |
 | `color.status.danger` | `#FF6B6B` | `#C93636` |
 
 **Rules**
@@ -202,7 +202,48 @@ The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C c
 | glutes | back: two blocks | triceps | back: upper arms |
 | hamstrings | back: thighs | | |
 
-Components for food search, Hiku messages, more chart types and dialogs are added in 1C–1D.
+### 1C components (Eat and Hiku)
+
+| Component | Variants | Notes |
+|---|---|---|
+| **Meal card** | logged / not logged / numbers hidden | Honey rim. Header: meal name over its total ("520 kcal") or "Not logged yet", and an **Add** button (48dp). Items below, one row each: name, grams (and a Hiku chip where it applies) and kcal. Hidden-numbers mode replaces the total with an item count and drops the kcal column. |
+| **Food row with one-tap add** | recent / search result | A 64dp row (name, portion and kcal, source chip) beside a **48dp "+"** in an honey tint. Row tap opens the portion picker; "+" adds the last-used portion and shows an Undo snackbar. |
+| **Portion picker** | default / text 200% | Food name and source chip, **unit segmented control**, amount stepper, live result card, per-100 g line, meal selector, dock. |
+| **Unit segmented control** | g / cup / piece / serving | Four equal 52dp segments with a chalk fill on the selected one (`role="radiogroup"`). At large text it becomes a 2 × 2 grid. |
+| **Result item row (with confidence)** | Sure / Check amount / Guess / open for editing | Name and grams on the left; kcal and a confidence word on the right. "Sure" is plain secondary text; "Check amount" and "Guess" use the `stale` chip style with a warning icon. Confidence is **words, never a percentage**. At large text the row wraps to two lines. The open row shows a gram stepper, Remove item and Done. |
+| **Total block** | estimate / edited | Big kcal, P / C / F with the macro dots, "Hiku said 624" once edited, and the "After saving" two-segment bar (eaten so far in honey, this meal in lavender) with the numbers in text. |
+| **Week bar chart** | logged / not logged | Honey bars on a 0–3,000 kcal scale, a dashed `text.tertiary` target line with its label, day and date labels. **Days with nothing logged are dashed outlines with "—", not zero bars.** The `svg` carries a full text alternative, and the day list below repeats the values. |
+| **Quick add sheet** | default / offline / no key | Bottom sheet: five rows (icon tile, label, one-line hint), disabled rows state why, then Close. |
+| **Plate illustration** | large / small / shimmer | Original geometric SVG: a plate circle and three rounded food shapes in coral, honey and teal tints. A drawing, **not a photo**, and it says so in its label. The shimmer is a lavender band that sweeps across it and sits still under reduced motion. |
+| **Source chips** | USDA / My food / Hiku estimate / Calories only | Always icon + text. See the table below. |
+| **Switch** | off / on | A 56 × 48dp target around a 48 × 28 track. Off: outline and a secondary knob. On: a lavender (Hiku) or honey (Eat) track with an inverse knob. Always paired with a title and a line saying exactly what it does. |
+| **Tick row** | unchecked / checked | A 56dp row with a 24dp box, used for "I'm doing this with professional guidance". |
+| **Date switcher** | today | Two 48dp arrows around a centred label; the next-day arrow is disabled on today. |
+| **Macro split row** | — | Name, grams, percent, and − / + buttons (48dp). |
+| **Safety-floor sheet** | floor / deficit | Warning tile, calm explanation, safe value as the primary button, "Keep …" as the secondary button, disabled until the tick is on. |
+
+**Source chips** extend the provenance set from §6:
+
+| Source | Chip | Style |
+|---|---|---|
+| USDA | `measured`, label "USDA" | Teal text on `tint.health`, dot icon |
+| My food | `phone`, label "My food" | Raised neutral with a phone icon |
+| Hiku estimate | **`chip-hiku`** | `color.chip.hiku.fg` (`domain.hiku`) on `color.chip.hiku.bg` (`tint.hiku`), sparkle glyph |
+| Quick add | `estimate`, label "Calories only" | Dashed outline, approx icon |
+
+| New token | Dark | Light | Use |
+|---|---|---|---|
+| `color.chip.hiku.bg` / `.fg` | `tint.hiku` / `domain.hiku` (`rgba(169,156,255,.15)` / `#BDB1FF`) | `tint.hiku` / `domain.hiku` (`rgba(97,80,216,.10)` / `#6150D8`) | `chip-hiku`. Reuses existing values, so nothing new to measure beyond the combination (ACCESSIBILITY.md) |
+| `color.status.warning` (changed) | `#F2B44C` | `#8A5C00` (was `#946300`) | Darkened in light so the confidence chip passes 4.5:1 over the lavender glow (it measured 4.43) |
+| Orb 200px (`orb.sm`) | — | — | Eat's orb reuses `orb()` at 200px (the rest-timer size) |
+| Orb words | `orb.ink` at 26px | same | Hidden-numbers mode: "On track" or "A bit over" in place of the number |
+
+**Rules for 1C**
+- Eat surfaces use the **honey rim**; Hiku surfaces use the **lavender rim** and `btn-hiku` for the action that sends or starts a Hiku request. Saving a result is a normal primary button.
+- **Over target** keeps the honey ring full and uses "kcal over". The orb never changes to a warning palette, and nothing about eating is red.
+- Hide-numbers mode keeps the ring (a shape, not a number) and replaces every calorie figure with words.
+
+Components for settings, more chart types and further dialogs are added in 1D.
 
 ## 6. Data-honesty patterns (the core of the system)
 
