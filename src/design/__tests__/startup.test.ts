@@ -10,6 +10,7 @@ const okChecks = (highTextContrast: boolean): AccessibilityChecks => ({
 describe('TASK-1: dark fallback on unknown system scheme', () => {
   it.each([
     [null, 'dark'],
+    ['unspecified', 'dark'],
     ['light', 'light'],
     ['dark', 'dark'],
   ] as const)('system %s resolves to %s', (system, expected) => {
