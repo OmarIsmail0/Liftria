@@ -11,8 +11,9 @@ function rgba(value: string): RGBA {
   }
   const match = /^rgba?\(([^)]+)\)$/.exec(value);
   if (!match) throw new Error(`Unsupported color: ${value}`);
-  const values = match[1].split(',').map(v => Number(v.trim()));
-  return [values[0], values[1], values[2], values[3] ?? 1];
+  const values = match[1]!.split(',').map(v => Number(v.trim()));
+  if (values.length < 3 || values.some(value => !Number.isFinite(value))) throw new Error(`Malformed color: ${value}`);
+  return [values[0]!, values[1]!, values[2]!, values[3] ?? 1];
 }
 function blend(foreground: RGBA, background: RGBA): RGBA {
   const alpha = foreground[3] + background[3] * (1 - foreground[3]);
@@ -28,7 +29,7 @@ function luminance(color: RGBA): number {
     const s = channel / 255;
     return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   });
-  return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
+  return values[0]! * 0.2126 + values[1]! * 0.7152 + values[2]! * 0.0722;
 }
 function ratio(foreground: string | RGBA, background: string | RGBA): number {
   const a = typeof foreground === 'string' ? rgba(foreground) : foreground;
