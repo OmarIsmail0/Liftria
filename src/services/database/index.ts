@@ -5,6 +5,17 @@ export type DbResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: { code: 'db-error'; message: string } };
 
+// A Health Connect fallback calorie estimate without a contributing app must not be used offline.
+// In particular, old Phase 0 builds cached 21 such estimates before provenance checks existed.
+const ENERGY_OPERATIONS = new Set(['ACTIVE_CALORIES_TOTAL', 'ENERGY_TOTAL', 'BASAL_CALORIES_TOTAL']);
+function isUnattributedEnergy(value: HealthValue): boolean {
+  if (value.kind !== 'aggregate' || !ENERGY_OPERATIONS.has(value.operation)) return false;
+  const sources = Array.isArray(value.dataOrigins)
+    && value.dataOrigins.some(origin => typeof origin === 'string' && origin.trim().length > 0);
+  const singleSource = typeof value.dataOrigin === 'string' && value.dataOrigin.trim().length > 0;
+  return !sources && !singleSource;
+}
+
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 const DB_NAME = 'liftria-phase0.db';
 export const DB_SCHEMA_VERSION = 1;
@@ -129,8 +140,11 @@ export async function clearTestData(): Promise<DbResult<void>> {
 
 export async function saveHealthValues(values: HealthValue[]): Promise<DbResult<number>> {
   return dbOperation(async (db) => {
+    let stored = 0;
     await db.withExclusiveTransactionAsync(async (tx) => {
       for (const value of values) {
+        // Guard the persistence boundary too, not just the diagnostics UI.
+        if (isUnattributedEnergy(value)) continue;
         if (value.kind === 'aggregate') {
           await tx.runAsync(`
             INSERT INTO health_aggregates (adapter,operation,window_start,window_end,payload_json)
@@ -146,16 +160,40 @@ export async function saveHealthValues(values: HealthValue[]): Promise<DbResult<
             [value.adapter, value.recordId, value.kind === 'session' ? 'exercise-session' : value.kind === 'sleep' ? 'sleep-session' : value.metric,
               value.kind, value.dataOrigin, JSON.stringify(value), new Date().toISOString()]);
         }
+        stored++;
       }
     });
-    return values.length;
+    return stored;
   });
 }
 export async function listCachedHealth(limit = 100): Promise<DbResult<HealthValue[]>> {
   return dbOperation(async (db) => {
     const safeLimit = Math.max(1, Math.min(limit, 500));
     const samples = await db.getAllAsync<{ payload_json: string }>('SELECT payload_json FROM health_samples ORDER BY imported_at DESC LIMIT ?', [safeLimit]);
-    const aggregates = await db.getAllAsync<{ payload_json: string }>('SELECT payload_json FROM health_aggregates LIMIT ?', [safeLimit]);
-    return [...samples, ...aggregates].map(row => JSON.parse(row.payload_json) as HealthValue);
+    // Read the legacy aggregate cache without a limit first: old source-less rows must not
+    // use up the display limit and hide valid, source-backed values behind them.
+    const aggregates = await db.getAllAsync<{
+      adapter: string; operation: string; window_start: string; window_end: string; payload_json: string;
+    }>('SELECT adapter,operation,window_start,window_end,payload_json FROM health_aggregates');
+    const valid: HealthValue[] = [];
+    const legacy: typeof aggregates = [];
+    for (const row of aggregates) {
+      const value = JSON.parse(row.payload_json) as HealthValue;
+      if (isUnattributedEnergy(value)) legacy.push(row);
+      else valid.push(value);
+    }
+    if (legacy.length) {
+      try {
+        await db.withExclusiveTransactionAsync(async tx => {
+          for (const row of legacy) {
+            await tx.runAsync('DELETE FROM health_aggregates WHERE adapter=? AND operation=? AND window_start=? AND window_end=?',
+              [row.adapter, row.operation, row.window_start, row.window_end]);
+          }
+        });
+      } catch {
+        // Cleanup is best-effort; stale values were already excluded from the returned data.
+      }
+    }
+    return [...samples.map(row => JSON.parse(row.payload_json) as HealthValue), ...valid.slice(0, safeLimit)];
   });
 }
