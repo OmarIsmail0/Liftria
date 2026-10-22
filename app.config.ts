@@ -21,7 +21,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'liftria',
   version: '0.0.1',
   orientation: 'portrait',
-  userInterfaceStyle: 'dark',
+  userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   android: {
     package: 'com.liftria.diagnostics',
@@ -35,6 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
+    'expo-splash-screen',
     ['expo-image-picker', { cameraPermission: false, microphonePermission: false }],
     ['expo-sqlite', { useSQLCipher: false }],
     'expo-secure-store',
