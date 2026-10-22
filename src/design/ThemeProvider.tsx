@@ -9,7 +9,7 @@ export type ThemePreferences = { mode: ThemeMode; style: VisualStyle };
 
 /** System theme may be unknown at startup. Default to Liftria's dark graphite. */
 export function resolveMode(
-  preference: ThemeMode, systemScheme: 'light' | 'dark' | null | undefined,
+  preference: ThemeMode, systemScheme: 'light' | 'dark' | 'unspecified' | null | undefined,
 ): 'light' | 'dark' {
   if (preference !== 'system') return preference;
   return systemScheme === 'light' ? 'light' : 'dark';
