@@ -102,7 +102,7 @@ export function Banner({ title, message, variant = 'info' }: {
     borderWidth: theme.size.border.thin, borderRadius: theme.radius.md, padding: theme.space[3],
     flexDirection: 'row', gap: theme.space[3], alignItems: 'flex-start',
   }}>
-    <Text importantForAccessibility="no" style={{ color: tone, fontSize: theme.type.head.size }}>{variant === 'offline' ? '○' : variant === 'warning' ? '!' : 'i'}</Text>
+    <Text importantForAccessibility="no" style={{ color: tone, fontSize: theme.type.head.size, fontFamily: fontFamilyFor('Figtree', '700') }}>{variant === 'offline' ? '○' : variant === 'warning' ? '!' : 'i'}</Text>
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography bold>{title}</Typography><Typography size="small" tone="secondary">{message}</Typography>
     </View>
