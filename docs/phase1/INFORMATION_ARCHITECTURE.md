@@ -48,7 +48,9 @@ Train (TR-1)
 │   └── Rest timer sheet · lock-screen notification (TR-9)
 ├── Plans & templates (TR-2) → Template editor (TR-3) → Exercise library
 ├── Exercise library (TR-4) → Muscles (TR-5) → Exercise detail (TR-6)
-├── History (TR-11) → Session detail (TR-12) → edit / delete
+├── Muscles card → Muscle recovery map (TR-14) [Recent · Volume · Untrained] → Muscles (TR-5) filtered to one muscle   (1E)
+├── History (TR-11) → Session detail (TR-12) → edit / delete   ["Imported from <app>" source line on imported sessions (1E)]
+   └── empty History → "Switching from another app?" → Import (IM-1)   (1E)
 └── Records (TR-13) → Exercise detail
 Eat (EA-1)
 ├── Quick add (QA-1, the "+" in the header)
@@ -59,7 +61,7 @@ Eat (EA-1)
 ├── Targets (EA-6) → safety-floor sheet · hide numbers
 └── History and trends (EA-7) → a day's EA-1
 Progress (PR-1) [4 W · 3 M · 1 Y]
-├── Strength (PR-2) → Exercise detail (TR-6) · Records (TR-13)
+├── Strength (PR-2) → Exercise detail (TR-6) · Records (TR-13) · Muscle map (TR-14, 1E)
 ├── Nutrition trends (PR-3)
 ├── Body (PR-4) → Log weight (PR-6 sheet): add · edit · delete
 ├── Activity (PR-5) → Health details
@@ -76,6 +78,8 @@ Settings (ST-1) [from the Today avatar; no capsule nav]
 ├── Notifications (ST-5)
 ├── Health Connect (HE-4)
 ├── Data and storage (ST-6) → Delete all data (confirmation sheet)
+│   └── Import workouts from another app (1E) → Choose source (IM-1) → Android file picker → Preview (IM-2) → Importing (IM-3) → Done (IM-4) → History (TR-11)
+│       └── Undo import (after an import, until the next one) → confirmation sheet
 └── About and help (ST-7) → Troubleshoot (HE-6) · How Hiku works (HK-1)
 Hiku (HK-1)
 ├── Welcome / no key / offline / first time (states of HK-1)
@@ -97,6 +101,7 @@ Hiku (HK-1)
    - **1D focus flows:** the Log weight sheet (PR-6), the Android permission reference screen (HE-4) and every Settings screen and confirmation sheet hide the capsule. The workout mini bar is also hidden inside Settings (open question).
    - **Progress and Health keep the capsule** with Progress selected.
 6. **No dead ends.** Every empty, error and permission state has at least one forward action (set up, retry, log manually) and a way back.
+7. **Import is a pushed focus flow (1E).** IM-1 to IM-4 hide the capsule nav, like onboarding and Settings, and Back returns to where the import started (ST-6, the first-time Train home or the empty History). IM-3 has no back and no cancel (one transaction). Reached from three places, so it can be deeper than three levels from a tab (Today → Settings → Data and storage → IM-1 → IM-2…); that is acceptable because it is a linear, modal flow that nothing else links into. **The Muscle map (TR-14) is a Train browse screen** (capsule visible, Train selected) with two entry points (the TR-1 Muscles card, PR-2 Strength); Back returns to the entry point, and a muscle opens TR-5 one level deeper.
 
 ## Onboarding sequence (1A)
 

@@ -1,6 +1,6 @@
 # User Flows
 
-**Milestone 1A** covers flows 1, 6 (setup part) and 7. **Milestone 1B** adds flow 2 and the workout part of flow 10. **Milestone 1C** adds flows 3, 4, the request part of flow 6, and the meal part of flow 10. **Milestone 1D** adds flows 5, 8 and 9, the all-data part of flow 10 and the key-management part of flow 6.
+**Milestone 1A** covers flows 1, 6 (setup part) and 7. **Milestone 1B** adds flow 2 and the workout part of flow 10. **Milestone 1C** adds flows 3, 4, the request part of flow 6, and the meal part of flow 10. **Milestone 1D** adds flows 5, 8 and 9, the all-data part of flow 10 and the key-management part of flow 6. **The 1E addendum** adds flow 11 (import history from another app) and the muscle-map entry points.
 
 | # | Flow | Milestone |
 |---|---|---|
@@ -14,6 +14,7 @@
 | 8 | Investigate missing watch data | **1D** |
 | 9 | Review progress | **1D** |
 | 10 | Edit or delete data | **1B** (workouts), **1C** (meals), **1D** (weights, health cache, all data) |
+| 11 | Import history from another app (and Undo import) | **1E** (Future · Phase 3) |
 
 ---
 
@@ -337,3 +338,53 @@ Entry points: Settings → Hiku and API key; HK-1 "Add API key" and HK-6 "API ke
 | Replace | Replace key → paste → Save key | The masked key line updates to the new "…last 4" | Format check, as ON-8 | Cancel keeps the old key |
 | Delete | Delete key | Sheet: "Hiku stops working until you add a key. Your food diary isn't affected." Keep key is the primary button | — | Keep key; after deleting, Hiku shows its no-key states |
 | Privacy defaults | Today's totals, Training day, Keep photos | Three switches, all off; they are the starting positions for each request | — | Each request can still change them (HK-2) |
+
+---
+
+## Flow 11: Import history from another app, and Undo import (1E, Future · Phase 3)
+
+Entry points: Settings → Data and storage → "Import workouts from another app"; the first-time Train home link "Switching from another app? Import your history"; the empty History link (same words). Back from IM-1 returns to the entry point. The whole flow is a pushed stack with no capsule nav, and **nothing is saved until Import is tapped**.
+
+```mermaid
+flowchart TD
+  S1[ST-6 Import row] --> A
+  S2[TR-1 first-time link] --> A
+  S3[TR-11 empty link] --> A
+  A[IM-1 Choose source] -- Choose a file --> P[Android file picker]
+  P -- Cancel --> A
+  P -- file picked --> R{Read and check the file}
+  R -- not this app's format --> I[IM-2 invalid] -- Choose another file --> P
+  R -- no workout rows --> E[IM-2 empty] -- Choose another file --> P
+  R -- all days already have workouts --> N[IM-2 nothing new] -- Done --> O
+  R -- no unit column --> U[IM-2 units: pick kg or lb]
+  R -- readable --> V[IM-2 preview: ok or unmatched]
+  U -- kg or lb chosen --> V
+  V -- unmatched: Use suggestion / Keep as my own --> V
+  V -- Cancel --> O[Back to the entry point]
+  V -- Import N workouts --> G[IM-3 Importing, one transaction]
+  G -- committed --> D[IM-4 done]
+  G -- storage full / file unreadable --> F[IM-4 failed: nothing imported] -- Try again --> G
+  F -- Back --> O
+  D -- View history --> H[TR-11 with Imported from source lines]
+  D -- Done --> O
+  O --> X[ST-6 Undo import, until the next import]
+  X -- Undo import --> C{Confirmation sheet}
+  C -- Keep it --> X
+  C -- Remove import --> Y[ST-6 + snackbar: Import removed]
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| 1 Choose source | Tap Hevy, Strong, FitNotes or Another app (CSV); Choose a file | The row is selected; the export path for that app is on its row; the privacy line is visible ("The file stays on this phone…") | — | Back returns to the entry point; the Future list says what isn't here (Hevy account import, Apple Health weight, export) |
+| 2 Pick the file | Android's document picker | Liftria reads only the picked file; no storage permission is asked | A file that can't be opened shows the failed state of IM-4 ("couldn't be read") | Cancel in the picker returns to IM-1 |
+| 3 Check | Automatic, before anything is saved | A short "Reading…" in the preview header | **Invalid:** "This doesn't look like a Hevy export" with the columns expected and the columns found. **Empty:** "No workouts found in this file." **Too large:** the same layout as invalid ("too large to import") | Choose another file; Pick a different app; nothing was saved |
+| 4 Units (only if needed) | Choose kg or lb | Import turns on; the hint says "Weights will be read as lb." | The file has no unit column; Liftria never guesses, so Import stays off until one is chosen | Cancel leaves everything as it was |
+| 5 Review | Read the summary, the skipped days, the warm-up line and the records preview | "142 workouts · 3,910 sets · Mar 2023 – Oct 2026 · from Hevy"; "2 days already have a workout in Liftria and will be skipped"; "Your bench record will become 92.5 kg × 3 (from Hevy, 12 Aug 2026)" | **Nothing new:** every workout's day already has one, so Import isn't offered ("Nothing new to import") | Cancel; back |
+| 6 Unmatched exercises (only if any) | Per exercise: Use "Bench press" or Keep as my own | The *Suggested* match is shown, never applied for the user; the count of custom exercises updates; the records card follows the choice | Nothing blocks the import; with no choice, each becomes a custom exercise with no muscles (so it doesn't count in the muscle map) | Choices can be changed until Import; they're remembered for the next import |
+| 7 Import | Import 142 workouts | IM-3: "Importing… 61 of 142 workouts" with a bar; "It can't be cancelled halfway: it either all happens or none of it does" | **Storage full:** "This phone is almost out of storage. Liftria needs about 4 MB and found 1.1 MB free." **File unreadable:** "Liftria couldn't read the file all the way through." Either rolls back: "Nothing was imported", "Your existing workouts are untouched" | No cancel while it runs (one transaction). Try again, or Back. If the app is killed mid-import, the next launch rolls it back and says so |
+| 8 Done | — | "142 workouts imported"; sets saved; custom exercises created (6 if none were matched); records updated; "2 workouts skipped"; a note that Undo import stays in Settings until the next import | — | View history opens TR-11, where imported sessions carry "Imported from Hevy" (and TR-12 shows the import date); Done returns to the entry point |
+| 9 Re-import the same file | Run steps 1 to 3 with the same file | IM-2 "Nothing new to import. All 144 workouts in this file are already in Liftria." | **Re-importing the same file adds nothing**: every day now has a workout, and the file's hash is remembered | Done; Choose another file |
+| 10 Undo import | ST-6 → Undo import | The sheet "Remove the 142 imported workouts?" lists what is removed (the workouts and sets, the custom exercises this import created if nothing else uses them) and what isn't (your own workouts, templates and plans; exercises matched to the library); "Records are recalculated. You can import the file again later." Result: snackbar "Import removed: 142 workouts and 6 custom exercises. Records recalculated." | **Removes exactly that batch**, nothing else. If the user edited an imported session since, it still goes (the sheet says so) | **Keep it** is the primary button, and the scrim also closes the sheet. There is no second Undo; importing the file again restores the workouts |
+| 11 The next import | Any later import | "Undo import" now refers to the new batch; the old batch can no longer be undone as a batch | — | Delete single sessions in TR-12 as usual |
+
+**Flow 11b, muscle map entry (1E).** Train → the Muscles card (TR-1) → TR-14, or Progress → Strength → "Muscle map" → TR-14. In TR-14: switch **Recent · Volume · Untrained**; tap a muscle row or a region → TR-5 filtered to that muscle; in `untrained`, **Find exercises** does the same. Back returns one level at a time (TR-5 → TR-14 → the entry point). With no logged workouts TR-14 shows its empty state and **Start a workout**.

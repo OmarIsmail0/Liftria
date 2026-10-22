@@ -889,14 +889,85 @@ details.help[open] summary svg { transform: rotate(180deg); }
 .screen.fs200 .rseg button, .screen.fs200 .rseg3 button { font-size: 24px; min-height: 56px; }
 .screen.fs200 .statusline { font-size: 24px; }
 .screen.fs200 .t-head[style] { font-size: 26px !important; }
+
+/* ---------- 1E: Import and muscle map ---------- */
+/* Recovery shading: the train domain colour in three steps (solid, 55%, 25%), a dot pattern on the middle step, the neutral track fill for "ready". Region outlines use color.border.control (>= 3:1); stepped regions outline in the train colour. No red. */
+.rmap .m { fill: var(--color-track); stroke: var(--color-border-control); stroke-width: .9; }
+.rmap .m.n { fill: none; }
+.rmap .m.rr1 { fill: color-mix(in srgb, var(--color-domain-train) 25%, transparent); stroke: var(--color-domain-train); }
+.rmap .m.rr2 { stroke: var(--color-domain-train); }
+.rmap .m.rr3 { fill: var(--color-domain-train); stroke: var(--color-domain-train); }
+.rmap .m.ru { fill: color-mix(in srgb, var(--color-domain-train) 25%, transparent); stroke: var(--color-domain-train); stroke-width: 1.6; stroke-dasharray: 3 2; }
+.rmap .m.tap { cursor: pointer; }
+.rmap .pbg { fill: color-mix(in srgb, var(--color-domain-train) 55%, transparent); }
+.rmap .pdot { fill: var(--color-text-primary); }
+.rmap-wrap { display: grid; justify-items: center; gap: 6px; }
+.rmap-wrap svg.rmap { width: 100%; max-width: 280px; height: auto; }
+.rsw { width: 18px; height: 18px; flex: none; }
+.rleg { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--color-text-secondary); }
+.rleg span { display: inline-flex; align-items: center; gap: 8px; }
+.rleg-h { font-size: 12px; color: var(--color-text-tertiary); }
+.mrow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; color: inherit; text-align: start; cursor: pointer; }
+.mrow:first-child { border-top: 0; }
+.mrow .grow { display: grid; gap: 2px; }
+.mrow strong { font-weight: 600; font-size: 15px; }
+.mrow > svg:last-child { width: 20px; height: 20px; color: var(--color-text-tertiary); flex: none; }
+.mrow.plain { cursor: default; flex-wrap: wrap; }
+.mstate { font-size: 12px; font-weight: 700; color: var(--color-text-secondary); white-space: nowrap; }
+.mm-card { width: 100%; text-align: start; color: inherit; font: inherit; cursor: pointer; grid-template-columns: 124px 1fr; align-items: center; gap: 14px; }
+.mm-card .mm-mini { display: block; }
+.mm-card .mm-mini svg { width: 124px; height: auto; display: block; }
+.mm-card .mm-line { color: var(--color-text-secondary); font-size: 14px; line-height: 1.4; }
+.mm-card .mm-more { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 14px; }
+.mm-card .mm-more svg { width: 18px; height: 18px; }
+
+/* provenance chip for imported data */
+.chip-file { background: var(--color-bg-raised); color: var(--color-text-secondary); border: 1px solid var(--color-border-subtle); }
+.srcline svg { width: 16px; height: 16px; flex: none; }
+.srcline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--color-text-secondary); }
+
+/* import screens */
+.imfacts { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.imfacts li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; font-size: 14px; color: var(--color-text-secondary); }
+.imfacts li svg { width: 20px; height: 20px; margin-top: 1px; color: var(--color-text-secondary); }
+.imfacts li b { color: var(--color-text-primary); font-weight: 600; }
+.imsum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.maprow { display: grid; gap: 10px; padding: 14px 0; border-top: 1px solid var(--color-border-subtle); }
+.maprow:first-of-type { border-top: 0; padding-top: 4px; }
+.maprow .mp-name { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; }
+.maprow .mp-name strong { font-weight: 600; font-size: 15px; }
+.maprow .mp-sug { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 14px; }
+.maprow .mp-sug b { font-weight: 600; }
+.maprow .rseg { border-radius: 14px; }
+.imbar { height: 12px; border-radius: 6px; background: var(--color-track); overflow: hidden; }
+.imbar > i { display: block; height: 100%; border-radius: inherit; background: var(--color-domain-train); }
+.imstat { font-family: var(--font-display); font-stretch: 116%; font-weight: 800; font-size: 52px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.pickrow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 6px 4px; border: 0; border-top: 1px solid var(--sys-line); background: transparent; color: inherit; text-align: start; cursor: pointer; font: 400 15px Roboto, system-ui, sans-serif; }
+.pickrow:first-of-type { border-top: 0; }
+.pickrow .pf { width: 36px; height: 36px; border-radius: 10px; background: var(--sys-bg); border: 1px solid var(--sys-line); display: grid; place-items: center; flex: none; color: var(--sys-mut); }
+.pickrow .pf svg { width: 20px; height: 20px; }
+.pickrow .pn { display: grid; gap: 1px; }
+.pickrow .pn small { color: var(--sys-mut); font-size: 12px; }
+.sysmock .syslist.files { padding: 4px 12px; }
+
+/* 200% text emulation for the muscle map (TR-14) */
+.screen.fs200 .mrow strong { font-size: 26px; line-height: 1.25; }
+.screen.fs200 .mrow .t-small, .screen.fs200 .rleg { font-size: 22px; }
+.screen.fs200 .mstate { font-size: 22px; flex: 1 0 100%; padding-left: 38px; order: 5; }
+.screen.fs200 .mrow { flex-wrap: wrap; }
+.screen.fs200 .mrow > svg:last-child { display: none; }
+.screen.fs200 .mrow { min-height: 84px; }
+.screen.fs200 .rleg { flex-direction: column; align-items: flex-start; }
+.screen.fs200 .rsw { width: 26px; height: 26px; }
+.screen.fs200 .mm-card .mm-line { font-size: 24px; }
 </style>
 
 <div class="board">
   <aside class="panel" aria-label="Prototype controls">
     <div class="stack">
-      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B + 1C + 1D</span>
+      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B + 1C + 1D + 1E</span>
       <h1>Liftria</h1>
-      <p>Onboarding, Today, the whole Train tab, Eat, Hiku, Progress, Health and Settings. Tap through the phone, or jump to any screen and state.</p>
+      <p>Onboarding, Today, the whole Train tab (with the muscle map), Eat, Hiku, Progress, Health, Settings and importing history from another app. Tap through the phone, or jump to any screen and state.</p>
     </div>
     <div class="ctl">
       <label for="screen-select">Screen</label>
@@ -930,6 +1001,7 @@ details.help[open] summary svg { transform: rotate(180deg); }
       <span><span class="chip chip-pending" data-icon="clock">Pending</span> awaiting device verification</span>
       <span><span class="chip chip-stale" data-icon="clock">2 d ago</span> older than the freshness limit</span>
       <span><span class="chip chip-hiku" data-icon="spark">Hiku estimate</span> proposed by Hiku, check before saving</span>
+      <span><span class="chip chip-file" data-icon="file">From Hevy</span> read from a file you imported</span>
     </div>
   </aside>
 
@@ -990,6 +1062,8 @@ details.help[open] summary svg { transform: rotate(180deg); }
     shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.4-7 9-4.1-1.6-7-4.8-7-9V6z"/><path d="m9 12 2.2 2.2L15.2 10" stroke-linecap="round"/></svg>',
     calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5.5" width="15" height="14" rx="2.5"/><path d="M4.5 10h15M8.5 3.8v3.4M15.5 3.8v3.4"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12a7 7 0 1 1-2.1-5M19 5v4h-4"/></svg>',
+    import: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10M8 10.5l4 4 4-4M5 15v3.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V15"/></svg>',
+    file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h6.5L18 8v11a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.5zM13.5 3.5V8H18M9 13h6M9 16.5h4"/></svg>',
   };
   const chip = (kind, icon, text) => `<span class="chip chip-${kind}">${ICON[icon]}${text}</span>`;
 
@@ -999,7 +1073,7 @@ details.help[open] summary svg { transform: rotate(180deg); }
   const screenSelect = document.getElementById('screen-select');
   const variantSelect = document.getElementById('variant-select');
   const variantCtl = document.getElementById('variant-ctl');
-  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass', meal: 'Dinner', day: 'base', qaFrom: 'home', ret: {}, wFrom: 'pr-body', fixed: false };
+  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass', meal: 'Dinner', day: 'base', qaFrom: 'home', ret: {}, wFrom: 'pr-body', fixed: false, msel: 'chest', im: { source: 'hevy', kind: 'unmatched', acc: [false, false, false, false, false, false] } };
 
   const statusbar = (offline) => `<div class="statusbar"><span class="num">9:41</span><span>${offline ? 'Airplane mode' : '5G · 82%'}</span></div>`;
   const dots = (n, total = 8) => `<div class="progress-dots" aria-label="Step ${n} of ${total}">${Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>`;
@@ -1312,7 +1386,7 @@ details.help[open] summary svg { transform: rotate(180deg); }
     const starters = first ? `<div class="section-h"><h2>Starter templates</h2></div><section class="card"><div class="list">${[['Full body · 3 days', 'A simple start. 5 exercises a session.'], ['Upper / Lower · 4 days', 'More volume, shorter sessions.']].map(([n, d]) => `<button class="rowlink" data-go="tr-template"><span class="grow"><strong>${n}</strong><span class="t-small">${d} Edit anything.</span></span>${ICON.chevron}</button>`).join('')}</div></section>` : '';
 
     return `${statusbar(false)}${hdr('Train', { root: true, right: `<button class="iconbtn" data-go="tr-library" aria-label="Search exercises">${ICON.search}</button>` })}
-      <div class="scroll"><div class="page screen-anim">${hero}${quick}${week}${starters}${recent}
+      <div class="scroll"><div class="page screen-anim">${hero}${quick}${week}${first ? '' : recCard()}${starters}${first ? `<button class="link" type="button" style="align-self:flex-start;text-align:start" data-go="im-source" data-ret>Switching from another app? Import your history</button>` : ''}${recent}
       <p class="t-small" style="text-align:center">Everything in Train works offline. Your watch is not needed.</p></div></div>`;
   }
 
@@ -1331,13 +1405,13 @@ details.help[open] summary svg { transform: rotate(180deg); }
   }
 
   function trMuscles() {
-    const sel = ['chest'];
-    return `${statusbar(false)}${hdr('Muscles', { to: 'tr-library', sub: 'Tap a group, or pick below' })}
+    const k = state.msel || 'chest', grp = GROUPS.find(g => g[2].includes(k))[0], ex = Object.keys(EX).filter(id => EX[id][2].includes(k));
+    return `${statusbar(false)}${hdr('Muscles', { to: rt('tr-muscles', 'tr-library'), sub: 'Tap a group, or pick below' })}
       <div class="scroll"><div class="page screen-anim">
-        <section class="card">${bodyMap(sel, [])}<div class="legend-row"><span><i class="sw p"></i>Selected: Chest</span></div></section>
-        <div class="chips">${GROUPS.map(([k, l]) => `<button class="fchip" aria-pressed="${k === 'chest'}">${l}</button>`).join('')}</div>
-        <div class="section-h"><h2>Chest · 14 exercises</h2></div>
-        <section class="card"><div class="list">${['bench', 'incline'].map(id => exRow(id)).join('')}<button class="rowlink" data-go="tr-library" data-variant="filtered"><span class="grow"><strong>See all 14</strong></span>${ICON.chevron}</button></div></section>
+        <section class="card">${bodyMap([k], [])}<div class="legend-row"><span><i class="sw p"></i>Selected: ${MUSCLE[k]}</span></div></section>
+        <div class="chips">${GROUPS.map(([g, l]) => `<button class="fchip" aria-pressed="${g === grp}">${l}</button>`).join('')}</div>
+        <div class="section-h"><h2>${MUSCLE[k]} · ${k === 'chest' ? '14 exercises' : 'exercises'}</h2></div>
+        <section class="card"><div class="list">${ex.slice(0, 3).map(id => exRow(id)).join('')}${ex.length ? '' : `<p class="t-small" style="padding:8px 0">The library has more exercises for ${lc(sn(k))} than this prototype lists.</p>`}<button class="rowlink" data-go="tr-library" data-variant="${k === 'chest' ? 'filtered' : 'browse'}"><span class="grow"><strong>${k === 'chest' ? 'See all 14' : 'See the library'}</strong></span>${ICON.chevron}</button></div></section>
       </div></div>`;
   }
 
@@ -1492,16 +1566,27 @@ details.help[open] summary svg { transform: rotate(180deg); }
   }
 
   function trHistory(v) {
-    if (v === 'empty') return `${statusbar(false)}${hdr('History', { to: 'tr-home' })}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.clock}</span><h1 class="t-title">No workouts yet</h1><p class="t-body" style="max-width:260px">Finished workouts show up here, newest first. You can edit or delete any of them.</p><button class="btn btn-train" data-go="tr-active">Start a workout</button></div>`;
-    const deleted = v === 'deleted';
+    if (v === 'empty') return `${statusbar(false)}${hdr('History', { to: 'tr-home' })}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.clock}</span><h1 class="t-title">No workouts yet</h1><p class="t-body" style="max-width:260px">Finished workouts show up here, newest first. You can edit or delete any of them.</p><button class="btn btn-train" data-go="tr-active">Start a workout</button><button class="link" type="button" data-go="im-source" data-ret>Switching from another app? Import your history</button></div>`;
+    const deleted = v === 'deleted', imp = v === 'imported';
     const rows = [['Tue 21 Oct', 'Upper A', '58 min · 22 sets · 11,420 kg', true], ['Mon 20 Oct', 'Lower A', '52 min · 18 sets · 9,840 kg', true], ['Sat 18 Oct', 'Upper B', '57 min · 21 sets · 8,215 kg', false], ['Fri 17 Oct', 'Upper A', '55 min · 22 sets · 10,960 kg', true], ['Thu 16 Oct', 'Lower B', '49 min · 17 sets · 9,105 kg', false]].filter(r => !(deleted && r[1] === 'Lower A'));
     return `${statusbar(false)}${hdr('History', { to: 'tr-home', right: `<button class="iconbtn" data-go="tr-records" aria-label="Records">${ICON.trophy}</button>` })}
       <div class="scroll"><div class="page screen-anim"><div class="stats card"><div class="stat"><b>${deleted ? 13 : 14}</b><span>workouts in Oct</span></div><div class="stat"><b>3.5</b><span>per week</span></div><div class="stat"><b>6</b><span>records</span></div></div>
         <div class="section-h"><h2>October</h2></div><section class="card"><div class="list">${rows.map(([d, n, m, r]) => `<button class="rowlink" data-go="tr-session"><span class="grow"><strong>${n} <span class="t-small" style="font-weight:500">· ${d}</span></strong><span class="t-small num">${m}</span></span>${r ? pr('PR') : ''}${ICON.chevron}</button>`).join('')}</div></section>
+        ${imp ? `<div class="section-h"><h2>August 2026</h2></div><section class="card"><div class="list"><button class="rowlink" data-go="tr-session" data-variant="imported"><span class="grow"><strong>${IMP_SESS.name} <span class="t-small" style="font-weight:500">· 12 Aug</span></strong><span class="t-small num">${IMP_SESS.min} min · ${impWork().length} sets · ${fmt(impVol())} kg</span>${srcLn('Imported from Hevy')}</span>${pr('PR')}${ICON.chevron}</button></div></section><p class="t-small">The other 141 imported workouts, from Mar 2023, are further down. Older months load as you scroll.</p>` : ''}
       </div></div>${deleted ? `<div class="snackbar" role="status">Lower A deleted. Records updated.<button class="btn btn-sm" data-go="tr-history" data-variant="list">Undo</button></div>` : ''}`;
   }
 
   function trSession(v) {
+    if (v === 'imported') {
+      const ex = IMP_SESS.ex.map(([id, sets]) => { let w = 0; return `<section class="card"><div class="row">${glyph(id)}<strong class="grow">${EX[id][0]}</strong>${id === 'bench' ? pr('PR') : ''}</div>
+        <div class="sets">${sets.map(([a, b, c]) => { const wu = a === 'W', kg = wu ? b : a, rp = wu ? c : b, n = wu ? 'W' : ++w; return `<div class="set-row${wu ? ' warm' : ''}" style="grid-template-columns:26px 1fr auto;min-height:36px"><span class="num lab" style="font-weight:700;${wu ? '' : 'color:var(--color-text-tertiary)'}">${n}</span><span class="num">${kg} kg × ${rp}${wu ? ' <span class="t-small">warm-up</span>' : ''}</span>${id === 'bench' && kg === 92.5 ? pr() : ''}</div>`; }).join('')}</div></section>`; }).join('');
+      return `${statusbar(false)}${hdr(IMP_SESS.name, { to: 'tr-history', sub: `${IMP_SESS.date} · ${IMP_SESS.start} · ${IMP_SESS.min} min` })}
+        <div class="scroll"><div class="page screen-anim" style="padding-bottom:110px">
+          <section class="card rim-train"><div class="stats"><div class="stat"><b>${IMP_SESS.min}:00</b><span>duration</span></div><div class="stat"><b>${impWork().length}</b><span>sets</span></div><div class="stat"><b>${fmt(impVol())}</b><span>kg volume</span></div></div></section>
+          <section class="card"><div class="srcline" style="font-weight:600;color:var(--color-text-primary)">${ICON.file.replace('<svg', '<svg width="18" height="18"')}Imported from Hevy</div><p class="t-small">Imported on 21 Oct. Sets, weights and reps are as in the file; Liftria worked out volume and records. Warm-ups stay out of both.</p></section>
+          ${ex}
+        </div></div>`;
+    }
     const edit = v === 'edit', del = v === 'delete';
     const data = [['squat', [[100, 5], [100, 5], [100, 5], [105, 3]]], ['rdl', [[90, 8], [90, 8], [90, 8]]], ['legpress', [[180, 10], [180, 10], [180, 9]]]];
     const ex = data.map(([id, sets]) => `<section class="card"><div class="row">${glyph(id)}<strong class="grow">${EX[id][0]}</strong>${id === 'squat' ? pr('PR') : ''}</div>
@@ -1529,9 +1614,9 @@ details.help[open] summary svg { transform: rotate(180deg); }
       </div></div>`;
   }
 
-  const TRAIN = { 'tr-home': trHome, 'tr-library': trLibrary, 'tr-muscles': trMuscles, 'tr-exercise': trExercise, 'tr-template': trTemplate, 'tr-plans': trPlans, 'tr-preview': trPreview, 'tr-active': trActive, 'tr-lock': trLock, 'tr-summary': trSummary, 'tr-history': trHistory, 'tr-session': trSession, 'tr-records': trRecords };
+  const TRAIN = { 'tr-home': trHome, 'tr-library': trLibrary, 'tr-muscles': trMuscles, 'tr-exercise': trExercise, 'tr-template': trTemplate, 'tr-plans': trPlans, 'tr-preview': trPreview, 'tr-active': trActive, 'tr-lock': trLock, 'tr-summary': trSummary, 'tr-history': trHistory, 'tr-session': trSession, 'tr-records': trRecords, 'tr-muscles-map': trMusclesMap };
   // Screens that are focus flows hide the capsule nav (IA rule 1).
-  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary', 'ea-portion', 'ea-food', 'hk-send', 'hk-analyze', 'hk-result', 'pr-weight', 'st-home', 'st-profile', 'st-units', 'st-hiku', 'st-notif', 'st-data', 'st-about'];
+  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary', 'ea-portion', 'ea-food', 'hk-send', 'hk-analyze', 'hk-result', 'pr-weight', 'st-home', 'st-profile', 'st-units', 'st-hiku', 'st-notif', 'st-data', 'st-about', 'im-source', 'im-preview', 'im-progress', 'im-done'];
   const isFocus = (s, v) => FOCUS.includes(s) || (s === 'tr-session' && (v === 'edit' || v === 'delete')) || (s === 'ea-meal' && v === 'delete') || (s === 'ea-targets' && (v === 'floor' || v === 'deficit')) || (s === 'he-perms' && v === 'system');
   const minibar = () => `<div class="minibar" role="region" aria-label="Workout in progress"><i class="live" aria-hidden="true"></i><span class="grow"><strong style="font-size:14px">Upper A</strong> <span class="t-small num">· 23:10 · 9 of 22 sets</span></span><button class="btn btn-train btn-sm" data-go="tr-active">Resume</button></div>`;
 
@@ -2037,6 +2122,7 @@ details.help[open] summary svg { transform: rotate(180deg); }
         <section class="card"><div class="card-head"><h2 class="t-head">Top lifts</h2>${chip('estimate', 'approx', 'Estimate')}</div>${srcLine('From your workouts in Liftria · est. 1RM per session, best set (Epley)')}
           <div class="list">${LIFTS.map(([id, pts]) => `<button class="rowlink" type="button" data-go="tr-exercise" data-variant="history" data-ret aria-label="${EX[id][0]}, estimated one-rep max ${pts[pts.length - 1]} kilograms, up from ${pts[0]} over 8 sessions. Open exercise"><span class="grow"><strong>${EX[id][0]}</strong><span class="t-small num">est. 1RM ${pts[pts.length - 1]} kg</span></span>${spark(pts)}${ICON.chevron}</button>`).join('')}</div></section>
         <section class="card rim-eat"><button class="rowlink" type="button" data-go="tr-records" data-ret style="border-top:0"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.trophy}</span><span class="grow"><strong>6 records</strong><span class="t-small">in the last 4 weeks · see all</span></span>${ICON.chevron}</button></section>
+        <section class="card"><button class="rowlink" type="button" data-go="tr-muscles-map" data-variant="recent" data-ret style="border-top:0"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.body}</span><span class="grow"><strong>Muscle map</strong><span class="t-small">What you trained recently and what you haven't · estimate</span></span>${ICON.chevron}</button></section>
       </div></div>`;
   }
 
@@ -2433,16 +2519,27 @@ details.help[open] summary svg { transform: rotate(180deg); }
   // ST-6
   function stData(v) {
     const da = v === 'deleteall' || v === 'typed', typed = v === 'typed', cleared = v === 'cleared';
-    const cnt = [['14', 'workouts'], ['212', 'meals'], ['6', 'custom foods'], [cleared ? '0' : '1,240', 'health records cached'], ['6.8 MB', 'storage used']];
+    const hasImp = v === 'imported' || v === 'undoimport', undone = v === 'undone', ik = imKind(), ic = imCustom();
+    if (undone) state.im.imported = false;
+    const cnt = [[hasImp ? fmt(14 + ik.n) : '14', 'workouts'], ['212', 'meals'], ['6', 'custom foods'], [cleared ? '0' : '1,240', 'health records cached'], [hasImp ? '7.9 MB' : '6.8 MB', 'storage used']];
     const li = (items, ic) => items.map(t => `<li>${ic}<span>${t}</span></li>`).join('');
     return `${statusbar(false)}${hdr('Data and storage', { to: rt('st-data', 'st-home') })}
       <div class="scroll"><div class="page screen-anim" style="padding-bottom:40px">
         <section class="card"><h2 class="t-head">On this phone</h2><div class="counts">${cnt.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')}</div><span class="t-small">Everything is stored on this phone, in a local database. Nothing is kept anywhere else.</span></section>
+        <section class="card"><h2 class="t-head">Bring in your history</h2><div class="list">
+          <button class="srow" type="button" data-go="im-source" data-ret>${ntile('import')}<span class="grow"><strong>Import workouts from another app</strong><span class="t-small">Hevy, Strong, FitNotes or a CSV file. The file stays on this phone.</span></span>${ICON.chevron}</button>
+          ${hasImp ? `<button class="srow" type="button" data-go="st-data" data-variant="undoimport">${ntile('refresh')}<span class="grow"><strong>Undo import</strong><span class="t-small">Removes the ${fmt(ik.n)} workouts from this import. Available until your next import.</span></span></button>` : ''}</div></section>
         <section class="card"><div class="list">
           <button class="srow" type="button" data-go="st-data" data-variant="cleared">${ntile('refresh')}<span class="grow"><strong>Clear health cache</strong><span class="t-small">Re-read from Health Connect next time. Your workouts, meals and weights stay.</span></span></button>
           <div class="srow" aria-disabled="true" style="cursor:not-allowed">${ntile('external')}<span class="grow"><strong style="opacity:.7">Export or back up</strong><span class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Future version')}</span><span class="t-small">If you lose or reset this phone, your Liftria data is gone. Backup is planned.</span></span></div></div></section>
         <section class="card danger"><h2 class="t-head">Delete all data</h2><p class="t-small">Removes everything Liftria has stored on this phone and starts over. It can't be undone.</p><button class="btn btn-text-danger" type="button" style="justify-self:start" data-go="st-data" data-variant="deleteall">${ICON.trash}Delete all data</button></section>
       </div></div>${cleared ? `<div class="snackbar low" role="status">Health cache cleared. Liftria reads Health Connect again next time.<button class="btn btn-sm" data-go="st-data" data-variant="default">OK</button></div>` : ''}
+      ${undone ? `<div class="snackbar low" role="status">Import removed: ${fmt(ik.n)} workouts${ic ? ` and ${ic} custom exercise${ic === 1 ? '' : 's'}` : ''}. Records recalculated.<button class="btn btn-sm" data-go="st-data" data-variant="default">OK</button></div>` : ''}
+      ${v === 'undoimport' ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Remove the ${fmt(ik.n)} imported workouts?</h2>
+        <div class="stack" style="gap:6px"><span class="t-label">Removed</span><ul class="dlist gone">${li([`${fmt(ik.n)} workouts and their ${fmt(ik.sets)} sets`, ...(ic ? [`${ic} custom exercise${ic === 1 ? '' : 's'} this import created, if nothing else uses ${ic === 1 ? 'it' : 'them'}`] : [])], ICON.x)}</ul></div>
+        <div class="stack" style="gap:6px"><span class="t-label">Not touched</span><ul class="dlist kept">${li(['Your own 14 workouts, templates and plans', 'Exercises that matched the library'], ICON.check)}</ul></div>
+        <p class="t-small">Records are recalculated. You can import the file again later.</p>
+        <button class="btn btn-danger btn-block" type="button" data-go="st-data" data-variant="undone">Remove import</button><button class="btn btn-primary btn-block" type="button" data-go="st-data" data-variant="imported">Keep it</button>`, 'st-data').replace('class="sheet"', 'class="sheet tall"').replace('data-go="st-data"', 'data-go="st-data" data-variant="imported"') : ''}
       ${da ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Delete all Liftria data?</h2>
         <div class="stack" style="gap:6px"><span class="t-label">Deleted</span><ul class="dlist gone">${li(['Workouts and templates', 'Meals, foods and targets', 'Weights', 'Settings', 'Your Hiku API key', 'Cached health data'], ICON.x)}</ul></div>
         <div class="stack" style="gap:6px"><span class="t-label">Not deleted</span><ul class="dlist kept">${li(['Data in Health Connect and Samsung Health', 'Anthropic\'s own request logs for your key'], ICON.check)}</ul></div>
@@ -2453,7 +2550,7 @@ details.help[open] summary svg { transform: rotate(180deg); }
 
   // ST-7
   function stAbout() {
-    const chips = [['measured', 'dot', 'Measured', 'From a named source'], ['phone', 'phone', 'Phone', 'Counted by the phone, not the watch'], ['estimate', 'approx', 'Estimate', 'Calculated by Liftria or by Hiku, never measured'], ['pending', 'clock', 'Pending', 'Designed, but not yet verified on your phone'], ['stale', 'clock', '2 d ago', 'Older than the freshness limit'], ['off', 'lock', 'Not allowed', 'You didn\'t allow this in Health Connect'], ['off', 'off', 'No data', 'Nothing has reported yet (not zero)']];
+    const chips = [['measured', 'dot', 'Measured', 'From a named source'], ['phone', 'phone', 'Phone', 'Counted by the phone, not the watch'], ['estimate', 'approx', 'Estimate', 'Calculated by Liftria or by Hiku, never measured'], ['pending', 'clock', 'Pending', 'Designed, but not yet verified on your phone'], ['stale', 'clock', '2 d ago', 'Older than the freshness limit'], ['off', 'lock', 'Not allowed', 'You didn\'t allow this in Health Connect'], ['off', 'off', 'No data', 'Nothing has reported yet (not zero)'], ['file', 'file', 'From Hevy', 'Read from a file you imported from another app']];
     return `${statusbar(false)}${hdr('About and help', { to: rt('st-about', 'st-home') })}
       <div class="scroll"><div class="page screen-anim" style="padding-bottom:40px">
         <section class="card"><div class="row" style="gap:12px"><span class="brandmark" style="width:44px;height:44px">${ICON.brand}</span><div class="stack" style="gap:0"><strong class="t-head">Liftria</strong><span class="t-small">Version 0.1.0 (Phase 0 build)</span></div></div></section>
@@ -2468,6 +2565,261 @@ details.help[open] summary svg { transform: rotate(180deg); }
       </div></div>`;
   }
 
+  // ---------- 1E: example set history and the recovery calculation ----------
+  // Every number on TR-14 and the TR-1 card is computed here from this small example history with the formula in SCREEN_SPECIFICATIONS §2.
+  // Extra example exercises, same shape as EX: [name, equipment, primary, secondary]. Muscles are the example mapping, not a check against the pack.
+  Object.assign(EX, {
+    shrug: ['Dumbbell shrug', 'Dumbbell', ['traps'], []],
+    adduct: ['Hip adduction machine', 'Machine', ['adductors'], []],
+    abduct: ['Hip abduction machine', 'Machine', ['abductors'], []],
+    wrist: ['Wrist curl', 'Dumbbell', ['forearms'], []],
+    thrust: ['Hip thrust', 'Barbell', ['glutes'], ['hamstrings']],
+  });
+  const REC_NOW = Date.UTC(2026, 9, 21, 9, 41);                         // Tue 21 Oct, 09:41 (the prototype's "now")
+  const REC_T = (d, h, m) => Date.UTC(2026, 9, d, h, m);
+  // [label, start, [[exercise, working sets, warm-up sets, minutes after start of the session], ...]]
+  const REC_SESS = [
+    ['Thu 2 Oct · Upper A', REC_T(2, 18, 0), [['bench', 4, 1, 5], ['row', 4, 0, 20], ['ohp', 4, 0, 32], ['pulldown', 4, 0, 42], ['curl', 3, 0, 50], ['pushdown', 3, 0, 55], ['shrug', 3, 0, 60], ['wrist', 3, 0, 64]]],
+    ['Mon 6 Oct · Lower B', REC_T(6, 18, 0), [['legpress', 4, 0, 8], ['rdl', 4, 1, 20], ['split', 3, 0, 32], ['adduct', 3, 0, 42], ['abduct', 3, 0, 48], ['calf', 4, 0, 54]]],
+    ['Thu 16 Oct · Lower B', REC_T(16, 18, 0), [['legpress', 4, 0, 8], ['rdl', 3, 1, 20], ['split', 3, 0, 30], ['thrust', 3, 0, 38], ['calf', 3, 0, 44], ['plank', 1, 0, 49]]],
+    ['Fri 17 Oct · Upper A', REC_T(17, 18, 0), [['bench', 4, 1, 5], ['row', 4, 0, 20], ['ohp', 4, 0, 32], ['pulldown', 4, 0, 42], ['curl', 3, 0, 50], ['pushdown', 3, 0, 55]]],
+    ['Sat 18 Oct · Upper B', REC_T(18, 10, 15), [['incline', 3, 0, 5], ['pullup', 4, 0, 16], ['ohp', 4, 0, 28], ['row', 4, 0, 38], ['curl', 3, 0, 46], ['pushdown', 3, 0, 52]]],
+    ['Mon 20 Oct · Lower A', REC_T(20, 18, 5), [['squat', 4, 2, 5], ['rdl', 3, 0, 20], ['legpress', 3, 0, 30], ['thrust', 3, 0, 38], ['calf', 3, 0, 44], ['plank', 2, 0, 49]]],
+  ];
+  const REC_THR = { hi: 4, mid: 1 };                                      // tunable constants: score bands (SCREEN_SPECIFICATIONS §2)
+  const REC_DECAY = (h) => h < 24 ? 1 : h < 48 ? 0.5 : h < 72 ? 0.25 : 0;
+  const VOL_BAND = (v) => v === 0 ? 0 : v < 6 ? 1 : v < 12 ? 2 : 3;
+  function recCalc(now = REC_NOW) {
+    const out = {};
+    Object.keys(MUSCLE).forEach(k => { out[k] = { score: 0, vol: 0, sets72: 0, lastAny: null, lastPrim: null, parts: [] }; });
+    REC_SESS.forEach(([lab, start, exs]) => exs.forEach(([id, n, wu, off]) => {
+      const t = start + off * 60000, h = (now - t) / 3600000;
+      if (h < 0) return;
+      const [, , prim, sec] = EX[id], dec = REC_DECAY(h);
+      [[prim, 1], [sec, 0.5]].forEach(([ms, credit]) => ms.forEach(m => {
+        const o = out[m], c = n * credit;                                   // warm-up sets (wu) credit 0 and are never added
+        o.score += c * dec; if (h < 168) o.vol += c; if (h < 72) o.sets72 += c;
+        if (c > 0 && (o.lastAny === null || t > o.lastAny)) o.lastAny = t;
+        if (credit === 1 && (o.lastPrim === null || t > o.lastPrim)) o.lastPrim = t;
+        if (dec > 0) o.parts.push(`${lab.split(' · ')[0]}: ${n} × ${credit} × ${dec}`);
+      }));
+    }));
+    Object.values(out).forEach(o => { o.band = o.score >= REC_THR.hi ? 3 : o.score >= REC_THR.mid ? 2 : 0; o.vband = VOL_BAND(o.vol); o.days = o.lastPrim === null ? null : Math.floor((now - o.lastPrim) / 86400000); o.untrained = o.lastPrim === null || (now - o.lastPrim) >= 10 * 86400000; });
+    return out;
+  }
+
+  // ---------- 1E: muscle recovery map (TR-14) ----------
+  const sn = (k) => MUSCLE[k].replace(/ \(.*\)/, '');
+  const lc = (s) => s.charAt(0).toLowerCase() + s.slice(1);
+  const REC_DAY0 = Date.UTC(2026, 9, 21);
+  const dayWord = (t) => { const d = new Date(t), n = Math.round((REC_DAY0 - Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())) / 86400000); return n <= 0 ? 'today' : n === 1 ? 'yesterday' : `${n} days ago`; };
+  const setsTxt = (v) => `${Number.isInteger(v) ? v : v.toFixed(1)} set${v === 1 ? '' : 's'}`;
+  let rpid = 0;
+  const rdefs = (id, sc) => `<defs><pattern id="${id}" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="scale(${sc})"><rect class="pbg" width="5" height="5"/><circle class="pdot" cx="1.25" cy="1.25" r=".85"/><circle class="pdot" cx="3.75" cy="3.75" r=".85"/></pattern></defs>`;
+  const rcls = (bd) => bd === 'u' ? 'ru' : `rr${bd}`;
+  function recMapSvg(bandOf, { mini = false, tap = false, alt = '' } = {}) {
+    const id = `rdots${++rpid}`;
+    const fig = (parts, x) => `<g transform="translate(${x} 0)"><circle class="m n" cx="50" cy="12" r="10"/>${parts.map(([k, t, a, b, c, d, r]) => {
+      const bd = bandOf(k), st = bd === 2 ? ` style="fill:url(#${id})"` : '', ta = tap ? ` data-go="tr-muscles" data-msel="${k}" data-ret` : '';
+      return t === 'e' ? `<ellipse class="m ${rcls(bd)}${tap ? ' tap' : ''}" data-m="${k}"${st}${ta} cx="${a}" cy="${b}" rx="${c}" ry="${d}"/>` : `<rect class="m ${rcls(bd)}${tap ? ' tap' : ''}" data-m="${k}"${st}${ta} x="${a}" y="${b}" width="${c}" height="${d}" rx="${r}"/>`;
+    }).join('')}</g>`;
+    return `<svg class="rmap" viewBox="0 0 210 196" ${alt ? `role="img" aria-label="${alt}"` : 'aria-hidden="true"'}>${rdefs(id, mini ? 2.4 : 1)}${fig(FRONT, 0)}${fig(BACK, 110)}</svg>`;
+  }
+  function swatch(bd) {
+    const id = `rdots${++rpid}`;
+    return `<svg class="rmap rsw" viewBox="0 0 18 18" aria-hidden="true">${bd === 2 ? rdefs(id, 1.3) : ''}<rect class="m ${rcls(bd)}" ${bd === 2 ? `style="fill:url(#${id})"` : ''} x="1.5" y="1.5" width="15" height="15" rx="4.5"/></svg>`;
+  }
+  const REC_LEG = {
+    recent: [[3, 'Higher load, mostly the last 24 h'], [2, 'Some load, 24–72 h'], [0, 'Ready: little or none in 72 h']],
+    volume: [[0, '0'], [1, '1–5'], [2, '6–11'], [3, '12+']],
+    untrained: [['u', 'No direct sets in 10+ days'], [0, 'Trained in the last 10 days']],
+  };
+  const recLegend = (mode) => `${mode === 'volume' ? '<span class="t-small">Sets in the last 7 days</span>' : ''}<div class="rleg" role="list" aria-label="Legend">${REC_LEG[mode].map(([bd, l]) => `<span role="listitem">${swatch(bd)}${l}</span>`).join('')}</div>`;
+  const bandFn = (R, mode) => (k) => mode === 'volume' ? R[k].vband : mode === 'untrained' ? (R[k].untrained ? 'u' : 0) : R[k].band;
+  function recAlt(R, mode) {
+    const by = (f) => Object.keys(R).filter(f).map(k => lc(sn(k))).join(', ') || 'none';
+    if (mode === 'volume') return `Muscle map, an estimate from logged sets. Sets in the last 7 days. 12 or more: ${by(k => R[k].vband === 3)}. 6 to 11: ${by(k => R[k].vband === 2)}. 1 to 5: ${by(k => R[k].vband === 1)}. None: ${by(k => R[k].vband === 0)}.`;
+    if (mode === 'untrained') return `Muscle map, an estimate from logged sets. No direct sets in 10 days or more: ${by(k => R[k].untrained)}. Trained in the last 10 days: ${by(k => !R[k].untrained)}.`;
+    return `Muscle map, an estimate from logged sets. Higher load, mostly the last 24 hours: ${by(k => R[k].band === 3)}. Some load, 24 to 72 hours: ${by(k => R[k].band === 2)}. Ready: ${by(k => R[k].band === 0)}.`;
+  }
+  function recRows(R, mode) {
+    const keys = Object.keys(R), byName = (a, b) => MUSCLE[a] < MUSCLE[b] ? -1 : 1;
+    const word = { recent: { 3: 'Higher load', 2: 'Some load', 0: 'Ready' }, volume: { 3: '12+', 2: '6–11', 1: '1–5', 0: 'None' } };
+    const row = (k, sub, wd, bd, aria) => `<button class="mrow" type="button" data-go="tr-muscles" data-msel="${k}" data-ret aria-label="${aria}. Open its exercises">${swatch(bd)}<span class="grow"><strong>${sn(k)}</strong><span class="t-small num">${sub}</span></span>${wd ? `<span class="mstate">${wd}</span>` : ''}${ICON.chevron}</button>`;
+    if (mode === 'recent') return `<section class="card"><div class="card-head"><h2 class="t-head">All 17 muscles</h2><span class="t-small">most load first</span></div><div class="list">${keys.sort((a, b) => R[b].score - R[a].score || byName(a, b)).map(k => {
+      const o = R[k], sub = o.sets72 > 0 ? `${setsTxt(o.sets72)} · trained ${dayWord(o.lastAny)}` : o.lastAny === null ? 'Not trained yet' : `Last trained ${dayWord(o.lastAny)}`;
+      return row(k, sub, word.recent[o.band], o.band, `${sn(k)}: ${word.recent[o.band]}, ${sub}`);
+    }).join('')}</div></section>`;
+    if (mode === 'volume') return `<section class="card"><div class="card-head"><h2 class="t-head">All 17 muscles</h2><span class="t-small">most sets first</span></div><div class="list">${keys.sort((a, b) => R[b].vol - R[a].vol || byName(a, b)).map(k => {
+      const o = R[k], sub = (o.vol === 0 ? 'No sets this week' : `${setsTxt(o.vol)} this week`) + (o.lastAny === null ? ' · Not trained yet' : ` · trained ${dayWord(o.lastAny)}`);
+      return row(k, sub, word.volume[o.vband], o.vband, `${sn(k)}: ${sub}`);
+    }).join('')}</div></section>`;
+    const un = keys.filter(k => R[k].untrained).sort((a, b) => (R[a].lastPrim ?? -Infinity) - (R[b].lastPrim ?? -Infinity) || (R[a].lastAny ?? -Infinity) - (R[b].lastAny ?? -Infinity) || byName(a, b));
+    const ok = keys.filter(k => !R[k].untrained).sort((a, b) => R[b].lastPrim - R[a].lastPrim || byName(a, b));
+    const unSub = (o) => o.lastAny === null ? 'Not trained yet' : o.lastPrim === null ? `No direct sets yet · helper ${dayWord(o.lastAny)}` : `Last trained ${o.days} days ago`;
+    return `<div class="section-h"><h2>No direct sets in 10+ days (${un.length})</h2></div><section class="card"><div class="list">${un.map(k => `<div class="mrow plain">${swatch('u')}<span class="grow"><strong>${sn(k)}</strong><span class="t-small num">${unSub(R[k])}</span></span><button class="btn btn-secondary btn-sm" type="button" data-go="tr-muscles" data-msel="${k}" data-ret aria-label="Find exercises for ${sn(k)}. ${unSub(R[k])}">Find exercises</button></div>`).join('')}</div></section>
+      <div class="section-h"><h2>Trained in the last 10 days (${ok.length})</h2></div><section class="card"><div class="list">${ok.map(k => { const sub = `Last trained ${dayWord(R[k].lastPrim)}`; return row(k, sub, '', 0, `${sn(k)}: ${sub}`); }).join('')}</div></section>`;
+  }
+  function recLine(R) {
+    const hi = Object.keys(R).filter(k => R[k].band === 3).sort((a, b) => R[b].score - R[a].score), n = hi.length;
+    const first = n ? `${[sn(hi[0]), ...(n > 1 ? [lc(sn(hi[1]))] : [])].join(', ')}${n > 2 ? ` and ${n - 2} more` : ''} trained ${dayWord(Math.max(...hi.map(k => R[k].lastAny)))}` : 'Nothing trained in the last 24 h';
+    const ready = ['chest', 'lats', 'shoulders', 'biceps', 'quadriceps', 'hamstrings'].filter(k => R[k].band === 0).slice(0, 2).map(k => sn(k));
+    return first + (ready.length ? ` · ${ready.join(', ')} ready` : '');
+  }
+  function recCard() {
+    const R = recCalc(), line = recLine(R);
+    return `<button class="card mm-card" type="button" data-go="tr-muscles-map" data-variant="recent" data-ret aria-label="Muscles, an estimate. ${line}. Open the muscle map"><span class="mm-mini">${recMapSvg(bandFn(R, 'recent'), { mini: true })}</span>
+      <span class="stack" style="gap:6px"><span class="row wrap" style="gap:8px"><strong class="t-head">Muscles</strong>${chip('estimate', 'approx', 'Estimate')}</span><span class="mm-line">${line}</span><span class="mm-more">Muscle map${ICON.chevron}</span></span></button>`;
+  }
+  function trMusclesMap(v) {
+    const back = rt('tr-muscles-map', 'tr-home');
+    if (v === 'empty') return `${statusbar(false)}${hdr('Muscles', { to: back, sub: 'Recovery map · estimate' })}
+      <div class="placeholder"><span style="width:190px">${recMapSvg(() => 0, { mini: true })}</span><h1 class="t-title">Log a few workouts and your muscle map fills in</h1><p class="t-body" style="max-width:280px">It shows which muscles you trained recently, how much this week, and which you haven't touched. Estimated from your logged sets.</p><button class="btn btn-train" data-go="tr-preview">Start a workout</button></div>`;
+    const R = recCalc(), mode = v === 'volume' || v === 'untrained' ? v : 'recent';
+    const sub = { recent: 'Last 72 hours · estimate', volume: 'Last 7 days · estimate', untrained: '10 days or more · estimate' }[mode];
+    const intro = { recent: 'Shading weighs the sets you logged in the last 72 hours, newest most.', volume: 'Working sets in the last 7 days. A secondary muscle counts half a set.', untrained: 'Muscles with no direct sets for 10 days or more. Tap one to find exercises.' }[mode];
+    return `${statusbar(false)}${hdr('Muscles', { to: back, sub })}
+      <div class="scroll"><div class="page screen-anim">
+        <div class="rseg3" role="group" aria-label="Map mode">${[['recent', 'Recent'], ['volume', 'Volume'], ['untrained', 'Untrained']].map(([k, l]) => `<button type="button" aria-pressed="${k === mode}" data-go="tr-muscles-map" data-variant="${k}">${l}</button>`).join('')}</div>
+        <section class="card rim-train"><div class="row wrap" style="gap:8px">${chip('estimate', 'approx', 'Estimate')}<span class="t-small" style="flex:1 1 180px">Counted from the sets you log in Liftria. It doesn't know your sleep, soreness or food.</span></div>
+          <div class="rmap-wrap">${recMapSvg(bandFn(R, mode), { tap: true, alt: recAlt(R, mode) })}<div class="bmap-cap t-label" aria-hidden="true"><span>Front</span><span>Back</span></div></div>
+          ${recLegend(mode)}<p class="t-small">${intro}</p></section>
+        ${recRows(R, mode)}
+        <p class="t-small">Warm-up sets count 0. Secondary muscles count half a set. Workouts imported from other apps count like any other. Cardio and sessions with no muscles count 0.</p>
+      </div></div>`;
+  }
+
+  // ---------- 1E: import from another app (IM-1 to IM-4) ----------
+  // Example data only. Hevy file: 144 workouts, 2 of them on days that already have a Liftria workout, so 142 are imported.
+  const IM_SRC = { hevy: ['Hevy', 'Profile → Settings → Export & Import Data'], strong: ['Strong', 'Profile → Settings → Export Strong Data'], fitnotes: ['FitNotes', 'Settings → Spreadsheet Export'], csv: ['Another app (CSV)', 'Any CSV with date, exercise, weight and reps columns'] };
+  const IMP = {
+    unmatched: { n: 142, sets: 3910, from: 'Hevy', range: 'Mar 2023 – Oct 2026', file: 'hevy_workouts.csv', custom: 6 },
+    ok: { n: 142, sets: 3910, from: 'Hevy', range: 'Mar 2023 – Oct 2026', file: 'hevy_workouts_all_matched.csv', custom: 0 },
+    units: { n: 67, sets: 1512, from: 'a CSV file', range: 'Jan 2024 – Sep 2026', file: 'my_workouts.csv', custom: 0 },
+  };
+  const IM_UNM = [['Bench Press (Barbell)', 396, 'Bench press', 'Barbell'], ['Incline Bench Press (Dumbbell)', 228, 'Incline dumbbell press', 'Dumbbell'], ['Lat Pulldown (Cable)', 204, 'Lat pulldown', 'Cable'], ['Triceps Pushdown (Cable)', 180, 'Triceps pushdown', 'Cable'], ['Bulgarian Split Squat (Dumbbell)', 96, 'Bulgarian split squat', 'Dumbbell'], ['Pull Up (Assisted)', 64, 'Assisted pull-up', 'Machine']];
+  const imKind = () => IMP[state.im.kind] || IMP.unmatched;
+  const imCustom = () => state.im.kind === 'unmatched' ? IM_UNM.length - state.im.acc.filter(Boolean).length : 0;
+  const imOrigin = () => state.ret['im-source'] || 'st-data';
+  const imOv = () => ({ 'st-data': 'imported', 'tr-history': 'imported', 'tr-home': 'rich' })[imOrigin()];
+  const srcLn = (t) => `<span class="srcline">${ICON.file}${t}</span>`;
+  // The example imported session (also TR-11 / TR-12): [exercise, sets], 'W' marks a warm-up
+  const IMP_SESS = { name: 'Upper A', date: '12 Aug 2026', start: '18:20', min: 61, ex: [['bench', [['W', 40, 10], ['W', 60, 5], [80, 5], [85, 5], [90, 3], [92.5, 3]]], ['row', [[70, 8], [70, 8], [70, 8]]], ['ohp', [[45, 8], [45, 8], [45, 8]]]] };
+  const impWork = () => IMP_SESS.ex.flatMap(([, s]) => s.filter(x => x[0] !== 'W'));
+  const impVol = () => impWork().reduce((a, [w, r]) => a + w * r, 0);
+
+  function imSource(v) {
+    const sel = state.im.source;
+    if (v === 'picker') {
+      const files = [['hevy_workouts.csv', 'Downloads · 412 kB', state.im.imported ? 'nothingnew' : 'unmatched', state.im.imported ? 'the same Hevy file again: nothing new' : 'Hevy file, 6 exercises not in the library'], ['hevy_workouts_all_matched.csv', 'Downloads · 398 kB', 'ok', 'Hevy file, every exercise matched'], ['my_workouts.csv', 'Downloads · 96 kB', 'units', 'Another app: no unit column'], ['food_diary.csv', 'Downloads · 24 kB', 'invalid', 'Not a workout export'], ['empty_export.csv', 'Downloads · 1 kB', 'empty', 'Headers only']];
+      return `<div class="sysmock">
+        <div class="applogo" aria-hidden="true">${ICON.file.replace('<svg', '<svg width="22" height="22"')}</div><h1>Choose a file to open with Liftria</h1>
+        <p>Liftria reads the file you pick. It cannot see other files.</p>
+        <div class="syslist files" role="group" aria-label="Android file picker, for reference">${files.map(([n, m, k, hint]) => `<button class="pickrow" type="button" data-go="im-preview" data-variant="${k}" data-setv="im-source:default" aria-label="${n}, ${m}. Prototype: ${hint}"><span class="pf">${ICON.file}</span><span class="pn"><b style="font-weight:500">${n}</b><small>${m}</small></span></button>`).join('')}</div>
+        <div class="sysbtns"><button type="button" data-go="im-source" data-variant="default">Cancel</button><span></span></div>
+        <p class="syscap">Android file picker, for reference. In this prototype each file opens a different preview state: ${files.map(f => f[3]).join('; ')}.</p></div>`;
+    }
+    const fut = [['Import through the Hevy account', 'Needs Hevy Pro and the internet'], ['Weight from Apple Health', 'Not available on Android'], ['Export from Liftria', 'Backup and export are planned']];
+    return `${statusbar(false)}${hdr('Import history', { to: rt('im-source', 'st-data'), sub: 'From another app' })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:140px">
+        <h2 class="t-title">Where are you coming from?</h2>
+        <div class="choice" role="group" aria-label="Source app">${Object.entries(IM_SRC).map(([k, [n, p]]) => `<button type="button" data-imsrc="${k}" aria-pressed="${sel === k}"><strong>${n}</strong><small>${k === 'csv' ? p : `${n}: ${p}`}</small></button>`).join('')}</div>
+        <div class="note-box"><div class="row" style="gap:10px;align-items:flex-start"><span style="color:var(--color-domain-health);flex:none">${ICON.lock.replace('<svg', '<svg width="20" height="20"')}</span><p class="t-small">The file stays on this phone. Liftria reads it and saves your workouts locally. Nothing is uploaded.</p></div>
+          <p class="t-small">Importing history doesn't change your plans or templates.</p></div>
+        <section class="card flat"><span class="t-label">Not in this version</span><div class="list">${fut.map(([t, d]) => `<div class="valrow"><div class="grow"><strong style="opacity:.85">${t}</strong><span class="t-small">${d}</span></div>${chip('pending', 'clock', 'Future')}</div>`).join('')}</div></section>
+      </div></div>
+      <div class="dock"><button class="btn btn-primary btn-xl btn-block" type="button" data-go="im-source" data-variant="picker">Choose a file</button></div>`;
+  }
+
+  function imMapRows() {
+    return `<section class="card"><div class="card-head"><h2 class="t-head">${IM_UNM.length} exercises aren't in Liftria's library</h2></div>
+      <p class="t-small">Nothing is dropped and nothing blocks the import. Suggestions are never applied for you: pick one, or keep the exercise as your own. Your choice is remembered next time. Exercises you keep as your own have no muscles until you add them, so they don't count in the muscle map.</p>
+      <div>${IM_UNM.map(([nm, n, lib, eq], i) => { const on = state.im.acc[i];
+        return `<div class="maprow"><div class="mp-name"><strong>${nm}</strong><span class="t-small num">${n} sets in the file</span></div>
+          <div class="mp-sug">${chip('estimate', 'approx', 'Suggested')}<span><b>${lib}</b> <span class="t-small">· ${eq}</span></span></div>
+          <div class="rseg" role="group" aria-label="${nm}: use the suggestion or keep as your own exercise"><button type="button" aria-pressed="${on}" data-imacc="${i}:1">Use “${lib}”</button><button type="button" aria-pressed="${!on}" data-imacc="${i}:0">Keep as my own</button></div></div>`; }).join('')}</div>
+      <span class="t-small">${imCustom()} will be created as your own exercises${imCustom() === IM_UNM.length ? ' (nothing chosen yet)' : ''}.</span></section>`;
+  }
+  function imRecords(v) {
+    if (v === 'unmatched' && !state.im.acc[0]) return `<section class="card rim-eat"><div class="card-head"><h2 class="t-head">Records after the import</h2></div>
+      <p class="t-body">Your heaviest set in <b style="color:var(--color-text-primary)">Bench Press (Barbell)</b> is <b class="num" style="color:var(--color-text-primary)">92.5 kg × 3</b> (from Hevy, 12 Aug 2026). It becomes the first record of that new exercise.</p>
+      <span class="t-small">Choose “Use Bench press” above and the same set updates your Bench press record instead (now 82.5 kg × 5).</span></section>`;
+    return `<section class="card rim-eat"><div class="card-head"><h2 class="t-head">Records after the import</h2></div>
+      <p class="t-body">Your bench record will become <b class="num" style="color:var(--color-text-primary)">92.5 kg × 3</b> (from Hevy, 12 Aug 2026).</p>
+      <div class="deflist"><div><dt>Bench press · heaviest set</dt><dd class="num">82.5 kg × 5 → 92.5 kg × 3</dd></div><div><dt>Bench press · estimated 1RM</dt><dd class="num">96 → 102 kg ${chip('estimate', 'approx', 'Estimate')}</dd></div></div>
+      <span class="t-small">9 more records change. Records are recalculated from all sets, the same as after an edit.</span></section>`;
+  }
+  function imPreview(v) {
+    const hd = (sub) => `${statusbar(false)}${hdr('Review import', { to: 'im-source', sub })}`;
+    const src = IM_SRC[state.im.source][0];
+    if (v === 'invalid') return `${hd('food_diary.csv')}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-warning);color:var(--color-status-warning)">${ICON.warn}</span><h1 class="t-title">This doesn't look like a ${src} export</h1>
+      <p class="t-body" style="max-width:300px">Liftria looked for columns like <b>title</b>, <b>start_time</b>, <b>exercise_title</b>, <b>weight_kg</b> and <b>reps</b>. This file has <b>Date</b>, <b>Food</b>, <b>Calories</b> and <b>Protein</b>.</p>
+      <p class="t-small" style="max-width:300px">Nothing was imported.</p>
+      <button class="btn btn-primary" data-go="im-source" data-variant="picker">Choose another file</button><button class="btn btn-ghost" data-go="im-source" data-variant="default">Pick a different app</button></div>`;
+    if (v === 'nothingnew') return `${hd('hevy_workouts.csv')}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.check}</span><h1 class="t-title">Nothing new to import</h1>
+      <p class="t-body" style="max-width:300px">All 144 workouts in this file are already in Liftria: each of their days already has a workout. Importing the same file again adds nothing.</p>
+      <button class="btn btn-primary" data-go="${imOrigin()}" data-variant="${imOv()}">Done</button><button class="btn btn-ghost" data-go="im-source" data-variant="picker">Choose another file</button></div>`;
+    if (v === 'empty') return `${hd('empty_export.csv')}<div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.list}</span><h1 class="t-title">No workouts found in this file</h1>
+      <p class="t-body" style="max-width:300px">The columns look right, but there are no workout rows under them. Check that the export covers the dates you want.</p>
+      <p class="t-small" style="max-width:300px">Nothing was imported.</p>
+      <button class="btn btn-primary" data-go="im-source" data-variant="picker">Choose another file</button><button class="btn btn-ghost" data-go="im-source" data-variant="default">Pick a different app</button></div>`;
+    const k = IMP[v] || IMP.unmatched, units = v === 'units', um = v === 'unmatched';
+    const fact = (ic, t) => `<li>${ICON[ic]}<span>${t}</span></li>`;
+    const facts = [
+      units ? fact('warn', '<b>Warm-ups weren\'t marked in this file.</b> Every set imports as a working set.') : fact('check', '<b>412 sets are marked as warm-ups.</b> They stay warm-ups and are left out of records and volume.'),
+      fact('calendar', units ? '<b>No days overlap</b> with workouts already in Liftria.' : '<b>2 days already have a workout in Liftria</b> (2 Oct, 4 Oct). Those 2 workouts are skipped, so importing this file again adds nothing.'),
+      fact('list', um ? '<b>35 of 41 exercises</b> matched the library by name. Matching is shown below.' : units ? '<b>18 of 18 exercises</b> matched the library by name.' : '<b>All 41 exercises</b> matched the library by name.'),
+      units ? '' : fact('scale', 'Weights read as <b>kg</b>, from the <b>weight_kg</b> column.'),
+    ].join('');
+    const unitCard = units ? `<section class="card rim-train"><div class="card-head"><h2 class="t-head">Were these weights in kg or lb?</h2>${chip('pending', 'clock', 'Required')}</div>
+      <p class="t-small">This file has no unit column, and Liftria won't guess. Pick one to continue.</p>
+      <div class="rseg" role="group" aria-label="Weight unit in this file"><button type="button" aria-pressed="false" data-enable="#imp-btn">kg</button><button type="button" aria-pressed="false" data-enable="#imp-btn">lb</button></div>
+      <span class="t-small" id="imhint">Import is off until you choose.</span></section>` : '';
+    return `${hd(`${k.file} · from ${k.from}`)}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:170px">
+        <section class="card rim-train"><div class="card-head"><span class="t-label">Ready to import</span>${chip('file', 'file', `From ${k.from}`)}</div>
+          <div class="imstat">${fmt(k.n)} <span class="t-body" style="font-size:18px;font-weight:600">workouts</span></div>
+          <div class="imsum"><div class="stat"><b>${fmt(k.sets)}</b><span>sets</span></div><div class="stat" style="grid-column:span 2"><b style="font-size:16px;line-height:1.3;white-space:nowrap">${k.range}</b><span>first to last workout</span></div></div></section>
+        <section class="card"><ul class="imfacts">${facts}</ul></section>
+        ${unitCard}${um ? imMapRows() : ''}${units ? '<section class="card flat"><p class="t-small">Records are shown once you choose the unit.</p></section>' : imRecords(v)}
+      </div></div>
+      <div class="dock"><button class="btn btn-primary btn-xl btn-block" id="imp-btn" type="button" ${units ? 'aria-disabled="true"' : `data-go="im-progress" data-imkind="${v}"`}>Import ${fmt(k.n)} workouts</button><button class="btn btn-ghost btn-block" type="button" data-go="${imOrigin()}">Cancel</button></div>`;
+  }
+  function imProgress() {
+    const k = imKind(), done = Math.round(k.n * 61 / 142);
+    return `${statusbar(false)}${hdr('Import history', {})}
+      <div class="scroll"><div class="page screen-anim" style="justify-content:center;min-height:100%">
+        <section class="card rim-train" style="justify-items:start">
+          <span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.import}</span>
+          <h1 class="t-title">Importing…</h1>
+          <div class="imstat"><span id="im-n">${done}</span> <span class="t-body" style="font-size:18px;font-weight:600">of ${k.n} workouts</span></div>
+          <div class="imbar" style="width:100%" role="progressbar" aria-label="Workouts imported" aria-valuemin="0" aria-valuemax="${k.n}" aria-valuenow="${done}"><i id="im-bar" style="width:${(done / k.n * 100).toFixed(1)}%"></i></div>
+          <p class="t-small">This usually takes a few seconds. It can't be cancelled halfway: everything is saved in one step, so it either all happens or none of it does.</p>
+        </section></div></div>`;
+  }
+  function imDone(v) {
+    const k = imKind(), o = imOrigin(), custom = imCustom();
+    if (v === 'failed' || v === 'failedfile') {
+      const file = v === 'failedfile';
+      return `${statusbar(false)}${hdr('Import history', { to: 'im-preview' })}
+        <div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-warning);color:var(--color-status-warning)">${ICON.warn}</span><h1 class="t-title">Nothing was imported</h1>
+          <p class="t-body" style="max-width:300px">${file ? 'Liftria couldn\'t read the file all the way through. It may have been moved or changed while importing.' : 'This phone is almost out of storage. Liftria needs about 4 MB and found 1.1 MB free.'}</p>
+          <p class="t-small" style="max-width:300px">${file ? 'No workouts were saved.' : 'No workouts were saved. Free some space, then try again.'} Your existing workouts are untouched.</p>
+          <button class="btn btn-primary" data-go="im-progress" data-imkind="${state.im.kind}">Try again</button><button class="btn btn-ghost" data-go="${o}">Back to ${o === 'tr-history' ? 'History' : o === 'tr-home' ? 'Train' : 'Settings'}</button></div>`;
+    }
+    state.im.imported = true;
+    const ov = imOv();
+    const facts = [['check', `<b>${fmt(k.sets)} sets</b> saved, ${k.from === 'Hevy' ? 'warm-ups kept as warm-ups' : 'all as working sets'}`], ...(custom ? [['plus', `<b>${custom} custom exercise${custom === 1 ? '' : 's'}</b> created`]] : []), ['trophy', k.from === 'Hevy' ? `<b>Records updated</b>, including ${state.im.kind === 'ok' || state.im.acc[0] ? 'your Bench press' : 'a new one for Bench Press (Barbell)'}` : '<b>Records updated</b>'], ...(k.from === 'Hevy' ? [['calendar', '<b>2 workouts skipped</b>: those days already had a workout']] : [])];
+    return `${statusbar(false)}${hdr('Import history', {})}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:170px">
+        <section class="card rim-train" style="justify-items:start"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.check}</span><h1 class="t-title" role="status">${fmt(k.n)} workouts imported</h1>
+          <ul class="imfacts" style="width:100%">${facts.map(([i, t]) => `<li>${ICON[i]}<span>${t}</span></li>`).join('')}</ul></section>
+        <div class="note-box"><p class="t-small"><b style="color:var(--color-text-primary)">Changed your mind?</b> Settings → Data and storage → Undo import removes exactly these ${fmt(k.n)} workouts. It stays there until your next import.</p></div>
+      </div></div>
+      <div class="dock"><button class="btn btn-primary btn-xl btn-block" type="button" data-go="tr-history" data-variant="imported">View history</button><button class="btn btn-secondary btn-block" type="button" data-go="${o}" ${ov ? `data-variant="${ov}"` : ''}>Done</button></div>`;
+  }
+  const IMPORT = { 'im-source': imSource, 'im-preview': imPreview, 'im-progress': imProgress, 'im-done': imDone };
+
   const PROGRESS = { 'pr-home': prHome, 'pr-strength': prStrength, 'pr-nutrition': prNutrition, 'pr-body': prBody, 'pr-activity': prActivity, 'pr-weight': prWeight, 'he-home': heHome, 'he-metric': heMetric, 'he-record': heRecord, 'he-perms': hePerms, 'he-guide': heGuide, 'he-trouble': heTrouble };
   const SETTINGS = { 'st-home': stHome, 'st-profile': stProfile, 'st-units': stUnits, 'st-hiku': stHiku, 'st-notif': stNotif, 'st-data': stData, 'st-about': stAbout };
 
@@ -2477,11 +2829,12 @@ details.help[open] summary svg { transform: rotate(180deg); }
   const SCREENS = [
     ['Onboarding', [['onb-welcome', '1 · Welcome'], ['onb-privacy', '2 · Privacy and local storage'], ['onb-profile', '3 · Profile (optional)'], ['onb-goals', '4 · Goal and activity'], ['onb-target', '5 · Estimated target'], ['onb-health', '6 · Health Connect'], ['onb-watch', '7 · Galaxy Watch guidance'], ['onb-key', '8 · Hiku API key (optional)'], ['onb-done', '9 · Done']]],
     ['Today', [['home', 'TD · Today'], ['energy', 'DS-1 · Energy states sheet']]],
-    ['Train (1B)', [['tr-home', 'TR-1 · Train home'], ['tr-plans', 'TR-2 · Plans and templates'], ['tr-template', 'TR-3 · Template editor'], ['tr-library', 'TR-4 · Exercise library'], ['tr-muscles', 'TR-5 · Muscle browser'], ['tr-exercise', 'TR-6 · Exercise detail'], ['tr-preview', 'TR-7 · Workout preview'], ['tr-active', 'TR-8 · Active workout'], ['tr-lock', 'TR-9 · Rest timer on the lock screen'], ['tr-summary', 'TR-10 · Finish summary'], ['tr-history', 'TR-11 · History'], ['tr-session', 'TR-12 · Session detail'], ['tr-records', 'TR-13 · Records']]],
+    ['Train (1B)', [['tr-home', 'TR-1 · Train home'], ['tr-plans', 'TR-2 · Plans and templates'], ['tr-template', 'TR-3 · Template editor'], ['tr-library', 'TR-4 · Exercise library'], ['tr-muscles', 'TR-5 · Muscle browser'], ['tr-exercise', 'TR-6 · Exercise detail'], ['tr-preview', 'TR-7 · Workout preview'], ['tr-active', 'TR-8 · Active workout'], ['tr-lock', 'TR-9 · Rest timer on the lock screen'], ['tr-summary', 'TR-10 · Finish summary'], ['tr-history', 'TR-11 · History'], ['tr-session', 'TR-12 · Session detail'], ['tr-records', 'TR-13 · Records'], ['tr-muscles-map', 'TR-14 · Muscle recovery map']]],
     ['Eat (1C)', [['ea-home', 'EA-1 · Eat home'], ['ea-add', 'EA-2 · Add food'], ['ea-portion', 'EA-3 · Portion picker'], ['ea-meal', 'EA-4 · Meal detail'], ['ea-food', 'EA-5 · Create a food'], ['ea-targets', 'EA-6 · Targets'], ['ea-history', 'EA-7 · History and trends'], ['qa-sheet', 'QA-1 · Quick add sheet']]],
     ['Hiku (1C)', [['hk-home', 'HK-1 · Hiku home'], ['hk-send', 'HK-2 · Before sending'], ['hk-analyze', 'HK-3 · Analyzing'], ['hk-result', 'HK-4 · Result review'], ['hk-error', 'HK-5 · Errors'], ['hk-usage', 'HK-6 · Usage and privacy']]],
     ['Progress (1D)', [['pr-home', 'PR-1 · Progress home'], ['pr-strength', 'PR-2 · Strength'], ['pr-nutrition', 'PR-3 · Nutrition trends'], ['pr-body', 'PR-4 · Body'], ['pr-activity', 'PR-5 · Activity'], ['pr-weight', 'PR-6 · Log weight (sheet)']]],
     ['Health (1D)', [['he-home', 'HE-1 · Health overview'], ['he-metric', 'HE-2 · Metric detail'], ['he-record', 'HE-3 · Record and source detail'], ['he-perms', 'HE-4 · Connection and permissions'], ['he-guide', 'HE-5 · Samsung Health sync guide'], ['he-trouble', 'HE-6 · Troubleshoot missing watch data']]],
+    ['Import (1E)', [['im-source', 'IM-1 · Choose source'], ['im-preview', 'IM-2 · Preview'], ['im-progress', 'IM-3 · Importing'], ['im-done', 'IM-4 · Done']]],
     ['Settings (1D)', [['st-home', 'ST-1 · Settings home'], ['st-profile', 'ST-2 · Profile and goals'], ['st-units', 'ST-3 · Units and appearance'], ['st-hiku', 'ST-4 · Hiku and API key'], ['st-notif', 'ST-5 · Notifications'], ['st-data', 'ST-6 · Data and storage'], ['st-about', 'ST-7 · About and help']]],
   ];
   const VARIANTS = {
@@ -2493,8 +2846,13 @@ details.help[open] summary svg { transform: rotate(180deg); }
     'tr-active': [['log', 'Logging a set'], ['rest', 'Rest timer + Undo'], ['notif', 'Notification ask (first rest)'], ['denied', 'Notifications denied'], ['discard', 'Discard confirmation'], ['types', 'Other exercise types'], ['large', 'Text size 200%']],
     'tr-lock': [['rest', 'Rest running'], ['done', 'Rest over']],
     'tr-summary': [['pr', 'New records'], ['nopr', 'No records']],
-    'tr-history': [['list', 'Populated'], ['empty', 'Empty'], ['deleted', 'After delete, with Undo']],
-    'tr-session': [['view', 'View'], ['edit', 'Editing sets'], ['delete', 'Delete confirmation']],
+    'tr-history': [['list', 'Populated'], ['empty', 'Empty'], ['deleted', 'After delete, with Undo'], ['imported', 'After an import (Imported from Hevy)']],
+    'tr-session': [['view', 'View'], ['edit', 'Editing sets'], ['delete', 'Delete confirmation'], ['imported', 'Imported from Hevy']],
+    'tr-muscles-map': [['recent', 'Recent'], ['volume', 'Volume'], ['untrained', 'Untrained'], ['empty', 'Empty'], ['large', 'Text size 200%']],
+    'im-source': [['default', 'Default'], ['picker', 'Android file picker (reference)']],
+    'im-preview': [['ok', 'OK: every exercise matched'], ['unmatched', 'Unmatched exercises'], ['units', 'Unit needed (kg or lb)'], ['invalid', 'Not the expected format'], ['empty', 'No workouts in the file'], ['nothingnew', 'Nothing new: same file imported before']],
+    'im-progress': [['progress', 'Importing']],
+    'im-done': [['done', 'Done'], ['failed', 'Failed: storage full'], ['failedfile', 'Failed: file unreadable']],
     'ea-home': [['rich', 'Populated day'], ['first', 'First day, nothing logged'], ['over', 'Over target'], ['notarget', 'No calorie target'], ['hidden', 'Numbers hidden'], ['added', 'After adding food, with Undo'], ['deleted', 'After deleting a meal, with Undo'], ['hikusaved', 'After saving a Hiku estimate'], ['hikuedited', 'After saving an edited estimate']],
     'ea-add': [['recents', 'Recents'], ['search', 'Search: greek yog'], ['noresults', 'Search, no results'], ['offline', 'Offline'], ['added', 'After one-tap add, with Undo']],
     'ea-portion': [['default', 'Default'], ['large', 'Text size 200%']],
@@ -2522,7 +2880,7 @@ details.help[open] summary svg { transform: rotate(180deg); }
     'st-profile': [['default', 'Default'], ['changed', 'Weight edited, target would change']],
     'st-hiku': [['ready', 'Key saved'], ['nokey', 'No key'], ['test', 'Testing the key'], ['tested', 'Test result'], ['replace', 'Replacing the key'], ['delete', 'Delete confirmation']],
     'st-notif': [['allowed', 'Allowed'], ['denied', 'Denied in Android'], ['mealson', 'Meal reminders on']],
-    'st-data': [['default', 'Default'], ['cleared', 'After clearing the health cache'], ['deleteall', 'Delete all: confirmation'], ['typed', 'Delete all: DELETE typed']],
+    'st-data': [['default', 'Default'], ['cleared', 'After clearing the health cache'], ['deleteall', 'Delete all: confirmation'], ['typed', 'Delete all: DELETE typed'], ['imported', 'After an import, with Undo import'], ['undoimport', 'Undo import: confirmation'], ['undone', 'After Undo import']],
     'hk-error': [['offline', 'Offline'], ['auth', 'Key rejected (401/403)'], ['ratelimit', 'Rate limit (429)'], ['server', 'Server error (5xx)'], ['refusal', 'Refusal'], ['cutoff', 'Cut-off answer'], ['timeout', 'Timeout (45 s)']],
   };
   const vOf = (s) => state.v[s] || (VARIANTS[s] ? VARIANTS[s][0][0] : '');
@@ -2546,9 +2904,10 @@ details.help[open] summary svg { transform: rotate(180deg); }
     else if (TRAIN[s]) html = TRAIN[s](vOf(s)) + (isFocus(s, vOf(s)) ? '' : (s !== 'tr-home' && vOf('tr-home') === 'resume' ? minibar() : '') + nav('tr-home'));
     else if (PROGRESS[s]) html = PROGRESS[s](vOf(s)) + chrome(s, 'pr-home');
     else if (SETTINGS[s]) html = SETTINGS[s](vOf(s)) + chrome(s, '');
+    else if (IMPORT[s]) html = IMPORT[s](vOf(s)) + chrome(s, '');
     else html = today('rich') + nav('home');
     screenEl.innerHTML = html;
-    screenEl.classList.toggle('fs200', ['tr-active', 'ea-portion', 'hk-result', 'st-home', 'he-home', 'pr-body'].includes(s) && vOf(s) === 'large');
+    screenEl.classList.toggle('fs200', ['tr-active', 'ea-portion', 'hk-result', 'st-home', 'he-home', 'pr-body', 'tr-muscles-map'].includes(s) && vOf(s) === 'large');
     screenEl.classList.toggle('has-mini', html.includes('class="minibar"'));
     const deck = screenEl.querySelector('#deck'), dotsEl = screenEl.querySelector('#deck-dots');
     if (deck && dotsEl) deck.addEventListener('scroll', () => {
@@ -2563,6 +2922,15 @@ details.help[open] summary svg { transform: rotate(180deg); }
     // Prototype behavior: Send moves on to the result after a moment; a rate-limit error counts down and then unlocks Retry.
     if (s === 'hk-analyze' && vOf(s) === 'working' && autoAdvance) timer = setTimeout(() => goTo('hk-result', 'result'), 3000);
     if (s === 'he-trouble' && vOf(s) === 'checking' && autoAdvance) timer = setTimeout(() => goTo('he-trouble', state.fixed ? 'found' : 'issue'), 2200);
+    if (s === 'im-progress' && autoAdvance) {
+      const k = imKind(); let c = Math.round(k.n * 61 / 142);
+      timer = setInterval(() => {
+        c = Math.min(k.n, c + Math.ceil(k.n / 12));
+        const t = screenEl.querySelector('#im-n'), b = screenEl.querySelector('#im-bar');
+        if (t) t.textContent = c; if (b) { b.style.width = (c / k.n * 100).toFixed(1) + '%'; b.parentElement.setAttribute('aria-valuenow', c); }
+        if (c >= k.n) { clearInterval(timer); timer = setTimeout(() => goTo('im-done', 'done'), 600); }
+      }, 160);
+    }
     if (s === 'st-hiku' && vOf(s) === 'test' && autoAdvance) timer = setTimeout(() => goTo('st-hiku', 'tested'), 1800);
     if (s === 'hk-error' && vOf(s) === 'ratelimit') {
       let n = 30;
@@ -2584,11 +2952,18 @@ details.help[open] summary svg { transform: rotate(180deg); }
   screenEl.addEventListener('click', (e) => {
     const goal = e.target.closest('[data-goal]'), act = e.target.closest('[data-act]'), go = e.target.closest('[data-go]');
     if (lpFired) { lpFired = false; return; }
+    const ia = e.target.closest('[data-imacc]'), isr = e.target.closest('[data-imsrc]');
+    if (ia) { const [i, val] = ia.dataset.imacc.split(':'); state.im.acc[+i] = val === '1'; const sc = screenEl.querySelector('.scroll'), top = sc ? sc.scrollTop : 0; render(); const sc2 = screenEl.querySelector('.scroll'); if (sc2) sc2.scrollTop = top; return; }
+    if (isr) { state.im.source = isr.dataset.imsrc; render(); return; }
     const rv = e.target.closest('[data-reveal]'), ths = e.target.closest('[data-theme-set]'), sts = e.target.closest('[data-style-set]'), sg = e.target.closest('.rseg button, .rseg3 button');
     if (rv) { const t = screenEl.querySelector(rv.dataset.reveal), h = screenEl.querySelector(rv.dataset.hide), on = t.hidden; t.hidden = !on; if (h) h.hidden = on; rv.setAttribute('aria-expanded', String(on)); rv.textContent = on ? rv.dataset.labelHide : 'Show estimate'; return; }
     if (ths) { setTheme(ths.dataset.themeSet); render(); return; }
     if (sts) { state.style = sts.dataset.styleSet; render(); return; }
-    if (sg && !sg.dataset.go) { if (sg.getAttribute('aria-disabled') !== 'true') sg.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === sg))); return; }
+    if (sg && !sg.dataset.go) {
+      if (sg.getAttribute('aria-disabled') !== 'true') sg.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === sg)));
+      if (sg.dataset.enable) { const t = screenEl.querySelector(sg.dataset.enable), h = screenEl.querySelector('#imhint'); if (t) { t.removeAttribute('aria-disabled'); t.dataset.go = 'im-progress'; t.dataset.imkind = 'units'; } if (h) h.textContent = `Weights will be read as ${sg.textContent}.`; }
+      return;
+    }
     const cyc = e.target.closest('[data-cycle-meal]'), sw = e.target.closest('[role="switch"]'), tk = e.target.closest('[data-tick]'), un = e.target.closest('[data-unit]');
     if (cyc) { const sc = screenEl.querySelector('.scroll'), top = sc ? sc.scrollTop : 0; state.meal = MEALS[(MEALS.indexOf(state.meal) + 1) % MEALS.length]; render(); const sc2 = screenEl.querySelector('.scroll'); if (sc2) sc2.scrollTop = top; return; }
     if (sw) { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); if (sw.dataset.shows) { const t = screenEl.querySelector(sw.dataset.shows); if (t) t.hidden = sw.getAttribute('aria-checked') !== 'true'; } return; }
@@ -2608,7 +2983,8 @@ details.help[open] summary svg { transform: rotate(180deg); }
       if (dest !== state.screen) { if (go.dataset.ret !== undefined) state.ret[dest] = state.screen; else if (go.dataset.back === undefined) delete state.ret[dest]; }
       if (dest === 'pr-weight' && state.screen !== 'pr-weight') state.wFrom = state.screen === 'qa-sheet' ? state.qaFrom : state.screen;
       if (dest === 'he-trouble') state.fixed = go.dataset.fix !== undefined || (state.screen === 'he-trouble' && vOf('he-trouble') === 'found');
-      if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; if (go.dataset.meal) state.meal = go.dataset.meal; if (go.dataset.day) state.day = go.dataset.day; if (go.dataset.go === 'qa-sheet') state.qaFrom = state.screen; autoAdvance = ['hk-analyze', 'he-trouble', 'st-hiku'].includes(go.dataset.go) && go.dataset.variant !== 'tested'; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
+      if (go.dataset.msel) state.msel = go.dataset.msel; if (go.dataset.imkind) state.im.kind = go.dataset.imkind; if (go.dataset.setv) { const [sc, vv] = go.dataset.setv.split(':'); state.v[sc] = vv; }
+      if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; if (go.dataset.meal) state.meal = go.dataset.meal; if (go.dataset.day) state.day = go.dataset.day; if (go.dataset.go === 'qa-sheet') state.qaFrom = state.screen; autoAdvance = ['hk-analyze', 'he-trouble', 'st-hiku', 'im-progress'].includes(go.dataset.go) && go.dataset.variant !== 'tested'; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
   });
   // ST-6: the Delete everything button wakes up only when the field reads DELETE exactly.
   screenEl.addEventListener('input', (e) => { if (e.target.id !== 'del-in') return; const b = screenEl.querySelector('#del-btn'), ok = e.target.value === 'DELETE'; if (ok) { b.removeAttribute('aria-disabled'); b.dataset.go = 'onb-welcome'; } else { b.setAttribute('aria-disabled', 'true'); delete b.dataset.go; } });

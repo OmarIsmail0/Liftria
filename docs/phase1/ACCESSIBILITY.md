@@ -231,6 +231,68 @@ The worst case after the fix is **3.38 (dark, bare page over the coral glow)** a
 - **First-render finding, fixed:** at 200% the PR-4 Body fat row kept a 15px title next to a 26px description. The title now follows the heading scale.
 - The other 1D screens use the same wrapping rows and cards; they are specified, not drawn, and get the same check in Phase 4.
 
+## Import and muscle map (1E addendum, Future · Phase 3)
+
+### Contrast of the recovery shading and the new pairs (worst case glass / Solid)
+
+Method as in 1D: WCAG formula in Python (`c1e.py` in the build scratch, not committed); each color is composited over the card fill (glass .62 or .78, with and without the sheen) over each of the four glows at full strength and over the plain aurora base, and over the Solid surface. Lowest value per pair. **The "all four glows stacked" extreme is left out of the table** (the glows sit in different corners; same reasoning as 1D) and quoted under it. The numbers were checked against pixels sampled from the rendered prototype.
+
+| Pair | Dark (glass / Solid) | Light (glass / Solid) | Needs |
+|---|---|---|---|
+| Solid step (`color.domain.train`) vs the card | 5.27 / 7.81 | 5.58 / 6.24 | 3:1 |
+| 55% step (the pattern's base) vs the card | **2.58 / 3.22** | **2.44 / 2.54** | 3:1 (see below) |
+| 25% step vs the card | **1.52 / 1.61** | **1.46 / 1.48** | 3:1 (see below) |
+| Ready fill (`color.track`) vs the card | 1.22 / 1.29 | 1.20 / 1.20 | decorative |
+| Dots (`text.primary`) on the 55% step | 3.90 / 4.79 | 6.66 / 7.14 | 3:1 |
+| Ready region outline (`color.border.control`) vs the card | 4.24 / 6.28 | 4.98 / 5.56 | 3:1 |
+| Shaded and untrained outlines (`color.domain.train`) vs the card | 5.27 / 7.81 | 5.58 / 6.24 | 3:1 |
+| `border.control` vs the ready fill (the inside edge) | 3.22 / 4.87 | 4.15 / 4.62 | 3:1 |
+| Legend and row sub-line text (`text.secondary`) vs the card | 6.85 / 10.15 | 6.54 / 7.31 | 4.5:1 |
+| Row title, count and state words (`text.primary`) vs the card | 10.40 / 15.41 | 16.25 / 18.15 | 4.5:1 |
+| Small labels (`text.tertiary`) vs the card | 5.14 / 7.62 | 5.05 / 5.63 | 4.5:1 |
+| `chip-file`: `text.secondary` on `bg.raised` | 9.18 | 7.31 | 4.5:1 |
+| Steps against each other: solid vs 55% / 55% vs 25% / 25% vs ready fill | 1.98 / 1.70 / 1.15 (glass), 2.43 / 1.99 / 1.25 (Solid) | 2.29 / 1.67 / 1.22 (glass), 2.45 / 1.72 / 1.23 (Solid) | — |
+
+All-four-glows extreme (dark, card with sheen): ready outline 3.04, shaded outline 3.78, dots on the 55% step 3.46 (still ≥ 3:1). Sampled from the rendered dark TR-14: solid 7.82, the 55% step's base pixels 2.99; light: 6.18 and 2.56.
+
+**What this means, honestly.**
+- **Outlines pass.** Every region has an outline of at least 3:1 against its card: `border.control` for neutral regions, the train color for shaded ones. The fill steps are not what makes a region findable.
+- **The fill steps on their own don't reach 3:1.** The 55% step measures 2.4 to 3.3, the 25% step 1.5, and the steps differ from each other by only 1.2 to 2.4. So **no band depends on fill darkness alone.** Each band has other cues:
+  - the **dot pattern** on the middle step (dots 3.9 to 7.1:1 against it);
+  - the **outline color**, train versus neutral (the 25% and "ready" regions differ in outline color and dash, not just fill);
+  - the **dashed outline** on the untrained highlight;
+  - the **legend with words** next to the map, and the **list** under it with a number and a word for every muscle;
+  - the **text alternative** of the map.
+- **Risk to check on the device:** in `volume`, the 25% step ("1–5 sets") and the neutral step ("0") differ on the map mainly by outline color and a faint fill. The list is the reliable reader of that difference. If this proves too subtle, make the 25% step a visible hatch (a second pattern) rather than adding colors.
+- **No red and no green** anywhere in the map or the import screens; "ready" is neutral.
+
+### Text alternative for the map
+
+The map is `role="img"` with an `aria-label` built from the same data as the shading. The regions inside it are not separate controls for TalkBack; the list below is the way to read and open each muscle. The wording follows the mode (the example data, 21 Oct):
+
+- **Recent:** "Muscle map, an estimate from logged sets. Higher load, mostly the last 24 hours: glutes, hamstrings, quads. Some load, 24 to 72 hours: abs, biceps, calves, lats, lower back, middle back, shoulders, triceps. Ready: abductors, adductors, chest, forearms, neck, traps."
+- **Volume:** "Muscle map, an estimate from logged sets. Sets in the last 7 days. 12 or more: biceps, glutes, hamstrings, lats, middle back, quads, shoulders, triceps. 6 to 11: calves, chest. 1 to 5: abs, forearms, lower back. None: abductors, adductors, neck, traps."
+- **Untrained:** "Muscle map, an estimate from logged sets. No direct sets in 10 days or more: abductors, adductors, forearms, lower back, neck, traps. Trained in the last 10 days: …".
+- **TR-1 card:** "Muscles, an estimate. Glutes, hamstrings and 1 more trained yesterday · Chest ready. Open the muscle map."
+- A **muscle row** reads as one sentence: "Glutes: Higher load, 8 sets · trained yesterday. Open its exercises." An untrained row: "Traps: Last trained 18 days ago" with a **Find exercises** button whose label names the muscle.
+- The legend is a list ("Legend", each item a list item), and each swatch is hidden from screen readers because its words carry the meaning.
+
+### Rules
+
+1. **Touch targets.** The automated check reports no button under 48dp in IM-1 to IM-4, TR-14, the TR-1 card, TR-11, TR-12 or ST-6 in any state, dark and light (the file rows of the Android picker mock are 56dp). The `.link` buttons (the two "Switching from another app?" links) were measured separately: 48dp. The **map regions are smaller than 48dp** by design (the whole figure is about 280dp wide with 17 regions); they duplicate the rows, as TR-5's regions duplicate its chips, and are not the only way to open a muscle.
+2. **Never color alone.** Every shading step has words in the legend and in the list; the middle step has a pattern; the untrained highlight has a dashed outline. The mode control is a pressed-state button group with text, not color.
+3. **The estimate is announced.** The `estimate` chip and its line come before the map in reading order, so TalkBack users hear "estimate" and "doesn't know your sleep, soreness or food" first.
+4. **Import progress.** The bar is a progress bar with "Workouts imported", 0 to N. It is announced at 25% steps (not for every row) and the final result is a polite status: "142 workouts imported". Under reduced motion the bar changes without animation.
+5. **Preview before saving.** The Import button is the only action that writes. While it is disabled (the unit question), the hint under the control says why, and the button keeps its name ("Import 67 workouts, off until you choose kg or lb").
+6. **Mapping rows** are grouped: each two-way control is labelled with the file's exercise name ("Bench Press (Barbell): use the suggestion or keep as your own exercise"), and the *Suggested* chip is text, not color.
+7. **Calm language:** "trained recently", "higher load", "ready"; never "fatigued", "damaged" or "not recovered". Failures are amber with a plain reason ("This phone is almost out of storage"), never red.
+8. **Reduced motion:** the muscle map has no animation; the import bar doesn't animate; the screen-enter transition is already off.
+
+### Font scaling at 200% (rendered for TR-14, dark and light; CSS emulation, not Android's setting)
+
+- **TR-14 recent.** The mode control keeps its three labels on one line (buttons grow to 56dp); the estimate line wraps to four lines; the map keeps its width; the legend becomes one column with 26dp swatches; each muscle row grows to about 84dp and its state word ("Higher load") moves to its own line under the name, and the chevron is dropped. Nothing is clipped or truncated.
+- **IM-1 to IM-4 and the TR-1 card** use the same wrapping rows, cards and two-way controls as 1C and 1D (buttons grow, text wraps, the dock stays in reach); they are specified, not drawn at 200%, and get the same check in Phase 3.
+
 ## Testing plan (Phase 2+)
 
 - Automated contrast check of the token file in CI.

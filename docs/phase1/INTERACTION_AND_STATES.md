@@ -277,6 +277,56 @@ Every case keeps the input ("Your photo is still here" or "Your description is s
 | DELETE field | Enables Delete everything only for exactly DELETE | Case-sensitive |
 | Clear health cache | Deletes cached Health Connect rows only | Snackbar confirms |
 
+## Import and muscle map (1E addendum, Future · Phase 3)
+
+### States per screen
+
+| Screen | Loading | Empty | Error | Other states |
+|---|---|---|---|---|
+| IM-1 Choose source | — | — | — | Default; the Android file picker (reference) |
+| IM-2 Preview | "Reading…" while the file is parsed (usually under a second; larger files show a bar) | `empty`: "No workouts found in this file." · `nothingnew`: "Nothing new to import." | `invalid`: "This doesn't look like a Hevy export" with the columns expected and found; too large: the same layout | `ok`, `unmatched`, `units` (Import off until kg or lb is chosen) |
+| IM-3 Importing | The screen itself | — | A failure goes to IM-4 `failed` | One state; no cancel |
+| IM-4 Done | — | — | `failed` (storage full), `failed` (file unreadable): "Nothing was imported" + the reason | `done` |
+| ST-6 import rows | — | — | — | Default (Import only); after an import (Import + Undo import); Undo import confirmation; after Undo (snackbar) |
+| TR-14 Muscle map | Computed on open from local sets (instant; skeleton only if the set table is very large) | "Log a few workouts and your muscle map fills in." + Start a workout | Set table can't be read: "Couldn't load your workouts. Restart Liftria; your data is still on the phone." + Retry (as TR-1) | `recent`, `volume`, `untrained`, text 200% |
+| TR-1 Muscles card | — | Hidden on first time (no history) | Hidden if the calculation fails; the rest of TR-1 still shows | Rich and workout-in-progress states |
+
+### Special cases in import and the muscle map
+
+| Case | Behavior |
+|---|---|
+| No internet | Nothing changes. Import and the muscle map never use the network. |
+| No file picked | Cancel in Android's picker returns to IM-1. Nothing is read. |
+| Unmatched exercises | Never block the import and never drop a set. Suggestions are labeled *Suggested* and are never applied for the user; undecided names become custom exercises. |
+| No unit column | A required kg / lb question; Import stays off until answered. Liftria never guesses. |
+| Warm-ups not marked in the file | Everything imports as working sets and IM-2 says so. |
+| Same file again, or days that already have a workout | Skipped and counted. A file with nothing new shows "Nothing new to import". |
+| Storage full or an unreadable file | The transaction rolls back. IM-4 says "Nothing was imported" and why; existing workouts are untouched. |
+| App killed mid-import | The transaction rolls back on the next launch and a one-line notice says "The last import didn't finish. Nothing was imported." |
+| Undo import | A confirmation sheet; removes exactly that batch; the safe choice (Keep it) is the primary button. |
+| Imported exercise kept as the user's own | No muscles until the user adds them, so it doesn't count in the muscle map (IM-2 says so). |
+| Cardio, no-muscle exercises and warm-ups | Count 0 in every mode of the muscle map. |
+| Muscle never trained | "Not trained yet" in every mode; it shows as ready in `recent` and as a highlighted muscle in `untrained`. |
+| Reduced motion | The import bar changes without animation; the map has no animation. |
+
+### Interactions in import and the muscle map
+
+| Element | Tap | Notes |
+|---|---|---|
+| Source choice (IM-1) | Selects that app | One is always selected; the row states its export path. TalkBack: "Hevy, selected. Hevy: Profile → Settings → Export & Import Data." |
+| Choose a file | Opens Android's document picker | No storage permission |
+| Use "<exercise>" / Keep as my own | Sets that exercise's mapping; the custom count and the records card update | A two-way control, 48dp, in each mapping row; the group is labelled with the file's exercise name |
+| kg / lb | Selects the unit and turns Import on | "Weights will be read as lb." is read out |
+| Import N workouts | Starts IM-3 | The one primary action in the dock |
+| Importing bar | — | `role="progressbar"`; announced at 25% steps |
+| View history / Done | TR-11 / back to the entry point | — |
+| Undo import | Opens the confirmation sheet | Keep it is the primary button |
+| Mode control (TR-14) | Switches Recent, Volume or Untrained | Three 48dp buttons, one pressed; the header subtitle changes |
+| Muscle row | Opens TR-5 filtered to that muscle | 64dp row with swatch, name, value in words and numbers |
+| Find exercises (untrained) | Opens TR-5 filtered to that muscle | 48dp button; the label carries the muscle name for screen readers |
+| Map region | Opens TR-5 filtered to that muscle | Convenience only; the rows are the accessible path (as TR-5) |
+| Muscles card (TR-1) | Opens TR-14 `recent` | The whole card is one button |
+
 ## Feedback timing
 
 - Local writes (meal, set): optimistic and instant. A failure shows an inline error, the entry stays in the form, and the user can retry.

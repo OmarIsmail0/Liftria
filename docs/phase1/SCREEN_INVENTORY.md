@@ -1,6 +1,6 @@
 # Screen Inventory
 
-**Milestone:** 1A (onboarding and Today), 1B (Train), 1C (Eat, Hiku and Quick add), 1D (Progress, Health and Settings).
+**Milestone:** 1A (onboarding and Today), 1B (Train), 1C (Eat, Hiku and Quick add), 1D (Progress, Health and Settings), 1E addendum (import from other apps, muscle recovery map).
 
 **Verification status** of the capability each screen depends on:
 - **Confirmed:** proven by the Phase 0 code and device tests.
@@ -55,6 +55,8 @@ Status key for this section: everything in Train is local (SQLite) and **works o
 | TR-11 | History: populated / empty / after delete | Find past sessions | TR-1 shortcut or Recent "All" | Month stats, sessions with PR badges, Undo snackbar after delete | Open session, Records | Local | Future |
 | TR-12 | Session detail: view / edit / delete confirmation | Fix or remove a logged workout | TR-11, TR-1 Recent | Stats, exercises with sets and record markers; editable sets in edit mode | Edit, Save changes, Cancel, Delete workout | Local; record recalculation | Future |
 | TR-13 | Records | Personal bests per exercise | TR-1 shortcut, TR-11 trophy | Best set and est. 1RM per exercise with dates | Open exercise | Local | Future |
+| TR-14 | Muscle recovery map: recent / volume / untrained / empty / text 200% (1E) | See which muscles were trained recently, how much this week, and which were neglected | TR-1 Muscles card; PR-2 "Muscle map" | `estimate` chip with a one-line explanation, a 3-way mode control, the front/back body map shaded in 3 steps of the train color (dots on the middle step), a legend, all 17 muscles with a value in words and a number | Switch mode, tap a muscle (opens TR-5 filtered to it), Find exercises, Start a workout (empty) | Local set history + the 17-category muscle map (free-exercise-db); formula in SCREEN_SPECIFICATIONS §2 | **Future · Phase 3.** An estimate from logged sets only; it doesn't know sleep, soreness, food or heart rate |
+| TR-1 card | Muscles card on Train home (1E) | Glance at recovery without leaving Train | TR-1 (rich and workout-in-progress states; hidden on first time) | A mini front/back map in `recent` mode, the `estimate` chip and one line ("Glutes, hamstrings and 1 more trained yesterday · Chest ready") | Open TR-14 | As TR-14 | Future · Phase 3 |
 
 ## Eat (1C)
 
@@ -122,7 +124,22 @@ Status key for this section: everything is local (SQLite, SecureStore) and **wor
 | ST-3 | Units and appearance | Units, theme, style, display options | ST-1 | kg/lb, cm/ft-in, kcal (kJ Future), theme, style, hide numbers, keep screen on, haptics | Change a setting | — | Future (Phase 2); kJ **Future** |
 | ST-4 | Hiku and API key: key saved / no key / testing / test result / replacing / delete confirmation | Manage the key and AI privacy defaults | ST-1; HK-1; HK-5; HK-6; Today | Key card (masked), Test, Replace, Delete, AI privacy defaults, usage link, model line | Test key, Replace key, Delete key, Save key | SecureStore; Claude (test) | Storage Confirmed; Test **Pending device test** |
 | ST-5 | Notifications: allowed / denied in Android / meal reminders on | Rest timer and meal reminders | ST-1; TR-8 Turn on | Status of rest timer alerts (lock-screen alert Pending), meal reminders (off by default) with a time per meal | Open Android settings, set a time | POST_NOTIFICATIONS | **Pending device test** |
-| ST-6 | Data and storage: default / health cache cleared / delete all / DELETE typed | See what is stored; clear or delete | ST-1 | Counts, Clear health cache, Export or back up (disabled, Future), Delete all data (danger) | Clear cache, Delete all data | Local DB, SecureStore, files | Future (Phase 2); backup **Future** |
+| ST-6 | Data and storage: default / health cache cleared / delete all / DELETE typed | See what is stored; clear or delete | ST-1 | Counts, Import workouts from another app and Undo import (1E), Clear health cache, Export or back up (disabled, Future), Delete all data (danger) | Import, Undo import, Clear cache, Delete all data | Local DB, SecureStore, files | Future (Phase 2); backup **Future** |
 | ST-7 | About and help | Version, help, licenses, privacy | ST-1 | Version, "What the chips mean", troubleshoot and Hiku links, licenses, privacy summary | Open help topics | — | Future (Phase 2) |
 
 **Not designed as screens (V1 or later):** barcode scanning, kJ, export and backup, chat with Hiku, Samsung Health Data SDK. The prototype's State menu reaches every state above; some states only exist to tap through a flow and are marked in the review file.
+
+## Import from another app (1E)
+
+Status key for this section: everything is local. The user picks a file with Android's document picker, Liftria parses it on the phone, and **nothing is uploaded**. All of it is **Future · Phase 3** (it needs the Phase 3 workout tables). Import is a pushed stack with no capsule nav, entered from Settings (ST-6), the first-time Train home, or the empty History.
+
+| ID | Screen / state | Purpose | Entry | Shows | Actions | Depends on | Status |
+|---|---|---|---|---|---|---|---|
+| IM-1 | Choose source: default / Android file picker (reference) | Say which app the file comes from | ST-6 "Import workouts from another app"; TR-1 first-time link; TR-11 empty link | "Where are you coming from?", Hevy, Strong, FitNotes, Another app (CSV) each with its export path, the privacy line, "doesn't change your plans or templates", the Future list (Hevy account import, Apple Health weight, export from Liftria) | Choose a source, Choose a file, back | Android document picker (no storage permission) | Future · Phase 3 |
+| IM-2 | Preview: ok / unmatched exercises / unit needed / not the expected format / no workouts / nothing new | See exactly what will happen **before anything is saved** | IM-1 after a file is read | Summary (workouts, sets, date range, source), what is skipped and why, warm-up handling, records preview, the unmatched list with suggestions, the kg/lb question | Import N workouts, Cancel, Use suggestion / Keep as my own, kg / lb, Choose another file | Parser per app; exercise library and aliases; local workouts (for skipped days) | Future · Phase 3 |
+| IM-3 | Importing: progress | Show progress of a single all-or-nothing transaction | IM-2 Import | "Importing… 61 of 142 workouts", a bar, "can't be cancelled halfway" | None (no cancel) | SQLite transaction | Future · Phase 3 |
+| IM-4 | Done: done / failed (storage full) / failed (file unreadable) | Report the result; offer the way back | IM-3 | Counts (workouts, sets, custom exercises, records updated, skipped); the Undo import hint. Failure: "Nothing was imported" and the reason | View history (TR-11), Done, Try again | Local DB | Future · Phase 3 |
+| ST-6 rows | Data and storage: "Import workouts from another app" and, after an import, **Undo import** (with its confirmation sheet and result) | Start an import; remove the last one | ST-1 → Data and storage | Counts, the import row, Undo import "Removes the 142 workouts from this import" until the next import | Import, Undo import (confirm), Keep it | Import batch ID on every imported session | Future · Phase 3 |
+| TR-11 / TR-12 source lines | "Imported from Hevy" on an imported session | Provenance of a session | TR-11, TR-12 | A file icon and "Imported from Hevy" (TR-11 row; TR-12 card with the import date) | — | `source = imported-file`, `importer` | Future · Phase 3 |
+
+**Not designed as screens (V1 or later):** Hevy API import (needs Hevy Pro and the internet), Apple Health weight import, exporting from Liftria (listed as Future in IM-1); the "last import didn't finish" notice after a killed import (specified in SCREEN_SPECIFICATIONS §1, not drawn).

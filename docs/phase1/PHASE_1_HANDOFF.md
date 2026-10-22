@@ -16,7 +16,7 @@ This file is the bridge between the Phase 1 design and the code. The build promp
 | What each screen is for, its entry and status | `docs/phase1/SCREEN_INVENTORY.md` | — |
 | Navigation and hierarchy | `docs/phase1/INFORMATION_ARCHITECTURE.md` | — |
 | How it looks and feels | `docs/phase1/prototype/liftria.html` (open in a browser; pick screen and state) | Nothing. It's a reference, **not code to port** |
-| Milestone decisions and open items | `MILESTONE_1A…1D_REVIEW.md`, `MILESTONE_1C/1D_BRIEF.md` | — |
+| Milestone decisions and open items | `MILESTONE_1A…1E_REVIEW.md`, `MILESTONE_1C/1D/1E_BRIEF.md` | — |
 
 **The prototype is HTML for review only.** Rebuild every screen natively in React Native from the specs and tokens. Never copy its CSS, its example data or its prototype-only shortcuts (the state picker, the auto-advancing "analyzing" screen, example diaries).
 
@@ -59,6 +59,8 @@ Status: **Confirmed** = proven on the owner's device in Phase 0 · **Core-pendin
 | History, session edit, records | TR-11…TR-13 | Future | Edit-only sessions, records recalculated, 8 s Undo on delete |
 | Strength progress | PR-2 | Future | Source "From your workouts in Liftria" |
 | Watch workout data | TR-10 HR/calories rows | **Pending** (Workout wearable gate) | Link, don't add (≥ 50% overlap rule); no calories from sets |
+| **Import history from another app** (1E) | IM-1…IM-4, ST-6 rows, TR-1 / TR-11 links, TR-11/TR-12 source lines | Future (offline; no new permission: Android document picker) | Hevy, Strong, FitNotes and generic CSV. Specified in SCREEN_SPECIFICATIONS "Import and muscle map" §1; flow 11. **Acceptance:** (1) parse is tested on a real export of each app (column sets in §1.1 are unverified); units are read from the column name or asked, never guessed; (2) exact name and alias match → remembered choice → fuzzy *Suggested* (never auto-applied) → custom exercise; no set is ever dropped for an unmatched exercise; (3) **re-importing the same file adds nothing** (days with a workout are skipped; the file hash is remembered) and the skipped count is shown; (4) every imported session has `source = imported-file`, `importer` and an import batch ID, and records are recalculated after import by the same routine as after an edit; (5) **the preview saves nothing**, the import is **one SQLite transaction** (storage full, unreadable file or an app kill leaves the database exactly as before); (6) **Undo import removes exactly that batch** (its sessions, sets, and the custom exercises it created that nothing else uses) and nothing else, with a unit test that imports a file into a database with other workouts, undoes it and compares the tables byte for byte; (7) no network call at any point, no storage permission; (8) warm-ups are mapped when marked, otherwise IM-2 says so |
+| **Muscle recovery map** (1E) | TR-14, TR-1 Muscles card, PR-2 link | Future (offline); an **estimate** from logged sets | Existing 17-region body map. **Acceptance:** (1) **recovery formula unit tests** using the worked example in SCREEN_SPECIFICATIONS §2 as fixtures (credit 1.0 / 0.5, warm-ups 0, decay 1 / 0.5 / 0.25 by 24 h bands, score bands ≥ 4 and 1 to 4, 7-day volume bands, 10-day untrained rule, boundaries at exactly 24 / 48 / 72 h and score exactly 1 and 4); (2) constants live in one tunable place and are documented as a starting point, not physiology; (3) imported sessions count like any others; cardio, no-muscle exercises and custom exercises without muscles count 0; (4) the `estimate` chip and its line are always on TR-14; copy never says "fatigued", "damaged" or "not recovered"; (5) shading uses the three train-color steps with the dot pattern on the middle step, "ready" is neutral, outlines ≥ 3:1 (`color.border.control` in glass), no red; (6) the map has the text alternative and the rows give the same information; the 17-region test still passes; (7) 200% text reflows (TR-14 `large`) |
 
 ### Phase 4: nutrition (after Phase 3; Claude and calories gated)
 
@@ -89,6 +91,7 @@ Status: **Confirmed** = proven on the owner's device in Phase 0 · **Core-pendin
    - Fonts: Archivo and Figtree (SIL OFL), bundled.
    - The body map is original art.
    - No react-native-body-highlighter artwork.
+   - **openGym and other AGPL projects: ideas only, never code, text, data or images.** The 1E features were inspired by openGym (AGPL-3.0, with media licensed to that project only). Nothing from it may be read into, copied or paraphrased in this repo or the app; if a feature seems to need something from such a project, stop and ask the owner.
 
 8. **Who it's for:** any Android 9+ phone, any watch that syncs to Health Connect.
    - Every user's data is local.

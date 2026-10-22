@@ -280,6 +280,39 @@ The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C c
 - **Red** is only for destructive actions (Delete entry, Delete key, Delete all data). A failed check or missing source is amber.
 - Settings is a pushed stack: no capsule nav, neutral rims.
 
+### 1E components (import and the muscle map)
+
+| Component | Variants | Notes |
+|---|---|---|
+| **Recovery shading** | none (ready) / 25% / 55% + dots / solid; untrained | The train domain color in **three steps of fill**, plus a **dot pattern on the middle step**, so the bands are never color-only. **Ready** uses the neutral region fill (`color.track`), **not green**: readiness is the default, not a reward. **No red anywhere.** Tokens in the table below. |
+| **Recovery map** | recent / volume / untrained / empty (neutral) / mini (TR-1 card) | The same 17-region body map as TR-5 (the region test still applies), drawn with the shading above. Region outline 0.9 in `color.border.control` (neutral regions) or `color.domain.train` (shaded regions). Always paired with the legend, the list, and a text alternative (ACCESSIBILITY). |
+| **Recovery legend** | recent (3 swatches) / volume (4) / untrained (2) | A swatch **and words** for every step, always visible under the map. Swatches are drawn with the same fill, pattern and outline as the regions. |
+| **Muscle row** | recent / volume / trained / untrained with action | 64dp, min. A swatch, the muscle name, a value in **words and a number** ("8 sets · trained yesterday" with "Higher load"), a chevron. The untrained row is not itself a button; it carries a 48dp **Find exercises** button. |
+| **Mode control** | Recent · Volume · Untrained | The 3-way segmented control (1D), 48dp, one pressed; `border.control` in glass. |
+| **Muscles card (TR-1)** | rich / hidden on first time | A button-card with a mini front/back map (124dp wide) in `recent` mode, the title "Muscles" + `estimate` chip, one line, "Muscle map" with a chevron. |
+| **Estimate note** | — | The `estimate` chip with its one-line explanation: "Counted from the sets you log in Liftria. It doesn't know your sleep, soreness or food." Always on TR-14. |
+| **Mapping row** | suggestion chosen / kept as own | One per unmatched exercise (IM-2). Top: the file's exercise name and "N sets in the file". Second line: the `estimate`-style chip **Suggested** and the library exercise with its equipment. Third: a **two-way control** (48dp), "Use “<library exercise>”" and "Keep as my own". The default selection is "Keep as my own" (suggestions are never applied for the user). When no close match exists the second line reads "No close match in the library" and the control is replaced by one line, "Kept as your own exercise". |
+| **Import summary card** | with / without a unit question | Domain (train) rim; label "Ready to import" and a `From <app>` chip; the workout count in `type.metric.xl`; sets and the date range as two stats. |
+| **Provenance chip: From <app>** | — | `chip-file`: `bg.raised`, `text.secondary`, a file icon, `border.subtle`. Means "read from a file you imported". Added to the chip legend. |
+| **Source line (sessions)** | TR-11 row / TR-12 card | A 16dp file icon and "Imported from Hevy" in `t-small` (`text.secondary`). TR-12 adds the import date and "Weights and reps are as in the file; Liftria worked out volume and records." |
+| **Import progress card** | running | A card with the count in `type.metric.xl` ("61" then "of 142 workouts"), a 12dp bar in the train color, the all-or-nothing note. No cancel control. `role="progressbar"`. |
+| **File picker mock** | dark / light | Android's document picker in the neutral system-mock style (HE-4), captioned "Android file picker, for reference". |
+
+| Token (derived) | Dark | Light | Use |
+|---|---|---|---|
+| `recovery.3` | `color.domain.train` 100% (`#FF8F6B`) | 100% (`#A83E18`) | Higher load / 12+ sets |
+| `recovery.2` | `color.domain.train` at 55% over the card, **plus the dot pattern** | same | Some load / 6–11 sets |
+| `recovery.1` | `color.domain.train` at 25% | same | 1–5 sets (volume only) |
+| `recovery.0` | `color.track` (white at 9%) | `color.track` (ink at 9%) | Ready / none: the neutral region fill |
+| `recovery.untrained` | 25% fill, **dashed** train outline (3 on, 2 off, 1.6 wide) | same | No direct sets in 10+ days |
+| `recovery.dots` | `color.text.primary` | `color.text.primary` | The dot pattern on `recovery.2` |
+| `recovery.outline.neutral` | `color.border.control` (`#929CAA`) | `#5F6978` | Outline of neutral regions (≥ 3:1) |
+| `recovery.outline.active` | `color.domain.train` | `color.domain.train` | Outline of shaded regions |
+
+**The dot pattern.** A 5 × 5 tile in the map's own units, with a base of `recovery.2` and two dots of radius 0.85 at (1.25, 1.25) and (3.75, 3.75). It scales with the map (×1 for the full map, ×1.3 in legend swatches, ×2.4 in the TR-1 mini map so the dots stay visible). Each map instance gets its own pattern id in SVG (several maps can be on one screen).
+
+**Rules for 1E.** Colour only where it means something: the train color marks "worked", never "good" or "bad". Region shading is always repeated in words (legend, list, text alternative). Copy never says "fatigued", "damaged" or "not recovered". The imported-source chip is neutral, not a domain color.
+
 Further components are added in the build phases.
 
 ## 6. Data-honesty patterns (the core of the system)
