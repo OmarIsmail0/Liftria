@@ -7,6 +7,12 @@ on:
       - '.github/workflows/phase2-lock-refresh.yml'
       - 'package.json'
 
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - '.github/workflows/phase2-lock-refresh.yml'
+
 permissions:
   contents: write
 
