@@ -26,7 +26,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   }, [active, reduceMotion, scale, theme.motion.breathe.duration, theme.motion.breathe.scale]);
 
   const size = theme.orbSize.today;
-  const parts = !hidden ? /^([+]?[\\d,]+)\\s+(kcal .+)$/.exec(summary.label) : null;
+  const parts = !hidden ? /^([+]?[\d,]+)\s+(kcal .+)$/.exec(summary.label) : null;
   const ink = summary.progress === null ? theme.color.text.primary : theme.orb.ink;
   return <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'}
     accessibilityLabel={summary.accessibilityLabel}
