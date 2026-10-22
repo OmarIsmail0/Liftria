@@ -21,7 +21,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'liftria',
   version: '0.0.1',
   orientation: 'portrait',
-  userInterfaceStyle: 'dark',
+  userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   android: {
     package: 'com.liftria.diagnostics',
