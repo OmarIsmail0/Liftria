@@ -10,13 +10,15 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 | Task | Where | Priority | Status |
 |---|---|---|---|
-| TASK-1 | `src/design/ThemeProvider.tsx` | Do on this branch | OPEN |
-| TASK-2 | `src/design/ThemeProvider.tsx`, `app/_layout.tsx` | Do on this branch | OPEN |
-| TASK-3 | `app/index.tsx` (Phase 0 diagnostics) | Do on this branch | OPEN |
+| TASK-1 | `src/design/ThemeProvider.tsx` | Do on this branch | DONE (commit `3e9a670`; implementation and regression test) |
+| TASK-2 | `src/design/ThemeProvider.tsx`, `app/_layout.tsx` | Do on this branch | DONE (commit `3e9a670`; startup fallback regression tests) |
+| TASK-3 | `app/index.tsx` (Phase 0 diagnostics) | Do on this branch | DONE (existing branch implementation; verified in CI run #42) |
 | TASK-4 | Build config, CI | Separate PR, **before any APK goes to friends** | OPEN |
 | TASK-5 | Step 2 | Next PR, after this one merges | OPEN |
 
 ---
+
+**Verification for TASK-1 through TASK-3:** GitHub Actions [run #42](https://github.com/OmarIsmail0/Liftria/actions/runs/39803387632), `verify` step "TypeScript, lint, Jest" completed successfully on commit `3e9a670`. The Android build must separately finish before PR #4 is merged. Owner-run device checks remain: no Solid → Aurora flash on Android cold start, and diagnostics status-bar content readable in light system mode. The tests were added in a follow-up commit because the implementation files were already updated on this branch before the requested review pass. TASK-4 and TASK-5 remain OPEN by instruction.
 
 ## TASK-1: Default to dark when the system theme is unknown
 
