@@ -5,6 +5,7 @@ on:
     branches: [phase2/01-tokens-theme]
     paths:
       - '.github/workflows/phase2-lock-refresh.yml'
+      - 'package.json'
 
 permissions:
   contents: write
