@@ -22,7 +22,7 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
       flexShrink: 1,
       paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
       paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
-      borderWidth: variant === 'ghost' ? 0 : 1, borderColor: colors.border,
+      borderWidth: variant === 'ghost' ? 0 : theme.size.border.thin, borderColor: colors.border,
       backgroundColor: colors.bg, opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
     })}>
     <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
@@ -37,7 +37,7 @@ export function Chip({ kind, label }: { kind: ProvenanceKind; label?: string }) 
   const text = label ?? p.label;
   return <View accessible accessibilityRole="text" accessibilityLabel={text}
     style={{ alignSelf: 'flex-start', minHeight: theme.space[6],
-      backgroundColor: p.bg, borderColor: p.fg, borderWidth: p.dashed ? 1 : 0,
+      backgroundColor: p.bg, borderColor: p.fg, borderWidth: p.dashed ? theme.size.border.thin : 0,
       borderStyle: p.dashed ? 'dashed' : 'solid', paddingHorizontal: theme.space[3],
       paddingVertical: theme.space[1], borderRadius: theme.radius.pill,
       flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
@@ -59,7 +59,7 @@ export function Stepper({ label, value, onChange, min = 0, max = 999, step = 1, 
     <Typography size="small" tone="secondary">{label}</Typography>
     <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: theme.size.touch.workout,
       backgroundColor: theme.color.bg.raised, borderColor: theme.controlOutline,
-      borderWidth: 1, borderRadius: theme.radius.md, alignSelf: 'flex-start' }}>
+      borderWidth: theme.size.border.thin, borderRadius: theme.radius.md, alignSelf: 'flex-start' }}>
       <Pressable style={[buttonStyle, { opacity: minusDisabled ? 0.5 : 1 }]}
         accessibilityRole="button" accessibilityLabel={`Decrease ${label}`} accessibilityState={{ disabled: minusDisabled }}
         disabled={minusDisabled} onPress={() => onChange(Math.max(min, value - step))}>
@@ -94,7 +94,7 @@ export function Toggle({ label, detail, value, onChange }: {
     <View importantForAccessibility="no-hide-descendants"
       style={{ width: theme.size.touch.min, height: theme.space[8], padding: theme.space[1],
         borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: value ? 'flex-end' : 'flex-start',
-        borderColor: theme.controlOutline, borderWidth: value ? 0 : 1,
+        borderColor: theme.controlOutline, borderWidth: value ? 0 : theme.size.border.thin,
         backgroundColor: value ? theme.color.domain.hiku : theme.color.bg.raised }}>
       <View style={{ width: theme.space[5], height: theme.space[5], borderRadius: theme.radius.pill,
         backgroundColor: value ? theme.color.text.inverse : theme.color.text.tertiary }} />
@@ -113,7 +113,7 @@ export function Field({ label, value, onChangeText, placeholder, secure = false,
       placeholder={placeholder} placeholderTextColor={theme.color.text.tertiary} secureTextEntry={secure}
       keyboardType={keyboardType} multiline={multiline} autoCapitalize={secure ? 'none' : 'sentences'}
       selectionColor={theme.color.domain.hiku}
-      style={{ minHeight: theme.size.touch.min, borderWidth: 1, borderColor: error ? theme.color.status.danger : theme.controlOutline,
+      style={{ minHeight: theme.size.touch.min, borderWidth: theme.size.border.thin, borderColor: error ? theme.color.status.danger : theme.controlOutline,
         backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md,
         paddingHorizontal: theme.space[3], paddingVertical: theme.space[2],
         fontSize: theme.type.body.size, color: theme.color.text.primary }} />
@@ -160,8 +160,8 @@ export function Sheet({ visible, title, description, children, onClose, destruct
         borderTopLeftRadius: theme.radius.lg, borderTopRightRadius: theme.radius.lg,
         paddingBottom: Math.max(insets.bottom, theme.space[4]),
         paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[4],
-        borderWidth: 1, borderColor: destructive ? theme.color.status.danger : theme.color.border.subtle,
-        backgroundColor: theme.sheetFill, maxHeight: '90%', gap: theme.space[4],
+        borderWidth: theme.size.border.thin, borderColor: destructive ? theme.color.status.danger : theme.color.border.subtle,
+        backgroundColor: theme.sheetFill, maxHeight: theme.layout.sheetMaxHeight, gap: theme.space[4],
       }}>
         <View style={{ alignItems: 'center' }}>
           <View style={{ width: theme.space[10], height: theme.space[1], borderRadius: theme.radius.pill,
