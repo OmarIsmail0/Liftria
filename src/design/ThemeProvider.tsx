@@ -3,8 +3,17 @@ import {
 } from 'react';
 import { AccessibilityInfo, Platform, useColorScheme, useWindowDimensions } from 'react-native';
 import { createTheme, type LiftriaTheme, type ThemeMode, type VisualStyle } from './tokens';
+import { resolveStartupAccessibility } from './startupAccessibility';
 
 export type ThemePreferences = { mode: ThemeMode; style: VisualStyle };
+
+/** System theme may be unknown at startup. Default to Liftria's dark graphite. */
+export function resolveMode(
+  preference: ThemeMode, systemScheme: 'light' | 'dark' | null | undefined,
+): 'light' | 'dark' {
+  if (preference !== 'system') return preference;
+  return systemScheme === 'light' ? 'light' : 'dark';
+}
 
 export function resolveEffectiveStyle(
   requested: VisualStyle, highTextContrast: boolean, reduceTransparency: boolean,
@@ -22,6 +31,8 @@ type ThemeContextValue = {
   reduceTransparency: boolean;
   reduceMotion: boolean;
   fontScale: number;
+  /** Never render the app navigator until initial accessibility is known or safely timed out. */
+  ready: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -41,34 +52,38 @@ export function ThemeProvider({
   const [preferences, setPreferences] = useState<ThemePreferences>({
     mode: initialMode, style: initialStyle,
   });
-  // Default Solid until Android has actually resolved the user's contrast setting.
-  const [highTextContrast, setHighTextContrast] = useState(Platform.OS === 'android');
-  const [reduceTransparency, setReduceTransparency] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  // Always start conservatively. This internal frame remains behind the native splash.
+  const [highTextContrast, setHighTextContrast] = useState(true);
+  const [reduceTransparency, setReduceTransparency] = useState(true);
+  const [reduceMotion, setReduceMotion] = useState(true);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    const contrast = Platform.OS === 'android'
-      ? AccessibilityInfo.isHighTextContrastEnabled()
-      : Promise.resolve(false);
-    void contrast.then(enabled => { if (mounted) setHighTextContrast(enabled); })
-      .catch(() => { if (mounted) setHighTextContrast(false); });
+    void resolveStartupAccessibility({
+      highTextContrast: () => Platform.OS === 'android'
+        ? AccessibilityInfo.isHighTextContrastEnabled()
+        : Promise.resolve(false),
+      reduceTransparency: () => Platform.OS === 'ios'
+        ? AccessibilityInfo.isReduceTransparencyEnabled()
+        : Promise.resolve(false),
+      reduceMotion: () => AccessibilityInfo.isReduceMotionEnabled(),
+    }).then(values => {
+      if (!mounted) return;
+      setHighTextContrast(values.highTextContrast);
+      setReduceTransparency(values.reduceTransparency);
+      setReduceMotion(values.reduceMotion);
+      setReady(true);
+    });
+
+    // Subscriptions continue updating theme after the first frame. If a device
+    // setting changes while the app is open, the latest OS value wins.
     const contrastSubscription = Platform.OS === 'android'
       ? AccessibilityInfo.addEventListener('highTextContrastChanged', setHighTextContrast)
       : null;
-
-    const transparency = Platform.OS === 'ios'
-      ? AccessibilityInfo.isReduceTransparencyEnabled()
-      : Promise.resolve(false);
-    void transparency.then(enabled => { if (mounted) setReduceTransparency(enabled); })
-      .catch(() => { if (mounted) setReduceTransparency(false); });
     const transparencySubscription = Platform.OS === 'ios'
       ? AccessibilityInfo.addEventListener('reduceTransparencyChanged', setReduceTransparency)
       : null;
-
-    void AccessibilityInfo.isReduceMotionEnabled()
-      .then(enabled => { if (mounted) setReduceMotion(enabled); })
-      .catch(() => { if (mounted) setReduceMotion(false); });
     const motionSubscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
 
     return () => {
@@ -79,9 +94,7 @@ export function ThemeProvider({
     };
   }, []);
 
-  const mode = preferences.mode === 'system'
-    ? systemColorScheme === 'dark' ? 'dark' : 'light'
-    : preferences.mode;
+  const mode = resolveMode(preferences.mode, systemColorScheme);
   const effectiveStyle = resolveEffectiveStyle(
     preferences.style, highTextContrast, reduceTransparency,
   );
@@ -96,9 +109,10 @@ export function ThemeProvider({
     reduceTransparency,
     reduceMotion,
     fontScale,
-  }), [theme, preferences, highTextContrast, reduceTransparency, reduceMotion, fontScale]);
+    ready,
+  }), [theme, preferences, highTextContrast, reduceTransparency, reduceMotion, fontScale, ready]);
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return <ThemeContext.Provider value={value}>{ready ? children : null}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
