@@ -77,11 +77,12 @@ export function OrbArtwork({ theme, size, progress }: {
   theme: LiftriaTheme; size: number; progress: number | null;
 }) {
   const empty = progress === null;
+  const solid = theme.effectiveStyle === 'solid';
   const diameter = size - theme.space[10];
   const half = diameter / 2;
   const center = size / 2;
   const arc = ringGeometry(size, theme.orbSize.ringStroke, progress ?? 0);
-  const sphereShadow: ViewStyle = empty ? {} : {
+  const sphereShadow: ViewStyle = empty || solid ? {} : {
     boxShadow: [
       { offsetX: 0, offsetY: 0, blurRadius: theme.visual.orbGlowInnerBlur, spreadDistance: 0,
         color: withOpacity(theme.orb[2], 0.45) },
@@ -107,9 +108,10 @@ export function OrbArtwork({ theme, size, progress }: {
           </RadialGradient>
         </Defs>
         <Circle cx={half} cy={half} r={half - (empty ? theme.size.border.thin : 0)}
-          fill={empty ? theme.glass.card : 'url(#sphere)'}
-          stroke={empty ? theme.glass.border : 'none'} strokeWidth={empty ? theme.size.border.thin : 0} />
-        <Circle cx={half} cy={half} r={half} fill="url(#orb-highlight)" />
+          fill={empty ? theme.glass.card : solid ? theme.color.bg.raised : 'url(#sphere)'}
+          stroke={empty ? theme.glass.border : solid ? theme.color.border.strong : 'none'}
+          strokeWidth={empty || solid ? theme.size.border.thin : 0} />
+        {!solid && <Circle cx={half} cy={half} r={half} fill="url(#orb-highlight)" />}
       </Svg>
     </View>
     {!empty && <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
