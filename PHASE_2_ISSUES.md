@@ -22,7 +22,9 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 # Review 2: PR #5, Step 2 (primitives), merged before review (2026-10-22)
 
-**Follow-up:** TASK-6 through TASK-10 are implemented on the Step 2b draft branch; awaiting dependency lockfile regeneration, green CI and owner phone screenshot comparison before changing their status to DONE.\n\n**Verdict: CHANGES NEEDED (visual fidelity).** The structure, tokens, touch sizes, TalkBack labels and tests are good. But on the owner's phone the result doesn't look like the design. The owner's screenshot of the Primitive lab shows hard-edged solid circles, Roboto text and flat card borders.
+**Follow-up:** TASK-6 through TASK-10 are implemented on the Step 2b draft branch; awaiting dependency lockfile regeneration, green CI and owner phone screenshot comparison before changing their status to DONE.
+
+**Verdict: CHANGES NEEDED (visual fidelity).** The structure, tokens, touch sizes, TalkBack labels and tests are good. But on the owner's phone the result doesn't look like the design. The owner's screenshot of the Primitive lab shows hard-edged solid circles, Roboto text and flat card borders.
 
 **Root cause:** every graphic was built from flat, solid `View`s. `react-native-svg` (approved in PHASE_2_PROMPT §2) was never installed, so there are no gradients anywhere, and the fonts were never bundled (`expo-font`, also approved).
 
