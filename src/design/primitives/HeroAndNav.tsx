@@ -27,7 +27,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
 
   const size = theme.orbSize.today;
   const parts = !hidden ? /^([+]?[\d,]+)\s+(kcal .+)$/.exec(summary.label) : null;
-  const ink = summary.progress === null ? theme.color.text.primary : theme.orb.ink;
+  const ink = (summary.progress === null || theme.effectiveStyle === 'solid') ? theme.color.text.primary : theme.orb.ink;
   return <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'}
     accessibilityLabel={summary.accessibilityLabel}
     style={{ alignSelf: 'center', minHeight: size, minWidth: size,
@@ -83,7 +83,8 @@ export function CapsuleNav({ active, onSelect }: {
             backgroundColor: selected ? theme.color.action.primary.bg : 'transparent',
             borderRadius: theme.radius.pill }}>
           <Text importantForAccessibility="no" style={{ fontSize: theme.type.head.size,
-            color: selected ? theme.color.action.primary.fg : theme.color.text.primary }}>{tab.glyph}</Text>
+            color: selected ? theme.color.action.primary.fg : theme.color.text.primary,
+            fontFamily: fontFamilyFor('Figtree','700') }}>{tab.glyph}</Text>
           {selected && <Text allowFontScaling style={{ color: theme.color.action.primary.fg,
             fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', theme.type.label.weight), flexShrink: 1 }}>{tab.label}</Text>}
         </Pressable>;
