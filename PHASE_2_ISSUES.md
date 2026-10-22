@@ -4,6 +4,21 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
+# Next up (updated 2026-10-22, after PR #4 merged)
+
+**Order:**
+1. **TASK-5: Step 2, primitives** (new draft PR from the latest `main`).
+2. **Step 3: navigation shell.** This is the first PR the owner can *see* on the phone: 5 tabs with the floating capsule nav, Settings stack, focus-flow rule, and honest "Coming in Phase 3/4" placeholders on tab roots that aren't built yet. Do it right after step 2.
+3. **TASK-4: build and signing.** After step 3, before any APK goes to friends.
+4. Then steps 4–9 of PHASE_2_PROMPT.md §3 in order.
+
+**Process rules (from Review 1):**
+- Never add or change workflows to run npm or push commits (no `contents: write`). If you need a lockfile regenerated, say so in the PR, and Claude will do it.
+- One draft PR per step; it must be green before asking for review.
+- Update this file's task table as you finish each task.
+
+---
+
 # Review 1: PR #4, Step 1 (tokens and theme), commit `f6b1c7b` (2026-10-22)
 
 **Verdict: APPROVE.** No blocking issues. Verified locally: typecheck, lint and Jest 70/70; CI `verify` and `android-build` green.
@@ -13,8 +28,8 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 | TASK-1 | `src/design/ThemeProvider.tsx` | Do on this branch | DONE (commit `3e9a670`; implementation and regression test) |
 | TASK-2 | `src/design/ThemeProvider.tsx`, `app/_layout.tsx` | Do on this branch | DONE (commit `3e9a670`; startup fallback regression tests) |
 | TASK-3 | `app/index.tsx` (Phase 0 diagnostics) | Do on this branch | DONE (existing branch implementation; verified in CI run #42) |
-| TASK-4 | Build config, CI | Separate PR, **before any APK goes to friends** | OPEN |
-| TASK-5 | Step 2 | Next PR, after this one merges | OPEN |
+| TASK-4 | Build config, CI | Separate PR, **after step 3**, and before any APK goes to friends | OPEN |
+| TASK-5 | Step 2 | **Next PR: start now** (PR #4 merged 2026-10-22) | OPEN |
 
 ---
 
