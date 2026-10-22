@@ -24,7 +24,8 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
       flexShrink: 1,
       paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
       paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
-      borderWidth: variant === 'ghost' ? 0 : theme.size.border.thin, borderColor: colors.border,
+      borderWidth: variant === 'ghost' || (variant === 'train' && theme.effectiveStyle === 'aurora')
+        ? 0 : theme.size.border.thin, borderColor: colors.border,
       backgroundColor: colors.bg, overflow: 'hidden', opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
     })}>
     {variant === 'train' && theme.effectiveStyle === 'aurora' && <TrainGradient theme={theme} />}
