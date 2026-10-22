@@ -34,9 +34,9 @@ export async function resolveStartupAccessibility(
     timer = setTimeout(() => resolve(FALLBACK), timeoutMs);
   });
   const read = Promise.all([
-    checks.highTextContrast(),
-    checks.reduceTransparency(),
-    checks.reduceMotion(),
+    Promise.resolve().then(checks.highTextContrast),
+    Promise.resolve().then(checks.reduceTransparency),
+    Promise.resolve().then(checks.reduceMotion),
   ]).then(([highTextContrast, reduceTransparency, reduceMotion]): StartupAccessibility => ({
     highTextContrast, reduceTransparency, reduceMotion, source: 'resolved',
   })).catch((): StartupAccessibility => FALLBACK);
