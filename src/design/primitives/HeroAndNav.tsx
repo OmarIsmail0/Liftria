@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
@@ -8,7 +8,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   eaten: number; target: number | null; hidden?: boolean; active?: boolean; onPress?: () => void;
 }) {
   const { theme, reduceMotion } = useTheme();
-  const scale = useRef(new Animated.Value(1)).current;
+  const [scale] = useState(() => new Animated.Value(1));
   const summary = useMemo(() => orbSummary(eaten, target, hidden), [eaten, target, hidden]);
   useEffect(() => {
     scale.stopAnimation();
