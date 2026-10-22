@@ -121,7 +121,7 @@ The same as 1B/1C:
   - background reads (none in V1)
   - the Delete-all implementation order (DB, key, files, restart)
   - the HC permission rationale screen required by Android
-  - the Play Store Health Connect declaration (not needed for a sideloaded personal app; record it)
+  - the Play Store Health Connect declaration (now needed before Play publishing; see the 2026-10-22 update in the 1D review)
 
 ## 9. Also update
 

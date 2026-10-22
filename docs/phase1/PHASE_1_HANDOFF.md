@@ -90,6 +90,18 @@ Status: **Confirmed** = proven on the owner's device in Phase 0 · **Core-pendin
    - The body map is original art.
    - No react-native-body-highlighter artwork.
 
+8. **Who it's for:** any Android 9+ phone, any watch that syncs to Health Connect.
+   - Every user's data is local.
+   - Never hard-code Samsung, the S22 or the Watch 4 in logic or copy. Samsung Health is the verified example, and other watch apps are Pending until tested.
+9. **iPhone later:**
+   - No Android-only assumptions in shared UI.
+   - Platform specifics go behind adapters: health via the existing `HealthDataSource` interface (Health Connect now, Apple Health later), secure storage, notifications and file paths.
+   - Android-only code lives in `*.android.ts` or a platform module, never inside screens.
+10. **Distribution:**
+    - Now: a shared APK for friends. Later: Google Play.
+    - Every release is signed with **one permanent release key**, kept as a GitHub Actions secret and never committed. Otherwise Android refuses updates and friends lose their data on reinstall.
+    - `versionCode` goes up on every release.
+
 ## 5. Open items carried into the build
 
 | Item | Owner | When |
@@ -103,3 +115,7 @@ Status: **Confirmed** = proven on the owner's device in Phase 0 · **Core-pendin
 | USDA subset size, portion coverage, price table source | Build agent | Phase 4 |
 | Dedup rule for phone vs watch steps | Build agent | When watch steps appear |
 | Items listed in `MILESTONE_1D_REVIEW.md` | — | See that file |
+| **Hiku for friends and Play users:** keep bring-your-own-key, or a paid server? | Owner | Before Phase 4 |
+| **Google Play readiness:** privacy policy, Health Connect declaration form, app bundle (AAB), store listing | Owner + build agent | Before publishing |
+| **Other watch apps** (Fitbit, Garmin, Pixel Watch) via Health Connect | Testers | Before claiming support |
+| **iPhone version** (Apple Health adapter, iOS build) | Owner decision | After V1 Android |

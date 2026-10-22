@@ -3,7 +3,7 @@
 **For:** the build agent · **Written by:** Claude (Phase 1 design lead) · **Reviewed by:** Claude, per pull request
 **Precondition: the owner waived the Core = GO gate on 2026-10-22, so Phase 2 may start now.** Core is mostly proven on the S22 (C1, C2 and C4 PASS). Two checks are still unobserved: SecureStore delete → restart, and Clear → 0. They're now part of this phase's device checklist (§4, items 7 and 8). If either fails, fix it before any Phase 2 PR merges that depends on it. The other gates (Claude AI, Workout wearable, Daily calories) are **not** waived; respect them as `PHASE_1_HANDOFF.md` §2 describes.
 
-You are building the foundation of Liftria: a private, local-first Android fitness app for one person (Galaxy S22 Ultra, Android 16; Galaxy Watch 4 as a data source only). Phase 1 designed every screen. Your job is to turn the foundation part of that design into a working React Native app. The rest comes in Phases 3 (gym) and 4 (nutrition).
+You are building the foundation of Liftria: a private, local-first fitness app for **any Android 9+ phone**, with any watch that syncs to Health Connect. Each user's data stays on their phone; there are no accounts. The owner's Galaxy S22 Ultra + Watch 4 is the reference test device; friends will install shared APKs next, Google Play comes later, and **iPhone is planned later** (not in this phase). Phase 1 designed every screen. Your job is to turn the foundation part of that design into a working React Native app. The rest comes in Phases 3 (gym) and 4 (nutrition).
 
 ## 1. Read first
 
@@ -24,6 +24,15 @@ You are building the foundation of Liftria: a private, local-first Android fitne
   - `expo-blur` (capsule nav and sheets only, with an opaque fallback)
   - `expo-haptics`
 - **Not allowed:** backend, accounts, analytics, crash reporting services, cloud sync, ads, an AI SDK, UI kits that replace the design system.
+- **Devices:** set `minSdkVersion` to **28** (Android 9). Release APKs for friends: `arm64-v8a` and `armeabi-v7a`. On Android 9–13, Health Connect is a separate app; handle "not installed" with HE-1 `unavailable`.
+- **Signing (required before any APK goes to friends):**
+  - One permanent release keystore, stored only as GitHub Actions secrets and never committed.
+  - CI signs every release with it, so updates install over older versions without data loss.
+  - `versionCode` increments on every release.
+  - Document the steps in the PR. The owner creates the keystore and adds the secrets; never generate or print the key material in logs.
+- **Portability (iPhone later):** no Android-only assumptions in screens or shared components. Platform specifics go behind adapters: health via the existing `HealthDataSource` interface, secure storage, notifications and file paths. Android-only code lives in `*.android.ts` files or platform modules.
+- **No device lock-in:** never hard-code Samsung, the S22 or the Watch 4 in logic or copy. Watch guidance (ON-7, HE-5, HE-6) is generic: the user picks their watch app, Samsung Health is the verified example, and the others are labeled Pending.
+- **Hiku:** bring-your-own Anthropic key (each user's own) for Phase 2. The model for friends and Play users is decided before Phase 4.
 - **App identity:** applicationId **`com.liftria.app`**, name "Liftria".
   - The Phase 0 diagnostics screen moves into the app as a hidden developer route (7 taps on the version in ST-7). Keep its tests passing.
   - Note in the PR that installing the new id is a fresh install: the diagnostics app's data does not carry over.
@@ -94,10 +103,11 @@ You are building the foundation of Liftria: a private, local-first Android fitne
   - repository tests
   - onboarding target-formula tests (the sample profile gives 2,650; the floor triggers)
   - provenance tests (no-source energy never stored or shown as measured)
-- arm64 debug + release APK build
+- debug APK build (arm64) + release APK build (arm64-v8a and armeabi-v7a), with the release **signed by the permanent key from secrets** and its `versionCode` checked to be higher than the last release
 - the merged-manifest permission check (only INTERNET and the read-only Health Connect permissions; `POST_NOTIFICATIONS` arrives in Phase 3 with the rest timer)
 
 **On the owner's S22 Ultra** (owner-run, recorded in a Phase 2 report):
+0. **Update test:** install release N, add data, then install release N+1 over it → it installs without uninstalling, and the data is still there.
 1. Fresh install of the release APK → onboarding to Today in under 2 minutes, skipping all optional steps.
 2. Full onboarding with Health Connect allowed → Today shows phone steps labeled Phone and HR labeled Samsung Health + Unverified.
 3. Kill and restart → profile, target, theme and style persist.

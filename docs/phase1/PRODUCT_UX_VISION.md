@@ -4,11 +4,16 @@
 
 ## The product in one line
 
-A training log, food diary and health dashboard for one person, on one phone, that **never shows a number it can't stand behind**.
+A training log, food diary and health dashboard that lives on your phone and **never shows a number it can't stand behind**.
 
 ## Who it's for
 
-The owner: trains in a gym, tracks food to hit body-composition goals, wears a Galaxy Watch 4, and uses a Galaxy S22 Ultra. Liftria serves this one person. There are no accounts, social features, coaches or subscriptions.
+People who train in a gym and track food toward body-composition goals, on **any Android 9+ phone**, with or without a watch that syncs to Health Connect.
+
+- **Now:** the owner (Galaxy S22 Ultra + Galaxy Watch 4) is the only tester. Next, friends install it from a shared APK. Google Play comes later.
+- **iPhone** is planned for later; the code stays portable (see PHASE_1_HANDOFF.md §4).
+- Each person's data stays on their own phone. There are no accounts, social features, coaches or subscriptions.
+- The S22 + Watch 4 setup is the reference test device, not the only target.
 
 ## Design principles
 
@@ -42,7 +47,7 @@ The owner: trains in a gym, tracks food to hit body-composition goals, wears a G
 
 ## Hiku
 
-Hiku is the in-app assistant. It runs on Anthropic's Claude through the owner's API key (currently the `claude-haiku-5-5` model; Hiku is the product name, Haiku is the model).
+Hiku is the in-app assistant. It runs on Anthropic's Claude through the user's own API key (bring-your-own-key for now; the model for friends and Play users is decided before Phase 4) (currently the `claude-haiku-5-5` model; Hiku is the product name, Haiku is the model).
 
 - **Is:** friendly, calm, practical, nonjudgmental; good at turning "2 eggs and some rice" or a photo into editable numbers.
 - **Isn't:** a doctor, an always-on companion, an offline model, or a source of facts about your body that the app doesn't actually have.
