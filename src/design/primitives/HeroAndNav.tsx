@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
+import { fontFamilyFor } from '../fonts';
+import { OrbArtwork } from './VisualEffects';
 import { capsuleTabs, orbSummary, type CapsuleTab } from './contracts';
 
 export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
@@ -22,47 +24,33 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
     animation.start();
     return () => { animation.stop(); scale.setValue(1); };
   }, [active, reduceMotion, scale, theme.motion.breathe.duration, theme.motion.breathe.scale]);
+
   const size = theme.orbSize.today;
-  const center = size / 2;
-  const radius = center - theme.orbSize.ringStroke;
-  const segments = theme.orbSize.segments;
-  const filled = Math.round(segments * (summary.progress ?? 0));
-  // Native fallback: segmented ring without requiring a new SVG dependency/lockfile.
-  // The native SVG gradient and continuous arc are a visual-fidelity follow-up for Claude.
-  const ticks = Array.from({ length: segments }, (_, index) => {
-    const theta = (index / segments) * Math.PI * 2 - Math.PI / 2;
-    return <View key={index} importantForAccessibility="no"
-      style={{ position: 'absolute', width: theme.space[1], height: theme.orbSize.ringStroke,
-        borderRadius: theme.radius.pill, backgroundColor: index < filled ? theme.color.domain.eat : theme.color.track,
-        start: center + radius * Math.cos(theta) - theme.space[1] / 2,
-        top: center + radius * Math.sin(theta) - theme.orbSize.ringStroke / 2,
-        transform: [{ rotate: `${(index / segments) * 360}deg` }] }} />;
-  });
+  const parts = !hidden ? /^([+]?[\\d,]+)\\s+(kcal .+)$/.exec(summary.label) : null;
+  const ink = summary.progress === null ? theme.color.text.primary : theme.orb.ink;
   return <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'}
     accessibilityLabel={summary.accessibilityLabel}
     style={{ alignSelf: 'center', minHeight: size, minWidth: size,
       justifyContent: 'center', alignItems: 'center' }}>
     <Animated.View importantForAccessibility="no-hide-descendants"
-      style={{ height: size, width: size, alignItems: 'center', justifyContent: 'center',
+      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center',
         transform: [{ scale }] }}>
-      {summary.progress !== null && ticks}
-      <View style={{ width: size - theme.space[10], height: size - theme.space[10],
-        borderRadius: theme.radius.pill, backgroundColor: theme.orb[3],
-        alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: size - theme.space[10] - theme.space[5],
-          height: size - theme.space[10] - theme.space[5], borderRadius: theme.radius.pill,
-          backgroundColor: theme.orb[2], alignItems: 'center', justifyContent: 'center' }}>
-          <View style={{ width: size - theme.space[10] - theme.space[10],
-            height: size - theme.space[10] - theme.space[10], borderRadius: theme.radius.pill,
-            backgroundColor: theme.orb[1], justifyContent: 'center', alignItems: 'center',
-            padding: theme.space[2] }}>
-            <Text adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2} allowFontScaling
-              style={{ color: theme.orb.ink, fontSize: hidden ? theme.type.head.size : theme.type.metric.l.size,
-                lineHeight: hidden ? theme.type.head.line : theme.type.metric.l.line,
-                fontWeight: '800', textAlign: 'center',
-                fontVariant: ['tabular-nums'] }}>{summary.label}</Text>
-          </View>
-        </View>
+      <OrbArtwork theme={theme} size={size} progress={summary.progress} />
+      <View style={{ alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.space[3] }}>
+        {parts ? <>
+          <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={1}
+            style={{ color: ink, fontFamily: fontFamilyFor(theme.type.metric.xl.face, theme.type.metric.xl.weight),
+              fontSize: theme.type.metric.xl.size, lineHeight: theme.type.metric.xl.line,
+              fontVariant: ['tabular-nums'], textAlign: 'center' }}>{parts[1]}</Text>
+          <Text allowFontScaling numberOfLines={1} style={{
+            color: ink, fontFamily: fontFamilyFor(theme.type.label.face, theme.type.label.weight),
+            fontSize: theme.type.label.size, lineHeight: theme.type.label.line,
+            letterSpacing: theme.type.label.letterSpacingEm * theme.type.label.size,
+            textAlign: 'center' }}>{parts[2].toUpperCase()}</Text>
+        </> : <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2}
+          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight),
+            fontSize: theme.type.head.size, lineHeight: theme.type.head.line,
+            textAlign: 'center' }}>{summary.label}</Text>}
       </View>
     </Animated.View>
   </Pressable>;
@@ -97,7 +85,7 @@ export function CapsuleNav({ active, onSelect }: {
           <Text importantForAccessibility="no" style={{ fontSize: theme.type.head.size,
             color: selected ? theme.color.action.primary.fg : theme.color.text.primary }}>{tab.glyph}</Text>
           {selected && <Text allowFontScaling style={{ color: theme.color.action.primary.fg,
-            fontSize: theme.type.small.size, fontWeight: '700', flexShrink: 1 }}>{tab.label}</Text>}
+            fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', theme.type.label.weight), flexShrink: 1 }}>{tab.label}</Text>}
         </Pressable>;
       })}
     </View>
