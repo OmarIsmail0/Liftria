@@ -1,6 +1,6 @@
 # Accessibility
 
-**Milestone:** 1A, 1B, 1C · **Target:** WCAG 2.2 AA, Android accessibility guidelines
+**Milestone:** 1A, 1B, 1C, 1D · **Target:** WCAG 2.2 AA, Android accessibility guidelines
 
 ## Contrast (measured)
 
@@ -163,6 +163,73 @@ Same method as 1A: the WCAG formula, with each pair measured on the brightest pa
   - The total, the "After saving" line and the link wrap and stay reachable above the dock.
 - **First-render finding, fixed:** the first HK-4 attempt stacked each row into four short lines (name, grams, kcal, confidence), which made the list long and hard to scan. It is now two lines.
 - The other 1C screens use the same wrapping rows and cards; they are specified, not drawn at 200%, and get the same check in Phase 4.
+
+## Progress, Health and Settings (1D, final pass)
+
+### The glass outline fix (carried from 1A)
+
+**Problem.** In the Aurora Rim style, control outlines were `glass-border` (white at 8%: `.iconbtn`, `.search`, unpressed `.fchip`, `.stepper`, `.field` inputs, `.choice` buttons, segmented controls, `.avatar`) or `border.strong` (`.btn-secondary`, `.tick-btn`, `.addrow`, the tick box, set inputs). Both fall below 3:1 over a bright glow.
+
+**Fix.** A new token `color.border.control` (dark `#929CAA`, light `#5F6978`), applied **only in the glass style** (Solid keeps `border.strong`, which passes at 3.33 / 3.54). The toggles already used `text.tertiary` for their outline (5.14 or more) and were left as they are.
+
+**Measured** (WCAG formula, a Python script, 2026-10-22). Each outline colour is composited over the card fill (glass .62 or .78, with and without the sheen) and over the bare page, over **each of the four glows at full strength** and over the plain aurora base. Lowest ratio per case:
+
+| Outline | Dark: on a card / on the bare page | Light: on a card / on the bare page |
+|---|---|---|
+| Before: `glass-border` (iconbtn, search, fchip, stepper, inputs, choice, unitseg, avatar) | 1.19 / 1.17 | 1.01 / 1.12 |
+| Before: `border.strong` (btn-secondary, tick-btn, addrow, tick, set input) | 2.25 / 1.79 | 3.17 / 2.07 |
+| **After: `border.control`** | **4.24 / 3.38** | **4.98 / 3.25** |
+| Solid style, `border.strong` / `border.control` on the surface | 3.33 / 6.28 | 3.54 / 5.56 |
+
+The worst case after the fix is **3.38 (dark, bare page over the coral glow)** and **3.25 (light, bare page over the lavender glow)**: both ≥ 3:1. As an extreme bound, all four glows stacked at once (they sit in different corners, so the real layout never reaches it) give 3.04 on a card and **1.41 on a bare page** in dark, and 5.0 / 3.30 in light. Controls on a bare page near where two glows overlap should be checked on the device.
+
+**Found and fixed while measuring:** `status.danger` text in dark measured **4.25** on the brightest glass card, below 4.5 (the danger text buttons are Delete workout, Delete key, Delete all data). Dark `status.danger` changed from `#FF6B6B` to `#FF7A7A` (4.67; 6.91 on Solid; the `btn-danger` label is 7.44). Light is unchanged (4.63).
+
+### Contrast of the new pairs (worst case glass / Solid)
+
+| Pair | Dark | Light |
+|---|---|---|
+| Striped legend swatch, bars and weight line: `domain.health` on the card (3:1) | 7.10 / 10.52 | 5.76 / 6.43 |
+| Legend text: `text.secondary` on the card | 6.85 / 10.15 | 6.54 / 7.31 |
+| Definition-list term and chart labels: `text.tertiary` on the card | 5.14 / 7.62 | 5.05 / 5.63 |
+| Definition-list value: `text.primary` on the card | 10.40 / 15.41 | 16.25 / 18.15 |
+| Danger outline and danger text: `status.danger` on the card | 4.67 (after the fix) | 4.63 / 5.17 |
+| `btn-danger` label: `text.inverse` on `status.danger` | 7.44 | 5.17 |
+| Raw weight dots (hollow): `text.tertiary` on the card (3:1) | 5.14 / 7.62 | 5.05 / 5.63 |
+| Protein pip (at target): `macro.protein` on the card (3:1); check mark on it | 6.13 / 9.08; 9.77 | 4.52 / 5.05; 4.62 |
+| Check row fail icon: `status.warning` on `tint.warning` | 4.81 / 7.16 | 4.58 / 5.09 |
+| Check row ok icon: `domain.health` on `tint.health` | 5.48 / 8.15 | 5.12 / 5.68 |
+| Switch-look knob on the teal track: `text.inverse` on `domain.health` | 11.31 | 6.43 |
+| System mock: text on its card; muted text on its page; button label (accent on page); Allow label | 11.73; 8.39; 9.80; 7.50 | 16.43; 6.70; 6.01; 6.39 |
+
+### Rules
+
+1. **Touch targets.** The automated check reported no button under 48dp across every new screen and state, dark and light. Text links (`.link`), the expandable help rows and the tick row, which the script skips, were measured separately: all are 48dp or more. The TR-8 "Turn on" link, which was `min-height:0` in 1B, is now 48dp.
+2. **Every chart has a text alternative that names its source.** Examples:
+   - Volume: "Weekly volume in kilograms, eight 7-day periods ending 21 October, from your workouts in Liftria: from 27 Aug, 35,820; …"
+   - Weight: "Weight in kilograms, 23 September to 21 October, logged in Liftria. 20 entries from 79.3 to 78.4. The 7-day average is 78.5, down 0.3 over the last 7 days. Low 78.4, high 79.6."
+   - Steps: "Steps per day, 15 to 21 October, from Health Connect, Phone only. No data before 20 October. Monday 20 October 7,480 steps. Tuesday 21 October 6,214 steps so far. Samsung Health has no steps yet."
+   - Calories: lists every day, "not logged" included. The protein grid names the days at or above target.
+   When the chart is hidden by Hide numbers the text says "Numbers are hidden".
+3. **Switch-looks in HE-4 say what they are.** Each row reads "Steps: Allowed. Tapping opens Health Connect, where you can change this." or "Weight: Not allowed. Tapping opens Health Connect…". The visible words "Allowed" and "Not allowed" sit under the picture, so state is never the switch position alone.
+4. **Check rows (HE-6, ST-4 test)** have an icon *and* a word: "Checked", "Can't check here", "Missing", "Waiting", "Checking". A failing check is amber with an ✕ icon, never red alone. The title is a polite live region, so the result is announced when the checks finish.
+5. **Other screen-reader wording:**
+   - Health rows read as one sentence: "Heart rate, 72 beats per minute, from Samsung Health, the device was not recorded, 2 hours ago".
+   - The Today heart-rate row reads "Heart rate, 72 beats per minute, Samsung Health, unverified. Open the record".
+   - The Android mock's switches are images with "On" or "Off".
+   - The DELETE field has a visible label; the button explains itself through it while it is disabled.
+   - Health Connect estimate: the button is `aria-expanded` and changes to "Hide estimate".
+6. **Nothing happens by gesture only.** Every sheet closes by its Cancel button or the scrim; Undo is a button in the snackbar.
+7. **Calm language:** weight shows a "trend", never "lose" or "gain"; no red or green trend color; failed checks are amber; unlogged days are gaps.
+8. **Reduced motion:** the checking spinner and the Pulse Orb stand still under "Remove animations"; the HE-6 checks simply change state.
+
+### Font scaling at 200% (rendered for ST-1, HE-1 and PR-4, dark; the emulation is CSS, not Android's setting)
+
+- **ST-1 Settings rows.** Titles and summaries wrap to two or three lines; the 64dp rows grow to about 84dp; icon and chevron stay 20dp and aligned. Nothing is truncated.
+- **HE-1 Health rows.** The name and value stack on two lines, the chips wrap under them (the "Device not recorded" chip breaks to two lines), and the age goes on its own line. The connection card title and the permission link wrap.
+- **PR-4 Body.** The big weight number keeps its size and its caption wraps; the chart scales with the card width (its labels grow to 15px); the legend wraps to two lines; the entries list rows wrap.
+- **First-render finding, fixed:** at 200% the PR-4 Body fat row kept a 15px title next to a 26px description. The title now follows the heading scale.
+- The other 1D screens use the same wrapping rows and cards; they are specified, not drawn, and get the same check in Phase 4.
 
 ## Testing plan (Phase 2+)
 

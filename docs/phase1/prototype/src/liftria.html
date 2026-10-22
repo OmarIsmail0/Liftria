@@ -12,6 +12,7 @@
   --color-bg-glass: rgba(30, 35, 43, 0.78);
   --color-border-subtle: #272D37;
   --color-border-strong: #636D7B;
+  --color-border-control: #929CAA; /* glass style only: control outlines, 3:1 over the brightest glow (ACCESSIBILITY.md) */
   --color-text-primary: #EEF1F5;
   --color-text-secondary: #BFC6D1;
   --color-text-tertiary: #A3ACBA;
@@ -29,7 +30,7 @@
   --color-macro-fat: #FF9AC0;
   --color-status-success: #5BD08F;
   --color-status-warning: #F2B44C;
-  --color-status-danger: #FF6B6B;
+  --color-status-danger: #FF7A7A;
   --color-tint-train: rgba(255, 138, 92, 0.14);
   --color-tint-eat: rgba(242, 193, 78, 0.14);
   --color-tint-health: rgba(76, 195, 166, 0.14);
@@ -64,7 +65,7 @@
   :root:not([data-theme="dark"]) {
     --color-bg-base: #F3F5F8; --color-bg-surface: #FFFFFF; --color-bg-raised: #FFFFFF;
     --color-bg-glass: rgba(255, 255, 255, 0.82);
-    --color-border-subtle: #E1E5EB; --color-border-strong: #808996;
+    --color-border-subtle: #E1E5EB; --color-border-strong: #808996; --color-border-control: #5F6978;
     --color-text-primary: #12161C; --color-text-secondary: #4D5767; --color-text-tertiary: #5E6878;
     --color-text-inverse: #FFFFFF; --color-on-train: #FFFFFF; --color-on-hiku: #FFFFFF;
     --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
@@ -86,7 +87,7 @@
 :root[data-theme="light"] {
   --color-bg-base: #F3F5F8; --color-bg-surface: #FFFFFF; --color-bg-raised: #FFFFFF;
   --color-bg-glass: rgba(255, 255, 255, 0.82);
-  --color-border-subtle: #E1E5EB; --color-border-strong: #808996;
+  --color-border-subtle: #E1E5EB; --color-border-strong: #808996; --color-border-control: #5F6978;
   --color-text-primary: #12161C; --color-text-secondary: #4D5767; --color-text-tertiary: #5E6878;
   --color-text-inverse: #FFFFFF; --color-on-train: #FFFFFF; --color-on-hiku: #FFFFFF;
   --color-action-primary-bg: #12161C; --color-action-primary-fg: #FFFFFF;
@@ -655,14 +656,240 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
 .screen.fs200 .t-label { font-size: 18px; }
 .screen.fs200 .link { font-size: 24px; }
 .screen.fs200 .addrow { font-size: 24px; }
+
+/* ---------- 1D: Progress, Health and Settings ---------- */
+/* Final accessibility pass: in the glass style, control outlines used glass-border (white at 8%) or border.strong, which measured 1.0 to 2.1 over a bright glow. color.border.control is chosen to reach 3:1 against the worst-case page or card over the brightest glow (ACCESSIBILITY.md). Solid keeps border.strong (3.33 / 3.54). */
+.screen.glass .btn-secondary,
+.screen.glass .iconbtn:not(.bare),
+.screen.glass .fchip:not([aria-pressed="true"]),
+.screen.glass .search,
+.screen.glass .stepper,
+.screen.glass .field input, .screen.glass .field textarea, .screen.glass .field .input, .screen.glass .unit-input span,
+.screen.glass .choice button:not([aria-pressed="true"]),
+.screen.glass .tick-btn,
+.screen.glass .addrow,
+.screen.glass .unitseg, .screen.glass .unitseg button + button,
+.screen.glass .tick-row .tick,
+.screen.glass .set-row input,
+.screen.glass .avatar { border-color: var(--color-border-control); }
+.screen.glass .set-row.done .tick-btn { border-color: transparent; }
+.screen.glass .foodrow .iconbtn { border-color: transparent; }
+.screen.glass .unitseg button + button { border-left-color: var(--color-border-control); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* shared */
+.hit { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; width: 100%; min-height: 48px; padding: 0; border: 0; background: transparent; text-align: start; color: inherit; cursor: pointer; border-radius: var(--radius-sm); }
+.src { color: var(--color-text-secondary); }
+.icon-tile.neutral { background: var(--color-bg-raised); color: var(--color-text-secondary); border: 1px solid var(--color-border-subtle); }
+.cardlink { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; padding: 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; color: var(--color-text-primary); font-weight: 700; font-size: 14px; text-align: start; cursor: pointer; margin-top: 2px; padding-top: 2px; }
+.cardlink svg { width: 20px; height: 20px; color: var(--color-text-tertiary); flex: none; }
+.empty-sent { display: grid; gap: 10px; justify-items: start; }
+.empty-sent p { margin: 0; }
+.toggle.health[aria-checked="true"] i { background: var(--color-domain-health); }
+.sheet.tall { max-height: calc(100% - 60px); overflow-y: auto; scrollbar-width: none; }
+.sheet.tall::-webkit-scrollbar { display: none; }
+.rseg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--color-border-strong); border-radius: 18px; overflow: hidden; }
+.rseg button { min-height: 48px; border: 0; background: transparent; font-weight: 700; font-size: 14px; color: var(--color-text-secondary); cursor: pointer; }
+.rseg button + button { border-left: 1px solid var(--color-border-subtle); }
+.rseg button[aria-pressed="true"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); }
+.screen.glass .rseg { background: var(--glass-card); border-color: var(--color-border-control); }
+.screen.glass .rseg button + button { border-left-color: var(--color-border-control); }
+
+/* charts */
+.chart .bar-train { fill: var(--color-domain-train); }
+.chart .bar-health { fill: var(--color-domain-health); }
+.chart .bar-sh { fill: url(#stripe); stroke: var(--color-domain-health); stroke-width: 1.2; }
+.chart .line-eat { fill: none; stroke: var(--color-domain-eat); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.chart .pt-eat { fill: var(--color-domain-eat); }
+.chart .line-health { fill: none; stroke: var(--color-domain-health); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.chart .raw { fill: none; stroke: var(--color-text-tertiary); stroke-width: 1.4; }
+.chart .raw-sh { fill: none; stroke: var(--color-text-tertiary); stroke-width: 1.4; }
+.chart .last-pt { fill: var(--color-domain-health); stroke: var(--color-text-primary); stroke-width: 2; }
+.chart .nolog { stroke: var(--color-text-tertiary); stroke-width: 1.4; stroke-dasharray: 2 2.5; }
+.chart .v-lbl { text-anchor: middle; font-size: 10.5px; }
+.chart .end-lbl { text-anchor: end; }
+.chart .mid-lbl { text-anchor: middle; }
+.chart .brk { stroke: var(--color-text-tertiary); stroke-width: 1.2; fill: none; }
+.chart .dot-hr { fill: var(--color-domain-health); stroke: var(--color-bg-surface); stroke-width: 1; }
+.spark { width: 72px; height: 28px; flex: none; }
+.spark path { fill: none; stroke: var(--color-domain-train); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.spark circle { fill: var(--color-domain-train); }
+.sw.stripe { background: repeating-linear-gradient(45deg, var(--color-domain-health) 0 2px, color-mix(in srgb, var(--color-domain-health) 18%, transparent) 2px 5px); border: 1px solid var(--color-domain-health); }
+.sw.solid-h { background: var(--color-domain-health); }
+.sw.ring { background: transparent; border: 1.5px solid var(--color-text-tertiary); border-radius: 50%; }
+.sw.diamond { background: transparent; border: 1.5px solid var(--color-text-tertiary); border-radius: 2px; transform: rotate(45deg) scale(.75); }
+.sw.avgline { height: 3px; width: 18px; border-radius: 2px; background: var(--color-domain-health); }
+.sw.honey { background: var(--color-domain-eat); border-radius: 50%; }
+.sw.train { background: var(--color-domain-train); }
+.pipgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; justify-items: center; }
+.pipgrid .hd { font-size: 11px; color: var(--color-text-tertiary); font-weight: 600; }
+.pip2 { width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center; }
+.pip2.hit2 { background: var(--color-macro-protein); color: var(--color-bg-base); }
+.pip2.hit2 svg { width: 14px; height: 14px; }
+.pip2.lo { border: 1.5px solid var(--color-macro-protein); }
+.pip2.none { border: 1.4px dashed var(--color-text-tertiary); }
+.macsplit { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; }
+.macsplit i { display: block; height: 100%; }
+.macleg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--color-text-secondary); }
+.macleg span { display: inline-flex; align-items: center; gap: 6px; }
+.macleg b { color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+.macleg i { width: 8px; height: 8px; border-radius: 50%; }
+.note-box { display: grid; gap: 6px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-bg-raised); border: 1px solid var(--color-border-subtle); }
+.note-box p { margin: 0; }
+.screen.glass .note-box { background: color-mix(in srgb, var(--glass-card) 80%, transparent); }
+.trend-word { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 28px; line-height: 1.1; }
+
+/* Health rows (HE-1) */
+.hrow { display: grid; grid-template-columns: 36px 1fr 20px; column-gap: 12px; row-gap: 4px; align-items: center; width: 100%; min-height: 64px; padding: 10px 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; color: inherit; text-align: start; cursor: pointer; }
+.hrow:first-child { border-top: 0; }
+.hrow .icon-tile { grid-row: 1 / 3; align-self: start; margin-top: 2px; }
+.hrow .hmain { grid-column: 2; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-width: 0; }
+.hrow .hmain strong { font-weight: 600; font-size: 15px; }
+.hrow .hval { font-size: 15px; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+.hrow .hmeta { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-secondary); }
+.hrow > svg { grid-column: 3; grid-row: 1 / 3; width: 20px; height: 20px; color: var(--color-text-tertiary); }
+.hrow.dim .hval { color: var(--color-text-tertiary); }
+.statusline { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.statusline .okdot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--color-tint-health); color: var(--color-domain-health); flex: none; }
+.statusline .okdot svg { width: 14px; height: 14px; }
+
+/* switch-look: a read-only picture of an Android permission switch (the row opens Health Connect) */
+.sl { position: relative; width: 48px; height: 28px; border-radius: 14px; flex: none; background: var(--color-track); border: 1.5px solid var(--color-text-tertiary); }
+.sl::after { content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: var(--color-text-secondary); }
+.sl.on { background: var(--color-domain-health); border-color: transparent; }
+.sl.on::after { left: 23px; background: var(--color-text-inverse); }
+.permrow { display: grid; grid-template-columns: 36px 1fr auto; column-gap: 12px; align-items: center; width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; color: inherit; text-align: start; cursor: pointer; }
+.permrow:first-child { border-top: 0; }
+.permrow .grow { display: grid; gap: 2px; }
+.permrow strong { font-weight: 600; font-size: 15px; }
+.permrow .st { display: grid; justify-items: end; gap: 4px; font-size: 12px; font-weight: 700; color: var(--color-text-secondary); }
+
+/* definition list (HE-3) */
+.deflist { display: grid; gap: 0; margin: 0; }
+.deflist > div { display: grid; gap: 2px; padding: 12px 0; border-top: 1px solid var(--color-border-subtle); }
+.deflist > div:first-child { border-top: 0; }
+.deflist dt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--color-text-tertiary); }
+.deflist dd { margin: 0; font-size: 15px; font-weight: 700; color: var(--color-text-primary); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.deflist dd small { display: block; width: 100%; font-weight: 500; font-size: 13px; color: var(--color-text-secondary); }
+.deflist .kbd { font-weight: 500; }
+
+/* Troubleshoot checklist (HE-6) */
+.chk { display: grid; grid-template-columns: 32px 1fr; column-gap: 12px; padding: 12px 0; border-top: 1px solid var(--color-border-subtle); align-items: start; }
+.chk:first-child { border-top: 0; }
+.chk .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; margin-top: 1px; }
+.chk .ic svg { width: 16px; height: 16px; }
+.chk .ic.ok { background: var(--color-tint-health); color: var(--color-domain-health); }
+.chk .ic.info { background: var(--color-bg-raised); color: var(--color-text-secondary); border: 1px solid var(--color-border-strong); }
+.chk .ic.fail { background: var(--color-tint-warning); color: var(--color-status-warning); }
+.chk .ic.wait { border: 1.5px dashed var(--color-text-tertiary); color: var(--color-text-tertiary); }
+.chk .ic.spin { border: 2.5px solid var(--color-track); border-top-color: var(--color-domain-health); }
+.chk .body { display: grid; gap: 2px; min-width: 0; }
+.chk .body strong { font-weight: 600; font-size: 15px; }
+.chk .fix { grid-column: 2; display: grid; gap: 10px; margin-top: 8px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-tint-warning); }
+.chk .fix p { margin: 0; }
+@media (prefers-reduced-motion: no-preference) { .chk .ic.spin { animation: spin 0.9s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } } }
+
+/* Sync guide illustrations (HE-5): original geometric phone screens */
+.guide { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: start; padding: 14px 0; border-top: 1px solid var(--color-border-subtle); }
+.guide:first-child { border-top: 0; }
+.guide .ill { width: 96px; height: 92px; border-radius: 14px; background: var(--color-bg-raised); border: 1px solid var(--color-border-subtle); display: grid; place-items: center; }
+.guide .ill svg { width: 80px; height: 80px; }
+.guide .stepn { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--color-bg-raised); border: 1px solid var(--color-border-strong); font-size: 12px; font-weight: 700; margin-right: 6px; }
+.guide .gtxt { display: grid; gap: 4px; }
+.guide .gtxt strong { font-size: 15px; }
+.ill .scr { fill: var(--color-bg-surface); stroke: var(--color-border-strong); stroke-width: 1.5; }
+.ill .blk { fill: var(--color-track); }
+.ill .hl { fill: var(--color-tint-health); stroke: var(--color-domain-health); stroke-width: 1.5; }
+.ill .ac { fill: var(--color-domain-health); }
+.ill .ln { stroke: var(--color-text-tertiary); stroke-width: 1.6; fill: none; stroke-linecap: round; }
+.ill .acs { stroke: var(--color-domain-health); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Android permission screen, for reference (HE-4 system): neutral greys and system type, not Liftria's style */
+.sysmock { --sys-bg: #1C1D20; --sys-fg: #E4E5E9; --sys-mut: #B4B7BE; --sys-line: #3A3C42; --sys-acc: #A8C7FA; --sys-on: #062E6F; --sys-card: #26282C;
+  flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 18px 18px 16px; background: var(--sys-bg); color: var(--sys-fg); font-family: Roboto, "Google Sans", system-ui, sans-serif; overflow-y: auto; scrollbar-width: none; }
+:root[data-theme="light"] .sysmock { --sys-bg: #F7F8FA; --sys-fg: #1F1F23; --sys-mut: #55585F; --sys-line: #D6D8DD; --sys-acc: #0B57D0; --sys-on: #FFFFFF; --sys-card: #FFFFFF; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .sysmock { --sys-bg: #F7F8FA; --sys-fg: #1F1F23; --sys-mut: #55585F; --sys-line: #D6D8DD; --sys-acc: #0B57D0; --sys-on: #FFFFFF; --sys-card: #FFFFFF; } }
+.sysmock h1 { font-size: 22px; font-weight: 500; line-height: 1.25; margin: 6px 0 0; text-align: center; }
+.sysmock p { margin: 0; font-size: 14px; color: var(--sys-mut); text-align: center; }
+.sysmock .applogo { width: 44px; height: 44px; border-radius: 12px; background: var(--sys-card); border: 1px solid var(--sys-line); margin: 0 auto; display: grid; place-items: center; font-weight: 700; }
+.sysmock .syslist { background: var(--sys-card); border-radius: 22px; padding: 4px 16px; }
+.sysmock .sysrow { display: flex; align-items: center; gap: 12px; min-height: 52px; border-top: 1px solid var(--sys-line); font-size: 15px; }
+.sysmock .sysrow:first-child { border-top: 0; }
+.sysmock .sysrow span { flex: 1; }
+.sysmock .sysrow b { font-weight: 500; }
+.sysmock .sysrow i { position: relative; width: 44px; height: 24px; border-radius: 12px; border: 2px solid var(--sys-mut); flex: none; }
+.sysmock .sysrow i::after { content: ""; position: absolute; top: 4px; left: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--sys-mut); }
+.sysmock .sysrow i.on { background: var(--sys-acc); border-color: var(--sys-acc); }
+.sysmock .sysrow i.on::after { left: 24px; top: 2px; width: 16px; height: 16px; background: var(--sys-on); }
+.sysmock .sysbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+.sysmock .sysbtns button { min-height: 48px; border-radius: 999px; font: 500 14px Roboto, system-ui, sans-serif; cursor: pointer; border: 1px solid var(--sys-line); background: transparent; color: var(--sys-acc); }
+.sysmock .sysbtns button.pri { background: var(--sys-acc); color: var(--sys-on); border-color: transparent; }
+.sysmock .syscap { margin: 0; text-align: center; font-size: 12px; color: var(--sys-mut); }
+
+/* Settings */
+.srow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-top: 1px solid var(--color-border-subtle); background: transparent; color: inherit; text-align: start; cursor: pointer; }
+.srow:first-child { border-top: 0; }
+.srow .grow { display: grid; gap: 2px; }
+.srow strong { font-weight: 600; font-size: 15px; }
+.srow > svg { width: 20px; height: 20px; color: var(--color-text-tertiary); flex: none; }
+.valrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 8px 0; border-top: 1px solid var(--color-border-subtle); }
+.valrow:first-child { border-top: 0; }
+.valrow .grow { display: grid; gap: 2px; }
+.valrow strong { font-weight: 600; font-size: 15px; }
+.rseg3 { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--color-border-strong); border-radius: 18px; overflow: hidden; }
+.rseg3 button { min-height: 48px; border: 0; background: transparent; font-weight: 700; font-size: 14px; color: var(--color-text-secondary); cursor: pointer; }
+.rseg3 button + button { border-left: 1px solid var(--color-border-subtle); }
+.rseg3 button[aria-pressed="true"], .rseg button[aria-pressed="true"] { background: var(--color-action-primary-bg); color: var(--color-action-primary-fg); }
+.rseg3 button[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.screen.glass .rseg3 { background: var(--glass-card); border-color: var(--color-border-control); }
+.screen.glass .rseg3 button + button { border-left-color: var(--color-border-control); }
+.seg-block { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--color-border-subtle); }
+.seg-block:first-child { border-top: 0; }
+.seg-block > strong { font-size: 15px; font-weight: 600; }
+.keycard { display: flex; align-items: center; gap: 12px; }
+.card.danger { border: 1.5px solid var(--color-status-danger); }
+.screen.glass .card.danger { border-color: var(--color-status-danger); }
+.screen.glass .card.danger::before { display: none; }
+.screen.glass .card.danger[class*="rim-"] { box-shadow: var(--glass-shadow); }
+.dlist { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.dlist li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--color-text-secondary); }
+.dlist li svg { width: 16px; height: 16px; flex: none; margin-top: 3px; }
+.dlist.gone li svg { color: var(--color-status-danger); }
+.dlist.kept li svg { color: var(--color-domain-health); }
+.counts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
+.counts .stat b { font-size: 20px; }
+details.help summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 56px; cursor: pointer; font-weight: 600; font-size: 15px; list-style: none; }
+details.help summary::-webkit-details-marker { display: none; }
+details.help summary svg { width: 20px; height: 20px; color: var(--color-text-tertiary); flex: none; transition: transform 160ms; }
+details.help[open] summary svg { transform: rotate(180deg); }
+.chiplist { display: grid; gap: 10px; padding-bottom: 8px; }
+.chiplist > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.chiplist .t-small { flex: 1 1 140px; }
+
+/* 200% text emulation for Settings rows (ST-1), Health rows (HE-1) and the Body screen (PR-4) */
+.screen.fs200 .srow strong, .screen.fs200 .hrow .hmain strong, .screen.fs200 .hrow .hval, .screen.fs200 .permrow strong { font-size: 26px; line-height: 1.25; }
+.screen.fs200 .hrow .hmeta, .screen.fs200 .srow .t-small { font-size: 22px; }
+.screen.fs200 .hrow { grid-template-columns: 40px 1fr 24px; min-height: 84px; }
+.screen.fs200 .hrow .hmain { flex-direction: column; gap: 0; align-items: flex-start; }
+.screen.fs200 .srow { min-height: 84px; }
+.screen.fs200 .cardlink { font-size: 24px; }
+.screen.fs200 .chart text { font-size: 15px; }
+.screen.fs200 .macleg, .screen.fs200 .legend-row { font-size: 22px; }
+.screen.fs200 .src { font-size: 22px; }
+.screen.fs200 .trend-word { font-size: 38px; }
+.screen.fs200 .card-head { flex-wrap: wrap; }
+.screen.fs200 .seg-block > strong, .screen.fs200 .valrow strong { font-size: 26px; }
+.screen.fs200 .rseg button, .screen.fs200 .rseg3 button { font-size: 24px; min-height: 56px; }
+.screen.fs200 .statusline { font-size: 24px; }
+.screen.fs200 .t-head[style] { font-size: 26px !important; }
 </style>
 
 <div class="board">
   <aside class="panel" aria-label="Prototype controls">
     <div class="stack">
-      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B + 1C</span>
+      <span class="eyebrow">Phase 1 · design prototype · 1A + 1B + 1C + 1D</span>
       <h1>Liftria</h1>
-      <p>Onboarding, Today, the whole Train tab, Eat and Hiku. Tap through the phone, or jump to any screen and state.</p>
+      <p>Onboarding, Today, the whole Train tab, Eat, Hiku, Progress, Health and Settings. Tap through the phone, or jump to any screen and state.</p>
     </div>
     <div class="ctl">
       <label for="screen-select">Screen</label>
@@ -744,6 +971,18 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     describe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h8"/></svg>',
     scale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4.5" width="16" height="15" rx="4"/><path d="M8.5 9.5a4.5 4 0 0 1 7 0M12 9.5l1.5-1.5"/></svg>',
     brand: '<svg viewBox="0 0 64 64"><rect x="6" y="34" width="14" height="24" rx="4" fill="var(--color-domain-eat)"/><rect x="25" y="20" width="14" height="38" rx="4" fill="var(--color-domain-train)"/><rect x="44" y="6" width="14" height="52" rx="4" fill="var(--color-domain-health)"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z"/></svg>',
+    gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.3M12 18.2v2.3M3.5 12h2.3M18.2 12h2.3M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6"/></svg>',
+    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.7-3.8 3.4-5.6 7-5.6s6.3 1.8 7 5.6"/></svg>',
+    sliders: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/></svg>',
+    key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="3.5"/><path d="M10.5 12.5 19 4M15.5 7.5l2.5 2.5M13 10l2 2"/></svg>',
+    db: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="2.7"/><path d="M5 6v6c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7V6M5 12v6c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7v-6"/></svg>',
+    help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5M12 16.6v.1"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.2M12 7.8v.1"/></svg>',
+    external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h6v6M19 5l-8 8M17 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.4-7 9-4.1-1.6-7-4.8-7-9V6z"/><path d="m9 12 2.2 2.2L15.2 10" stroke-linecap="round"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="5.5" width="15" height="14" rx="2.5"/><path d="M4.5 10h15M8.5 3.8v3.4M15.5 3.8v3.4"/></svg>',
+    refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12a7 7 0 1 1-2.1-5M19 5v4h-4"/></svg>',
   };
   const chip = (kind, icon, text) => `<span class="chip chip-${kind}">${ICON[icon]}${text}</span>`;
 
@@ -753,7 +992,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
   const screenSelect = document.getElementById('screen-select');
   const variantSelect = document.getElementById('variant-select');
   const variantCtl = document.getElementById('variant-ctl');
-  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass', meal: 'Dinner', day: 'base', qaFrom: 'home' };
+  const state = { screen: 'onb-welcome', v: {}, goal: 'build', activity: 'moderate', style: 'glass', meal: 'Dinner', day: 'base', qaFrom: 'home', ret: {}, wFrom: 'pr-body', fixed: false };
 
   const statusbar = (offline) => `<div class="statusbar"><span class="num">9:41</span><span>${offline ? 'Airplane mode' : '5G · 82%'}</span></div>`;
   const dots = (n, total = 8) => `<div class="progress-dots" aria-label="Step ${n} of ${total}">${Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>`;
@@ -942,13 +1181,12 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
       : dcard('train', "Today's training", `<span class="dc-big">Upper A</span><span class="t-small">6 exercises · about 55 min · works offline</span><button class="btn btn-train btn-sm" type="button" style="justify-self:start" data-go="tr-preview">Start workout</button>`));
 
     let act;
-    if (v === 'hcoff') act = `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero.</span></div><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Turn on</button>`;
-    else if (first) act = `<div><span class="dc-big num">1,208</span> <span class="t-small">steps</span></div><div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}<span class="t-small">just now</span></div><p class="t-small">No watch data yet. It starts from the day you connect Samsung Health.</p>`;
+    if (v === 'hcoff') act = `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero.</span></div><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start" data-go="he-home" data-variant="hcoff" data-ret>Turn on</button>`;
+    else if (first) act = `<button class="hit" type="button" data-go="he-metric" data-variant="steps" data-ret aria-label="Steps, 1,208, counted by the phone, just now. Open details"><span><span class="dc-big num">1,208</span> <span class="t-small">steps</span></span>${chip('phone', 'phone', 'Phone')}<span class="t-small">just now</span></button><p class="t-small">No watch data yet. It starts from the day you connect Samsung Health.</p>`;
     else {
       const stale = v === 'stale';
-      act = `<div><span class="dc-big num">6,214</span> <span class="t-small">steps</span></div>
-        <div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '2 d ago') : '<span class="t-small">12 min ago</span>'}</div>
-        <div class="row wrap" style="gap:6px"><span class="num" style="font-weight:700">72 bpm</span>${chip('measured', 'dot', 'Samsung Health')}${stale ? '' : chip('pending', 'clock', 'Unverified')}</div>
+      act = `<button class="hit" type="button" data-go="he-metric" data-variant="steps" data-ret aria-label="Steps, 6,214, counted by the phone, ${stale ? '2 days' : '12 minutes'} ago. Open details"><span><span class="dc-big num">6,214</span> <span class="t-small">steps</span></span>${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '2 d ago') : '<span class="t-small">12 min ago</span>'}</button>
+        <button class="hit" type="button" data-go="he-record" data-variant="default" data-ret aria-label="Heart rate, 72 beats per minute, Samsung Health${stale ? '' : ', unverified'}. Open the record"><span class="num" style="font-weight:700">72 bpm</span>${chip('measured', 'dot', 'Samsung Health')}${stale ? '' : chip('pending', 'clock', 'Unverified')}</button>
         <p class="t-small">Energy burned: no measured source yet.</p>`;
     }
     cards.push(dcard('health', 'Activity', act));
@@ -956,7 +1194,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     const hiku = offline
       ? `<span class="dc-big">Offline</span><span class="t-small">Log meals manually now. Hiku comes back when you reconnect.</span>`
       : noKey
-        ? `<span class="dc-big">Add Hiku</span><span class="t-small">Your Anthropic key unlocks meal estimates from a photo or a description.</span><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start">Add API key</button>`
+        ? `<span class="dc-big">Add Hiku</span><span class="t-small">Your Anthropic key unlocks meal estimates from a photo or a description.</span><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start" data-go="st-hiku" data-variant="nokey" data-ret>Add API key</button>`
         : `<span class="dc-big">Snap dinner</span><span class="t-small">Hiku estimates it, you check it before saving.</span><button class="btn btn-hiku btn-sm" type="button" style="justify-self:start" data-go="hk-send" data-variant="photo">${ICON.camera}Photo</button>`;
     cards.push(dcard('hiku', 'Hiku', hiku));
     if (!first) {
@@ -967,7 +1205,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     return `
       ${statusbar(offline)}
       <div class="scroll"><div class="orb-page screen-anim">
-        <div class="orb-top"><div class="stack" style="gap:0"><span class="t-small num">Tue 21 Oct</span><span class="orb-greet">${first ? 'Welcome to Liftria' : 'Good afternoon'}</span></div><button class="avatar" aria-label="Profile and settings" data-go="tab-settings">L</button></div>
+        <div class="orb-top"><div class="stack" style="gap:0"><span class="t-small num">Tue 21 Oct</span><span class="orb-greet">${first ? 'Welcome to Liftria' : 'Good afternoon'}</span></div><button class="avatar" aria-label="Profile and settings" data-go="st-home" data-ret>L</button></div>
         ${offline ? `<div class="banner banner-offline" role="status">${ICON.cloudoff}<span><strong>Offline.</strong> Everything works except Hiku.</span></div>` : ''}
         ${orb(v)}${sub}${macros}${actions}
         <div class="deck" id="deck" aria-label="Today cards, swipe for more">${cards.join('')}</div>
@@ -1035,7 +1273,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
   // Upper A: [exercise, sets, reps, rest, last time]
   const UPPER_A = [['bench', 4, '6–8', '2:30', '80 × 8, 8, 7, 6'], ['row', 4, '8', '2:00', '70 × 8, 8, 8, 7'], ['ohp', 4, '8', '2:00', '45 × 8, 8, 7, 7'], ['pulldown', 4, '10', '1:30', '60 × 10, 10, 9, 9'], ['curl', 3, '12', '1:00', '14 × 12, 11, 10'], ['pushdown', 3, '12', '1:00', '30 × 12, 12, 11']];
 
-  const hdr = (title, { to, sub, right = '', root = false } = {}) => `<div class="hdr ${root ? 'root' : ''}">${to ? `<button class="iconbtn bare" data-go="${to}" aria-label="Back">${ICON.back}</button>` : ''}<h1>${title}${sub ? `<span class="sub">${sub}</span>` : ''}</h1>${right}</div>`;
+  const hdr = (title, { to, sub, right = '', root = false } = {}) => `<div class="hdr ${root ? 'root' : ''}">${to ? `<button class="iconbtn bare" data-go="${to}" data-back aria-label="Back">${ICON.back}</button>` : ''}<h1>${title}${sub ? `<span class="sub">${sub}</span>` : ''}</h1>${right}</div>`;
   const exRow = (id, extra = '', variant = '') => `<button class="rowlink" type="button" data-go="tr-exercise" ${variant ? `data-variant="${variant}"` : ''}>${glyph(id)}<span class="grow"><strong>${EX[id][0]}</strong><span class="t-small">${extra || `${EX[id][1]} · ${names(EX[id][2])}`}</span></span>${ICON.chevron}</button>`;
   const sheet = (body, closeTo) => `<div class="scrim" ${closeTo ? `data-go="${closeTo}"` : ''}></div><div class="sheet" role="dialog" aria-modal="true"><div class="grabber" aria-hidden="true"></div>${body}</div>`;
   const pr = (t = 'Record') => `<span class="badge-pr">${ICON.trophy}${t}</span>`;
@@ -1193,7 +1431,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
       tcard('pullup', '+ kg', trow('1', 'BW × 9', 'BW', '9') + trow('2', 'BW × 8', '+0', '8', 'cur'), 'Body weight. Add weight with + when you use a belt. Volume uses only added weight.'),
     ].join('');
 
-    const banner = denied ? `<div class="banner banner-warning" role="status">${ICON.bell}<span>Notifications are off, so the rest timer can only alert you inside the app. <button class="link" style="min-height:0">Turn on</button></span></div>` : '';
+    const banner = denied ? `<div class="banner banner-warning" role="status">${ICON.bell}<span>Notifications are off, so the rest timer can only alert you inside the app. <button class="link" data-go="st-notif" data-variant="denied" data-ret>Turn on</button></span></div>` : '';
     const dock = `<div class="dock">${banner}<div class="steppers"><div class="stepper"><button aria-label="Weight down 2.5 kilograms">−</button><output aria-live="polite"><b>72.5</b><span>kg</span></output><button aria-label="Weight up 2.5 kilograms">+</button></div><div class="stepper"><button aria-label="One fewer rep">−</button><output aria-live="polite"><b>8</b><span>reps</span></output><button aria-label="One more rep">+</button></div></div>
         <button class="btn btn-train btn-xl btn-block" data-go="tr-active" data-variant="${denied ? 'denied' : 'rest'}">Log set ${setsDone}</button></div>`;
     let overlay = '';
@@ -1286,8 +1524,8 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
 
   const TRAIN = { 'tr-home': trHome, 'tr-library': trLibrary, 'tr-muscles': trMuscles, 'tr-exercise': trExercise, 'tr-template': trTemplate, 'tr-plans': trPlans, 'tr-preview': trPreview, 'tr-active': trActive, 'tr-lock': trLock, 'tr-summary': trSummary, 'tr-history': trHistory, 'tr-session': trSession, 'tr-records': trRecords };
   // Screens that are focus flows hide the capsule nav (IA rule 1).
-  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary', 'ea-portion', 'ea-food', 'hk-send', 'hk-analyze', 'hk-result'];
-  const isFocus = (s, v) => FOCUS.includes(s) || (s === 'tr-session' && (v === 'edit' || v === 'delete')) || (s === 'ea-meal' && v === 'delete') || (s === 'ea-targets' && (v === 'floor' || v === 'deficit'));
+  const FOCUS = ['tr-template', 'tr-preview', 'tr-active', 'tr-lock', 'tr-summary', 'ea-portion', 'ea-food', 'hk-send', 'hk-analyze', 'hk-result', 'pr-weight', 'st-home', 'st-profile', 'st-units', 'st-hiku', 'st-notif', 'st-data', 'st-about'];
+  const isFocus = (s, v) => FOCUS.includes(s) || (s === 'tr-session' && (v === 'edit' || v === 'delete')) || (s === 'ea-meal' && v === 'delete') || (s === 'ea-targets' && (v === 'floor' || v === 'deficit')) || (s === 'he-perms' && v === 'system');
   const minibar = () => `<div class="minibar" role="region" aria-label="Workout in progress"><i class="live" aria-hidden="true"></i><span class="grow"><strong style="font-size:14px">Upper A</strong> <span class="t-small num">· 23:10 · 9 of 22 sets</span></span><button class="btn btn-train btn-sm" data-go="tr-active">Resume</button></div>`;
 
   // ---------- 1C: Eat and Hiku ----------
@@ -1333,7 +1571,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
   const srcChip = (s) => ({ usda: chip('measured', 'dot', 'USDA'), my: chip('phone', 'phone', 'My food'), hiku: chip('hiku', 'spark', 'Hiku estimate'), quick: chip('estimate', 'approx', 'Calories only') })[s];
   const words = (pct) => pct < 0.4 ? 'just started' : pct < 0.9 ? 'partway to target' : 'near target';
   const mealChip = () => `<button class="fchip" type="button" data-cycle-meal aria-label="Meal: ${state.meal}. Tap to change">Adding to ${state.meal}${ICON.down}</button>`;
-  const switchRow = (title, desc, on = false, cls = '') => `<div class="switch-row"><div class="grow stack" style="gap:2px"><strong style="font-size:15px">${title}</strong><span class="t-small">${desc}</span></div><button class="toggle ${cls}" type="button" role="switch" aria-checked="${on}" aria-label="${title}"><i></i></button></div>`;
+  const switchRow = (title, desc, on = false, cls = '', shows = '') => `<div class="switch-row"><div class="grow stack" style="gap:2px"><strong style="font-size:15px">${title}</strong><span class="t-small">${desc}</span></div><button class="toggle ${cls}" type="button" role="switch" aria-checked="${on}" aria-label="${title}" ${shows ? `data-shows="${shows}"` : ''}><i></i></button></div>`;
   // Original geometric plate: a plate circle with three rounded food shapes in coral, honey and teal tints. A drawing, not a photo.
   const plate = (cls = '', shimmer = false) => `<div class="plate ${cls}" role="img" aria-label="Illustration of a plate with three foods. A drawing, not a photo.">
       <svg viewBox="0 0 240 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="240" height="180" fill="var(--color-bg-raised)"/>
@@ -1490,6 +1728,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
         <section class="card rim-eat"><div class="card-head"><span class="t-label">Daily calories</span>${head}</div>
           <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:52px">${kcal}</span><span class="t-small">kcal / day</span></div>
           ${est ? `<details><summary class="link" style="display:flex;align-items:center">How this is calculated</summary><p class="t-small" style="padding-bottom:8px">Mifflin-St Jeor from your profile (about 1,740 kcal at rest) × 1.375 for “On my feet some”, plus 10% to build muscle, rounded to 50 kcal. Training and watch data don't change it, because Liftria has no measured energy source yet.</p></details>
+          <button class="link" type="button" data-go="st-profile" data-variant="default" data-ret style="justify-self:start">Based on your profile · Edit profile</button>
           <button class="btn btn-secondary btn-block" type="button" data-go="ea-targets" data-variant="manual">Set my own numbers</button>`
             : `<div class="stepper" role="group" aria-label="Daily calories"><button aria-label="Lower, 50 kilocalories">−</button><output aria-live="polite"><b>${kcal}</b><span>kcal</span></output><button aria-label="Higher, 50 kilocalories">+</button></div>
           <button class="link" type="button" data-go="ea-targets" data-variant="estimate" style="justify-self:start">Go back to the estimate</button>`}</section>
@@ -1532,7 +1771,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     const bg = (from === 'ea-home' ? eaHome(vOf('ea-home')) : today(vOf('home'))) + nav(from);
     const off = v === 'offline' ? 'Needs internet' : v === 'nokey' ? 'Add your API key first' : '';
     const rows = [['eat', 'eat', 'Log a meal', 'Search foods, or quick add calories', 'ea-add', '', ''], ['camera', 'hiku', 'Photo a meal', 'Hiku estimates, you check', 'hk-send', 'photo', off], ['describe', 'hiku', 'Describe a meal', 'Type it, Hiku estimates', 'hk-send', 'text', off],
-      ['train', 'train', 'Start workout', 'Upper A, about 55 min', 'tr-preview', '', ''], ['scale', 'health', 'Log weight', 'Coming in Progress (1D)', '', '', 'Coming in Progress (1D)']];
+      ['train', 'train', 'Start workout', 'Upper A, about 55 min', 'tr-preview', '', ''], ['scale', 'health', 'Log weight', 'Saved in Liftria', 'pr-weight', 'default', '']];
     return bg + sheet(`<h2>Quick add</h2><div class="list">${rows.map(([i, c, l, h, to, vv, dis]) => `<button class="rowlink qa-row" type="button" ${dis ? 'aria-disabled="true"' : `data-go="${to}" ${vv ? `data-variant="${vv}"` : ''} ${to === 'ea-add' ? 'data-meal="Dinner"' : ''}`}><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${ICON[i]}</span><span class="grow"><strong>${l}</strong><span class="t-small">${dis || h}</span></span></button>`).join('')}</div><button class="btn btn-ghost btn-block" data-go="${from}">Close</button>`, from);
   }
 
@@ -1541,7 +1780,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     const noKey = v === 'nokey', offline = v === 'offline', first = v === 'first';
     const two = (dis) => `<div class="two">${dis ? `<button class="btn btn-hiku" type="button" aria-disabled="true">${ICON.camera}Photo</button><button class="btn btn-hiku" type="button" aria-disabled="true">${ICON.describe}Describe</button>` : `<button class="btn btn-hiku" type="button" data-go="hk-send" data-variant="photo">${ICON.camera}Photo</button><button class="btn btn-hiku" type="button" data-go="hk-send" data-variant="text">${ICON.describe}Describe</button>`}</div>`;
     let hero;
-    if (noKey) hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Add your key to start</span><p class="t-small">Hiku turns a photo or a description of a meal into calories and macros you can edit. It uses Anthropic's Claude with your own API key. Logging meals by hand works without it.</p><button class="btn btn-hiku" type="button" data-go="tab-settings">Add API key</button><button class="btn btn-secondary" type="button" data-go="ea-add" data-meal="Dinner">Log a meal manually</button></section>`;
+    if (noKey) hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Add your key to start</span><p class="t-small">Hiku turns a photo or a description of a meal into calories and macros you can edit. It uses Anthropic's Claude with your own API key. Logging meals by hand works without it.</p><button class="btn btn-hiku" type="button" data-go="st-hiku" data-variant="nokey" data-ret>Add API key</button><button class="btn btn-secondary" type="button" data-go="ea-add" data-meal="Dinner">Log a meal manually</button></section>`;
     else if (offline) hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Estimate a meal</span><p class="t-small">Hiku needs internet. Log manually meanwhile.</p>${two(true)}<button class="btn btn-secondary" type="button" data-go="ea-add" data-meal="Dinner">Log manually</button></section>`;
     else hero = `<section class="card rim-hiku"><span class="t-label">Hiku</span><span class="dc-big">Estimate a meal</span><p class="t-small">Send a photo or describe it. Hiku proposes numbers; you check them before anything is saved.</p>${two(false)}<div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Pending')}<span class="t-small">Still being tested on your phone.</span></div></section>`;
     const how = `<section class="card"><h2 class="t-head">How Hiku works</h2><div class="stack" style="gap:12px">${[['Send', 'A photo or a description, only when you tap Send.'], ['Check', 'Every item is editable. Hiku can be wrong about amounts.'], ['Save', 'Nothing is saved until you confirm.']].map(([t, d], i) => `<div class="check"><span class="tick num" style="background:var(--color-bg-raised);border:1px solid var(--color-border-strong);font-size:12px;font-weight:700">${i + 1}</span><div class="stack" style="gap:2px"><strong>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}</div></section>`;
@@ -1616,7 +1855,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
   // HK-5 ------------------------------------------------------------------------------------------------------------
   const HKERR = {
     offline: ['cloudoff', 'No internet', 'Hiku needs a connection to estimate this meal.', [['Retry', 'hk-analyze', 'working', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
-    auth: ['lock', 'Your API key was rejected', 'Anthropic did not accept the key saved on this phone. It may be mistyped, expired or removed.', [['Check key', 'tab-settings', '', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
+    auth: ['lock', 'Your API key was rejected', 'Anthropic did not accept the key saved on this phone. It may be mistyped, expired or removed.', [['Check key', 'st-hiku', 'ready', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
     ratelimit: ['clock', 'Too many requests right now', 'Anthropic is limiting requests. Try again in about 30 s.', [['Retry', '', '', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
     server: ['warn', 'Anthropic had a problem', 'The service returned an error on its side. Your key and your input are fine.', [['Retry', 'hk-analyze', 'working', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
     refusal: ['hiku', "Hiku couldn't estimate this", 'It works best with a clear photo of food.', [['Describe instead', 'hk-send', 'text', 'hiku'], ['Log manually', 'ea-add', '', 'sec']]],
@@ -1630,7 +1869,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
         <section class="card rim-hiku"><span class="err-ic" aria-hidden="true">${ICON[ic]}</span><h1 class="t-title" role="alert">${title}</h1><p class="t-body">${cause}</p>
           ${rate ? `<div class="row" style="gap:8px"><span class="t-metric num" id="cd" role="timer" style="font-size:34px">0:30</span><span class="t-small">until you can retry</span></div>` : ''}
           <div class="kept">${text ? '<span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">' + ICON.describe + '</span>' : plate('sm')}<span class="t-small"><b>${text ? 'Your description is still here.' : 'Your photo is still here.'}</b> Nothing was saved.</span></div>
-          ${acts.map(([l, to, vv, k]) => `<button class="btn ${k === 'hiku' ? 'btn-hiku' : 'btn-secondary'} btn-block" type="button" ${rate && l === 'Retry' ? 'id="retry" aria-disabled="true"' : to ? `data-go="${to}" ${vv ? `data-variant="${vv}"` : ''} ${to === 'ea-add' ? 'data-meal="Dinner"' : ''}` : ''}>${l}</button>`).join('')}
+          ${acts.map(([l, to, vv, k]) => `<button class="btn ${k === 'hiku' ? 'btn-hiku' : 'btn-secondary'} btn-block" type="button" ${rate && l === 'Retry' ? 'id="retry" aria-disabled="true"' : to ? `data-go="${to}" ${vv ? `data-variant="${vv}"` : ''} ${to === 'ea-add' ? 'data-meal="Dinner"' : ''} ${to === 'st-hiku' ? 'data-ret' : ''}` : ''}>${l}</button>`).join('')}
         </section>
       </div></div>`;
   }
@@ -1646,25 +1885,586 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
           <p class="t-small">Prices come from Anthropic's published rates; your Anthropic console shows the exact bill. A cancelled request may still be billed.</p></section>
         <section class="card"><h2 class="t-head">Context for each request</h2><div class="list">${switchRow("Today's totals", 'Off by default. Adds your eaten and target calories.')}${switchRow('Training day', 'Off by default. Adds today\'s planned workout.')}</div><span class="t-small">These switch back to your defaults for every request.</span></section>
         <section class="card"><h2 class="t-head">What is never sent</h2><div class="stack" style="gap:6px">${['Your food diary and history', 'Health Connect data and heart rate', 'Workouts, records and body measurements', 'Your name and profile'].map(t => `<div class="check"><span class="tick" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.check}</span><span style="font-size:14px">${t}</span></div>`).join('')}</div><span class="t-small">Unless you switch context on for one request.</span></section>
-        <button class="rowlink" type="button" data-go="tab-settings"><span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${ICON.lock}</span><span class="grow"><strong>API key</strong><span class="t-small">Stored on this phone. Manage in Settings</span></span>${ICON.chevron}</button>
+        <button class="rowlink" type="button" data-go="st-hiku" data-variant="ready" data-ret><span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${ICON.lock}</span><span class="grow"><strong>API key</strong><span class="t-small">Stored on this phone. Manage in Settings</span></span>${ICON.chevron}</button>
       </div></div>`;
   }
 
   const EAT = { 'ea-home': eaHome, 'ea-add': eaAdd, 'ea-portion': eaPortion, 'ea-meal': eaMeal, 'ea-food': eaFood, 'ea-targets': eaTargets, 'ea-history': eaHistory };
   const HIKU = { 'hk-home': hkHome, 'hk-send': hkSend, 'hk-analyze': hkAnalyze, 'hk-result': hkResult, 'hk-error': hkError, 'hk-usage': hkUsage };
 
-  // ---------- placeholders for later milestones ----------
-  const LATER = {
-    'tab-progress': ['health', 'Progress', 'Trends, body measurements and Health Connect details are designed in milestone 1D.'],
-    'tab-settings': ['health', 'Settings', 'Profile, targets, API key, privacy and data management are designed in milestone 1D.'],
-  };
-  const later = (id) => {
-    const [c, t, d] = LATER[id];
-    const icon = { train: ICON.train, eat: ICON.eat, health: ICON.progress, hiku: ICON.hiku }[c];
-    return `${statusbar(false)}<div class="topbar">${id === 'tab-settings' ? back('home') : '<span></span>'}</div><div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${icon}</span><h1 class="t-title">${t}</h1><p class="t-body" style="max-width:260px">${d}</p></div>`;
-  };
+  // ---------- 1D: Progress, Health and Settings ----------
+  // Back from a deep-linked screen returns to where the user came from (state.ret is set by data-ret links).
+  const rt = (dest, fallback) => state.ret[dest] || fallback;
+  const sumA = (a) => a.reduce((x, y) => x + y, 0);
+  const srcLine = (t) => `<p class="t-small src">${t}</p>`;
+  const ntile = (icon) => `<span class="icon-tile neutral">${ICON[icon]}</span>`;
+  const ctile = (c, icon) => `<span class="icon-tile" style="background:var(--color-tint-${c});color:var(--color-domain-${c})">${ICON[icon]}</span>`;
+  const cardlink = (label, go, vv, ret) => `<button class="cardlink" type="button" data-go="${go}" ${vv ? `data-variant="${vv}"` : ''} ${ret ? 'data-ret' : ''}>${label}${ICON.chevron}</button>`;
+  const rangeChips = () => `<div class="chips" role="group" aria-label="Range">${['4 W', '3 M', '1 Y'].map(r => `<button class="fchip" type="button" aria-pressed="${r === '4 W'}">${r}</button>`).join('')}</div>`;
+  const emptyS = (txt, btn, go, vv, ret) => `<div class="empty-sent"><p class="t-body">${txt}</p><button class="btn btn-secondary btn-sm" type="button" data-go="${go}" ${vv ? `data-variant="${vv}"` : ''} ${ret ? 'data-ret' : ''}>${btn}</button></div>`;
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dlab = (i) => { const d = new Date(2025, 8, 23 + i); return `${d.getDate()} ${MON[d.getMonth()]}`; };
+  const kg1 = (n) => n.toFixed(1);
 
-  const NAV = [['home', 'Today', 'home'], ['tr-home', 'Train', 'train'], ['ea-home', 'Eat', 'eat'], ['tab-progress', 'Progress', 'progress'], ['hk-home', 'Hiku', 'hiku']];
+  // Example data. Strength: eight 7-day periods ending Tue 21 Oct; the newest holds the five sessions listed in TR-11 (9,105 + 10,960 + 8,215 + 9,840 + 11,420).
+  const WK = { lab: ['27 Aug', '3 Sep', '10 Sep', '17 Sep', '24 Sep', '1 Oct', '8 Oct', '15 Oct'], vol: [35820, 37440, 38010, 41466, 36300, 38420, 37640, 49540] };
+  const VOL4 = sumA(WK.vol.slice(4)), VOLP = sumA(WK.vol.slice(0, 4)), VOLPCT = Math.round((VOL4 / VOLP - 1) * 100);
+  const LIFTS = [['bench', [88, 89, 90, 90.5, 92, 93, 94.5, 96]], ['squat', [104, 106, 107, 109, 110, 112, 113, 115]], ['rdl', [108, 110, 112, 113, 115, 117, 118, 120]], ['row', [86, 88, 89, 90, 91, 92, 93, 94]], ['ohp', [51, 52, 53, 53, 54, 55, 56, 57]]];
+  // Nutrition: 28 days, Tue 23 Sep to Mon 20 Oct (today is left out until it ends). null = nothing logged. The last seven are EA-7's week.
+  const KC = [2380, 2105, null, 2260, 2020, null, 2475, 2190, 2340, null, 1950, 2290, null, 2150, 2410, null, 2060, null, 2100, null, null, 2540, 2310, null, 1980, 2430, null, 1790];
+  const PG = [156, 118, null, 131, 112, null, 158, 124, 135, null, 108, 141, null, 120, 160, null, 118, null, 123, null, null, 128, 119, null, 104, 131, null, 118];
+  const LOGD = KC.filter(k => k != null), NUTAVG = Math.round(sumA(LOGD) / LOGD.length), PAVG = Math.round(sumA(PG.filter(k => k != null)) / LOGD.length), PHIT = PG.filter(g => g != null && g >= 155).length;
+  // Body: 29 days, 23 Sep to 21 Oct. Entries by day index; SH = entries Samsung Health would write if Weight were allowed (hcweight state only).
+  const WT = { 0: 79.3, 2: 79.6, 3: 79.2, 5: 79.4, 7: 79.0, 8: 79.3, 10: 79.1, 12: 78.9, 13: 79.1, 15: 78.8, 16: 79.0, 18: 78.7, 19: 78.9, 21: 78.8, 22: 78.6, 24: 78.5, 25: 78.6, 26: 78.4, 27: 78.5, 28: 78.4 };
+  const SH = [3, 10, 19, 25];
+  const WKEYS = Object.keys(WT).map(Number);
+  const maAt = (i) => { const v = WKEYS.filter(k => k <= i && k > i - 7).map(k => WT[k]); return v.length ? sumA(v) / v.length : null; };
+  const TREND = Math.round((maAt(28) - maAt(21)) * 10) / 10, WMIN = Math.min(...Object.values(WT)), WMAX = Math.max(...Object.values(WT));
+  const trendTxt = `${TREND < 0 ? '−' : '+'}${Math.abs(TREND).toFixed(1)} kg`;
+
+  function volChart() {
+    const W = 320, H = 196, base = 148, top = 16, bw = 28, x = (i) => 36 + i * 35, y = (v) => base - v / 60000 * (base - top);
+    const alt = `Weekly volume in kilograms, eight 7-day periods ending 21 October, from your workouts in Liftria: ${WK.lab.map((l, i) => `from ${l}, ${fmt(WK.vol[i])}`).join('; ')}.`;
+    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+      ${[0, 20000, 40000, 60000].map(g => `<line class="grid" x1="32" x2="${W - 4}" y1="${y(g)}" y2="${y(g)}"/><text x="0" y="${y(g) + 4}">${g ? g / 1000 + 'k' : '0'}</text>`).join('')}
+      ${WK.vol.map((v, i) => `<rect class="bar-train" x="${x(i)}" y="${y(v)}" width="${bw}" height="${base - y(v)}" rx="5"/><text class="v-lbl" x="${x(i) + bw / 2}" y="${y(v) - 4}">${(v / 1000).toFixed(1)}</text><text class="day-lbl" x="${x(i) + bw / 2}" y="${base + 15}">${WK.lab[i]}</text>`).join('')}
+      <path class="brk" d="M${x(4)} ${base + 24} v5 H${x(7) + bw} v-5"/><text class="mid-lbl" x="${(x(4) + x(7) + bw) / 2}" y="${base + 45}">Last 4 weeks</text></svg></div>`;
+  }
+  const spark = (pts) => { const lo = Math.min(...pts), hi = Math.max(...pts), w = 72, h = 28, xx = (i) => 4 + i * (w - 8) / (pts.length - 1), yy = (v) => h - 4 - (v - lo) / (hi - lo || 1) * (h - 8); return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${pts.map((v, i) => `${i ? 'L' : 'M'}${xx(i).toFixed(1)} ${yy(v).toFixed(1)}`).join(' ')}"/><circle cx="${xx(pts.length - 1).toFixed(1)}" cy="${yy(pts[pts.length - 1]).toFixed(1)}" r="3"/></svg>`; };
+
+  function kcalChart() {
+    const W = 320, H = 196, base = 150, top = 14, n = KC.length, x = (i) => 36 + i * (278 / (n - 1)), y = (k) => base - (k - 1000) / 2200 * (base - top);
+    let segs = [], cur = [];
+    KC.forEach((k, i) => { if (k == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push([x(i), y(k)]); });
+    if (cur.length) segs.push(cur);
+    const alt = `Calories per day for 28 days, 23 September to 20 October, from your food diary, against an estimated target of 2,650. ${LOGD.length} days logged, average ${fmt(NUTAVG)} kilocalories. ${KC.map((k, i) => `${dlab(i)} ${k == null ? 'not logged' : fmt(k)}`).join('; ')}.`;
+    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+      <line class="grid" x1="32" x2="${W - 4}" y1="${base}" y2="${base}"/>
+      ${[1000, 2000, 3000].map(g => `<line class="grid" x1="32" x2="${W - 4}" y1="${y(g)}" y2="${y(g)}"/><text x="0" y="${y(g) + 4}">${fmt(g)}</text>`).join('')}
+      <line class="tline" x1="32" x2="${W - 4}" y1="${y(2650)}" y2="${y(2650)}"/><text class="tl-lbl" x="${W - 4}" y="${y(2650) - 5}">Target 2,650</text>
+      ${segs.filter(s => s.length > 1).map(s => `<path class="line-eat" d="${s.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')}"/>`).join('')}
+      ${KC.map((k, i) => k == null ? `<line class="nolog" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${base - 9}" y2="${base - 1}"/>` : `<circle class="pt-eat" cx="${x(i).toFixed(1)}" cy="${y(k).toFixed(1)}" r="2.8"/>`).join('')}
+      <text x="${x(0) - 4}" y="${base + 18}">${dlab(0)}</text><text class="mid-lbl" x="${x(14)}" y="${base + 18}">${dlab(14)}</text><text class="end-lbl" x="${x(27) + 4}" y="${base + 18}">${dlab(27)}</text></svg></div>`;
+  }
+
+  function weightChart(o = {}) {
+    const W = 320, H = 190, base = 150, top = 16, n = 29, x = (i) => 36 + i * (278 / (n - 1)), lo = 77.8, hi = 79.8, y = (k) => base - (k - lo) / (hi - lo) * (base - top);
+    const avg = Array.from({ length: n }, (_, i) => maAt(i));
+    const path = avg.map((a, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(a).toFixed(1)}`).join(' ');
+    const minI = WKEYS.find(k => WT[k] === WMIN), maxI = WKEYS.find(k => WT[k] === WMAX);
+    const mark = (i) => o.hc && SH.includes(i) ? `<rect class="raw-sh" x="${(x(i) - 3.2).toFixed(1)}" y="${(y(WT[i]) - 3.2).toFixed(1)}" width="6.4" height="6.4" transform="rotate(45 ${x(i).toFixed(1)} ${y(WT[i]).toFixed(1)})"/>` : `<circle class="raw" cx="${x(i).toFixed(1)}" cy="${y(WT[i]).toFixed(1)}" r="3"/>`;
+    const alt = o.hidden ? 'Weight trend over 28 days, logged in Liftria: steady. Numbers are hidden.'
+      : `Weight in kilograms, 23 September to 21 October, ${o.hc ? 'logged in Liftria and read from Health Connect (Samsung Health)' : 'logged in Liftria'}. ${WKEYS.length} entries from ${kg1(WT[0])} to ${kg1(WT[28])}. The 7-day average is ${kg1(maAt(28))}, ${TREND < 0 ? 'down' : 'up'} ${Math.abs(TREND).toFixed(1)} over the last 7 days. Low ${kg1(WMIN)}, high ${kg1(WMAX)}.${o.hc ? ' Entries from Samsung Health are marked with a diamond.' : ''}`;
+    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+      ${[78, 79].map(g => `<line class="grid" x1="32" x2="${W - 4}" y1="${y(g)}" y2="${y(g)}"/>${o.hidden ? '' : `<text x="6" y="${y(g) + 4}">${g}</text>`}`).join('')}
+      <line class="grid" x1="32" x2="${W - 4}" y1="${base}" y2="${base}"/>
+      ${WKEYS.map(mark).join('')}
+      <path class="line-health" d="${path}"/>
+      <circle class="last-pt" cx="${x(28)}" cy="${y(WT[28])}" r="5"/>
+      ${o.hidden ? '' : `<text x="${x(maxI) + 8}" y="${y(WMAX) - 6}">High ${kg1(WMAX)}</text><text class="end-lbl" x="${x(minI) - 8}" y="${y(WMIN) + 16}">Low ${kg1(WMIN)}</text>`}
+      <text x="${x(0) - 4}" y="${base + 18}">${dlab(0)}</text><text class="mid-lbl" x="${x(14)}" y="${base + 18}">${dlab(14)}</text><text class="end-lbl" x="${x(28) + 4}" y="${base + 18}">${dlab(28)}</text></svg></div>`;
+  }
+
+  // Steps per day, Wed 15 to Tue 21 Oct. Phone only is what the S22 test saw; "rich" is an illustration of two sources, drawn side by side, never summed.
+  const STEP_DAYS = [['Wed', 15], ['Thu', 16], ['Fri', 17], ['Sat', 18], ['Sun', 19], ['Mon', 20], ['Tue', 21]];
+  const PHONE_ONLY = [null, null, null, null, null, 7480, 6214];
+  const PH_RICH = [5200, 6800, 5900, 7600, 4300, 7480, 6214], SH_RICH = [6400, 7900, 7100, 8800, 5600, 8300, 6900];
+  function stepsChart(kind) {
+    const W = 320, H = 190, base = 150, top = 16, y = (s) => base - s / 12000 * (base - top), step = 40, x0 = 40;
+    const two = kind === 'rich', bw = two ? 15 : 26;
+    const alt = two ? `Steps per day, 15 to 21 October, from Health Connect. An illustration with sample numbers for when Samsung Health steps arrive. Phone: ${PH_RICH.map((v, i) => `${STEP_DAYS[i][0]} ${fmt(v)}`).join(', ')}. Samsung Health, counted separately and not added to the phone: ${SH_RICH.map((v, i) => `${STEP_DAYS[i][0]} ${fmt(v)}`).join(', ')}.`
+      : 'Steps per day, 15 to 21 October, from Health Connect, Phone only. No data before 20 October. Monday 20 October 7,480 steps. Tuesday 21 October 6,214 steps so far. Samsung Health has no steps yet.';
+    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+      <defs><pattern id="stripe" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="color-mix(in srgb, var(--color-domain-health) 18%, transparent)"/><rect width="2.6" height="6" fill="var(--color-domain-health)"/></pattern></defs>
+      ${[0, 4000, 8000, 12000].map(g => `<line class="grid" x1="34" x2="${W - 4}" y1="${y(g)}" y2="${y(g)}"/><text x="0" y="${y(g) + 4}">${g ? g / 1000 + 'k' : '0'}</text>`).join('')}
+      ${STEP_DAYS.map(([d, n], i) => {
+        const cx = x0 + i * step, a = two ? PH_RICH[i] : PHONE_ONLY[i];
+        let g = '';
+        if (a == null) g = `<rect class="bar-none" x="${cx}" y="${base - 34}" width="${bw}" height="34" rx="6"/><text class="dash-lbl" x="${cx + bw / 2}" y="${base - 12}">—</text>`;
+        else g = `<rect class="bar-health" x="${cx}" y="${y(a)}" width="${bw}" height="${base - y(a)}" rx="4"/>`;
+        if (two) g += `<rect class="bar-sh" x="${cx + bw + 2}" y="${y(SH_RICH[i])}" width="${bw}" height="${base - y(SH_RICH[i])}" rx="4"/>`;
+        return g + `<text class="day-lbl" x="${cx + (two ? bw + 1 : bw / 2)}" y="${base + 16}">${d}</text><text class="day-lbl" x="${cx + (two ? bw + 1 : bw / 2)}" y="${base + 30}">${n}</text>`;
+      }).join('')}</svg></div>`;
+  }
+
+  // ----- PR-1 Progress home -----
+  function prHome(v) {
+    const first = v === 'first', part = v === 'partial', hid = v === 'hidden';
+    const card = (rim, title, src, body, foot = '') => `<section class="card rim-${rim}"><div class="card-head"><h2 class="t-head">${title}</h2></div>${body}${srcLine(src)}${foot}</section>`;
+    const bold = (t) => `<b class="num" style="color:var(--color-text-primary)">${t}</b>`;
+    const strength = first ? emptyS('Finish a workout to see strength trends.', 'Start a workout', 'tr-preview')
+      : hid ? `<div class="stack" style="gap:4px"><span class="trend-word">Volume is up</span><span class="t-small">Compared with the 4 weeks before. Numbers are hidden.</span></div>`
+      : `<div class="stack" style="gap:4px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">${fmt(VOL4)}</span><span class="t-small">kg volume, 4 weeks</span></div><span class="t-small">${bold('+' + VOLPCT + '%')} vs the 4 weeks before</span></div>
+         <div class="row wrap" style="gap:6px"><span class="t-small">Top est. 1RM · Bench press ${bold('96 kg')}</span>${chip('estimate', 'approx', 'Estimate')}</div>`;
+    const nutrition = first ? emptyS('Log meals on 3 days to see nutrition trends.', 'Log a meal', 'ea-add')
+      : hid ? `<div class="stack" style="gap:4px"><span class="trend-word">On track</span><span class="t-small">${LOGD.length} of 28 days logged. Numbers are hidden.</span></div>`
+      : `<div class="stack" style="gap:4px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">avg ${fmt(NUTAVG)}</span><span class="t-small">kcal a day</span></div><span class="t-small">${LOGD.length} of 28 days logged · protein avg ${bold(PAVG + ' g')}</span></div>`;
+    const bodyEmpty = first || part;
+    const body = bodyEmpty ? emptyS('Log your weight to see a trend.', 'Log weight', 'pr-weight')
+      : hid ? `<div class="stack" style="gap:4px"><span class="trend-word">Trend: steady</span><span class="t-small">Numbers are hidden.</span></div>`
+      : `<div class="stack" style="gap:4px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">78.4</span><span class="t-small">kg · today</span></div><span class="t-small">7-day trend ${bold(trendTxt)}</span></div>`;
+    const activity = first ? emptyS('Connect Health Connect to see steps and heart rate.', 'Connect Health Connect', 'he-home', 'notconnected', true)
+      : `<div class="stack" style="gap:4px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">avg 7,480</span><span class="t-small">steps a day</span></div><div class="row wrap" style="gap:6px">${chip('phone', 'phone', 'Phone')}<span class="t-small">1 full day so far (since 20 Oct)${part ? ' · No watch data yet' : ''}</span></div></div>
+         ${part ? '' : `<div class="row wrap" style="gap:6px"><span class="num" style="font-weight:700">72 bpm</span>${chip('measured', 'dot', 'Samsung Health')}${chip('pending', 'clock', 'Device not recorded')}</div>`}`;
+    const showNum = hid ? `<p class="t-small" style="text-align:center">Numbers are hidden · <button class="link" type="button" data-go="pr-home" data-variant="rich">Show numbers</button></p>` : '';
+    return `${statusbar(false)}${hdr('Progress', { root: true })}
+      <div class="scroll"><div class="page screen-anim">
+        ${rangeChips()}${showNum}
+        ${card('train', 'Strength', 'From your workouts in Liftria', strength, first ? '' : cardlink('Strength details', 'pr-strength'))}
+        ${card('eat', 'Nutrition', 'From your food diary', nutrition, first ? '' : cardlink('Nutrition trends', 'pr-nutrition'))}
+        ${card('health', 'Body', 'Logged in Liftria', body, bodyEmpty ? '' : cardlink('Body details', 'pr-body'))}
+        ${card('health', 'Activity', 'From Health Connect · Phone', activity, first ? '' : cardlink('Activity details', 'pr-activity', 'phoneonly') + cardlink('Health details', 'he-home', 'rich', true))}
+      </div></div>`;
+  }
+
+  // ----- PR-2 Strength -----
+  function prStrength(v) {
+    if (v === 'empty') return `${statusbar(false)}${hdr('Strength', { to: 'pr-home' })}
+      <div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-train);color:var(--color-domain-train)">${ICON.train}</span><h1 class="t-title">Finish a workout to see strength trends</h1><p class="t-body" style="max-width:270px">Weekly volume and estimated 1RM show up after your first logged workout.</p><button class="btn btn-train" data-go="tr-preview">Start a workout</button></div>`;
+    return `${statusbar(false)}${hdr('Strength', { to: 'pr-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        ${rangeChips()}
+        <section class="card rim-train"><div class="card-head"><h2 class="t-head">Weekly volume</h2></div>${srcLine('From your workouts in Liftria')}
+          <div class="stack" style="gap:2px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">${fmt(VOL4)}</span><span class="t-small">kg, last 4 weeks</span></div><span class="t-small"><b class="num" style="color:var(--color-text-primary)">+${VOLPCT}%</b> vs the 4 weeks before (${fmt(VOLP)} kg)</span></div>
+          ${volChart()}<span class="t-small">Each bar is 7 days, ending Tue 21 Oct. Volume counts working sets only (kg × reps); warm-ups are left out.</span></section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Top lifts</h2>${chip('estimate', 'approx', 'Estimate')}</div>${srcLine('From your workouts in Liftria · est. 1RM per session, best set (Epley)')}
+          <div class="list">${LIFTS.map(([id, pts]) => `<button class="rowlink" type="button" data-go="tr-exercise" data-variant="history" data-ret aria-label="${EX[id][0]}, estimated one-rep max ${pts[pts.length - 1]} kilograms, up from ${pts[0]} over 8 sessions. Open exercise"><span class="grow"><strong>${EX[id][0]}</strong><span class="t-small num">est. 1RM ${pts[pts.length - 1]} kg</span></span>${spark(pts)}${ICON.chevron}</button>`).join('')}</div></section>
+        <section class="card rim-eat"><button class="rowlink" type="button" data-go="tr-records" data-ret style="border-top:0"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.trophy}</span><span class="grow"><strong>6 records</strong><span class="t-small">in the last 4 weeks · see all</span></span>${ICON.chevron}</button></section>
+      </div></div>`;
+  }
+
+  // ----- PR-3 Nutrition trends -----
+  function prNutrition(v) {
+    if (v === 'empty') return `${statusbar(false)}${hdr('Nutrition', { to: 'pr-home' })}
+      <div class="placeholder"><span class="icon-tile" style="background:var(--color-tint-eat);color:var(--color-domain-eat)">${ICON.eat}</span><h1 class="t-title">Log meals on 3 days to see nutrition trends</h1><p class="t-body" style="max-width:270px">Days you skip stay blank, never zero.</p><button class="btn btn-primary" data-go="ea-add" data-meal="Dinner">Log a meal</button></div>`;
+    const wd = ['Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'];
+    const grid = PG.map((g, i) => g == null ? `<span class="pip2 none" aria-hidden="true"></span>` : g >= 155 ? `<span class="pip2 hit2" aria-hidden="true">${ICON.check}</span>` : `<span class="pip2 lo" aria-hidden="true"></span>`).join('');
+    const pc = [['protein', 'Protein', 128, 23], ['carbs', 'Carbs', 255, 46], ['fat', 'Fat', 75, 31]];
+    return `${statusbar(false)}${hdr('Nutrition', { to: 'pr-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        ${rangeChips()}
+        <section class="card rim-eat"><div class="card-head"><h2 class="t-head">Calories vs target</h2>${chip('estimate', 'approx', 'Estimate')}</div>${srcLine('From your food diary · logged days only')}
+          <div class="stack" style="gap:2px"><span class="t-metric" style="font-size:30px">avg ${fmt(NUTAVG)} kcal</span><span class="t-small">${LOGD.length} of 28 days logged. Days with nothing logged are gaps, not zeros. Target 2,650 kcal (Estimate).</span></div>
+          ${kcalChart()}<div class="legend-row"><span><i class="sw honey"></i>Logged day</span><span><i class="sw ring" style="border-style:dashed"></i>Gap: not logged</span></div></section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Protein target</h2></div>${srcLine('From your food diary')}
+          <div class="stack" style="gap:2px"><span class="t-metric" style="font-size:30px">${PHIT} of ${LOGD.length}</span><span class="t-small">logged days at or above 155 g. Average ${PAVG} g on logged days.</span></div>
+          <div class="pipgrid" role="img" aria-label="Protein by day, 23 September to 20 October. At or above 155 grams: ${PG.map((g, i) => g != null && g >= 155 ? dlab(i) : null).filter(Boolean).join(', ')}. Below target: ${LOGD.length - PHIT} days. Not logged: ${28 - LOGD.length} days.">${wd.map(d => `<span class="hd" aria-hidden="true">${d}</span>`).join('')}${grid}</div>
+          <div class="legend-row"><span><i class="sw" style="background:var(--color-macro-protein)"></i>At or above target</span><span><i class="sw ring" style="border-color:var(--color-macro-protein);border-radius:4px"></i>Below</span><span><i class="sw ring" style="border-style:dashed;border-radius:4px"></i>Not logged</span></div></section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Average split</h2></div>${srcLine('From your food diary · average of logged days')}
+          <div class="macsplit" role="img" aria-label="Average split of calories: ${pc.map(([, l, g, p]) => `${l} ${g} grams, ${p} percent`).join('; ')}">${pc.map(([k, , , p]) => `<i style="width:${p}%;background:var(--color-macro-${k})"></i>`).join('')}</div>
+          <div class="macleg">${pc.map(([k, l, g, p]) => `<span><i style="background:var(--color-macro-${k})"></i>${l} <b>${g} g</b> · ${p}%</span>`).join('')}</div></section>
+      </div></div>`;
+  }
+
+  // ----- PR-4 Body -----
+  function prBody(v) {
+    const empty = v === 'empty', hid = v === 'hidden', hc = v === 'hcweight';
+    const toast = { saved: ['78.4 kg saved in Liftria.', 'rich'], deleted: ['Entry deleted.', 'rich'] }[v];
+    const logBtn = `<button class="btn btn-primary btn-block" type="button" data-go="pr-weight" data-variant="default">${ICON.plus}Log weight</button>`;
+    const fatRow = `<section class="card"><div class="row" style="gap:12px">${ctile('health', 'body')}<div class="grow stack" style="gap:4px"><strong class="t-head" style="font-size:15px">Body fat</strong><div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Pending')}<span class="t-small">Needs a scale that writes to Health Connect.</span></div></div></div></section>`;
+    if (empty) return `${statusbar(false)}${hdr('Body', { to: 'pr-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health" style="justify-items:start"><div class="card-head"><h2 class="t-head">Weight</h2></div>${srcLine('Logged in Liftria')}
+          <p class="t-body">Log your weight to see a trend. One entry a week is enough.</p>${logBtn}<button class="link" type="button" data-go="he-perms" data-variant="partial" data-ret>Or allow Weight in Health Connect</button></section>${fatRow}
+      </div></div>`;
+    const ent = [[28, 'Today'], [27, 'Mon 20 Oct'], [26, 'Sun 19 Oct'], [25, 'Sat 18 Oct'], [24, 'Fri 17 Oct']];
+    const entries = ent.map(([i, lab]) => { const sh = hc && SH.includes(i), val = hid ? 'Numbers hidden' : `${kg1(WT[i])} kg`;
+      return sh ? `<div class="rowlink" aria-disabled="true" style="cursor:default"><span class="grow"><strong class="num">${val}</strong><span class="t-small">${lab} · read from Health Connect, edit it in Samsung Health</span></span>${chip('measured', 'dot', 'Samsung Health')}</div>`
+        : `<button class="rowlink" type="button" data-go="pr-weight" data-variant="edit" aria-label="${val}, ${lab}, entered by you. Edit or delete"><span class="grow"><strong class="num">${val}</strong><span class="t-small">${lab}</span></span>${hc ? chip('phone', 'edit', 'You') : ''}${ICON.chevron}</button>`; }).join('');
+    const legend = hc ? `<div class="legend-row"><span><i class="sw ring"></i>You</span><span><i class="sw diamond"></i>Samsung Health</span><span><i class="sw avgline"></i>7-day average</span></div>`
+      : `<div class="legend-row"><span><i class="sw ring"></i>Entry</span><span><i class="sw avgline"></i>7-day average</span></div>`;
+    const headNum = hid ? `<div class="stack" style="gap:4px"><span class="trend-word">Trend: steady</span><span class="t-small">Numbers are hidden · <button class="link" type="button" data-go="pr-body" data-variant="rich">Show numbers</button></span></div>`
+      : `<div class="stack" style="gap:2px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:36px">78.4</span><span class="t-small">kg · today · You</span></div><span class="t-small">7-day trend <b class="num" style="color:var(--color-text-primary)">${trendTxt}</b> · range ${kg1(WMIN)}–${kg1(WMAX)} kg</span></div>`;
+    return `${statusbar(false)}${hdr('Body', { to: 'pr-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        ${rangeChips()}
+        ${hc ? `<div class="note-box"><p class="t-small"><b style="color:var(--color-text-primary)">Example:</b> how weights look if you allow Weight in Health Connect. Liftria reads them and shows where each came from. It never changes them.</p></div>` : ''}
+        <section class="card rim-health"><div class="card-head"><h2 class="t-head">Weight</h2>${hc ? chip('measured', 'dot', 'Samsung Health') : ''}</div>${srcLine(hc ? 'Logged in Liftria · read from Health Connect' : 'Logged in Liftria')}
+          ${headNum}${weightChart({ hidden: hid, hc })}${legend}${logBtn}</section>
+        ${fatRow}
+        <section class="card"><div class="card-head"><h2 class="t-head">Recent entries</h2></div><div class="list">${entries}</div><span class="t-small">Tap an entry to edit or delete it. Entries are saved in Liftria only.</span></section>
+      </div></div>${toast ? `<div class="snackbar" role="status">${toast[0]}<button class="btn btn-sm" data-go="pr-body" data-variant="rich">Undo</button></div>` : ''}`;
+  }
+
+  // ----- PR-5 Activity -----
+  function prActivity(v) {
+    const off = v === 'hcoff', two = v === 'rich';
+    const steps = off
+      ? `<div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero.</span></div><button class="btn btn-secondary btn-sm" type="button" style="justify-self:start" data-go="he-home" data-variant="rich" data-ret>Turn on</button>`
+      : `${two ? `<div class="note-box"><p class="t-small"><b style="color:var(--color-text-primary)">Illustration, sample numbers.</b> This is how two sources look once Samsung Health steps arrive. They are drawn side by side and never added, because phone and watch can count the same steps.</p></div>` : ''}
+         <div class="stack" style="gap:2px">${two ? `<span class="t-small">Phone avg <b class="num" style="color:var(--color-text-primary)">${fmt(sumA(PH_RICH) / 7)}</b> a day · Samsung Health avg <b class="num" style="color:var(--color-text-primary)">${fmt(sumA(SH_RICH) / 7)}</b> a day</span>`
+           : `<div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">avg 7,480</span><span class="t-small">steps a day</span></div><span class="t-small">1 full day so far: Mon 20 Oct. Today is still counting (6,214). Nothing is stored before you connected on 20 Oct.</span>`}</div>
+         ${stepsChart(two ? 'rich' : 'phoneonly')}
+         <div class="legend-row"><span><i class="sw solid-h"></i>Phone</span><span><i class="sw stripe"></i>Samsung Health${two ? '' : ' (no steps yet)'}</span>${two ? '' : '<span><i class="sw ring" style="border-style:dashed;border-radius:4px"></i>No data</span>'}</div>`;
+    return `${statusbar(false)}${hdr('Activity', { to: 'pr-home' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div class="card-head"><h2 class="t-head">Steps per day</h2>${off ? chip('off', 'off', 'Off') : two ? chip('phone', 'phone', 'Phone') : chip('phone', 'phone', 'Phone')}</div>${srcLine(off ? 'Health Connect is off' : two ? 'From Health Connect · Phone and Samsung Health' : 'From Health Connect · Phone')}${steps}</section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Resting heart rate</h2>${chip('pending', 'clock', 'Pending')}</div>${srcLine('From Health Connect · Samsung Health')}
+          <p class="t-small">A resting trend needs several days of readings from a source we can verify. Only a few readings have arrived, and Samsung Health doesn't say which device recorded them.</p></section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Exercise sessions</h2>${chip('pending', 'clock', 'Pending')}</div>${srcLine('From Health Connect · Samsung Health')}
+          <p class="t-small">None recorded yet. Record a workout on your watch to verify.</p></section>
+        <section class="card"><button class="rowlink" type="button" data-go="he-home" data-variant="rich" data-ret style="border-top:0"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.heart}</span><span class="grow"><strong>Health details</strong><span class="t-small">Every data type, its source and permissions</span></span>${ICON.chevron}</button></section>
+      </div></div>`;
+  }
+
+  // ----- PR-6 Log weight (sheet) -----
+  function prWeight(v) {
+    const bad = v === 'invalid', edit = v === 'edit', from = state.wFrom || 'pr-body';
+    const bg = from === 'home' ? today(vOf('home')) : from === 'ea-home' ? eaHome(vOf('ea-home')) : prBody('rich');
+    const done = from === 'pr-body' ? `data-go="pr-body" data-variant="saved"` : `data-go="${from}"`;
+    return bg + sheet(`<h2>${edit ? 'Edit weight' : 'Log weight'}</h2>
+      <div class="stepper u-low" role="group" aria-label="Weight in kilograms"><button aria-label="Lower, 0.1 kilograms">−</button><output aria-live="polite"><b>${bad ? '400.0' : '78.4'}</b><span>kg</span></output><button aria-label="Higher, 0.1 kilograms">+</button></div>
+      <p class="t-small" style="text-align:center;margin-top:-6px">Tap the number to type it. Steps of 0.1 kg.</p>
+      ${bad ? `<p class="hint">${ICON.warn}<span><b>Is that right?</b> 400 kg is far from your recent entries (about 78 kg).</span></p>` : ''}
+      <div class="two"><button class="fchip" type="button" style="justify-content:center" aria-label="Date: today, Tuesday 21 October. Change">${ICON.calendar}Today · 21 Oct</button><div class="field"><input aria-label="Note (optional)" placeholder="Note (optional)"></div></div>
+      <p class="t-small">Saved in Liftria. Not written to Health Connect: Liftria only reads.</p>
+      ${bad ? `<button class="btn btn-primary btn-block" data-go="pr-weight" data-variant="default">Fix it</button><button class="btn btn-secondary btn-block" ${done}>Save anyway</button>`
+        : `<button class="btn btn-primary btn-block" ${done}>${edit ? 'Save changes' : 'Save weight'}</button>${edit ? `<button class="btn btn-text-danger btn-block" data-go="pr-body" data-variant="deleted">${ICON.trash}Delete entry</button>` : ''}<button class="btn btn-ghost btn-block" data-go="${from}">Cancel</button>`}`, from);
+  }
+
+  // ----- Health (inside Progress) -----
+  // What the S22 Ultra + Watch 4 test saw: steps from the phone only, one heart-rate reading from Samsung Health with no device, no sessions, no measured energy.
+  const PERMS = [['steps', 'Steps', 'steps', 'Today\'s Activity card and the Progress charts'], ['heart', 'Heart rate', 'heart', 'The latest reading and its source'], ['exercise', 'Exercise sessions', 'train', 'Workouts recorded on your watch'], ['energy', 'Active energy', 'flame', 'Energy burned, only from a measured source'], ['sleep', 'Sleep', 'moon', 'Sleep sessions from Samsung Health'], ['weight', 'Weight', 'scale', 'Weights other apps wrote (shown with their source)'], ['fat', 'Body fat', 'body', 'Body fat from a smart scale']];
+  const ALLOWED = { partial: ['steps', 'heart', 'exercise', 'energy', 'sleep'], all: PERMS.map(p => p[0]), denied: [] };
+  const hrow = (key, icon, name, valueHtml, metaHtml, go, vv, label, dim) => `<button class="hrow ${dim ? 'dim' : ''}" type="button" data-go="${go}" ${vv ? `data-variant="${vv}"` : ''} data-ret aria-label="${label}">${ctile('health', icon)}<span class="hmain"><strong>${name}</strong><span class="hval">${valueHtml}</span></span><span class="hmeta">${metaHtml}</span>${ICON.chevron}</button>`;
+
+  function heHome(v) {
+    const nc = v === 'notconnected', off = v === 'hcoff', na = v === 'unavailable', stale = v === 'stale';
+    const hdrHtml = hdr('Health', { to: rt('he-home', 'pr-home'), sub: 'Health Connect' });
+    if (nc || na) {
+      const what = PERMS.map(([, n, i, d]) => `<div class="list-item" style="min-height:48px;padding:8px 0">${ctile('health', i)}<div class="grow"><div style="font-size:15px;font-weight:600">${n}</div><div class="t-small">${d}</div></div></div>`).join('');
+      const card = nc
+        ? `<section class="card rim-health"><span class="err-ic" style="background:var(--color-tint-health);color:var(--color-domain-health)" aria-hidden="true">${ICON.heart}</span><h2 class="t-title">Connect Health Connect</h2>
+            <p class="t-body">Liftria can show steps, heart rate and workouts from Health Connect, with the app each number came from. It only reads: it never writes or deletes your health data.</p>
+            <p class="t-small">Data starts on the day you connect. Older history doesn't come over.</p>
+            <button class="btn btn-primary btn-block" type="button" data-go="he-perms" data-variant="system" data-ret>Connect</button><button class="btn btn-ghost btn-block" type="button" data-go="pr-home">Not now</button></section>`
+        : `<section class="card rim-health"><span class="err-ic" aria-hidden="true">${ICON.warn}</span><h2 class="t-title" role="status">Health Connect isn't available</h2>
+            <p class="t-body">It isn't installed on this phone, or it's too old for Liftria.</p>
+            <button class="btn btn-primary btn-block" type="button">${ICON.external}Get Health Connect</button><p class="t-small" style="text-align:center">Opens Google Play.</p>
+            <p class="t-body"><strong>Liftria works without it.</strong> Training, food and Hiku don't need Health Connect. Steps and heart rate stay hidden, not zero.</p></section>`;
+      return `${statusbar(false)}${hdrHtml}<div class="scroll"><div class="page screen-anim">${card}
+        <section class="card flat"><h2 class="t-head">What Health Connect adds</h2><div class="list">${what}</div></section></div></div>`;
+    }
+    if (off) {
+      const rows = PERMS.map(([k, n, i]) => `<div class="hrow dim" style="cursor:default">${ctile('health', i)}<span class="hmain"><strong>${n}</strong><span class="hval">—</span></span><span class="hmeta">${chip('off', 'off', 'Health Connect off')}<span>Hidden, not zero</span></span></div>`).join('');
+      return `${statusbar(false)}${hdrHtml}<div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div class="banner banner-offline">${ICON.off.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Health Connect is off.</strong> Steps and heart rate are hidden, not zero.</span></div>
+          <p class="t-small">Liftria can't read anything while Health Connect is turned off. Everything you logged in Liftria is unchanged.</p>
+          <button class="btn btn-primary btn-block" type="button" data-go="he-home" data-variant="rich">Turn on</button><button class="btn btn-ghost btn-block" type="button" data-go="pr-home">Not now</button></section>
+        <section class="card flat"><div class="list">${rows}</div></section></div></div>`;
+    }
+    const lock = (k, n, i) => hrow(k, i, n, '—', `${chip('off', 'lock', 'Not allowed')}<span>Tap to allow in Health Connect</span>`, 'he-perms', 'system', `${n}: not allowed. Opens Health Connect to change it.`, true);
+    const rows = [
+      hrow('steps', 'steps', 'Steps', '<b>6,214</b> steps', `${chip('phone', 'phone', 'Phone')}${stale ? chip('stale', 'clock', '7 h ago') : '<span>12 min ago</span>'}`, 'he-metric', 'steps', `Steps, 6,214, counted by the phone, updated ${stale ? '7 hours' : '12 minutes'} ago`, stale),
+      hrow('heart', 'heart', 'Heart rate', '<b>72</b> bpm', `${chip('measured', 'dot', 'Samsung Health')}${chip('pending', 'clock', 'Device not recorded')}${stale ? chip('stale', 'clock', '2 d ago') : '<span>2 h ago</span>'}`, 'he-metric', 'heart', `Heart rate, 72 beats per minute, from Samsung Health, the device was not recorded, ${stale ? '2 days' : '2 hours'} ago`, stale),
+      hrow('exercise', 'train', 'Exercise sessions', '<span>None recorded yet</span>', `${chip('pending', 'clock', 'Pending')}<span>Record a workout on the watch to verify</span>`, 'he-metric', 'exercise', 'Exercise sessions, none recorded yet, pending'),
+      hrow('energy', 'flame', 'Active energy', '<span>—</span>', `${chip('off', 'off', 'No measured source')}`, 'he-metric', 'energy', 'Active energy, no measured source'),
+      hrow('sleep', 'moon', 'Sleep', '<span>—</span>', `${chip('off', 'off', 'No data')}`, 'he-metric', 'sleep', 'Sleep, no data'),
+      lock('weight', 'Weight', 'scale'), lock('fat', 'Body fat', 'body')].join('');
+    return `${statusbar(false)}${hdrHtml}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div class="statusline"><span class="okdot" aria-hidden="true">${ICON.check}</span><span>Health Connect · connected · reads only</span></div>
+          <p class="t-small">Data from 20 Oct (when you connected). Nothing before that comes over.</p>${cardlink('Permissions · 5 of 7 allowed', 'he-perms', 'partial', true)}</section>
+        <section class="card"><div class="list">${rows}</div></section>
+        <section class="card"><div class="list">
+          <button class="rowlink" type="button" data-go="he-trouble" data-variant="checking" data-ret><span class="icon-tile" style="background:var(--color-tint-warning);color:var(--color-status-warning)">${ICON.help}</span><span class="grow"><strong>Watch data missing?</strong><span class="t-small">Check each step from the watch to Liftria</span></span>${ICON.chevron}</button>
+          <button class="rowlink" type="button" data-go="he-guide" data-ret><span class="icon-tile neutral">${ICON.watch.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="20" height="20"')}</span><span class="grow"><strong>Samsung Health sync guide</strong><span class="t-small">Get the watch writing to Health Connect</span></span>${ICON.chevron}</button></div></section>
+        <p class="t-small" style="text-align:center">Liftria reads Health Connect when you open the app (at most every 15 minutes) and when you pull down to refresh. Cached values show first, with their age.</p>
+      </div></div>`;
+  }
+
+  // sources breakdown row
+  const srcRow = (name, value, chips, meta) => `<div class="list-item" style="display:grid;gap:4px;min-height:0;align-items:start"><div class="row" style="justify-content:space-between;gap:8px"><strong style="font-size:15px">${name}</strong><span class="num" style="font-weight:700;text-align:end">${value}</span></div><div class="row wrap" style="gap:6px">${chips}<span class="t-small">${meta}</span></div></div>`;
+  const recRow = (time, val, orig, go, vv) => `<button class="rowlink" type="button" data-go="${go}" data-variant="${vv}"><span class="grow"><strong class="num">${val}</strong><span class="t-small num">${time} · ${orig}</span></span>${ICON.chevron}</button>`;
+  const explain = (t) => `<div class="note-box"><h3 class="t-label">What this means</h3>${t}</div>`;
+  const HOURS = { 6: 180, 7: 1320, 8: 2290, 9: 2424 }; // steps per hour today; sum 6,214
+  function hourChart() {
+    const W = 320, H = 190, base = 150, top = 16, y = (s) => base - s / 3000 * (base - top), x = (h) => 36 + h * 11.6, bw = 8;
+    const alt = `Steps by hour today, from Health Connect, Phone: ${Object.entries(HOURS).map(([h, s]) => `${h}:00, ${fmt(s)}`).join('; ')}. Total ${fmt(sumA(Object.values(HOURS)))}.`;
+    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+      ${[0, 1500, 3000].map(g => `<line class="grid" x1="32" x2="${W - 4}" y1="${y(g)}" y2="${y(g)}"/><text x="0" y="${y(g) + 4}">${g ? fmt(g) : '0'}</text>`).join('')}
+      ${Object.entries(HOURS).map(([h, s]) => `<rect class="bar-health" x="${x(+h)}" y="${y(s)}" width="${bw}" height="${base - y(s)}" rx="3"/>`).join('')}
+      ${[0, 6, 12, 18].map(h => `<text class="mid-lbl" x="${x(h) + bw / 2}" y="${base + 16}">${String(h).padStart(2, '0')}:00</text>`).join('')}
+      <text class="mid-lbl" x="${x(9) + bw / 2}" y="${y(HOURS[9]) - 5}">so far</text></svg></div>`;
+  }
+  const HR = [['07:41', 72], ['07:22', 68], ['07:03', 75], ['06:40', 66], ['06:12', 63], ['05:50', 61]];
+  function hrChart() {
+    const W = 320, H = 190, base = 150, top = 16, t = (hh, mm) => hh + mm / 60, x = (tt) => 36 + (tt - 5) / 5 * 278, y = (b) => base - (b - 50) / 50 * (base - top);
+    const alt = `Heart rate samples today, from Health Connect, Samsung Health, device not recorded: ${HR.map(([tm, b]) => `${tm}, ${b} beats per minute`).join('; ')}. No readings since 07:41.`;
+    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${alt}">
+      ${[60, 80, 100].map(g => `<line class="grid" x1="32" x2="${W - 4}" y1="${y(g)}" y2="${y(g)}"/><text x="2" y="${y(g) + 4}">${g}</text>`).join('')}
+      <line class="grid" x1="32" x2="${W - 4}" y1="${base}" y2="${base}"/>
+      ${HR.map(([tm, b], i) => { const [hh, mm] = tm.split(':').map(Number); return `<circle class="dot-hr" cx="${x(t(hh, mm)).toFixed(1)}" cy="${y(b).toFixed(1)}" r="${i === 0 ? 6 : 4.5}"/>`; }).join('')}
+      <text x="${x(7.68) - 6}" y="${y(72) - 11}" class="end-lbl">72</text>
+      <line class="tline" x1="${x(9.68)}" x2="${x(9.68)}" y1="${top}" y2="${base}"/><text class="end-lbl" x="${x(9.68) - 5}" y="${top + 10}">now 9:41</text>
+      <text x="${x(5) - 4}" y="${base + 16}">05:00</text><text class="mid-lbl" x="${x(7.5)}" y="${base + 16}">07:30</text><text class="end-lbl" x="${x(10) + 4}" y="${base + 16}">10:00</text></svg></div>`;
+  }
+
+  // ----- HE-2 Metric detail -----
+  function heMetric(v) {
+    const week = v === 'stepsweek', m = week ? 'steps' : v;
+    const T = { steps: 'Steps', heart: 'Heart rate', energy: 'Active energy', sleep: 'Sleep', exercise: 'Exercise sessions' };
+    const rng = `<div class="rseg" role="group" aria-label="Range"><button type="button" aria-pressed="${!week}" ${m === 'steps' ? 'data-go="he-metric" data-variant="steps"' : ''}>Day</button><button type="button" aria-pressed="${week}" ${m === 'steps' ? 'data-go="he-metric" data-variant="stepsweek"' : ''}>Week</button></div>`;
+    let main = '', sources = '', why = '', recs = '';
+    if (m === 'steps') {
+      main = `<section class="card rim-health"><div class="card-head"><h2 class="t-head">${week ? 'Steps this week' : 'Steps today'}</h2>${chip('phone', 'phone', 'Phone')}</div>${srcLine('From Health Connect · Phone')}
+          ${week ? `<span class="t-small">Only 2 days so far: Health Connect data starts on 20 Oct.</span>${stepsChart('phoneonly')}` : `<div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:36px">6,214</span><span class="t-small">steps · 12 min ago</span></div>${hourChart()}`}</section>`;
+      sources = `<section class="card"><h2 class="t-head">Sources</h2><div class="list">${srcRow('Phone', '6,214', chip('phone', 'phone', 'Phone'), 'com.android.healthconnect.phone · 12 min ago')}${srcRow('Samsung Health', '—', chip('off', 'off', 'No steps yet'), 'Nothing from the watch has arrived')}</div>
+          <p class="t-small">Each source is listed on its own. A single total is shown only when there is one source, because a phone and a watch can count the same steps.</p></section>`;
+      why = explain(`<p class="t-small">Your phone counts steps itself (Android's own step tracking). Steps from your watch would come through Samsung Health, and none have arrived yet.</p><button class="link" type="button" data-go="he-trouble" data-variant="checking" data-ret style="justify-self:start">Watch data missing?</button>`);
+      recs = [['09:14–09:29', '1,044 steps'], ['09:00–09:14', '1,380 steps'], ['08:30–09:00', '1,310 steps'], ['08:00–08:30', '980 steps']].map(([tm, val]) => recRow(tm, val, 'Phone', 'he-record', 'steps')).join('');
+    } else if (m === 'heart') {
+      main = `<section class="card rim-health"><div class="card-head"><h2 class="t-head">Heart rate today</h2></div>${srcLine('From Health Connect · Samsung Health · device not recorded')}
+          <div class="row wrap" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:36px">72</span><span class="t-small">bpm · 2 h ago</span></div><div class="row wrap" style="gap:6px">${chip('measured', 'dot', 'Samsung Health')}${chip('pending', 'clock', 'Device not recorded')}</div>${hrChart()}
+          <p class="t-small">Samsung Health didn't record which device took these readings.</p></section>`;
+      sources = `<section class="card"><h2 class="t-head">Sources</h2><div class="list">${srcRow('Samsung Health', '72 bpm', chip('measured', 'dot', 'Measured'), 'com.sec.android.app.shealth · 2 h ago')}${srcRow('Phone', '—', chip('off', 'off', 'No data'), 'The phone has no heart-rate sensor')}</div></section>`;
+      why = explain(`<p class="t-small">Samsung Health can pass on readings from the phone or the watch, and these records don't say which. They probably came from your watch, but Liftria can't confirm that, so it never says “from your watch”.</p>`);
+      recs = HR.slice(0, 4).map(([tm, b]) => recRow(tm, `${b} bpm`, 'Samsung Health', 'he-record', 'default')).join('');
+    } else if (m === 'energy') {
+      main = `<section class="card rim-health"><div class="card-head"><h2 class="t-head">Active energy</h2>${chip('off', 'off', 'No measured source')}</div>${srcLine('From Health Connect · no app has reported energy')}
+          <div class="placeholder" style="padding:14px 0;gap:8px"><span class="t-metric" style="font-size:36px">—</span><p class="t-small">Nothing to draw. Liftria shows energy only from a named, measured source.</p></div>
+          <div class="note-box"><div class="row" style="justify-content:space-between;gap:8px"><div class="stack" style="gap:2px"><strong style="font-size:15px">Health Connect estimate</strong><span class="t-small" id="est-hid">Hidden</span></div><button class="btn btn-secondary btn-sm" type="button" data-reveal="#est-box" data-hide="#est-hid" data-label-hide="Hide estimate" aria-expanded="false">Show estimate</button></div>
+            <div id="est-box" hidden class="stack" style="gap:6px"><div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:30px">1,565</span><span class="t-small">kcal, total energy</span>${chip('estimate', 'approx', 'Estimate')}</div><p class="t-small"><b style="color:var(--color-text-primary)">Not used anywhere in Liftria.</b> Health Connect produced this number with no app contributing.</p></div></div></section>`;
+      sources = `<section class="card"><h2 class="t-head">Sources</h2><div class="list">${srcRow('Samsung Health', '—', chip('off', 'off', 'No energy yet'), 'Nothing written')}${srcRow('Health Connect itself', 'hidden', chip('estimate', 'approx', 'Estimate'), 'No contributing app')}</div></section>`;
+      why = explain(`<p class="t-small">Active energy is what a watch or app measured for movement. Health Connect shows a total-energy figure on its own when no app has written any, so Liftria hides it by default. Liftria never adds active, resting and total energy together.</p>`);
+    } else if (m === 'sleep') {
+      main = `<section class="card rim-health"><div class="card-head"><h2 class="t-head">Sleep</h2>${chip('off', 'off', 'No data')}</div>${srcLine('From Health Connect · Samsung Health')}
+          <div class="placeholder" style="padding:14px 0;gap:8px"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.moon}</span><p class="t-body">No sleep recorded yet.</p><p class="t-small">Sleep needs Samsung Health sleep tracking.</p><button class="btn btn-secondary btn-sm" type="button" data-go="he-guide" data-ret>Open the sync guide</button></div></section>`;
+      sources = `<section class="card"><h2 class="t-head">Sources</h2><div class="list">${srcRow('Samsung Health', '—', chip('off', 'off', 'No data'), 'No sleep sessions')}</div></section>`;
+      why = explain(`<p class="t-small">Wear the watch to bed with sleep tracking on in Samsung Health. Sleep appears here after Samsung Health writes it to Health Connect.</p>`);
+    } else {
+      main = `<section class="card rim-health"><div class="card-head"><h2 class="t-head">Exercise sessions</h2>${chip('pending', 'clock', 'Pending')}</div>${srcLine('From Health Connect · Samsung Health')}
+          <div class="placeholder" style="padding:14px 0;gap:8px"><span class="icon-tile" style="background:var(--color-tint-health);color:var(--color-domain-health)">${ICON.train}</span><p class="t-body">None recorded yet.</p><p class="t-small">Record a workout on your watch, then check here.</p></div></section>`;
+      sources = `<section class="card"><h2 class="t-head">Sources</h2><div class="list">${srcRow('Samsung Health', '—', chip('pending', 'clock', 'Pending'), 'No sessions yet, not verified')}</div></section>`;
+      why = explain(`<p class="t-small">Workouts you log in Liftria's Train tab are not Health Connect sessions: Liftria reads Health Connect and never writes to it.</p>`);
+    }
+    const recCard = recs ? `<section class="card"><div class="card-head"><h2 class="t-head">Recent records</h2></div><div class="list">${recs}</div><span class="t-small">Tap a record to see exactly what was stored.</span></section>` : '';
+    return `${statusbar(false)}${hdr(T[m], { to: rt('he-metric', 'he-home'), sub: 'Health Connect' })}
+      <div class="scroll"><div class="page screen-anim">${rng}${main}${sources}${why}${recCard}</div></div>`;
+  }
+
+  // ----- HE-3 Record / source detail -----
+  function heRecord(v) {
+    const st = v === 'steps';
+    const D = st
+      ? { type: 'Steps', val: '1,044 steps', time: 'Today, 09:14–09:29 (15 min)', app: 'Phone', pkg: 'com.android.healthconnect.phone', dev: 'SM-S908E', devNote: 'Model recorded by the source', rec: 'Recorded 09:29', read: 'Read by Liftria 09:41 (12 min later)', perm: 'Steps · Allowed', chipHtml: chip('phone', 'phone', 'Phone') }
+      : { type: 'Heart rate', val: '72 bpm', time: 'Today, 07:41 (1 sample)', app: 'Samsung Health', pkg: 'com.sec.android.app.shealth', dev: 'Not recorded by the source', devNote: 'Samsung Health didn\'t say which device took this reading', rec: 'Recorded 07:41', read: 'Read by Liftria 09:41 (2 h later)', perm: 'Heart rate · Allowed', chipHtml: chip('measured', 'dot', 'Samsung Health') + chip('pending', 'clock', 'Device not recorded') };
+    return `${statusbar(false)}${hdr('Record', { to: rt('he-record', 'he-metric'), sub: D.type })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div class="row wrap" style="gap:6px">${D.chipHtml}</div>
+          <dl class="deflist">
+            <div><dt>Value</dt><dd>${D.val}</dd></div>
+            <div><dt>Time</dt><dd>${D.time}</dd></div>
+            <div><dt>Data origin</dt><dd>${D.app}<small><span class="kbd">${D.pkg}</span></small></dd></div>
+            <div><dt>Device</dt><dd>${D.dev}<small>${D.devNote}</small></dd></div>
+            <div><dt>Recorded and read</dt><dd>${D.rec}<small>${D.read}</small></dd></div>
+            <div><dt>Permission</dt><dd>${D.perm}</dd></div>
+          </dl></section>
+        ${explain(`<p class="t-small"><b style="color:var(--color-text-primary)">Value</b> is exactly what Health Connect returned. <b style="color:var(--color-text-primary)">Data origin</b> is the app that wrote it; the same app can sit on the phone or on a watch. <b style="color:var(--color-text-primary)">Device</b> is filled in only when that app says so. <b style="color:var(--color-text-primary)">Recorded</b> is when the reading was taken, <b style="color:var(--color-text-primary)">read</b> is when Liftria fetched it. A big gap means the source synced late.</p>`)}
+      </div></div>`;
+  }
+
+  // ----- HE-4 Connection and permissions -----
+  function hePerms(v) {
+    if (v === 'system') {
+      const rows = [['Active calories burned', 1], ['Body fat', 0], ['Exercise', 1], ['Heart rate', 1], ['Sleep', 1], ['Steps', 1], ['Weight', 0]];
+      return `<div class="sysmock">
+        <div class="applogo" aria-hidden="true">L</div><h1>Allow Liftria to read Health Connect data?</h1>
+        <p>Liftria can read:</p>
+        <div class="syslist" role="group" aria-label="Android permission list, for reference">${rows.map(([n, on]) => `<div class="sysrow"><span>${n}</span><i class="${on ? 'on' : ''}" role="img" aria-label="${on ? 'On' : 'Off'}"></i></div>`).join('')}</div>
+        <p>Liftria asks only to read. You can change this later in Health Connect.</p>
+        <div class="sysbtns"><button type="button" data-go="he-home" data-variant="notconnected">Don't allow</button><button type="button" class="pri" data-go="he-home" data-variant="rich">Allow</button></div>
+        <p class="syscap">Android screen, for reference. Wording and layout differ between Android versions.</p></div>`;
+    }
+    const allowed = ALLOWED[v] || ALLOWED.partial, n = allowed.length, denied = v === 'denied';
+    const rows = PERMS.map(([k, name, icon, aff]) => { const on = allowed.includes(k);
+      return `<button class="permrow" type="button" data-go="he-perms" data-variant="system" data-ret aria-label="${name}: ${on ? 'Allowed' : 'Not allowed'}. Tapping opens Health Connect, where you can change this.">${ctile('health', icon)}<span class="grow"><strong>${name}</strong><span class="t-small">${on ? aff : 'Hidden until you allow it'}</span></span><span class="st"><i class="sl ${on ? 'on' : ''}" aria-hidden="true"></i><span>${on ? 'Allowed' : 'Not allowed'}</span></span></button>`; }).join('');
+    return `${statusbar(false)}${hdr('Health Connect', { to: rt('he-perms', 'he-home'), sub: 'Connection and permissions' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div class="statusline"><span class="okdot" aria-hidden="true" style="${denied ? 'background:var(--color-bg-raised);color:var(--color-text-tertiary)' : ''}">${denied ? ICON.lock : ICON.check}</span><span>${denied ? 'Connected · nothing allowed' : 'Health Connect · connected · reads only'}</span></div>
+          <div class="row" style="align-items:baseline;gap:6px"><span class="t-metric" style="font-size:32px">${n} of 7</span><span class="t-small">allowed</span></div>
+          <p class="t-small">${denied ? 'Liftria can\'t read any health data, so Steps, Heart rate and the rest stay hidden, not zero. Everything else in Liftria works as before.' : 'Data from 20 Oct (when you connected).'}</p></section>
+        <section class="card"><div class="list">${rows}</div><span class="t-small">The switches show Health Connect's settings. They can only be changed there: tap a row to open it.</span></section>
+        <button class="btn btn-primary btn-block" type="button" data-go="he-perms" data-variant="system" data-ret>${ICON.external}Open Health Connect</button>
+        <div class="note-box"><div class="row" style="gap:10px;align-items:flex-start"><span style="color:var(--color-domain-health);flex:none">${ICON.shield.replace('<svg', '<svg width="20" height="20"')}</span><p class="t-small"><b style="color:var(--color-text-primary)">Liftria reads. It never writes or deletes your health data.</b> Health readings stay on this phone.</p></div></div>
+      </div></div>`;
+  }
+
+  // ----- HE-5 Samsung Health sync guide -----
+  function ill(kind) {
+    const ph = '<rect class="scr" x="22" y="4" width="36" height="72" rx="7"/>';
+    const bodies = {
+      open: `${ph}<rect class="blk" x="27" y="14" width="12" height="12" rx="4"/><rect class="hl" x="41" y="14" width="12" height="12" rx="4"/><rect class="blk" x="27" y="30" width="12" height="12" rx="4"/><rect class="blk" x="41" y="30" width="12" height="12" rx="4"/><path class="acs" d="M44 20.5c.8-1.6 3-1.6 3.6 0 .5 1.5-1.5 3.2-3.6 4.6-2.1-1.4-4.1-3.1-3.6-4.6.6-1.6 2.8-1.6 3.6 0z" transform="translate(0 -1)"/>`,
+      menu: `${ph}<line class="ln" x1="27" y1="15" x2="42" y2="15"/><circle class="ac" cx="50" cy="12.5" r="1.7"/><circle class="ac" cx="50" cy="17" r="1.7"/><circle class="ac" cx="50" cy="21.5" r="1.7"/><rect class="blk" x="27" y="28" width="26" height="9" rx="3"/><rect class="blk" x="27" y="41" width="26" height="9" rx="3"/>`,
+      settings: `${ph}<rect class="blk" x="27" y="12" width="26" height="8" rx="3"/><rect class="blk" x="27" y="24" width="26" height="8" rx="3"/><rect class="hl" x="26" y="36" width="28" height="10" rx="3"/><rect class="blk" x="27" y="50" width="26" height="8" rx="3"/>`,
+      sync: `${ph}<rect class="blk" x="27" y="14" width="26" height="9" rx="3"/><rect class="hl" x="27" y="27" width="26" height="9" rx="3"/><path class="acs" d="M60 52h10M66 48l4 4-4 4"/><rect class="scr" x="62" y="26" width="14" height="16" rx="5"/><path class="ln" d="M65 26v-5h8v5M65 42v5h8v-5"/>`,
+    };
+    const allow = `${ph}${[14, 26, 38, 50].map(y => `<rect class="blk" x="27" y="${y}" width="14" height="6" rx="3"/><rect class="hl" x="43" y="${y - 2}" width="11" height="10" rx="5"/><circle class="ac" cx="49.5" cy="${y + 3}" r="3"/>`).join('')}`;
+    return `<svg viewBox="0 0 80 80" role="img" aria-label="${{ open: 'A phone showing the Samsung Health app', menu: 'A phone with the three-dot menu highlighted', settings: 'A phone with Health Connect highlighted in a settings list', allow: 'A phone with four permission switches turned on', sync: 'A phone and a watch with an arrow between them' }[kind]}">${kind === 'allow' ? allow : bodies[kind]}</svg>`;
+  }
+  function heGuide() {
+    const steps = [['open', 'Open Samsung Health', 'On the phone, not the watch.'], ['menu', 'Tap ⋮ (more), then Settings', 'The three dots are at the top right of the home screen.'], ['settings', 'Tap Health Connect', 'Start from Samsung Health, not from the Health Connect app.'], ['allow', 'Allow every type', 'Turn on steps, heart rate, exercise, sleep and energy so Samsung Health can write them.'], ['sync', 'Keep the watch synced', 'Open Samsung Health on the phone now and then, with the watch connected.']];
+    return `${statusbar(false)}${hdr('Samsung Health sync', { to: rt('he-guide', 'he-home'), sub: 'Get watch data into Health Connect' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div>${steps.map(([k, t, d], i) => `<div class="guide"><span class="ill">${ill(k)}</span><div class="gtxt"><strong><span class="stepn num">${i + 1}</span>${t}</strong><span class="t-small">${d}</span></div></div>`).join('')}</div></section>
+        <div class="banner banner-warning">${ICON.clock.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="18" height="18"')}<span><strong>Data starts from the day you connect.</strong> Older history doesn't come over.</span></div>
+        <button class="btn btn-primary btn-block" type="button" data-go="he-trouble" data-variant="checking" data-fix>${ICON.refresh}Check again</button>
+      </div></div>`;
+  }
+
+  // ----- HE-6 Troubleshoot missing watch data -----
+  function heTrouble(v) {
+    const checking = v === 'checking', issue = v === 'issue', found = v === 'found';
+    const ic = { ok: ICON.check, info: ICON.info, fail: ICON.x, wait: '', spin: '' };
+    const R = [['Health Connect is installed', 'Installed and up to date.'], ['Liftria can read heart rate', 'Allowed in Health Connect.'], ['Samsung Health writes to Health Connect', 'Last record 2 h ago.'], ['Watch synced to Samsung Health', 'Can\'t be checked from here. Open Samsung Health on your phone and check that the watch shows as synced.'], ['Steps from the watch', 'None yet, only phone steps (6,214 today).']];
+    const S = checking ? ['ok', 'ok', 'spin', 'wait', 'wait'] : issue ? ['ok', 'ok', 'ok', 'info', 'fail'] : ['ok', 'ok', 'ok', 'info', 'ok'];
+    const word = { ok: 'Checked', info: 'Can\'t check here', fail: 'Missing', wait: 'Waiting', spin: 'Checking' };
+    const txt = (i, s) => checking ? (s === 'spin' ? 'Checking…' : s === 'wait' ? 'Waiting' : R[i][1]) : (found && i === 4 ? 'Arriving: last steps from Samsung Health 12 min ago.' : R[i][1]);
+    const rows = R.map(([t], i) => { const s = S[i];
+      return `<div class="chk"><span class="ic ${s}" role="img" aria-label="${word[s]}">${ic[s]}</span><div class="body"><strong>${t}</strong><span class="t-small">${txt(i, s)}</span></div>
+        ${issue && i === 4 ? `<div class="fix"><p class="t-body"><b style="color:var(--color-text-primary)">Turn on Steps in Samsung Health → Health Connect.</b> Samsung Health only shares the types you allow there.</p><button class="btn btn-secondary btn-block" type="button" data-go="he-guide" data-ret>${ICON.watch.replace('viewBox="0 0 12 12"', 'viewBox="0 0 12 12" width="20" height="20"')}Show me how</button></div>` : ''}</div>`; }).join('');
+    const head = checking ? ['Checking each step…', 'This takes a moment.'] : issue ? ['One thing to fix', 'Samsung Health is writing to Health Connect, but not steps from the watch.'] : ['Watch data is arriving', 'Every step we can check passed.'];
+    return `${statusbar(false)}${hdr('Watch data missing?', { to: rt('he-trouble', 'he-home'), sub: 'Check from the watch to Liftria' })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-health"><div class="stack" style="gap:2px"><h2 class="t-title" role="status" aria-live="polite">${head[0]}</h2><p class="t-small">${head[1]}</p></div>
+          ${found ? `<div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Example')}<span class="t-small">How this looks once the fix works. Not verified on your phone yet.</span></div>` : ''}
+          <div>${rows}</div></section>
+        ${checking ? '' : `<button class="btn btn-primary btn-block" type="button" data-go="he-trouble" data-variant="checking">${ICON.refresh}Check again</button>`}
+        ${found ? `<button class="btn btn-secondary btn-block" type="button" data-go="he-home" data-variant="rich">Back to Health</button>` : `<button class="link" type="button" data-go="he-guide" data-ret style="justify-self:start">Samsung Health sync guide</button>`}
+        <p class="t-small">Prototype: “Check again” runs the checklist for about two seconds.</p>
+      </div></div>`;
+  }
+
+  // ----- Settings (a pushed stack from the Today avatar: no capsule nav) -----
+  const sRow = (icon, title, sub, go, vv, extra = '') => `<button class="srow" type="button" data-go="${go}" ${vv ? `data-variant="${vv}"` : ''} data-ret>${ntile(icon)}<span class="grow"><strong>${title}</strong><span class="t-small">${sub}</span></span>${extra}${ICON.chevron}</button>`;
+
+  // ST-1
+  function stHome() {
+    return `${statusbar(false)}${hdr('Settings', { to: rt('st-home', 'home') })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:40px">
+        <section class="card"><div class="list">${sRow('user', 'Profile and goals', 'Body, activity and goal · target 2,650 kcal', 'st-profile', 'default')}${sRow('sliders', 'Units and appearance', 'kg · cm · kcal · Dark · Aurora Rim', 'st-units')}</div></section>
+        <section class="card"><div class="list">${sRow('hiku', 'Hiku and API key', 'Key saved on this phone', 'st-hiku', 'ready')}${sRow('bell', 'Notifications', 'Rest timer alerts · meal reminders', 'st-notif', 'allowed')}</div></section>
+        <section class="card"><div class="list">${sRow('heart', 'Health Connect', '5 of 7 allowed · reads only', 'he-perms', 'partial')}${sRow('db', 'Data and storage', '6.8 MB · everything is on this phone', 'st-data', 'default')}${sRow('help', 'About and help', 'Version 0.1.0 · help, licenses, privacy', 'st-about')}</div></section>
+        <p class="t-small" style="text-align:center">Everything is on this phone · 6.8 MB</p>
+      </div></div>`;
+  }
+
+  // ST-2
+  function stProfile(v) {
+    const ch = v === 'changed';
+    const fld = (id, label, val, unit, hint) => `<div class="field"><label for="${id}">${label}</label>${unit ? `<div class="unit-input"><input id="${id}" inputmode="decimal" value="${val}"><span>${unit}</span></div>` : `<div class="input" id="${id}" style="display:flex;align-items:center;justify-content:space-between">${val}${ICON.chevron.replace('<svg', '<svg width="18" height="18"')}</div>`}${hint ? `<span class="t-small">${hint}</span>` : ''}</div>`;
+    return `${statusbar(false)}${hdr('Profile and goals', { to: rt('st-profile', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:${ch ? 150 : 110}px">
+        <div class="field"><label for="p-name">First name (optional)</label><input id="p-name" value="Sam"></div>
+        <div class="two">${fld('p-sex', 'Sex for the formula', 'Male', '', 'Used only to estimate your target.')}${fld('p-by', 'Birth year', '1996', '', '')}</div>
+        <div class="two">${fld('p-h', 'Height', '178', 'cm', '')}${fld('p-w', 'Weight', ch ? '80.0' : '78.4', 'kg', ch ? 'Edited just now.' : 'Latest from your weight log.')}</div>
+        ${ch ? `<section class="card rim-eat" role="status"><div class="card-head"><h2 class="t-head">Your estimated target changes</h2>${chip('estimate', 'approx', 'Estimate')}</div>
+            <p class="t-body">Your estimated target changes from <b class="num" style="color:var(--color-text-primary)">2,650</b> to <b class="num" style="color:var(--color-text-primary)">2,700</b> kcal.</p>
+            <div class="row"><button class="btn btn-primary grow" type="button" data-go="st-profile" data-variant="default">Update target</button><button class="btn btn-secondary grow" type="button" data-go="st-profile" data-variant="default">Keep current</button></div>
+            <span class="t-small">Liftria never changes your target by itself. If you set your own target, it stays as it is.</span></section>` : ''}
+        <div class="field"><label>Daily activity, outside workouts</label><div class="input" style="display:flex;align-items:center;justify-content:space-between">On my feet some${ICON.chevron.replace('<svg', '<svg width="18" height="18"')}</div></div>
+        <div class="field"><label>Goal</label><div class="input" style="display:flex;align-items:center;justify-content:space-between">Build muscle${ICON.chevron.replace('<svg', '<svg width="18" height="18"')}</div></div>
+        <section class="card flat"><div class="card-head"><span class="t-label">Daily calories</span>${chip('estimate', 'approx', 'Estimate')}</div><button class="rowlink" type="button" data-go="ea-targets" data-variant="estimate" data-ret style="border-top:0"><span class="grow"><strong>2,650 kcal</strong><span class="t-small">Targets and macro split</span></span>${ICON.chevron}</button></section>
+      </div></div>
+      <div class="dock"><button class="btn btn-primary btn-xl btn-block" type="button" data-go="st-home">Save</button></div>`;
+  }
+
+  // ST-3
+  function stUnits() {
+    const th = document.documentElement.getAttribute('data-theme') || 'system';
+    const seg3 = (label, items, attr) => `<div class="seg-block"><strong>${label}</strong><div class="rseg3" role="group" aria-label="${label}">${items.map(([k, l]) => `<button type="button" ${attr}="${k}" aria-pressed="${(attr === 'data-theme-set' ? th : '') === k}">${l}</button>`).join('')}</div></div>`;
+    const seg2 = (label, a, b, dis, note) => `<div class="seg-block"><strong>${label}</strong><div class="rseg" role="group" aria-label="${label}"><button type="button" aria-pressed="true">${a}</button><button type="button" ${dis ? 'aria-disabled="true"' : ''} aria-pressed="false">${b}</button></div>${note || ''}</div>`;
+    return `${statusbar(false)}${hdr('Units and appearance', { to: rt('st-units', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:40px">
+        <section class="card"><h2 class="t-head">Units</h2>${seg2('Weight', 'kg', 'lb')}${seg2('Height', 'cm', 'ft-in')}${seg2('Energy', 'kcal', 'kJ', true, `<div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Future')}<span class="t-small">kJ comes in a later version. Grams and kilocalories are stored either way.</span></div>`)}</section>
+        <section class="card"><h2 class="t-head">Appearance</h2>${seg3('Theme', [['system', 'System'], ['dark', 'Dark'], ['light', 'Light']], 'data-theme-set')}
+          <div class="seg-block"><strong>Style</strong><div class="rseg" role="group" aria-label="Style"><button type="button" data-style-set="glass" aria-pressed="${state.style === 'glass'}">Aurora Rim</button><button type="button" data-style-set="solid" aria-pressed="${state.style === 'solid'}">Solid</button></div><span class="t-small">Solid turns on by itself with high-contrast text or Reduce transparency.</span></div></section>
+        <section class="card"><div class="list">${switchRow('Hide numbers on dashboards', 'Shows words such as “On track” instead of calorie, macro and weight numbers on Today, Eat, History and Progress. Settings and Targets always show numbers.', false, 'eat')}${switchRow('Keep the screen on during workouts', 'Stops the screen turning off while a workout is open.', true, 'health')}${switchRow('Haptics', 'Short taps when you log a set and when rest ends. Follows Android\'s own vibration setting too.', true, 'health')}</div></section>
+      </div></div>`;
+  }
+
+  // ST-4
+  function stHiku(v) {
+    const nokey = v === 'nokey' || v === 'replace', replace = v === 'replace', test = v === 'test', tested = v === 'tested', del = v === 'delete';
+    if (nokey) return `${statusbar(false)}${hdr(replace ? 'Replace API key' : 'Hiku and API key', { to: rt('st-hiku', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-hiku"><span class="icon-tile" style="background:var(--color-tint-hiku);color:var(--color-domain-hiku)">${ICON.hiku}</span><h2 class="t-title">${replace ? 'Paste your new key' : 'Add your Anthropic key'}</h2><p class="t-body">Hiku turns a meal photo or description into calories and macros you can edit. It needs your own Anthropic API key.</p>
+          <div class="field"><label for="k-key">Anthropic API key</label><input id="k-key" type="password" placeholder="sk-ant-…" autocomplete="off"></div>
+          <div class="stack t-small" style="gap:6px"><span>• Stored in Android's secure keystore on this phone.</span><span>• Sends only what you choose, when you tap Send. Needs internet.</span><span>• You pay Anthropic directly. Set a spending limit in the Anthropic Console.</span></div>
+          <button class="btn btn-hiku btn-block" type="button" data-go="st-hiku" data-variant="ready">Save key</button>${replace ? `<button class="btn btn-ghost btn-block" type="button" data-go="st-hiku" data-variant="ready">Cancel</button>` : ''}
+          <p class="t-small">Everything else in Liftria works without a key.</p></section>
+      </div></div>`;
+    const resultRow = test ? `<div class="chk" role="status"><span class="ic spin" role="img" aria-label="Testing"></span><div class="body"><strong>Testing…</strong><span class="t-small">Sending a tiny request to check the key.</span></div></div>`
+      : tested ? `<div class="chk" role="status"><span class="ic ok" role="img" aria-label="Checked">${ICON.check}</span><div class="body"><strong>Key works</strong><div class="row wrap" style="gap:6px">${chip('pending', 'clock', 'First device test')}<span class="t-small">Not yet confirmed on your phone.</span></div></div></div>` : '';
+    return `${statusbar(false)}${hdr('Hiku and API key', { to: rt('st-hiku', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim">
+        <section class="card rim-hiku"><div class="keycard">${ctile('hiku', 'key')}<div class="grow stack" style="gap:2px"><strong>API key</strong><span class="t-small num">Saved on this phone (Android Keystore) · sk-ant-…a1b2</span></div></div>
+          ${resultRow}
+          <div class="row wrap"><button class="btn btn-secondary grow" type="button" ${test ? 'aria-disabled="true"' : 'data-go="st-hiku" data-variant="test"'}>${test ? 'Testing…' : 'Test key'}</button><button class="btn btn-secondary grow" type="button" data-go="st-hiku" data-variant="replace">Replace key</button></div>
+          <button class="btn btn-text-danger" type="button" style="justify-self:start" data-go="st-hiku" data-variant="delete">${ICON.trash}Delete key</button></section>
+        <section class="card"><h2 class="t-head">AI privacy defaults</h2><p class="t-small">What a Hiku request may include, besides the photo or text you choose. These are the starting positions; you can still change them for one request.</p>
+          <div class="list">${switchRow("Today's totals", 'Off. Adds your eaten and target calories.')}${switchRow('Training day', 'Off. Adds whether today is a training day.')}${switchRow('Keep photos', 'Off. When on, the meal photo is kept on this phone with the entry.')}</div></section>
+        <section class="card"><button class="rowlink" type="button" data-go="hk-usage" data-ret style="border-top:0"><span class="grow"><strong>Usage and what is sent</strong><span class="t-small">This month ≈ $0.42 · 61 requests</span></span>${chip('estimate', 'approx', 'Estimate')}${ICON.chevron}</button></section>
+        <p class="t-small" style="text-align:center">Uses Anthropic's Claude Haiku model</p>
+      </div></div>
+      ${del ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Delete the API key?</h2><p class="t-body">Hiku stops working until you add a key. Your food diary isn't affected.</p><button class="btn btn-primary btn-block" type="button" data-go="st-hiku" data-variant="ready">Keep key</button><button class="btn btn-text-danger btn-block" type="button" data-go="st-hiku" data-variant="nokey">Delete key</button>`, 'st-hiku') : ''}`;
+  }
+
+  // ST-5
+  function stNotif(v) {
+    const denied = v === 'denied', meals = v === 'mealson';
+    const times = [['Breakfast', '08:00'], ['Lunch', '12:30'], ['Dinner', '19:00']];
+    return `${statusbar(false)}${hdr('Notifications', { to: rt('st-notif', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim">
+        ${denied ? `<div class="banner banner-warning" role="status">${ICON.bell}<span><strong>Android notifications are off for Liftria.</strong> The rest timer can only alert you inside the app, and meal reminders can't be sent.</span></div><button class="btn btn-primary btn-block" type="button">${ICON.external}Open Android settings</button>` : ''}
+        <section class="card"><div class="valrow"><div class="grow"><strong>Rest timer alerts</strong><span class="t-small">${denied ? 'Off in Android. Inside Liftria the timer is always right.' : 'On. A notification and a short vibration when rest ends.'}</span><div class="row wrap" style="gap:6px;margin-top:4px">${denied ? chip('off', 'off', 'Off in Android') : chip('measured', 'dot', 'Allowed')}${chip('pending', 'clock', 'Lock-screen alert being tested')}</div></div></div></section>
+        <section class="card"><div class="list">${switchRow('Meal reminders', denied ? 'Needs Android notifications. Off by default.' : 'Off by default. One quiet reminder per meal, at the time you choose.', meals, 'eat', denied ? '' : '#meal-times')}</div>
+          <div id="meal-times" ${meals ? '' : 'hidden'}><div class="list">${times.map(([m, t]) => `<div class="valrow"><div class="grow"><strong>${m}</strong></div><button class="btn btn-secondary btn-sm" type="button" aria-label="${m} reminder time, ${t}. Change">${t}</button></div>`).join('')}</div><span class="t-small">Reminders are made on this phone. They don't read your diary.</span></div></section>
+      </div></div>`;
+  }
+
+  // ST-6
+  function stData(v) {
+    const da = v === 'deleteall' || v === 'typed', typed = v === 'typed', cleared = v === 'cleared';
+    const cnt = [['14', 'workouts'], ['212', 'meals'], ['6', 'custom foods'], [cleared ? '0' : '1,240', 'health records cached'], ['6.8 MB', 'storage used']];
+    const li = (items, ic) => items.map(t => `<li>${ic}<span>${t}</span></li>`).join('');
+    return `${statusbar(false)}${hdr('Data and storage', { to: rt('st-data', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:40px">
+        <section class="card"><h2 class="t-head">On this phone</h2><div class="counts">${cnt.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')}</div><span class="t-small">Everything is stored on this phone, in a local database. Nothing is kept anywhere else.</span></section>
+        <section class="card"><div class="list">
+          <button class="srow" type="button" data-go="st-data" data-variant="cleared">${ntile('refresh')}<span class="grow"><strong>Clear health cache</strong><span class="t-small">Re-read from Health Connect next time. Your workouts, meals and weights stay.</span></span></button>
+          <div class="srow" aria-disabled="true" style="cursor:not-allowed">${ntile('external')}<span class="grow"><strong style="opacity:.7">Export or back up</strong><span class="row wrap" style="gap:6px">${chip('pending', 'clock', 'Future version')}</span><span class="t-small">If you lose or reset this phone, your Liftria data is gone. Backup is planned.</span></span></div></div></section>
+        <section class="card danger"><h2 class="t-head">Delete all data</h2><p class="t-small">Removes everything Liftria has stored on this phone and starts over. It can't be undone.</p><button class="btn btn-text-danger" type="button" style="justify-self:start" data-go="st-data" data-variant="deleteall">${ICON.trash}Delete all data</button></section>
+      </div></div>${cleared ? `<div class="snackbar low" role="status">Health cache cleared. Liftria reads Health Connect again next time.<button class="btn btn-sm" data-go="st-data" data-variant="default">OK</button></div>` : ''}
+      ${da ? sheet(`<span class="sheet-tile" style="background:var(--color-tint-danger);color:var(--color-status-danger)">${ICON.trash}</span><h2>Delete all Liftria data?</h2>
+        <div class="stack" style="gap:6px"><span class="t-label">Deleted</span><ul class="dlist gone">${li(['Workouts and templates', 'Meals, foods and targets', 'Weights', 'Settings', 'Your Hiku API key', 'Cached health data'], ICON.x)}</ul></div>
+        <div class="stack" style="gap:6px"><span class="t-label">Not deleted</span><ul class="dlist kept">${li(['Data in Health Connect and Samsung Health', 'Anthropic\'s own request logs for your key'], ICON.check)}</ul></div>
+        <div class="field"><label for="del-in">Type DELETE to confirm</label><input id="del-in" autocomplete="off" autocapitalize="characters" value="${typed ? 'DELETE' : ''}" placeholder="DELETE"></div>
+        <button class="btn btn-danger btn-block" id="del-btn" type="button" ${typed ? 'data-go="onb-welcome"' : 'aria-disabled="true"'}>Delete everything</button><button class="btn btn-primary btn-block" type="button" data-go="st-data" data-variant="default">Keep my data</button>
+        <p class="t-small">Liftria then restarts as if just installed. There is no Undo.</p>`, 'st-data').replace('class="sheet"', 'class="sheet tall"') : ''}`;
+  }
+
+  // ST-7
+  function stAbout() {
+    const chips = [['measured', 'dot', 'Measured', 'From a named source'], ['phone', 'phone', 'Phone', 'Counted by the phone, not the watch'], ['estimate', 'approx', 'Estimate', 'Calculated by Liftria or by Hiku, never measured'], ['pending', 'clock', 'Pending', 'Designed, but not yet verified on your phone'], ['stale', 'clock', '2 d ago', 'Older than the freshness limit'], ['off', 'lock', 'Not allowed', 'You didn\'t allow this in Health Connect'], ['off', 'off', 'No data', 'Nothing has reported yet (not zero)']];
+    return `${statusbar(false)}${hdr('About and help', { to: rt('st-about', 'st-home') })}
+      <div class="scroll"><div class="page screen-anim" style="padding-bottom:40px">
+        <section class="card"><div class="row" style="gap:12px"><span class="brandmark" style="width:44px;height:44px">${ICON.brand}</span><div class="stack" style="gap:0"><strong class="t-head">Liftria</strong><span class="t-small">Version 0.1.0 (Phase 0 build)</span></div></div></section>
+        <section class="card"><h2 class="t-head">Help</h2>
+          <details class="help"><summary>What the chips mean${ICON.down}</summary><div class="chiplist">${chips.map(([k, i, l, d]) => `<div>${chip(k, i, l)}<span class="t-small">${d}</span></div>`).join('')}</div></details>
+          <div class="list"><button class="srow" type="button" data-go="he-trouble" data-variant="checking" data-ret>${ntile('help')}<span class="grow"><strong>Troubleshoot watch data</strong></span>${ICON.chevron}</button><button class="srow" type="button" data-go="hk-home" data-variant="first" data-ret>${ntile('hiku')}<span class="grow"><strong>How Hiku works</strong></span>${ICON.chevron}</button></div></section>
+        <section class="card"><h2 class="t-head">Licenses</h2><div class="stack" style="gap:8px">${[['free-exercise-db', 'Exercise names and instructions', 'Unlicense'], ['USDA FoodData Central', 'Food values', 'Public domain'], ['Archivo and Figtree', 'Typefaces', 'SIL Open Font License']].map(([n, w, l]) => `<div class="stack" style="gap:0"><strong style="font-size:15px">${n}</strong><span class="t-small">${w} · ${l}</span></div>`).join('')}</div></section>
+        <section class="card"><div class="card-head"><h2 class="t-head">Privacy</h2><span style="color:var(--color-domain-health)">${ICON.shield.replace('<svg', '<svg width="22" height="22"')}</span></div>
+          <p class="t-small">Liftria has no account, no server and no analytics. Your workouts, meals, weights and goals stay on this phone.</p>
+          <p class="t-small">Health Connect data is read on this phone and not sent anywhere.</p>
+          <p class="t-small">Hiku is the only feature that uses the internet. When you tap Send, it sends the photo or text you chose, plus any context you switched on, to Anthropic with your own key. Nothing else is sent.</p></section>
+      </div></div>`;
+  }
+
+  const PROGRESS = { 'pr-home': prHome, 'pr-strength': prStrength, 'pr-nutrition': prNutrition, 'pr-body': prBody, 'pr-activity': prActivity, 'pr-weight': prWeight, 'he-home': heHome, 'he-metric': heMetric, 'he-record': heRecord, 'he-perms': hePerms, 'he-guide': heGuide, 'he-trouble': heTrouble };
+  const SETTINGS = { 'st-home': stHome, 'st-profile': stProfile, 'st-units': stUnits, 'st-hiku': stHiku, 'st-notif': stNotif, 'st-data': stData, 'st-about': stAbout };
+
+  const NAV = [['home', 'Today', 'home'], ['tr-home', 'Train', 'train'], ['ea-home', 'Eat', 'eat'], ['pr-home', 'Progress', 'progress'], ['hk-home', 'Hiku', 'hiku']];
   const nav = (active) => `<nav class="capsule" aria-label="Main">${NAV.map(([id, label, icon]) => `<button type="button" data-go="${id}" aria-label="${label}" ${id === 'home' ? 'data-longpress="qa-sheet"' : ''} ${active === id ? 'aria-current="page"' : ''}>${ICON[icon]}<span>${label}</span></button>`).join('')}</nav>`;
 
   const SCREENS = [
@@ -1673,7 +2473,9 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     ['Train (1B)', [['tr-home', 'TR-1 · Train home'], ['tr-plans', 'TR-2 · Plans and templates'], ['tr-template', 'TR-3 · Template editor'], ['tr-library', 'TR-4 · Exercise library'], ['tr-muscles', 'TR-5 · Muscle browser'], ['tr-exercise', 'TR-6 · Exercise detail'], ['tr-preview', 'TR-7 · Workout preview'], ['tr-active', 'TR-8 · Active workout'], ['tr-lock', 'TR-9 · Rest timer on the lock screen'], ['tr-summary', 'TR-10 · Finish summary'], ['tr-history', 'TR-11 · History'], ['tr-session', 'TR-12 · Session detail'], ['tr-records', 'TR-13 · Records']]],
     ['Eat (1C)', [['ea-home', 'EA-1 · Eat home'], ['ea-add', 'EA-2 · Add food'], ['ea-portion', 'EA-3 · Portion picker'], ['ea-meal', 'EA-4 · Meal detail'], ['ea-food', 'EA-5 · Create a food'], ['ea-targets', 'EA-6 · Targets'], ['ea-history', 'EA-7 · History and trends'], ['qa-sheet', 'QA-1 · Quick add sheet']]],
     ['Hiku (1C)', [['hk-home', 'HK-1 · Hiku home'], ['hk-send', 'HK-2 · Before sending'], ['hk-analyze', 'HK-3 · Analyzing'], ['hk-result', 'HK-4 · Result review'], ['hk-error', 'HK-5 · Errors'], ['hk-usage', 'HK-6 · Usage and privacy']]],
-    ['Later', [['tab-progress', 'Progress (1D)']]],
+    ['Progress (1D)', [['pr-home', 'PR-1 · Progress home'], ['pr-strength', 'PR-2 · Strength'], ['pr-nutrition', 'PR-3 · Nutrition trends'], ['pr-body', 'PR-4 · Body'], ['pr-activity', 'PR-5 · Activity'], ['pr-weight', 'PR-6 · Log weight (sheet)']]],
+    ['Health (1D)', [['he-home', 'HE-1 · Health overview'], ['he-metric', 'HE-2 · Metric detail'], ['he-record', 'HE-3 · Record and source detail'], ['he-perms', 'HE-4 · Connection and permissions'], ['he-guide', 'HE-5 · Samsung Health sync guide'], ['he-trouble', 'HE-6 · Troubleshoot missing watch data']]],
+    ['Settings (1D)', [['st-home', 'ST-1 · Settings home'], ['st-profile', 'ST-2 · Profile and goals'], ['st-units', 'ST-3 · Units and appearance'], ['st-hiku', 'ST-4 · Hiku and API key'], ['st-notif', 'ST-5 · Notifications'], ['st-data', 'ST-6 · Data and storage'], ['st-about', 'ST-7 · About and help']]],
   ];
   const VARIANTS = {
     home: [['rich', 'Populated day'], ['first', 'First day, nothing logged'], ['offline', 'Offline'], ['nokey', 'No Anthropic key'], ['hcoff', 'Health Connect off'], ['stale', 'Stale health data'], ['notarget', 'No calorie target']],
@@ -1698,6 +2500,22 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     'hk-send': [['photo', 'Photo'], ['text', 'Description']],
     'hk-analyze': [['working', 'Working'], ['slow', 'Still working (after 10 s)']],
     'hk-result': [['result', 'Result'], ['editing', 'Editing an item'], ['edited', 'After editing'], ['large', 'Text size 200%'], ['discard', 'Discard after edits']],
+    'pr-home': [['rich', 'Populated'], ['first', 'First time, nothing yet'], ['partial', 'Partial: no weight, phone steps only'], ['hidden', 'Numbers hidden']],
+    'pr-strength': [['rich', 'Populated'], ['empty', 'Empty']],
+    'pr-nutrition': [['rich', 'Populated'], ['empty', 'Empty']],
+    'pr-body': [['rich', 'Populated'], ['empty', 'Empty'], ['hidden', 'Numbers hidden'], ['hcweight', 'With Health Connect weights (example)'], ['large', 'Text size 200%'], ['saved', 'After saving, with Undo'], ['deleted', 'After deleting an entry, with Undo']],
+    'pr-activity': [['phoneonly', 'Phone only (what the S22 test saw)'], ['rich', 'Phone and Samsung Health (illustration)'], ['hcoff', 'Health Connect off']],
+    'pr-weight': [['default', 'Default'], ['invalid', 'Invalid: 400 kg'], ['edit', 'Editing an entry']],
+    'he-home': [['rich', 'Connected, 5 of 7 allowed'], ['notconnected', 'Not connected'], ['hcoff', 'Health Connect off'], ['unavailable', 'Not installed or too old'], ['stale', 'Stale data'], ['large', 'Text size 200%']],
+    'he-metric': [['steps', 'Steps, day'], ['stepsweek', 'Steps, week'], ['heart', 'Heart rate'], ['energy', 'Active energy'], ['sleep', 'Sleep'], ['exercise', 'Exercise sessions']],
+    'he-record': [['default', 'Heart-rate record'], ['steps', 'Steps record']],
+    'he-perms': [['partial', 'Partly allowed (5 of 7)'], ['all', 'All allowed (7 of 7)'], ['denied', 'Nothing allowed'], ['system', 'Android permission screen (reference)']],
+    'he-trouble': [['checking', 'Checking'], ['issue', 'One thing to fix'], ['found', 'All good (after the fix, example)']],
+    'st-home': [['default', 'Default'], ['large', 'Text size 200%']],
+    'st-profile': [['default', 'Default'], ['changed', 'Weight edited, target would change']],
+    'st-hiku': [['ready', 'Key saved'], ['nokey', 'No key'], ['test', 'Testing the key'], ['tested', 'Test result'], ['replace', 'Replacing the key'], ['delete', 'Delete confirmation']],
+    'st-notif': [['allowed', 'Allowed'], ['denied', 'Denied in Android'], ['mealson', 'Meal reminders on']],
+    'st-data': [['default', 'Default'], ['cleared', 'After clearing the health cache'], ['deleteall', 'Delete all: confirmation'], ['typed', 'Delete all: DELETE typed']],
     'hk-error': [['offline', 'Offline'], ['auth', 'Key rejected (401/403)'], ['ratelimit', 'Rate limit (429)'], ['server', 'Server error (5xx)'], ['refusal', 'Refusal'], ['cutoff', 'Cut-off answer'], ['timeout', 'Timeout (45 s)']],
   };
   const vOf = (s) => state.v[s] || (VARIANTS[s] ? VARIANTS[s][0][0] : '');
@@ -1719,9 +2537,11 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     else if (HIKU[s]) html = HIKU[s](vOf(s)) + chrome(s, 'hk-home');
     else if (s === 'qa-sheet') html = qaSheet(vOf(s));
     else if (TRAIN[s]) html = TRAIN[s](vOf(s)) + (isFocus(s, vOf(s)) ? '' : (s !== 'tr-home' && vOf('tr-home') === 'resume' ? minibar() : '') + nav('tr-home'));
-    else html = later(s) + (s === 'tab-settings' ? '' : nav(s));
+    else if (PROGRESS[s]) html = PROGRESS[s](vOf(s)) + chrome(s, 'pr-home');
+    else if (SETTINGS[s]) html = SETTINGS[s](vOf(s)) + chrome(s, '');
+    else html = today('rich') + nav('home');
     screenEl.innerHTML = html;
-    screenEl.classList.toggle('fs200', ['tr-active', 'ea-portion', 'hk-result'].includes(s) && vOf(s) === 'large');
+    screenEl.classList.toggle('fs200', ['tr-active', 'ea-portion', 'hk-result', 'st-home', 'he-home', 'pr-body'].includes(s) && vOf(s) === 'large');
     screenEl.classList.toggle('has-mini', html.includes('class="minibar"'));
     const deck = screenEl.querySelector('#deck'), dotsEl = screenEl.querySelector('#deck-dots');
     if (deck && dotsEl) deck.addEventListener('scroll', () => {
@@ -1735,6 +2555,8 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
 
     // Prototype behavior: Send moves on to the result after a moment; a rate-limit error counts down and then unlocks Retry.
     if (s === 'hk-analyze' && vOf(s) === 'working' && autoAdvance) timer = setTimeout(() => goTo('hk-result', 'result'), 3000);
+    if (s === 'he-trouble' && vOf(s) === 'checking' && autoAdvance) timer = setTimeout(() => goTo('he-trouble', state.fixed ? 'found' : 'issue'), 2200);
+    if (s === 'st-hiku' && vOf(s) === 'test' && autoAdvance) timer = setTimeout(() => goTo('st-hiku', 'tested'), 1800);
     if (s === 'hk-error' && vOf(s) === 'ratelimit') {
       let n = 30;
       timer = setInterval(() => {
@@ -1746,7 +2568,7 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     autoAdvance = false;
 
     styleBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.styleBtn === state.style)));
-    screenSelect.value = s === 'tab-settings' ? 'home' : s;
+    screenSelect.value = s;
     variantCtl.hidden = !VARIANTS[s];
     if (VARIANTS[s]) { variantSelect.innerHTML = VARIANTS[s].map(([k, l]) => `<option value="${k}">${l}</option>`).join(''); variantSelect.value = vOf(s); }
     try { localStorage.setItem('liftria-app', JSON.stringify({ screen: s, v: state.v, style: state.style })); } catch (e) { /* storage may be blocked */ }
@@ -1755,9 +2577,14 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
   screenEl.addEventListener('click', (e) => {
     const goal = e.target.closest('[data-goal]'), act = e.target.closest('[data-act]'), go = e.target.closest('[data-go]');
     if (lpFired) { lpFired = false; return; }
+    const rv = e.target.closest('[data-reveal]'), ths = e.target.closest('[data-theme-set]'), sts = e.target.closest('[data-style-set]'), sg = e.target.closest('.rseg button, .rseg3 button');
+    if (rv) { const t = screenEl.querySelector(rv.dataset.reveal), h = screenEl.querySelector(rv.dataset.hide), on = t.hidden; t.hidden = !on; if (h) h.hidden = on; rv.setAttribute('aria-expanded', String(on)); rv.textContent = on ? rv.dataset.labelHide : 'Show estimate'; return; }
+    if (ths) { setTheme(ths.dataset.themeSet); render(); return; }
+    if (sts) { state.style = sts.dataset.styleSet; render(); return; }
+    if (sg && !sg.dataset.go) { if (sg.getAttribute('aria-disabled') !== 'true') sg.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === sg))); return; }
     const cyc = e.target.closest('[data-cycle-meal]'), sw = e.target.closest('[role="switch"]'), tk = e.target.closest('[data-tick]'), un = e.target.closest('[data-unit]');
     if (cyc) { const sc = screenEl.querySelector('.scroll'), top = sc ? sc.scrollTop : 0; state.meal = MEALS[(MEALS.indexOf(state.meal) + 1) % MEALS.length]; render(); const sc2 = screenEl.querySelector('.scroll'); if (sc2) sc2.scrollTop = top; return; }
-    if (sw) { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); return; }
+    if (sw) { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); if (sw.dataset.shows) { const t = screenEl.querySelector(sw.dataset.shows); if (t) t.hidden = sw.getAttribute('aria-checked') !== 'true'; } return; }
     if (tk) {
       const on = tk.getAttribute('aria-checked') !== 'true', target = screenEl.querySelector(tk.dataset.tick);
       tk.setAttribute('aria-checked', String(on)); tk.querySelector('.tick').innerHTML = on ? ICON.check : '';
@@ -1767,14 +2594,23 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
     if (un) { const [a, l] = un.dataset.unit.split('|'); un.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b === un))); screenEl.querySelector('#amt').textContent = a; screenEl.querySelector('#amt-u').textContent = l; return; }
     if (goal) { state.goal = goal.dataset.goal; render(); return; }
     if (act) { state.activity = act.dataset.act; render(); return; }
-    if (go) { if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; if (go.dataset.meal) state.meal = go.dataset.meal; if (go.dataset.day) state.day = go.dataset.day; if (go.dataset.go === 'qa-sheet') state.qaFrom = state.screen; autoAdvance = go.dataset.go === 'hk-analyze'; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
+    if (go) {
+      const dest = go.dataset.go;
+      if (go.getAttribute('aria-disabled') === 'true') return;
+      // Deep links (data-ret) make Back return to the screen they came from; ordinary links forget it. Same-screen state changes leave it alone.
+      if (dest !== state.screen) { if (go.dataset.ret !== undefined) state.ret[dest] = state.screen; else if (go.dataset.back === undefined) delete state.ret[dest]; }
+      if (dest === 'pr-weight' && state.screen !== 'pr-weight') state.wFrom = state.screen === 'qa-sheet' ? state.qaFrom : state.screen;
+      if (dest === 'he-trouble') state.fixed = go.dataset.fix !== undefined || (state.screen === 'he-trouble' && vOf('he-trouble') === 'found');
+      if (go.dataset.variant) state.v[go.dataset.go] = go.dataset.variant; if (go.dataset.meal) state.meal = go.dataset.meal; if (go.dataset.day) state.day = go.dataset.day; if (go.dataset.go === 'qa-sheet') state.qaFrom = state.screen; autoAdvance = ['hk-analyze', 'he-trouble', 'st-hiku'].includes(go.dataset.go) && go.dataset.variant !== 'tested'; state.screen = go.dataset.go; render(); if (!screenEl.querySelector('.set-row.cur')) screenEl.querySelector('.scroll')?.scrollTo(0, 0); }
   });
+  // ST-6: the Delete everything button wakes up only when the field reads DELETE exactly.
+  screenEl.addEventListener('input', (e) => { if (e.target.id !== 'del-in') return; const b = screenEl.querySelector('#del-btn'), ok = e.target.value === 'DELETE'; if (ok) { b.removeAttribute('aria-disabled'); b.dataset.go = 'onb-welcome'; } else { b.setAttribute('aria-disabled', 'true'); delete b.dataset.go; } });
   // Long-press (or right-click) on "Log a meal" or the Today tab opens the shared Quick add sheet.
   screenEl.addEventListener('pointerdown', (e) => { const el = e.target.closest('[data-longpress]'); if (!el) return; lpFired = false; lpTimer = setTimeout(() => { lpFired = true; goTo(el.dataset.longpress); }, 550); });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => screenEl.addEventListener(t, () => clearTimeout(lpTimer)));
   screenEl.addEventListener('contextmenu', (e) => { const el = e.target.closest('[data-longpress]'); if (el) { e.preventDefault(); goTo(el.dataset.longpress); } });
   // Jumping with the screen picker starts from the example day; only taps inside the phone carry a changed diary along.
-  screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; state.day = 'base'; render(); });
+  screenSelect.addEventListener('change', () => { state.screen = screenSelect.value; state.day = 'base'; state.ret = {}; state.fixed = false; state.wFrom = 'pr-body'; render(); });
   variantSelect.addEventListener('change', () => { state.v[state.screen] = variantSelect.value; if (state.screen === 'ea-home' && ['rich', 'notarget', 'hidden'].includes(variantSelect.value)) state.day = 'base'; render(); });
 
   const styleBtns = document.querySelectorAll('[data-style-btn]');
@@ -1787,8 +2623,9 @@ button.search { width: 100%; text-align: start; cursor: pointer; }
   themeBtns.forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeBtn)));
 
   try { const saved = JSON.parse(localStorage.getItem('liftria-app') || 'null'); if (saved) Object.assign(state, saved); } catch (e) { /* ignore */ }
+  if (String(state.screen).startsWith('tab-')) state.screen = 'home';
   const hash = location.hash.slice(1);
-  if (hash === 'today') state.screen = 'home'; else if (hash === 'train') state.screen = 'tr-home'; else if (hash === 'energy') state.screen = 'energy'; else if (hash === 'eat') state.screen = 'ea-home'; else if (hash === 'hiku') state.screen = 'hk-home'; else if (hash === 'onboarding') state.screen = 'onb-welcome';
+  if (hash === 'today') state.screen = 'home'; else if (hash === 'train') state.screen = 'tr-home'; else if (hash === 'energy') state.screen = 'energy'; else if (hash === 'eat') state.screen = 'ea-home'; else if (hash === 'hiku') state.screen = 'hk-home'; else if (hash === 'progress') state.screen = 'pr-home'; else if (hash === 'health') state.screen = 'he-home'; else if (hash === 'settings') state.screen = 'st-home'; else if (hash === 'onboarding') state.screen = 'onb-welcome';
   render();
 })();
 </script>

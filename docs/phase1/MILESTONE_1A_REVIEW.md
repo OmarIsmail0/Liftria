@@ -60,10 +60,10 @@ Legend: **PASS** = specified, in the prototype, states covered · **NEEDS REVISI
 
 ## Open issues carried forward
 
-1. **ON-5:** draw the safety-floor warning and the "Set my own numbers" editor, in 1C alongside nutrition targets.
+1. ~~**ON-5:** draw the safety-floor warning and the "Set my own numbers" editor.~~ **Resolved in 1C (EA-6 floor sheet).**
 2. **Fonts:** the prototype loads Archivo and Figtree from Google Fonts and falls back to system fonts offline. The app must bundle them (Phase 2).
 3. **Watch copy (ON-7, TD-2)** depends on what Samsung Health actually syncs; revisit after the next device report.
-4. **Hide-numbers setting:** specified for Today; its Settings UI is in 1D.
+4. ~~**Hide-numbers setting:** specified for Today; its Settings UI is in 1D.~~ **Resolved in 1D (ST-3).**
 
 ## Owner review asks
 

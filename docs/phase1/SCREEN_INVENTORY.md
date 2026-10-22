@@ -1,6 +1,6 @@
 # Screen Inventory
 
-**Milestone:** 1A (onboarding and Today), 1B (Train), 1C (Eat, Hiku and Quick add). A later milestone adds Progress, Health and Settings (1D).
+**Milestone:** 1A (onboarding and Today), 1B (Train), 1C (Eat, Hiku and Quick add), 1D (Progress, Health and Settings).
 
 **Verification status** of the capability each screen depends on:
 - **Confirmed:** proven by the Phase 0 code and device tests.
@@ -69,7 +69,7 @@ Status key for this section: the diary, food search and targets are all local (S
 | EA-5 | Create a food: empty / calories and macros differ / quick add | Add a food that isn't in the pack | EA-2 links | Name, brand, serving g, kcal, P/C/F; mismatch hint; calories-only variant | Save food, Save anyway, Fix the numbers, Add (quick) | Local diary | Future (Phase 4) |
 | EA-6 | Targets: estimate / your own / below the floor / deficit over 25% | See or change the daily target | EA-1 Targets row; Today "Set a target" | Target with Estimate or Your target chip, how it is calculated, macro split with editable percentages, hide-numbers switch, safety-floor and deficit sheets | Set my own numbers, change kcal and split, Use the safe value, Keep (with a tick), Save target | Profile (Mifflin-St Jeor, local) | Future (Phase 2/4) |
 | EA-7 | History and trends: week / empty | See weeks without false zeros | EA-1 History row or date switcher | Week bars against a dashed target line, unlogged days as dashed outlines, averages over logged days, protein average, per-day list | Open a day | Local diary | Future (Phase 4) |
-| QA-1 | Quick add sheet: default / offline / no key | One shared place to start anything | Eat "+"; long-press on Today "Log a meal" or the Today tab | Log a meal, Photo a meal, Describe a meal, Start workout, Log weight (disabled, "Coming in Progress, 1D") | Pick a row, Close | Claude for the Hiku rows; Train for Start workout | Future (Phase 4); the Hiku rows depend on the Hiku status below |
+| QA-1 | Quick add sheet: default / offline / no key | One shared place to start anything | Eat "+"; long-press on Today "Log a meal" or the Today tab | Log a meal, Photo a meal, Describe a meal, Start workout, Log weight (enabled in 1D, opens PR-6) | Pick a row, Close | Claude for the Hiku rows; Train for Start workout | Future (Phase 4); the Hiku rows depend on the Hiku status below; Log weight opens PR-6 (1D) |
 
 ## Hiku (1C)
 
@@ -85,9 +85,44 @@ Status key for this section: **a Hiku request is Pending device test.** Phase 0 
 | HK-6 | Usage and privacy | Make cost and data use visible | HK-1 Usage | Monthly estimate, per-request list (type, tokens, estimated cost), context defaults, what is never sent, key link | Change context defaults, Open API key (Settings) | Local usage log; Anthropic's published prices | Future (Phase 4); prices source open (concern 4) |
 | HK-C | Chat (marker only, no screen) | Later: multi-turn questions with personal context | HK-1 Chat card | "Pending" chip, "Coming later" | None | Needs device testing and its own design | **Future** |
 
-## Stubs in the prototype (designed later)
+## Progress (1D)
 
-| ID | Screen | Milestone |
-|---|---|---|
-| PR-*, HE-* | Progress and Health screens | 1D |
-| ST-* | Settings, privacy, data management (API key, Keep photos, units) | 1D |
+Status key for this section: every chart reads **local data** (workouts, diary, weights) except Activity, which reads Health Connect. Charts are **Future (Phase 4)**; the Health Connect parts follow the Health table below. Every chart names its source under its title and has an empty state (a sentence and one action).
+
+| ID | Screen / state | Purpose | Entry | Shows | Actions | Depends on | Status |
+|---|---|---|---|---|---|---|---|
+| PR-1 | Progress home: populated / first time / partial / numbers hidden | One look at all four areas | Progress tab | Range chips (4 W, 3 M, 1 Y), four domain-rimmed cards (Strength, Nutrition, Body, Activity), each with a headline, its own source line and a link | Open a detail screen, Health details, empty-state actions | Workouts, diary, weights (local); Health Connect steps | Future (Phase 4); Activity card Confirmed for phone steps, Pending for watch data |
+| PR-2 | Strength: populated / empty | Volume and top lifts | PR-1 Strength | Weekly volume bars (8 periods), 4-week total and change, top lifts with est. 1RM sparkline and Estimate chip, records count | Open an exercise (TR-6), Records (TR-13) | Local workouts | Future (Phase 3/4) |
+| PR-3 | Nutrition trends: populated / empty | Calories and protein over 4 weeks without false zeros | PR-1 Nutrition | Daily calories vs target (gaps for unlogged days), protein days at or above target, average macro split | — | Local diary | Future (Phase 4) |
+| PR-4 | Body: populated / empty / numbers hidden / with Health Connect weights / text 200% (plus after save and after delete, with Undo) | Weight trend, entries | PR-1 Body; Quick add "Log weight" | Weight dots with a 7-day average line, range, last entry with source, body-fat row (Pending), recent entries | Log weight, edit or delete an entry | Local weights; Health Connect weight (needs permission) | Future (Phase 4); Health Connect weight and body fat **Pending device test** |
+| PR-5 | Activity: phone only / phone and Samsung Health (illustration) / Health Connect off | Steps per day by source | PR-1 Activity | Steps per day by source (phone solid, Samsung Health striped), resting heart rate (Pending), exercise sessions (Pending) | Health details, Turn on | Health Connect steps | Phone steps **Confirmed** (S22 test); Samsung Health steps, resting HR and sessions **Pending device test** |
+| PR-6 | Log weight (sheet): default / invalid / editing | Add, fix or delete a weight | PR-4, Quick add | kg stepper (0.1), typed entry, date, note, "Saved in Liftria. Not written to Health Connect." | Save, Cancel, Delete entry | Local weights | Future (Phase 4) |
+
+## Health (1D, inside Progress)
+
+Status key for this section: what the Phase 0 device tests saw, and nothing more. **Steps are Confirmed from the phone only. One heart-rate record from Samsung Health arrived (device not recorded). Exercise sessions, measured energy and sleep have not been seen.** Health Connect's own energy figure (1,565 kcal, no contributing app) is never used.
+
+| ID | Screen / state | Purpose | Entry | Shows | Actions | Depends on | Status |
+|---|---|---|---|---|---|---|---|
+| HE-1 | Health overview: connected / not connected / Health Connect off / not installed or too old / stale / text 200% | See every type, its source and age | PR-1 Health details; PR-5; Settings | Connection card (reads only, data from 20 Oct, 5 of 7 allowed), one row per type with value or state, source chip and age | Open a type, Permissions, Watch data missing?, Sync guide, Connect, Turn on, Get Health Connect | Health Connect | Availability and permissions **Confirmed**; Steps Confirmed (phone); Heart rate Pending (device not recorded); Sessions, energy, sleep Pending device test |
+| HE-2 | Metric detail: steps (day, week) / heart rate / active energy / sleep / exercise sessions | One type in depth | HE-1 row; Today Activity card (steps) | Range control, chart with source line, Sources breakdown, "What this means" box, recent records | Open a record, Show estimate (energy), Watch data missing? | Health Connect | As HE-1 |
+| HE-3 | Record and source detail: heart-rate record / steps record | Show exactly what Health Connect returned | HE-2 record; Today HR row | Value, time, data origin (app and package), device, recorded vs read, permission, plain-words footnote | — | Health Connect record metadata | Pending device test (device metadata absent on the HR record) |
+| HE-4 | Connection and permissions: partly / all / nothing allowed / Android permission screen (reference) | See and change what Liftria may read | HE-1; Settings | Status card, seven types with an Allowed or Not allowed switch-look (read-only, opens Health Connect), Open Health Connect, "Liftria reads. It never writes or deletes." | Open Health Connect | Android Health Connect permission flow | Confirmed (all 10 reads granted on the S22); the screen text is a reference, wording differs by Android version |
+| HE-5 | Samsung Health sync guide | Get watch data into Health Connect | HE-1, HE-2 (sleep), HE-6 | Five numbered steps with small drawings, "Data starts from the day you connect", Check again | Check again | Samsung Health → Health Connect write sync | Pending (first HR record seen; steps, sessions, energy unverified) |
+| HE-6 | Troubleshoot missing watch data: checking / one thing to fix / all good (example) | Find where the chain breaks | HE-1, HE-2, Settings help | Five checks, each with a status and one line; the failing check expanded with a fix | Show me how, Check again | Health Connect read; Samsung Health | Pending device test (the "all good" state is an example; no watch steps have been seen) |
+
+## Settings (1D)
+
+Status key for this section: everything is local (SQLite, SecureStore) and **works offline**. Key storage is **Confirmed** (restart persists; delete → restart → missing is still Pending). A key **test** and any Hiku request are **Pending device test**. Backup and export are **Future**. Settings is a pushed stack from the Today avatar, with no capsule nav.
+
+| ID | Screen / state | Purpose | Entry | Shows | Actions | Depends on | Status |
+|---|---|---|---|---|---|---|---|
+| ST-1 | Settings home: default / text 200% | Find a setting | Today avatar | Grouped rows, storage line "Everything is on this phone · 6.8 MB" | Open a group | — | Future (Phase 2) |
+| ST-2 | Profile and goals: default / weight edited | Inputs for the target estimate | ST-1; EA-6 | Name, sex for the formula, birth year, height, weight (latest from PR-4), activity, goal, target link | Edit, Save, Update target, Keep current | Local profile; Mifflin-St Jeor | Future (Phase 2/4) |
+| ST-3 | Units and appearance | Units, theme, style, display options | ST-1 | kg/lb, cm/ft-in, kcal (kJ Future), theme, style, hide numbers, keep screen on, haptics | Change a setting | — | Future (Phase 2); kJ **Future** |
+| ST-4 | Hiku and API key: key saved / no key / testing / test result / replacing / delete confirmation | Manage the key and AI privacy defaults | ST-1; HK-1; HK-5; HK-6; Today | Key card (masked), Test, Replace, Delete, AI privacy defaults, usage link, model line | Test key, Replace key, Delete key, Save key | SecureStore; Claude (test) | Storage Confirmed; Test **Pending device test** |
+| ST-5 | Notifications: allowed / denied in Android / meal reminders on | Rest timer and meal reminders | ST-1; TR-8 Turn on | Status of rest timer alerts (lock-screen alert Pending), meal reminders (off by default) with a time per meal | Open Android settings, set a time | POST_NOTIFICATIONS | **Pending device test** |
+| ST-6 | Data and storage: default / health cache cleared / delete all / DELETE typed | See what is stored; clear or delete | ST-1 | Counts, Clear health cache, Export or back up (disabled, Future), Delete all data (danger) | Clear cache, Delete all data | Local DB, SecureStore, files | Future (Phase 2); backup **Future** |
+| ST-7 | About and help | Version, help, licenses, privacy | ST-1 | Version, "What the chips mean", troubleshoot and Hiku links, licenses, privacy summary | Open help topics | — | Future (Phase 2) |
+
+**Not designed as screens (V1 or later):** barcode scanning, kJ, export and backup, chat with Hiku, Samsung Health Data SDK. The prototype's State menu reaches every state above; some states only exist to tap through a flow and are marked in the review file.

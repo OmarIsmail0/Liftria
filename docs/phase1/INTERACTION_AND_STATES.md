@@ -1,6 +1,6 @@
 # Interaction and States
 
-**Milestone:** 1A (cross-cutting states + Today), 1B (Train), 1C (Eat and Hiku). Screen-specific states for 1D are added in that milestone.
+**Milestone:** 1A (cross-cutting states + Today), 1B (Train), 1C (Eat and Hiku), 1D (Progress, Health, Settings). 1D (Progress, Health and Settings) is added below.
 
 ## State vocabulary
 
@@ -106,7 +106,7 @@
 | EA-5 Create a food | — | Empty form, Save disabled with a hint | Save fails: form kept | Calories and macros differ (hint, Save anyway), quick add |
 | EA-6 Targets | — | No target set: the estimate is offered, never invented | Save fails: edits kept | Estimate, your own target, below 1,200 floor, deficit over 25% |
 | EA-7 History | Skeleton chart | "Log a few days to see trends." | As EA-1 | Days with nothing logged are dashed outlines |
-| QA-1 Quick add | — | — | — | Offline and no key disable the Hiku rows with a reason; Log weight is always disabled until 1D |
+| QA-1 Quick add | — | — | — | Offline and no key disable the Hiku rows with a reason; Log weight opens PR-6 (1D) |
 
 ### Special cases in Eat
 
@@ -194,6 +194,88 @@ Every case keeps the input ("Your photo is still here" or "Your description is s
 | Discard | Leaves; asks only if edited | — | Keep editing is primary |
 | Retry | Sends the same input again | — | Rate limit: locked until the countdown ends |
 | Usage | Opens HK-6 | — | — |
+
+## Progress (1D)
+
+### States per screen
+
+| Screen | Loading | Empty | Error | Other states |
+|---|---|---|---|---|
+| PR-1 Progress home | Skeleton cards (local reads) | First time: each card shows its sentence and one action | A card whose read fails shows "Couldn't load" with Retry; the other cards stay | Partial (body empty, phone-only activity), numbers hidden |
+| PR-2 Strength | Skeleton chart | "Finish a workout to see strength trends" + Start a workout | As PR-1 | — |
+| PR-3 Nutrition | Skeleton chart | "Log meals on 3 days to see nutrition trends" + Log a meal | As PR-1 | Unlogged days are gaps |
+| PR-4 Body | Skeleton chart | "Log your weight to see a trend" + Log weight | As PR-1 | Numbers hidden, with Health Connect weights, text 200%, after save or delete with Undo |
+| PR-5 Activity | Cached steps show with their age | Phone only: days before 20 Oct are "No data" | Health Connect read fails: the cached value stays with its age | Two sources (illustration), Health Connect off |
+| PR-6 Log weight | — | — | Save fails: the value stays, "Couldn't save. Try again." | Invalid weight ("Is that right?"), editing |
+
+### Special cases in Progress and Health
+
+| Case | Behavior |
+|---|---|
+| No data vs zero | A day with no data is a dashed outline and "—". A nutrition day that isn't logged is a gap. Nothing is drawn as 0. |
+| Health Connect off | PR-5 and HE-1 show "hidden, not zero" and Turn on. Strength, Nutrition and Body are unaffected. |
+| Health Connect not installed or too old | HE-1: "Get Health Connect" (Google Play) and "Liftria works without it". |
+| Permission not allowed | `off` chip with a lock, "Not allowed"; the row opens Health Connect. |
+| Two step sources | Listed separately, drawn side by side, never summed; a total appears only with one origin. |
+| Watch data missing | HE-1 and HE-2 link to HE-6 (checklist) and HE-5 (guide). The watch sync step is shown as "can't be checked from here". |
+| Stale data | Steps and heart rate after 6 h, energy after 24 h, weight after 14 days: a `stale` chip with the age and a dimmed value. |
+| Hide numbers on | PR-1 and PR-4 show words ("Volume is up", "On track", "Trend: steady"); the shapes stay; "Show numbers" is in reach. |
+| Health Connect estimate | Hidden by default; "Show estimate" reveals it with the `estimate` chip and "Not used anywhere in Liftria". |
+
+### Progress and Health interactions
+
+| Element | Tap | Notes |
+|---|---|---|
+| Range chip | Changes the window (4 W, 3 M, 1 Y) | The prototype only has 4 W numbers |
+| Card link (PR-1) | Opens the detail screen | 48dp |
+| Top lift row | Opens TR-6; back returns to PR-2 | The sparkline is decorative; the row's label has the numbers |
+| Records row | Opens TR-13 | — |
+| Log weight | Opens PR-6 over the current screen | Also from Quick add |
+| Weight entry | Opens PR-6 in editing mode | Health Connect entries aren't editable |
+| Health row (HE-1) | Opens HE-2 for that type | Locked rows open Health Connect |
+| Day / Week | Changes the chart range | — |
+| Record row | Opens HE-3 | — |
+| Show estimate | Reveals the Health Connect estimate | Changes to Hide estimate |
+| Permission row (HE-4) | Opens Health Connect | The switch-look can't be changed in Liftria |
+| Check again | Re-runs the HE-6 checks | About two seconds in the prototype |
+
+## Settings (1D)
+
+### States per screen
+
+| Screen | Loading | Empty | Error | Other states |
+|---|---|---|---|---|
+| ST-1 Settings home | — | — | — | Text 200% |
+| ST-2 Profile | — | Skipped onboarding: fields are empty and the target is "not set" | Save fails: edits kept | Weight edited → "target changes from 2,650 to 2,700" |
+| ST-3 Units and appearance | — | — | — | kJ disabled (Future) |
+| ST-4 Hiku and API key | "Testing…" row | No key: explanation and key field | Test: 401, 403, 429, offline (see Flow 6) | Test result, replacing, delete confirmation |
+| ST-5 Notifications | — | — | — | Allowed, denied in Android, meal reminders on |
+| ST-6 Data and storage | — | — | A failed delete step is shown and the screen stays | Cache cleared, delete confirmation, DELETE typed |
+| ST-7 About and help | — | — | — | — |
+
+### Special cases in Settings
+
+| Case | Behavior |
+|---|---|
+| No Anthropic key | ST-4 explains Hiku and offers the key field; Hiku shows its no-key states everywhere else. |
+| Notifications denied | ST-5 banner "Android notifications are off for Liftria" and Open Android settings. The timer still works inside the app. |
+| Profile change with an estimated target | The proposed change is shown with Update target or Keep current. It is never applied silently. |
+| Profile change with your own target | The target stays as it is. |
+| Delete all data | Typed confirmation; says what is and isn't deleted; no Undo; restarts into onboarding. |
+| Backup and export | Disabled, `pending` "Future version", with the no-backup warning. |
+| Reduce transparency or high-contrast text | The Solid style turns on by itself (ST-3 says so). |
+
+### Settings interactions
+
+| Element | Tap | Notes |
+|---|---|---|
+| Avatar (Today) | Opens Settings; back returns to Today | No capsule nav in Settings |
+| Segmented control | Selects one option | 48dp; the disabled option says why |
+| Switch | Toggles at once | Announces its state; "Meal reminders" reveals the times |
+| Test key | Runs a tiny request | Needs internet |
+| Delete key | Opens the confirmation sheet | Keep key is the primary button |
+| DELETE field | Enables Delete everything only for exactly DELETE | Case-sensitive |
+| Clear health cache | Deletes cached Health Connect rows only | Snackbar confirms |
 
 ## Feedback timing
 

@@ -1,6 +1,6 @@
 # User Flows
 
-**Milestone 1A** covers flows 1, 6 (setup part) and 7. **Milestone 1B** adds flow 2 and the workout part of flow 10. **Milestone 1C** adds flows 3, 4, the request part of flow 6, and the meal part of flow 10. Flows 5, 8, 9 and the rest of 10 are added in 1D.
+**Milestone 1A** covers flows 1, 6 (setup part) and 7. **Milestone 1B** adds flow 2 and the workout part of flow 10. **Milestone 1C** adds flows 3, 4, the request part of flow 6, and the meal part of flow 10. **Milestone 1D** adds flows 5, 8 and 9, the all-data part of flow 10 and the key-management part of flow 6.
 
 | # | Flow | Milestone |
 |---|---|---|
@@ -8,12 +8,12 @@
 | 2 | Create workout → start → log sets → finish | **1B** |
 | 3 | Add meal manually → edit → save | **1C** |
 | 4 | Meal photo → Hiku → review → save | **1C** |
-| 5 | Connect Health Connect → permissions → inspect sources | 1D (entry in 1A, ON-6) |
-| 6 | Set up API key → first AI request | **1A** (setup), **1C** (request) |
+| 5 | Connect Health Connect → permissions → inspect sources | **1D** (entry in 1A, ON-6) |
+| 6 | Set up API key → first AI request; replace, test, delete the key | **1A** (setup), **1C** (request), **1D** (key management) |
 | 7 | Open with no internet → continue offline | **1A** |
-| 8 | Investigate missing watch data | 1D |
-| 9 | Review progress | 1D |
-| 10 | Edit or delete data | **1B** (workouts), **1C** (meals), 1D (all data) |
+| 8 | Investigate missing watch data | **1D** |
+| 9 | Review progress | **1D** |
+| 10 | Edit or delete data | **1B** (workouts), **1C** (meals), **1D** (weights, health cache, all data) |
 
 ---
 
@@ -240,3 +240,100 @@ flowchart TD
 | Move a meal's items | Move to another meal | The items change meal; totals follow | — | Undo snackbar, 8 s |
 | Delete a meal | Delete meal → Delete | Sheet "Delete lunch? 4 items, 680 kcal. You can undo for 8 s." then EA-1 with "Lunch deleted. 4 items, 680 kcal. Undo" | — | **Keep** is the default button; Undo within 8 s restores the meal exactly |
 | After Undo expires | — | Deletion is final (local data, no trash in V1) | — | Export is a future feature (1D). A whole-day clear isn't in V1. |
+
+---
+
+## Flow 5: Connect Health Connect → permissions → inspect data and sources (1D)
+
+```mermaid
+flowchart TD
+  A[HE-1 not connected] -- Connect --> B[HE-4 Android permission screen]
+  B -- Allow --> C[HE-1 connected, 5 of 7]
+  B -- Don't allow --> A
+  C -- tap Steps --> D[HE-2 Steps]
+  D -- tap a record --> E[HE-3 Record detail]
+  C -- Permissions --> F[HE-4 status]
+  F -- tap a row / Open Health Connect --> B
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Start | Onboarding ON-6, or Progress → Health details, or Settings → Health Connect | HE-1 in its not-connected state: what Liftria reads, "it never writes", "data starts on the day you connect" | Health Connect missing or too old: "Get Health Connect" and "Liftria works without it". Health Connect off: "hidden, not zero" and Turn on | Not now returns to Progress |
+| Connect | Taps Connect | Android's own permission screen opens (HE-4 reference mock) | Android may show only some types | Don't allow returns to HE-1 not connected; nothing is lost |
+| Result | Taps Allow | HE-1 connected: one row per type with value or state, source chip and age; permissions "5 of 7 allowed"; data from the connect date | A denied type is "Not allowed" with a lock, never "0" | Permissions opens HE-4; a row or **Open Health Connect** opens Android's screen to change it |
+| Inspect | Taps Steps | HE-2: chart with its source line, Sources breakdown (each origin on its own), what the number means | One origin only: a total is shown. Two origins: listed separately | Back returns to HE-1 |
+| Inspect a record | Taps a record | HE-3: value, time, data origin and package, device, recorded vs read, permission | A missing device reads "Not recorded by the source" | Back returns to HE-2 |
+
+Entry from Today: the **Activity card steps** open HE-2 (steps) and the **heart-rate row** opens HE-3; back returns to Today.
+
+## Flow 8: Investigate missing watch data (1D)
+
+```mermaid
+flowchart TD
+  A[HE-1 or HE-2 Watch data missing?] --> B[HE-6 checking]
+  B --> C[HE-6 one thing to fix]
+  C -- Show me how --> D[HE-5 sync guide]
+  D -- Check again --> E[HE-6 checking]
+  E --> F[HE-6 all good]
+  C -- Check again --> B
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Start | Taps "Watch data missing?" | HE-6 runs five checks one by one, each with a status icon and a word | — | Back returns to where they came from |
+| Result: issue | Waits (a moment) | Rows ✓ for Health Connect installed, heart rate allowed and Samsung Health writing ("Last record 2 h ago"); ④ **info** "Can't be checked from here. Open Samsung Health and check the watch is synced"; ⑤ ✕ "None yet, only phone steps". The failing row opens with the fix "Turn on Steps in Samsung Health → Health Connect" | The watch sync can't be verified from the phone side, so it is never ticked | Check again re-runs |
+| Fix | Show me how | HE-5: five steps with drawings and "Data starts from the day you connect" | — | Back |
+| Re-check | Check again | HE-6 re-runs; with steps arriving, "Watch data is arriving" with every checkable row ✓ | Steps can take a few minutes to appear | Check again |
+
+## Flow 9: Review progress (1D)
+
+```mermaid
+flowchart TD
+  A[PR-1 Progress home] --> B[PR-2 Strength]
+  A --> C[PR-3 Nutrition]
+  A --> D[PR-4 Body]
+  A --> E[PR-5 Activity]
+  E --> F[HE-1 Health]
+  B --> G[TR-6 Exercise / TR-13 Records]
+  D --> H[PR-6 Log weight]
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Overview | Opens the Progress tab | Four cards, each with a headline, its own source line and a link | A card with no data shows one sentence and one action ("Log your weight…") | Range chips change the window (4 W, 3 M, 1 Y) |
+| Strength | Strength details | Weekly volume bars, top lifts with Estimate chip, records | Empty: "Finish a workout to see strength trends" | Back |
+| Nutrition | Nutrition trends | Calories as a line with gaps for unlogged days, protein days, average split | Unlogged days are gaps, not zeros; "18 of 28 days logged" | Back |
+| Body | Body details | Weight dots and the 7-day average, range, last entry with source | Empty: "Log your weight to see a trend". Hide numbers: "Trend: steady" | Log weight opens PR-6 |
+| Activity | Activity details | Steps per day by source; resting HR and sessions Pending | Health Connect off: hidden, not zero, Turn on | Health details opens HE-1 |
+
+## Flow 10 (all data): Edit or delete a weight, clear the health cache, delete all data (1D)
+
+```mermaid
+flowchart TD
+  A[PR-4 Recent entries] -- tap an entry --> B[PR-6 Editing]
+  B -- Save changes --> C[PR-4 + Undo]
+  B -- Delete entry --> D[PR-4 + Undo 8 s]
+  E[ST-6 Data and storage] -- Clear health cache --> F[Cache cleared snackbar]
+  E -- Delete all data --> G{Confirmation sheet}
+  G -- Keep my data --> E
+  G -- type DELETE, Delete everything --> H[Onboarding]
+```
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Edit a weight | PR-4 → tap an entry → change → Save changes | The trend and the Settings weight update; snackbar with Undo | Outside 20 to 300 kg: "Is that right?" with Fix it | Cancel keeps the entry |
+| Delete a weight | Delete entry | "Entry deleted" with Undo for 8 s | Entries read from Health Connect can't be edited or deleted here | Undo restores it exactly |
+| Clear health cache | ST-6 → Clear health cache | Counts show 0 cached; "Liftria reads Health Connect again next time" | Only cached Health Connect rows go; workouts, meals and weights stay | The next read re-imports them |
+| Delete all data | ST-6 → Delete all data | Sheet listing what is deleted and what isn't (Health Connect and Samsung Health data, Anthropic's logs for your key); "Type DELETE to confirm", button disabled | The button enables only for exactly DELETE | **Keep my data** is the primary button; the scrim also closes it |
+| After | Delete everything | The database, the key and cached files are removed, then Liftria restarts into onboarding | A failed step is reported; it never claims success first | **No Undo.** Export is a Future feature, so this is final |
+
+## Flow 6 (key management): Replace, test and delete the API key (1D)
+
+Entry points: Settings → Hiku and API key; HK-1 "Add API key" and HK-6 "API key" (back returns to the Hiku tab); HK-5 "Check key"; the Today Hiku card.
+
+| Step | User action | System feedback | Validation and errors | Cancel / recovery |
+|---|---|---|---|---|
+| Test | Test key (online) | A "Testing…" row, then "Key works" with a `pending` "First device test" chip | 401 "This key is invalid or revoked"; 403 "This key isn't allowed to use this model"; 429 "Anthropic is rate limiting this key. Try again in a minute"; offline "We'll test it when you're online" | Back |
+| Replace | Replace key → paste → Save key | The masked key line updates to the new "…last 4" | Format check, as ON-8 | Cancel keeps the old key |
+| Delete | Delete key | Sheet: "Hiku stops working until you add a key. Your food diary isn't affected." Keep key is the primary button | — | Keep key; after deleting, Hiku shows its no-key states |
+| Privacy defaults | Today's totals, Training day, Keep photos | Three switches, all off; they are the starting positions for each request | — | Each request can still change them (HK-2) |

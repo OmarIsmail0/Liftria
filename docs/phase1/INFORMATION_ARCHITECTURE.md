@@ -1,6 +1,6 @@
 # Information Architecture
 
-**Milestone:** 1A, 1B, 1C · **Status:** for owner review
+**Milestone:** 1A, 1B, 1C, 1D · **Status:** for owner review
 
 ## Primary navigation
 
@@ -58,9 +58,25 @@ Eat (EA-1)
 ├── Meal detail (EA-4) → edit an item · delete (confirmation sheet)
 ├── Targets (EA-6) → safety-floor sheet · hide numbers
 └── History and trends (EA-7) → a day's EA-1
-Progress
-├── Strength · Nutrition · Body · Activity
-└── Health → Steps · Heart rate · Exercise sessions · Energy · Sleep → Source & provenance detail
+Progress (PR-1) [4 W · 3 M · 1 Y]
+├── Strength (PR-2) → Exercise detail (TR-6) · Records (TR-13)
+├── Nutrition trends (PR-3)
+├── Body (PR-4) → Log weight (PR-6 sheet): add · edit · delete
+├── Activity (PR-5) → Health details
+└── Health (HE-1) [Activity → Health details; Today Activity card → HE-2; Today HR row → HE-3]
+    ├── Metric detail (HE-2): Steps · Heart rate · Active energy · Sleep · Exercise sessions
+    │   └── Record and source detail (HE-3)
+    ├── Connection and permissions (HE-4) → Android permission screen (reference)
+    ├── Samsung Health sync guide (HE-5)
+    └── Troubleshoot missing watch data (HE-6) → HE-5
+Settings (ST-1) [from the Today avatar; no capsule nav]
+├── Profile and goals (ST-2) → Targets (EA-6)
+├── Units and appearance (ST-3)
+├── Hiku and API key (ST-4) → Usage and privacy (HK-6)
+├── Notifications (ST-5)
+├── Health Connect (HE-4)
+├── Data and storage (ST-6) → Delete all data (confirmation sheet)
+└── About and help (ST-7) → Troubleshoot (HE-6) · How Hiku works (HK-1)
 Hiku (HK-1)
 ├── Welcome / no key / offline / first time (states of HK-1)
 ├── Before sending (HK-2) → Analyzing (HK-3) → Result review (HK-4) → Save to Eat
@@ -77,7 +93,9 @@ Hiku (HK-1)
 4. **Deep links** between tabs open the destination as its own stack, so back returns to where you were. Example: Today → "Log a meal" opens Eat's add-food screen with back to Today; Today → "Photo" opens Hiku's Before sending screen.
    - **Quick add** is one shared sheet (QA-1): Eat's "+", a long-press on Today's "Log a meal", or a long-press on the Today tab.
    - Training reaches Eat and Hiku only as a read-only chip or an opt-in context switch. Nutrition and Train never write each other's data.
-5. **Settings** opens as a pushed stack from Today with its own back button. No bottom bar inside Settings.
+5. **Settings** opens as a pushed stack from Today with its own back button. No bottom bar inside Settings. **1D deep links:** Today Activity card → HE-2; Today HR row → HE-3; EA-6 → ST-2; HK-1, HK-5 and HK-6 → ST-4; TR-8 "Turn on" → ST-5. Back always returns to the screen the user came from (the prototype's `data-ret`).
+   - **1D focus flows:** the Log weight sheet (PR-6), the Android permission reference screen (HE-4) and every Settings screen and confirmation sheet hide the capsule. The workout mini bar is also hidden inside Settings (open question).
+   - **Progress and Health keep the capsule** with Progress selected.
 6. **No dead ends.** Every empty, error and permission state has at least one forward action (set up, retry, log manually) and a way back.
 
 ## Onboarding sequence (1A)

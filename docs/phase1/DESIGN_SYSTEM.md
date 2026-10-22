@@ -1,6 +1,6 @@
 # Liftria Design System
 
-**Milestone:** 1A (foundation; components are extended in 1B to 1D), 1C added below · **Status:** for owner review
+**Milestone:** 1A (foundation; components are extended in 1B to 1D), 1C and 1D added below · **Status:** for owner review
 
 The tokens in the prototype (`prototype/src/liftria-1a.html`, the `:root` blocks) are the source of truth for values. Token names use the form `category.role.variant`. In CSS they become `--category-role-variant`; in the React Native theme object (Phase 2) they become `theme.color.text.primary`.
 
@@ -15,7 +15,8 @@ The tokens in the prototype (`prototype/src/liftria-1a.html`, the `:root` blocks
 | `color.bg.raised` | `#1E232B` | `#FFFFFF` | Inputs, tracks, nested tiles |
 | `color.bg.glass` | `rgba(30,35,43,.78)` | `rgba(255,255,255,.82)` | Bottom navigation in the Solid style |
 | `color.border.subtle` | `#272D37` | `#E1E5EB` | Dividers, card outlines (decorative) |
-| `color.border.strong` | `#636D7B` | `#808996` | Input, choice and secondary-button outlines (≥ 3:1) |
+| `color.border.strong` | `#636D7B` | `#808996` | Input, choice and secondary-button outlines in the **Solid** style (3.33 / 3.54 on the surface) |
+| `color.border.control` | `#929CAA` | `#5F6978` | **Aurora Rim only (1D):** outlines of controls, 3:1 against the worst-case page or card over the brightest glow (3.38 / 3.25). See ACCESSIBILITY.md |
 | `color.text.primary` | `#EEF1F5` | `#12161C` | Headings, values |
 | `color.text.secondary` | `#BFC6D1` | `#4D5767` | Body and supporting text |
 | `color.text.tertiary` | `#A3ACBA` | `#5E6878` | Labels, timestamps, placeholders |
@@ -44,7 +45,7 @@ Neutrals lean slightly blue-grey, so the warm domain colors read clearly against
 | `color.macro.fat` | `#FF9AC0` | `#B8406F` |
 | `color.status.success` | `#5BD08F` | `#177A45` |
 | `color.status.warning` | `#F2B44C` | `#8A5C00` |
-| `color.status.danger` | `#FF6B6B` | `#C93636` |
+| `color.status.danger` | `#FF7A7A` (was `#FF6B6B`) | `#C93636` |
 
 **Rules**
 - Danger red is only for destructive actions and real errors. **Never** use it for eating "too much" or missing a target.
@@ -243,7 +244,43 @@ The owner chose **Pulse Orb** as the Today concept (2026-10-21, from the A/B/C c
 - **Over target** keeps the honey ring full and uses "kcal over". The orb never changes to a warning palette, and nothing about eating is red.
 - Hide-numbers mode keeps the ring (a shape, not a number) and replaces every calorie figure with words.
 
-Components for settings, more chart types and further dialogs are added in 1D.
+### 1D components (Progress, Health and Settings)
+
+| Component | Variants | Notes |
+|---|---|---|
+| **Summary card with source line** | Strength / Nutrition / Body / Activity; populated / empty / hidden | Domain rim, a `t-head` title, a headline metric, a `t-small` **source line** and a 48dp card link. Empty: one sentence and one action. |
+| **Source line** | — | `t-small` under every chart title: "From your workouts in Liftria", "From your food diary", "Logged in Liftria", "From Health Connect · Phone". |
+| **Range chips** | 4 W / 3 M / 1 Y | 48dp `fchip`s, one pressed. |
+| **Volume bars** | 8 periods | Coral bars on a 0–60k scale, values in thousands above each bar, a "Last 4 weeks" bracket. |
+| **Sparkline** | up | 72 × 28, coral line and a dot on the last point; decorative (the row's label carries the numbers). |
+| **Calorie line with gaps** | 28 days | Honey line and dots on logged days; an unlogged day is a gap with a dashed baseline tick. Dashed target line. |
+| **Pip grid** | at / below / not logged | 28 pips in a Tue-to-Mon grid: filled with a check, outlined, dashed. Shape and fill carry the meaning, with a legend. |
+| **Weight chart** | populated / hidden / with sources | Faint hollow dots (circle = You, diamond = Samsung Health), a **solid 2.5px 7-day average** in `domain.health`, the range low and high, the last entry emphasized. Never a red or green trend color. In hidden mode, no axis numbers. |
+| **Steps by source** | phone only / two sources | Phone = **solid teal**, Samsung Health = **teal with diagonal stripes** (a pattern, so the source isn't color-only), with a legend showing both. Two sources are drawn **side by side, never stacked**: a stack would imply a sum, and phone and watch can count the same steps. Days with no data are dashed outlines. |
+| **Health row** | value / empty / locked / stale | 64dp row: icon tile, name and value, then chips and age on a second line. Locked rows show `off` with a lock and open Health Connect. |
+| **Switch-look** | on / off | A **picture** of a switch (48 × 28) plus the words "Allowed" or "Not allowed", inside a button that opens Health Connect. Not a control, so it has no `role="switch"`; the row's label says "Tapping opens Health Connect". |
+| **Definition list** | — | `t-label` term, strong `t-body` value, a small explanation; package names in the monospace `.kbd` style. |
+| **Check row** | ok / info / fail / waiting / checking | A 28dp status circle (icon, never color alone) with a word for screen readers, a title and one line. A failing row is **warning amber, not danger red**, and can expand with a fix. |
+| **Sync guide step** | — | A 96 × 92 drawing of a phone screen (original geometric shapes), a numbered title and one line. |
+| **System mock** | dark / light | Android's permission screen in neutral greys, Roboto-like type and a blue accent, **clearly not Liftria's style**, captioned "Android screen, for reference" (like TR-9). |
+| **Settings row** | — | 64dp: neutral icon tile, title, one line, chevron. Settings cards have **neutral rims**. |
+| **Segmented control (2–3)** | pressed / disabled | 48dp, chalk fill on the pressed option; a disabled option says why. Uses `border.control` in glass. |
+| **Danger zone card** | — | A card with a **1.5px `status.danger` outline** (no rim gradient) and a danger text button. The confirmation sheet's destructive button is `btn-danger`, **disabled until the typed text matches**. |
+| **Confirmation by typing** | empty / matched | "Type DELETE to confirm", an empty field, a disabled `btn-danger` button; enabled only for exactly DELETE. The safe choice is the primary button. |
+| **Note box** | — | A raised, quiet box titled "What this means", or an example note. |
+
+| New or changed token | Dark | Light | Use |
+|---|---|---|---|
+| `color.border.control` | `#929CAA` | `#5F6978` | Glass-style control outlines: `.btn-secondary`, `.iconbtn`, unpressed `.fchip`, `.search`, `.stepper`, `.field` inputs, `.choice` buttons, `.tick-btn`, `.addrow`, segmented controls, `.avatar` |
+| `color.status.danger` (changed) | `#FF7A7A` | `#C93636` (unchanged) | Lightened in dark so danger text measures ≥ 4.5 over the brightest glow (it was 4.25 with `#FF6B6B`) |
+
+**Rules for 1D**
+- **Charts:** gridlines `border.subtle`, labels `text.tertiary`. Strength coral, Nutrition honey, Body and Activity teal.
+- **Health is never merged:** each origin is listed separately; a total appears only for steps with one origin.
+- **Red** is only for destructive actions (Delete entry, Delete key, Delete all data). A failed check or missing source is amber.
+- Settings is a pushed stack: no capsule nav, neutral rims.
+
+Further components are added in the build phases.
 
 ## 6. Data-honesty patterns (the core of the system)
 
