@@ -1,26 +1,25 @@
 import { useEffect } from 'react';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { bundledFonts } from '../src/design/fonts';
 import { ThemeProvider, useTheme } from '../src/design/ThemeProvider';
 
-// Must run at module evaluation, before Expo Router mounts its first screen.
-// A guarded promise prevents failure on unsupported test/dev hosts.
+// Start both readiness checks behind the native splash. Never flash a system font.
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
-function ReadyNavigator() {
+function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { ready } = useTheme();
   useEffect(() => {
-    if (ready) void SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
-
-  if (!ready) return null;
+    if (ready && fontsLoaded) void SplashScreen.hideAsync().catch(() => {});
+  }, [ready, fontsLoaded]);
+  if (!ready || !fontsLoaded) return null;
   return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 export default function RootLayout() {
-  return (
-    <ThemeProvider>
-      <ReadyNavigator />
-    </ThemeProvider>
-  );
+  const [fontsLoaded, fontError] = useFonts(bundledFonts);
+  // Don't silently render Roboto on a broken font bundle.
+  if (fontError) throw fontError;
+  return <ThemeProvider><ReadyNavigator fontsLoaded={fontsLoaded} /></ThemeProvider>;
 }
