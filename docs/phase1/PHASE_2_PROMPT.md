@@ -1,7 +1,7 @@
 # LIFTRIA — PHASE 2: APP FOUNDATION (build prompt)
 
 **For:** the build agent · **Written by:** Claude (Phase 1 design lead) · **Reviewed by:** Claude, per pull request
-**Precondition: do not start until `docs/PHASE_0_REPORT.md` records Core = GO.** If it doesn't, stop and say so.
+**Precondition: the owner waived the Core = GO gate on 2026-10-22, so Phase 2 may start now.** Core is mostly proven on the S22 (C1, C2 and C4 PASS). Two checks are still unobserved: SecureStore delete → restart, and Clear → 0. They're now part of this phase's device checklist (§4, items 7 and 8). If either fails, fix it before any Phase 2 PR merges that depends on it. The other gates (Claude AI, Workout wearable, Daily calories) are **not** waived; respect them as `PHASE_1_HANDOFF.md` §2 describes.
 
 You are building the foundation of Liftria: a private, local-first Android fitness app for one person (Galaxy S22 Ultra, Android 16; Galaxy Watch 4 as a data source only). Phase 1 designed every screen. Your job is to turn the foundation part of that design into a working React Native app. The rest comes in Phases 3 (gym) and 4 (nutrition).
 
@@ -105,6 +105,7 @@ You are building the foundation of Liftria: a private, local-first Android fitne
 5. Android font size Largest → onboarding, Today, Health and Settings readable, nothing cut off.
 6. TalkBack → flow 1 completes; the orb, chips and capsule tabs read as specified.
 7. Settings → Delete all → typed DELETE → the app restarts into onboarding, and the key is gone (ST-4 shows no key).
+8. Core leftovers from Phase 0: save a key → force-stop → reopen → the key is still there; delete it → force-stop → reopen → it's missing. Clear health cache → counts show 0 → reopen → still 0.
 
 ## 5. Rules
 

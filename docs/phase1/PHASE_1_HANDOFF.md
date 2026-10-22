@@ -1,7 +1,7 @@
 # Phase 1 Handoff: from design to build
 
 **Author:** Claude · **Date:** 2026-10-22 · **For:** the build agent (Phase 2 onward) and the owner
-**Status:** handoff draft. It's final when the owner approves Phase 1 after 1D. **Phase 2 may not start until Core = GO** (see "Gates").
+**Status:** handoff draft. It's final when the owner approves Phase 1 after 1D. **The owner waived the Core gate on 2026-10-22, so Phase 2 may start**; its two remaining Core checks are in the Phase 2 device checklist (see "Gates").
 
 This file is the bridge between the Phase 1 design and the code. The build prompt for Phase 2 is [PHASE_2_PROMPT.md](PHASE_2_PROMPT.md). Phases 3 and 4 get their own prompts later, written from this handoff.
 
@@ -24,7 +24,7 @@ This file is the bridge between the Phase 1 design and the code. The build promp
 
 | Gate | Status today | Unlocks |
 |---|---|---|
-| **Core = GO** (C1–C4 on the S22) | PENDING: C3 key delete → restart, and Clear → 0, still to observe | **Phase 2 may start** |
+| **Core = GO** (C1–C4 on the S22) | **Waived by the owner 2026-10-22.** C1, C2 and C4 PASS. C3 key delete → restart and Clear → 0 are moved into Phase 2's device checklist | **Phase 2 may start** |
 | **Claude AI = READY** (Test A text + Test B photo on the device) | PENDING | Hiku meal analysis in Phase 4 (otherwise: design stays, the feature ships disabled with "Not available yet") |
 | **Workout wearable = READY** (watch HR + sessions + steps with origin) | PENDING | Watch data in Train and Health beyond "pending" (Phase 3+). Otherwise these stay `pending` rows |
 | **Daily calories = READY** (measured daily active/total energy) | PENDING | Energy in Today, Health and any target adjustment (Phase 4+). Otherwise "No measured source" stays |
