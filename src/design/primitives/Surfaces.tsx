@@ -50,7 +50,7 @@ export function Header({ title, subtitle, onBack, right }: {
   return <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3], minHeight: theme.size.touch.primary }}>
     {onBack && <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back"
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
-        borderRadius: theme.radius.pill, borderWidth: 1, borderColor: theme.controlOutline }}>
+        borderRadius: theme.radius.pill, borderWidth: theme.size.border.thin, borderColor: theme.controlOutline }}>
       <Typography>‹</Typography>
     </Pressable>}
     <View style={{ flex: 1, gap: theme.space[1] }}>
@@ -68,9 +68,9 @@ export function Card({ children, rim = 'none', title, flat = false }: {
   const border = rim === 'none' ? (theme.effectiveStyle === 'aurora' ? theme.glass.border : theme.color.border.subtle) : theme.color.domain[rim];
   return <View style={{
     backgroundColor: theme.cardFill, borderColor: border,
-    borderWidth: rim === 'none' ? 1 : 1.5, borderRadius: theme.radius.lg,
+    borderWidth: rim === 'none' ? theme.size.border.thin : theme.size.border.rim, borderRadius: theme.radius.lg,
     padding: theme.space[4], gap: theme.space[3],
-    ...(flat ? {} : { elevation: 1 }),
+    ...(flat ? {} : { elevation: theme.size.border.thin }),
   }}>
     {title && <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
       {rim !== 'none' && <View style={{ width: theme.space[2], height: theme.space[2], borderRadius: theme.radius.pill, backgroundColor: border }} />}
@@ -87,7 +87,7 @@ export function Banner({ title, message, variant = 'info' }: {
   const tone = variant === 'warning' ? theme.color.status.warning : variant === 'offline' ? theme.color.text.tertiary : theme.color.domain.health;
   return <View accessibilityRole="alert" style={{
     minHeight: theme.size.touch.min, backgroundColor: theme.cardFill, borderColor: tone,
-    borderWidth: 1, borderRadius: theme.radius.md, padding: theme.space[3],
+    borderWidth: theme.size.border.thin, borderRadius: theme.radius.md, padding: theme.space[3],
     flexDirection: 'row', gap: theme.space[3], alignItems: 'flex-start',
   }}>
     <Text importantForAccessibility="no" style={{ color: tone, fontSize: theme.type.head.size }}>{variant === 'offline' ? '○' : variant === 'warning' ? '!' : 'i'}</Text>
@@ -127,6 +127,6 @@ export function Skeleton({ height, width = '100%' }: { height?: number; width?: 
   const { theme } = useTheme();
   return <View accessibilityLabel="Loading" accessibilityRole="progressbar" style={{
     width, height: height ?? theme.size.touch.min, backgroundColor: theme.color.bg.raised,
-    borderColor: theme.color.border.subtle, borderWidth: 1, borderRadius: theme.radius.md,
+    borderColor: theme.color.border.subtle, borderWidth: theme.size.border.thin, borderRadius: theme.radius.md,
   }} />;
 }
