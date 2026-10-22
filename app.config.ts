@@ -35,6 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
+    'expo-splash-screen',
     ['expo-image-picker', { cameraPermission: false, microphonePermission: false }],
     ['expo-sqlite', { useSQLCipher: false }],
     'expo-secure-store',
