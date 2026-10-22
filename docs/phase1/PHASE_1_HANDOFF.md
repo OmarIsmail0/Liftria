@@ -25,9 +25,9 @@ This file is the bridge between the Phase 1 design and the code. The build promp
 | Gate | Status today | Unlocks |
 |---|---|---|
 | **Core = GO** (C1–C4 on the S22) | **Waived by the owner 2026-10-22.** C1, C2 and C4 PASS. C3 key delete → restart and Clear → 0 are moved into Phase 2's device checklist | **Phase 2 may start** |
-| **Claude AI = READY** (Test A text + Test B photo on the device) | PENDING | Hiku meal analysis in Phase 4 (otherwise: design stays, the feature ships disabled with "Not available yet") |
-| **Workout wearable = READY** (watch HR + sessions + steps with origin) | PENDING | Watch data in Train and Health beyond "pending" (Phase 3+). Otherwise these stay `pending` rows |
-| **Daily calories = READY** (measured daily active/total energy) | PENDING | Energy in Today, Health and any target adjustment (Phase 4+). Otherwise "No measured source" stays |
+| **Claude AI = READY** (Test A text + Test B photo on the device) | **PARTIAL** (device test 3): text PASS, photo still to run | Hiku meal analysis in Phase 4 (otherwise: design stays, the feature ships disabled with "Not available yet") |
+| **Workout wearable = READY** (watch HR + sessions + steps with origin) | **PARTIAL** (device test 3): Samsung Health steps and HR arrive (no device metadata); exercise sessions missing | Watch data in Train and Health beyond "pending" (Phase 3+). Otherwise these stay `pending` rows |
+| **Daily calories = READY** (measured daily active/total energy) | **NOT READY** (device test 3): only the unattributed Health Connect estimate | Energy in Today, Health and any target adjustment (Phase 4+). Otherwise "No measured source" stays |
 
 A build agent **must check the current gate status in `docs/PHASE_0_REPORT.md` before starting a phase**, and must stop and report if its gate isn't met.
 
@@ -113,7 +113,7 @@ Status: **Confirmed** = proven on the owner's device in Phase 0 · **Core-pendin
 | 200% renders for the remaining Train screens | Build agent | Phase 3 |
 | Real one-handed gym session | Owner | After the Phase 3 build |
 | USDA subset size, portion coverage, price table source | Build agent | Phase 4 |
-| Dedup rule for phone vs watch steps | Build agent | When watch steps appear |
+| Dedup rule for phone vs watch steps | Build agent | **Now:** watch steps arrived in device test 3, so phone and Samsung Health steps overlap. Until a rule is verified, show them per source and never add them (Phase 2 Health) |
 | Items listed in `MILESTONE_1D_REVIEW.md` | — | See that file |
 | **Hiku for friends and Play users:** keep bring-your-own-key, or a paid server? | Owner | Before Phase 4 |
 | **Google Play readiness:** privacy policy, Health Connect declaration form, app bundle (AAB), store listing | Owner + build agent | Before publishing |

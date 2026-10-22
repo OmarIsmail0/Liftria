@@ -128,6 +128,31 @@ Source: in-app Export report generated 2026-10-21T12:18:09Z (same device and APK
 - **Workout wearable:** PENDING. The sync now works (first Samsung Health heart-rate record). Corrective action: wear the watch for a day and record one workout on it, then re-read.
 - **Daily calorie tracking:** PENDING. Waiting for Samsung Health energy data.
 
+## Device test 3: owner's S22 Ultra (2026-10-22, 17:16Z)
+
+Source: in-app Export report generated 2026-10-22T17:16:53Z, app 0.0.1 (build 1), Android 16 (API 36), SM-S908E. The pasted export was cut off inside the last daily-energy row.
+
+**Which APK:** the build number can't tell us, because every Phase 0 APK reports build 1. Today's partial-day total (1,321.9 kcal) shows the current-day window is capped at the read time, so this APK includes `af72e6a` or later. Whether it includes the PR #3 cache purge is **unknown**.
+
+| Check | Status | Evidence |
+|---|---|---|
+| Claude Test A (text, real key, online) | **PASS** | Structured result: "boiled egg: 2 piece (confidence 0.95), cooked rice: 100 g (0.97)", labeled "Estimated only — NOT measured". Tokens 383 in / 74 out |
+| Claude Test B (real photo) | **PENDING_OWNER_TEST** | Not in this export |
+| Steps from Samsung Health | **PASS (new)** | 141 step records from **both** `com.sec.android.app.shealth` and `com.android.healthconnect.phone.*`. Watch steps now arrive. Phone and watch steps overlap, so the dedup rule (design: per-source display, a total only with one origin) is now a real requirement |
+| Heart rate from Samsung Health | **PASS (origin only)** | 14 records from `com.sec.android.app.shealth`; device metadata still empty (`{}`), so "from the watch" can't be proven |
+| Exercise sessions | **PENDING_DEVICE_TEST** | Empty. No workout recorded on the watch yet |
+| Active / total / basal energy from an app | **NOT READY** | Every day is still the Health Connect estimate with no origin (`no-source`); active 0.0. Samsung Health doesn't write energy to Health Connect on this setup |
+| Sleep, weight, body fat, lean mass | **No data** | Permissions granted, nothing written |
+| Legacy no-source cache purge (PR #3) | **NOT CONFIRMED** | SQLite still reports `healthAggregates: 21`. Either this APK predates PR #3, or **Read health cache** wasn't tapped before reading the counts (the purge runs on that read). Re-test: install the newest `main` APK → Read health cache → Read |
+| History permission | **Not requested** | — |
+| Offline / cache, key delete → restart, Clear → 0 | **Not run in this export** | The two Core leftovers moved to the Phase 2 device checklist (owner waiver 2026-10-22) |
+
+**Verdicts after device test 3**
+- **Core:** PENDING (waived by the owner for Phase 2). C1, C2 and C4 PASS. The two C3/Clear checks are in the Phase 2 checklist.
+- **Claude AI:** **PARTIAL.** Text recognition works on the device (Test A PASS). Photo recognition (Test B) is still to run.
+- **Workout wearable:** **PARTIAL.** Steps and heart rate arrive from Samsung Health (origin only, no device). Exercise sessions are still missing. Next: record one workout on the watch, let it sync, then re-read.
+- **Daily calorie tracking:** **NOT READY.** No app writes energy to Health Connect; only the unattributed estimate exists. Liftria keeps "No measured source" (designed in 1A/1D). Re-check after a recorded watch workout. If energy still doesn't arrive, this is the trigger to evaluate the Samsung Health Data SDK, or to descope daily energy for V1.
+
 ## Additional device feedback safeguard (2026-10-21)
 
 The first and second S22 exports were produced from an APK predating the `no-source` safeguard, with 21 unattributed cached aggregates. The current code makes no-source energy output ineligible for caching and an additional fix caps the current-day aggregation window at the read timestamp (avoiding next-midnight/future hours). Health Connect permission state now refreshes before each user-requested Health Connect reading, rather than remaining visually `not checked` after app restart. These are code changes, **not new phone evidence**. Android installation and Watch 4 provenance must be rechecked on the latest successfully built APK.

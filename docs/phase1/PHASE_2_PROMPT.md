@@ -119,6 +119,9 @@ You are building the foundation of Liftria: a private, local-first fitness app f
 
 ## 5. Rules
 
+- **Never add or change GitHub workflows to work around missing tools.** In particular, no workflow may get `contents: write` or push commits. If you need a lockfile regenerated or a command run, ask in the PR, and Claude or the owner runs it.
+- **Steps from two sources:** device test 3 shows phone and Samsung Health steps overlapping. Show them per source and never add them together, until a dedup rule is verified.
+
 - **Never fabricate results.** A step is PASS only with real command output or the owner's device report. Await actual CI results before claiming them.
 - **Secrets:** never log, commit or print the API key; show only the masked suffix.
 - **Scope:** Phase 2 only. No gym or nutrition features, no Claude meal analysis, no watch-dependent features beyond `pending` rows.
