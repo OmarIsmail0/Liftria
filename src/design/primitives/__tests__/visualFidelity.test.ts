@@ -1,6 +1,6 @@
 import { createTheme } from '../../tokens';
 import { fontFamilyFor } from '../../fonts';
-import { ambientGlows, cardRimStops, ringGeometry, withOpacity } from '../VisualGeometry';
+import { ambientGlows, cardRimStops, ringGeometry, withOpacity, splitColor, stopProps } from '../VisualGeometry';
 
 test('four fixed ellipse locations match the CSS prototype percentages', () => {
   expect(ambientGlows).toEqual([
@@ -48,4 +48,24 @@ test('every typography face has a static family, independent of Android fontWeig
   expect(fontFamilyFor('Figtree', '400')).toBe('Figtree-Regular');
   expect(fontFamilyFor('Figtree', '600')).toBe('Figtree-SemiBold');
   expect(fontFamilyFor('Figtree', '700')).toBe('Figtree-Bold');
+});
+
+describe('gradient stops keep each token\'s transparency', () => {
+  test('rgba tokens split into an opaque color and their own opacity', () => {
+    expect(splitColor('rgba(255,255,255,0.10)')).toEqual({ color: 'rgb(255,255,255)', opacity: 0.1 });
+    expect(splitColor('rgba(123, 92, 255, 0.50)')).toEqual({ color: 'rgb(123,92,255)', opacity: 0.5 });
+    expect(splitColor('#FFCF5E')).toEqual({ color: '#FFCF5E', opacity: 1 });
+  });
+
+  test('a stop multiplies the token alpha by the stop opacity', () => {
+    expect(stopProps('rgba(255,94,126,0.45)', 1)).toEqual({ stopColor: 'rgb(255,94,126)', stopOpacity: 0.45 });
+    expect(stopProps('rgba(255,94,126,0.45)', 0).stopOpacity).toBe(0);
+    expect(stopProps('#FF8F6B')).toEqual({ stopColor: '#FF8F6B', stopOpacity: 1 });
+  });
+
+  test.each(['dark', 'light'] as const)('%s: glows and the card sheen are never drawn opaque', mode => {
+    const t = createTheme(mode, 'aurora');
+    for (const glow of Object.values(t.ambient)) expect(stopProps(glow).stopOpacity).toBeLessThan(1);
+    expect(stopProps(t.glass.highlight).stopOpacity).toBeLessThan(1);
+  });
 });
