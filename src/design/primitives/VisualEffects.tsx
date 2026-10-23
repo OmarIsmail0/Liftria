@@ -62,18 +62,22 @@ export function AuroraCardDecoration({ theme, rim, width, height }: {
 }
 
 /** The sole gradient button; SVG works on SDK 57 / RN 0.86. */
-export function TrainGradient({ theme }: { theme: LiftriaTheme }) {
+export function TrainGradient({ theme, width, height }: { theme: LiftriaTheme; width: number; height: number }) {
+  if (width <= 0 || height <= 0) return null;
+  // Percent sizes under an absoluteFill Svg resolve to the wrong box on Android, so the
+  // button's measured size drives the rect and the prototype's 135° CSS angle.
+  const line = cssLinearGradient(135, width, height);
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
-    style={StyleSheet.absoluteFill} width="100%" height="100%">
+    style={StyleSheet.absoluteFill} width={width} height={height}>
     <Defs>
-      <LinearGradient id="train-button" x1="0%" y1="0%" x2="100%" y2="100%">
+      <LinearGradient id="train-button" gradientUnits="userSpaceOnUse" x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}>
         <Stop offset="0%" {...stopProps(theme.color.domain.train)} />
         <Stop offset="100%" {...stopProps(theme.train.gradEnd)} />
       </LinearGradient>
     </Defs>
     {/* No rx: an oversized SVG corner radius turns the rect into an ellipse. The button's own
         rounded, overflow-hidden container clips the plain rect to the pill shape. */}
-    <Rect width="100%" height="100%" fill="url(#train-button)" />
+    <Rect width={width} height={height} fill="url(#train-button)" />
   </Svg>;
 }
 

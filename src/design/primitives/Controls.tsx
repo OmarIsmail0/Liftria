@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Modal, Pressable, ScrollView, Text, TextInput, View, type KeyboardTypeOptions,
 } from 'react-native';
@@ -16,19 +16,22 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
 }) {
   const { theme } = useTheme();
   const colors = buttonColors(theme, variant);
+  const gradient = variant === 'train' && theme.effectiveStyle === 'aurora';
+  const [box, setBox] = useState({ width: 0, height: 0 });
   return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
     accessibilityState={{ disabled }} disabled={disabled} onPress={onPress}
+    onLayout={gradient ? e => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }) : undefined}
     style={({ pressed }) => ({
       minHeight: buttonHeight(theme, size), minWidth: theme.size.touch.min,
       alignItems: 'center', justifyContent: 'center', alignSelf: fullWidth ? 'stretch' : 'flex-start',
       flexShrink: 1,
       paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
       paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
-      borderWidth: variant === 'ghost' || (variant === 'train' && theme.effectiveStyle === 'aurora')
+      borderWidth: variant === 'ghost' || gradient
         ? 0 : theme.size.border.thin, borderColor: colors.border,
       backgroundColor: colors.bg, overflow: 'hidden', opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
     })}>
-    {variant === 'train' && theme.effectiveStyle === 'aurora' && <TrainGradient theme={theme} />}
+    {gradient && <TrainGradient theme={theme} width={box.width} height={box.height} />}
     <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
       fontFamily: fontFamilyFor('Figtree', '700'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
   </Pressable>;
