@@ -78,8 +78,10 @@ describe('CSS-angle gradients resolve against the real card size', () => {
       ((g.x2 - g.x1) ** 2 + (g.y2 - g.y1) ** 2);
     expect(t(0, 0)).toBeCloseTo(0);   // top-left corner = brightest stop
     expect(t(w, h)).toBeCloseTo(1);   // bottom-right corner = last stop
-    // Unlike a bounding-box diagonal, the bottom-left corner is already well into the fade.
-    expect(t(0, h)).toBeGreaterThan(0.3);
+    // The CSS line on a 4:1 card puts the bottom-left corner about a quarter of the way along
+    // (≈0.23), between the full-strength and rim.strength stops; a bounding-box diagonal would put
+    // it at exactly 0.5.
+    expect(t(0, h)).toBeCloseTo(0.23, 2);
   });
   test('180° is a plain top-to-bottom gradient over the full height', () => {
     const g = cssLinearGradient(180, 200, 100);
