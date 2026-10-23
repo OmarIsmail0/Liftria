@@ -46,7 +46,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
             color: ink, fontFamily: fontFamilyFor(theme.type.label.face, theme.type.label.weight),
             fontSize: theme.type.label.size, lineHeight: theme.type.label.line,
             letterSpacing: theme.type.label.letterSpacingEm * theme.type.label.size,
-            textAlign: 'center' }}>{parts[2].toUpperCase()}</Text>
+            textAlign: 'center' }}>{(parts[2] ?? '').toUpperCase()}</Text>
         </> : <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2}
           style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight),
             fontSize: theme.type.head.size, lineHeight: theme.type.head.line,
