@@ -1,6 +1,6 @@
 import { createTheme } from '../../tokens';
 import { fontFamilyFor } from '../../fonts';
-import { ambientGlows, cardRimStops, ringGeometry, withOpacity, splitColor, stopProps } from '../VisualGeometry';
+import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps } from '../VisualGeometry';
 
 test('four fixed ellipse locations match the CSS prototype percentages', () => {
   expect(ambientGlows).toEqual([
@@ -67,5 +67,28 @@ describe('gradient stops keep each token\'s transparency', () => {
     const t = createTheme(mode, 'aurora');
     for (const glow of Object.values(t.ambient)) expect(stopProps(glow).stopOpacity).toBeLessThan(1);
     expect(stopProps(t.glass.highlight).stopOpacity).toBeLessThan(1);
+  });
+});
+
+describe('CSS-angle gradients resolve against the real card size', () => {
+  test('140° on a wide card fades from the top-left corner to the bottom-right corner', () => {
+    const w = 360, h = 90, g = cssLinearGradient(140, w, h);
+    // Project a point onto the gradient line: 0 at the start, 1 at the end.
+    const t = (x: number, y: number) => ((x - g.x1) * (g.x2 - g.x1) + (y - g.y1) * (g.y2 - g.y1)) /
+      ((g.x2 - g.x1) ** 2 + (g.y2 - g.y1) ** 2);
+    expect(t(0, 0)).toBeCloseTo(0);   // top-left corner = brightest stop
+    expect(t(w, h)).toBeCloseTo(1);   // bottom-right corner = last stop
+    // Unlike a bounding-box diagonal, the bottom-left corner is already well into the fade.
+    expect(t(0, h)).toBeGreaterThan(0.3);
+  });
+  test('180° is a plain top-to-bottom gradient over the full height', () => {
+    const g = cssLinearGradient(180, 200, 100);
+    expect(g.x1).toBeCloseTo(100); expect(g.x2).toBeCloseTo(100);
+    expect(g.y1).toBeCloseTo(0); expect(g.y2).toBeCloseTo(100);
+  });
+  test('90° is a plain left-to-right gradient over the full width', () => {
+    const g = cssLinearGradient(90, 200, 100);
+    expect(g.x1).toBeCloseTo(0); expect(g.x2).toBeCloseTo(200);
+    expect(g.y1).toBeCloseTo(50); expect(g.y2).toBeCloseTo(50);
   });
 });

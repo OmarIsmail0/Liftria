@@ -3,7 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import type { LiftriaTheme } from '../tokens';
 import type { CardRim } from './contracts';
-import { ambientGlows, cardRimStops, ringGeometry, stopProps, withOpacity } from './VisualGeometry';
+import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, stopProps, withOpacity } from './VisualGeometry';
 
 export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme: LiftriaTheme }) {
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
@@ -36,15 +36,18 @@ export function AuroraCardDecoration({ theme, rim, width, height }: {
   if (width <= 0 || height <= 0) return null;
   const edge = theme.size.border.rim;
   const edgeColor = rim === 'none' ? theme.glass.border : theme.color.domain[rim];
+  // The prototype's CSS angles (165° sheen, 140° rim), resolved against this card's real size.
+  const sheen = cssLinearGradient(165, width, height);
+  const rimLine = cssLinearGradient(140, width, height);
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
     style={StyleSheet.absoluteFill} width={width} height={height}>
     <Defs>
-      <LinearGradient id="card-sheen" x1="63%" y1="0%" x2="37%" y2="100%">
+      <LinearGradient id="card-sheen" gradientUnits="userSpaceOnUse" x1={sheen.x1} y1={sheen.y1} x2={sheen.x2} y2={sheen.y2}>
         <Stop offset="0%" {...stopProps(theme.glass.highlight)} />
         <Stop offset="45%" {...stopProps(theme.glass.highlight, 0)} />
         <Stop offset="100%" {...stopProps(theme.glass.highlight, 0)} />
       </LinearGradient>
-      <LinearGradient id="card-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <LinearGradient id="card-rim" gradientUnits="userSpaceOnUse" x1={rimLine.x1} y1={rimLine.y1} x2={rimLine.x2} y2={rimLine.y2}>
         <Stop offset={(cardRimStops[0] * 100) + '%'} {...stopProps(edgeColor, 1)} />
         <Stop offset={(cardRimStops[1] * 100) + '%'} {...stopProps(edgeColor, theme.rim.strength)} />
         <Stop offset={(cardRimStops[2] * 100) + '%'} {...stopProps(edgeColor, 0)} />
@@ -68,7 +71,9 @@ export function TrainGradient({ theme }: { theme: LiftriaTheme }) {
         <Stop offset="100%" {...stopProps(theme.train.gradEnd)} />
       </LinearGradient>
     </Defs>
-    <Rect width="100%" height="100%" rx={theme.radius.pill} fill="url(#train-button)" />
+    {/* No rx: an oversized SVG corner radius turns the rect into an ellipse. The button's own
+        rounded, overflow-hidden container clips the plain rect to the pill shape. */}
+    <Rect width="100%" height="100%" fill="url(#train-button)" />
   </Svg>;
 }
 

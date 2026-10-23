@@ -41,3 +41,17 @@ export function ringGeometry(size: number, stroke: number, progress: number) {
   const circumference = 2 * Math.PI * radius;
   return { radius, circumference, offset: circumference * (1 - Math.min(1, Math.max(0, progress))) };
 }
+
+/**
+ * End points of a CSS `linear-gradient(<angle>deg, …)` over a w×h box, in user-space pixels.
+ * CSS measures the angle from "to top", clockwise, and sizes the gradient line so its ends touch
+ * the box's corners; objectBoundingBox percentages instead stretch with the box's aspect ratio,
+ * which turns the design's 140° rim into a left-to-right fade on wide cards.
+ */
+export function cssLinearGradient(angleDeg: number, width: number, height: number) {
+  const radians = (angleDeg * Math.PI) / 180;
+  const dx = Math.sin(radians), dy = -Math.cos(radians);
+  const half = (Math.abs(width * dx) + Math.abs(height * dy)) / 2;
+  const cx = width / 2, cy = height / 2;
+  return { x1: cx - dx * half, y1: cy - dy * half, x2: cx + dx * half, y2: cy + dy * half };
+}
