@@ -1,0 +1,400 @@
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:07.916  6969  6969 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:00:12.251   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:00:15.666  7015  7015 E SoLoader: Checking /data/app missing libraries.
+10-23 21:00:15.666  7015  7015 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:00:15.667  7015  7015 E SoLoader: Checking /data/data missing libraries.
+10-23 21:00:15.667  7015  7015 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7015
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	existing SO sources: 
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:15.667  7015  7015 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:00:19.006  2041  2949 E NetworkScheduler.ATC: Called cancelTask for already completed task com.google.android.gms/.phenotype.service.sync.PhenotypeConfigurator{u=0 tag="PhenotypeSyncImmediately" trigger=window{start=1s,end=2s,earliest=-261s,latest=-260s} requirements=[NET_CONNECTED] attributes=[PERSISTED] scheduled=-262s last_run=-259s jid=N/A status=ACTIVE retries=0 client_lib=GMS_TASK_SCHEDULER-201817000} :2
+10-23 21:00:19.154  3206  3223 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-23 21:00:19.154  3206  3223 E libc    : Access denied finding property "service.adb.tls.port"
+10-23 21:00:19.975   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:00:20.405  1372  7052 E PhenotypeModule: PhenotypeModule.handlePhenotypeConfigurationUpdates():246 Get empty configurations.
+10-23 21:00:21.082  1497  2471 E GmsClient: unable to connect to service: com.google.android.gms.auth.key.retrieval.service.START on com.google.android.gms
+10-23 21:00:23.651  7192  7192 E SoLoader: Checking /data/app missing libraries.
+10-23 21:00:23.651  7192  7192 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:00:23.651  7192  7192 E SoLoader: Checking /data/data missing libraries.
+10-23 21:00:23.651  7192  7192 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7192
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	existing SO sources: 
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:23.652  7192  7192 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:00:28.141   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:00:32.506  7243  7243 E SoLoader: Checking /data/app missing libraries.
+10-23 21:00:32.506  7243  7243 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:00:32.506  7243  7243 E SoLoader: Checking /data/data missing libraries.
+10-23 21:00:32.506  7243  7243 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7243
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	existing SO sources: 
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:32.511  7243  7243 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:00:36.748   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:00:40.298  7286  7286 E SoLoader: Checking /data/app missing libraries.
+10-23 21:00:40.300  7286  7286 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:00:40.300  7286  7286 E SoLoader: Checking /data/data missing libraries.
+10-23 21:00:40.300  7286  7286 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7286
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	existing SO sources: 
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:40.301  7286  7286 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:00:44.758   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:00:48.035  7332  7332 E SoLoader: Checking /data/app missing libraries.
+10-23 21:00:48.035  7332  7332 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:00:48.036  7332  7332 E SoLoader: Checking /data/data missing libraries.
+10-23 21:00:48.036  7332  7332 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7332
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	existing SO sources: 
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:48.037  7332  7332 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:00:52.045  2041  5113 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-23 21:00:52.395   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:00:55.577  7389  7389 E SoLoader: Checking /data/app missing libraries.
+10-23 21:00:55.577  7389  7389 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:00:55.580  7389  7389 E SoLoader: Checking /data/data missing libraries.
+10-23 21:00:55.580  7389  7389 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7389
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	existing SO sources: 
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:00:55.585  7389  7389 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:01:00.115   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:01:03.492  7433  7433 E SoLoader: Checking /data/app missing libraries.
+10-23 21:01:03.493  7433  7433 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:01:03.495  7433  7433 E SoLoader: Checking /data/data missing libraries.
+10-23 21:01:03.495  7433  7433 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7433
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	existing SO sources: 
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:01:03.496  7433  7433 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:01:07.987   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:01:11.155  7477  7477 E SoLoader: Checking /data/app missing libraries.
+10-23 21:01:11.155  7477  7477 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:01:11.156  7477  7477 E SoLoader: Checking /data/data missing libraries.
+10-23 21:01:11.156  7477  7477 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7477
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	existing SO sources: 
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:01:11.159  7477  7477 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:01:15.728   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:01:18.936  7523  7523 E SoLoader: Checking /data/app missing libraries.
+10-23 21:01:18.937  7523  7523 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:01:18.941  7523  7523 E SoLoader: Checking /data/data missing libraries.
+10-23 21:01:18.941  7523  7523 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7523
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	existing SO sources: 
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:01:18.942  7523  7523 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:01:23.256   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-23 21:01:26.714  7570  7570 E SoLoader: Checking /data/app missing libraries.
+10-23 21:01:26.714  7570  7570 E SoLoader: Successfully recovered from /data/app disk failure.
+10-23 21:01:26.714  7570  7570 E SoLoader: Checking /data/data missing libraries.
+10-23 21:01:26.714  7570  7570 E SoLoader: No libraries missing from unpacking so paths while recovering /data/data failure
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: FATAL EXCEPTION: main
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: Process: com.liftria.diagnostics, PID: 7570
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: com.facebook.soloader.SoLoaderDSONotFoundError: couldn't find DSO to load: libreactnative.so
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	existing SO sources: 
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 		SoSource 0: ApplicationSoSource[DirectorySoSource[root = /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64 flags = 0]]
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 		SoSource 1: DirectApkSoSource[root = [/data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/base.apk!/lib/x86_64]]
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 		SoSource 2: DirectorySoSource[root = /system/lib64 flags = 3]
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 		SoSource 3: DirectorySoSource[root = /vendor/lib64 flags = 3]
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	Native lib dir: /data/app/~~TchagxztjO9d55OUsTTU7A==/com.liftria.diagnostics-9qpC6cU_f0LbNM5QZpBhbw==/lib/arm64
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.doLoadLibraryBySoName(SoLoader.java:1216)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoNameImpl(SoLoader.java:1078)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryBySoName(SoLoader.java:943)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibraryOnAndroid(SoLoader.java:859)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:842)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.soloader.SoLoader.loadLibrary(SoLoader.java:812)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxInterop.<clinit>(ReactNativeFeatureFlagsCxxInterop.kt:28)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsCxxAccessor.override(ReactNativeFeatureFlagsCxxAccessor.kt:945)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.react.internal.featureflags.ReactNativeFeatureFlags.override(ReactNativeFeatureFlags.kt:600)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:101)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load(DefaultNewArchitectureEntryPoint.kt:43)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative(ReactNativeApplicationEntryPoint.java:31)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.liftria.diagnostics.MainApplication.onCreate(MainApplication.kt:37)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.app.Instrumentation.callApplicationOnCreate(Instrumentation.java:1192)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:6712)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.app.ActivityThread.access$1300(ActivityThread.java:237)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1913)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:223)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+10-23 21:01:26.715  7570  7570 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+10-23 21:01:29.464  1924  7598 E ApplicationPropertiesBu: Date 2021-12-06T00:00:00Z is out of expected range.
+10-23 21:01:29.465  1924  7598 E ApplicationPropertiesBu: Date 2022-02-15T00:00:00Z is out of expected range.
+10-23 21:01:29.465  1924  7598 E ApplicationPropertiesBu: Date 2022-02-22T00:00:00Z is out of expected range.
+10-23 21:01:31.125   420   420 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
