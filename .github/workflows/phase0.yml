@@ -60,6 +60,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
       - name: Install reproducible dependencies
         run: npm ci --no-audit --no-fund
+      # Gradle's on-demand NDK download has twice failed with "Archive is not a ZIP archive"
+      # (PR #3, PR #6). Install the NDK React Native needs up front, verify it, and retry.
+      - name: Install Android NDK with retries
+        env:
+          NDK_VERSION: 27.0.12077973
+        run: |
+          sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          manager="$sdk/cmdline-tools/latest/bin/sdkmanager"
+          for attempt in 1 2 3; do
+            if [ -f "$sdk/ndk/$NDK_VERSION/source.properties" ]; then echo "NDK $NDK_VERSION ready"; break; fi
+            rm -rf "$sdk/ndk/$NDK_VERSION"
+            yes | "$manager" --install "ndk;$NDK_VERSION" > /dev/null || echo "::warning::NDK install attempt $attempt failed"
+            sleep 5
+          done
+          test -f "$sdk/ndk/$NDK_VERSION/source.properties"
       - name: Expo Android prebuild
         run: npx expo prebuild --clean --platform android --no-install
       - name: Compile S22 Ultra ARM64 debug (dev client) and embedded-bundle release APKs
