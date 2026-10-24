@@ -24,7 +24,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   android: {
-    edgeToEdgeEnabled: true,
     package: 'com.liftria.diagnostics',
     versionCode: 1,
     permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
