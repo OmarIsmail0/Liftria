@@ -23,10 +23,12 @@ export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme:
 });
 
 export function cardOuterGlow(theme: LiftriaTheme, rim: CardRim, flat: boolean): ViewStyle {
-  if (theme.effectiveStyle !== 'aurora' || rim === 'none' || flat) return {};
-  // RN 0.86 New Architecture boxShadow; no live blur or workflow changes.
-  return { boxShadow: '0px 0px ' + theme.visual.cardGlowBlur + 'px ' +
-    withOpacity(theme.color.domain[rim], theme.rim.glow) };
+  if (theme.effectiveStyle !== 'aurora' || flat) return {};
+  // Every Aurora card has depth, including neutral rims. Colored rims add a soft
+  // themed glow; the shadow still comes exclusively from design tokens.
+  const rimGlow = rim === 'none' ? '' : ', 0px 0px ' + theme.visual.cardGlowBlur + 'px ' +
+    withOpacity(theme.color.domain[rim], theme.rim.glow);
+  return { boxShadow: theme.elevation.card + rimGlow };
 }
 
 /** Sheen and 1.2dp gradient rim. Measured dimensions keep the rounded stroke inside bounds. */
@@ -35,7 +37,7 @@ export function AuroraCardDecoration({ theme, rim, width, height }: {
 }) {
   if (width <= 0 || height <= 0) return null;
   const edge = theme.size.border.rim;
-  const edgeColor = rim === 'none' ? theme.glass.border : theme.color.domain[rim];
+  const edgeColor = rim === 'none' ? theme.color.border.strong : theme.color.domain[rim];
   // The prototype's CSS angles (165° sheen, 140° rim), resolved against this card's real size.
   const sheen = cssLinearGradient(165, width, height);
   const rimLine = cssLinearGradient(140, width, height);
@@ -87,7 +89,7 @@ export function OrbArtwork({ theme, size, progress }: {
 }) {
   const empty = progress === null;
   const solid = theme.effectiveStyle === 'solid';
-  const showHighlight = shouldShowOrbHighlight(progress, theme.effectiveStyle);
+  const showHighlight = shouldShowOrbHighlight(progress, theme.effectiveStyle, theme.mode);
   const diameter = size - theme.space[10];
   const half = diameter / 2;
   const center = size / 2;
@@ -102,26 +104,46 @@ export function OrbArtwork({ theme, size, progress }: {
   };
   return <View pointerEvents="none" importantForAccessibility="no-hide-descendants"
     style={{ position: 'absolute', width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
+    {empty && !solid && <Svg pointerEvents="none" width={diameter * 1.3} height={diameter * 1.3}
+      style={{ position: 'absolute', left: (size - diameter * 1.3) / 2, top: (size - diameter * 1.3) / 2 }}>
+      <Defs>
+        <RadialGradient id="empty-orb-halo" cx="50%" cy="50%" rx="50%" ry="50%">
+          <Stop offset="0%" {...stopProps(theme.orb[3], theme.orbEmpty.haloOpacity)} />
+          <Stop offset="76%" {...stopProps(theme.orb[3], theme.orbEmpty.haloOpacity)} />
+          <Stop offset="100%" {...stopProps(theme.orb[3], 0)} />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={diameter * 0.65} cy={diameter * 0.65} r={diameter * 0.65}
+        fill="url(#empty-orb-halo)" />
+    </Svg>}
     <View style={[{ width: diameter, height: diameter, borderRadius: theme.radius.pill }, sphereShadow]}>
       <Svg width={diameter} height={diameter}>
         <Defs>
           <RadialGradient id="sphere" cx="50%" cy="62%" rx="65%" ry="65%" fx="50%" fy="62%">
-            <Stop offset="0%" {...stopProps(theme.orb[1])} />
-            <Stop offset="46%" {...stopProps(theme.orb[2])} />
-            <Stop offset="100%" {...stopProps(theme.orb[3])} />
+            <Stop offset="0%" {...stopProps(theme.orb[1], empty ? theme.orbEmpty.fillOpacity : 1)} />
+            <Stop offset="46%" {...stopProps(theme.orb[2], empty ? theme.orbEmpty.fillOpacity : 1)} />
+            <Stop offset="100%" {...stopProps(theme.orb[3], empty ? theme.orbEmpty.fillOpacity : 1)} />
           </RadialGradient>
+          {empty && !solid && <LinearGradient id="empty-orb-rim" gradientUnits="userSpaceOnUse"
+            {...cssLinearGradient(140, diameter, diameter)}>
+            <Stop offset="0%" {...stopProps(theme.glass.highlight, theme.orbEmpty.rimStart)} />
+            <Stop offset="100%" {...stopProps(theme.orb[3], theme.orbEmpty.rimEnd)} />
+          </LinearGradient>}
           {showHighlight && <RadialGradient id="orb-highlight" cx="34%" cy="28%" rx="50%" ry="50%" fx="34%" fy="28%">
-            <Stop offset="0%" {...stopProps(theme.orb.highlight, theme.visual.orbHighlightOpacity)} />
+            <Stop offset="0%" {...stopProps(theme.orb.highlight, theme.visual.orbHighlightOpacity * (empty ? 0.5 : 1))} />
             <Stop offset={(theme.visual.orbHighlightFade * 100) + '%'}
               {...stopProps(theme.orb.highlight, 0)} />
             <Stop offset="100%" {...stopProps(theme.orb.highlight, 0)} />
           </RadialGradient>}
         </Defs>
-        <Circle cx={half} cy={half} r={half - (empty ? theme.size.border.thin : 0)}
-          fill={empty ? theme.glass.card : solid ? theme.color.bg.raised : 'url(#sphere)'}
-          stroke={empty ? theme.glass.border : solid ? theme.color.border.strong : 'none'}
-          strokeWidth={empty || solid ? theme.size.border.thin : 0} />
+        <Circle cx={half} cy={half} r={half - (solid ? theme.size.border.thin : 0)}
+          fill={solid ? theme.color.bg.raised : empty ? theme.glass.card : 'url(#sphere)'}
+          stroke={solid ? theme.color.border.strong : 'none'}
+          strokeWidth={solid ? theme.size.border.thin : 0} />
+        {empty && !solid && <Circle cx={half} cy={half} r={half} fill="url(#sphere)" />}
         {showHighlight && <Circle cx={half} cy={half} r={half} fill="url(#orb-highlight)" />}
+        {empty && !solid && <Circle cx={half} cy={half} r={half - theme.orbEmpty.rimWidth / 2}
+          strokeWidth={theme.orbEmpty.rimWidth} stroke="url(#empty-orb-rim)" fill="none" />}
       </Svg>
     </View>
     {!empty && <Svg width={size} height={size} style={StyleSheet.absoluteFill}>

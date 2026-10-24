@@ -102,3 +102,12 @@ test('an empty glass orb has no grey highlight, but a filled Aurora orb keeps it
   expect(shouldShowOrbHighlight(0.54, 'aurora')).toBe(true);
   expect(shouldShowOrbHighlight(0.54, 'solid')).toBe(false);
 });
+
+test.each(['dark', 'light'] as const)('TASK-11: empty %s sphere has a themed translucent fill and only dark highlight', mode => {
+  const t = createTheme(mode, 'aurora');
+  expect(t.orbEmpty.fillOpacity).toBe(mode === 'light' ? 0.22 : 0.30);
+  expect(t.orbEmpty.haloOpacity).toBe(mode === 'light' ? 0.18 : 0.28);
+  expect(t.orbEmpty.rimWidth).toBe(1.5);
+  expect(shouldShowOrbHighlight(null, 'aurora', mode)).toBe(mode === 'dark');
+  expect(shouldShowOrbHighlight(null, 'solid', mode)).toBe(false);
+});

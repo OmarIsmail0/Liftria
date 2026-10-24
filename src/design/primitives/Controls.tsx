@@ -158,7 +158,7 @@ export function Field({ label, value, onChangeText, placeholder, secure = false,
       placeholder={placeholder} placeholderTextColor={theme.color.text.tertiary} secureTextEntry={secure}
       keyboardType={keyboardType} multiline={multiline} autoCapitalize={secure ? 'none' : 'sentences'}
       selectionColor={theme.color.domain.hiku}
-      style={{ minHeight: theme.size.touch.min, borderWidth: theme.size.border.thin, borderColor: error ? theme.color.status.danger : theme.controlOutline,
+      style={{ minHeight: theme.size.touch.min, borderWidth: theme.size.border.thin, borderColor: error ? theme.color.border.strong : theme.controlOutline,
         backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md,
         paddingHorizontal: theme.space[3], paddingVertical: theme.space[2],
         fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400'), color: theme.color.text.primary }} />

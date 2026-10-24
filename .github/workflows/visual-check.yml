@@ -22,13 +22,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  screenshots:
+  # Draft PR runs skip android-build, so there may be no APK: skip the emulator quietly then.
+  has-apk:
     if: >-
       github.event_name == 'workflow_dispatch' || (
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.head_repository.full_name == github.repository &&
       github.event.workflow_run.pull_requests[0].number )
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      apk: ${{ steps.find.outputs.apk }}
+    steps:
+      - id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id || github.event.workflow_run.id }}
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts" --jq '[.artifacts[] | select(.name=="liftria-phase0-s22-arm64-apks")] | length')
+          echo "apk=$([ "${n:-0}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          [ "${n:-0}" -gt 0 ] || echo "No APK in run $RUN_ID (draft PR build skipped); no emulator check."
+
+  screenshots:
+    needs: has-apk
+    if: needs.has-apk.outputs.apk == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:

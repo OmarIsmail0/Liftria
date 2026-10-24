@@ -1,5 +1,5 @@
 /** Router-independent fallbacks for screens opened directly by deep link. */
-export type BackFallback = '/(tabs)/today' | '/(tabs)/progress' | '/settings' | '/dev' | '/dev/primitives';
+export type BackFallback = '/(tabs)/today' | '/(tabs)/progress' | '/(tabs)/progress/health' | '/settings' | '/dev' | '/dev/primitives';
 
 type Navigator = {
   canGoBack(): boolean;
