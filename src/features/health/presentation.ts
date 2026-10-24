@@ -39,10 +39,13 @@ export function summarizeRecords(
   const groups = new Map<string, { value: number; unit: string; latestAt: string }>();
   const seen = new Set<string>();
   for (const record of records) {
-    if (record.kind === 'aggregate' || !('metric' in record) || record.metric !== metric) continue;
-    if (!('dataOrigin' in record) || !record.dataOrigin) continue;
-    if (seen.has(record.recordId)) continue;
-    seen.add(record.recordId);
+    if (record.kind === 'aggregate') continue;
+    const kindMetric = record.kind === 'session' ? 'exercise-session'
+      : record.kind === 'sleep' ? 'sleep-session' : record.metric;
+    if (kindMetric !== metric || !record.dataOrigin) continue;
+    const uniqueId = record.adapter + ':' + record.dataOrigin + ':' + record.recordId;
+    if (seen.has(uniqueId)) continue;
+    seen.add(uniqueId);
     const origin = record.dataOrigin;
     if (metric === 'steps' && record.kind === 'interval') {
       const current = groups.get(origin);
@@ -90,7 +93,8 @@ export function measuredEnergy(aggregates: AggregateValue[]): { kcal: number; or
   const valid = aggregates.filter(item => (item.metric === 'active-calories' || item.metric === 'total-calories') &&
     Number.isFinite(item.value) && item.value >= 0);
   for (const item of valid) {
-    const origins = item.dataOrigins?.filter(v => v.trim()) ?? (item.dataOrigin ? [item.dataOrigin] : []);
+    const fromList = item.dataOrigins?.filter(v => v.trim()) ?? [];
+    const origins = fromList.length ? fromList : item.dataOrigin ? [item.dataOrigin] : [];
     // Multiple origins are not silently merged into a single measurement.
     if (origins.length === 1) return { kcal: item.value, origin: origins[0]! };
   }
