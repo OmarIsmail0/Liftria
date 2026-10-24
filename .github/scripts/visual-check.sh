@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Installs a Liftria APK on the running emulator and screenshots every hidden primitive story
-# in dark and light mode. Usage: visual-check.sh <apk> <out-dir>
+# Installs a Liftria APK on the running emulator and screenshots the app's screens and every
+# hidden primitive story in dark and light mode. Usage: visual-check.sh <apk> <out-dir>
 set -uo pipefail
 APK="$1"; OUT="$2"; PKG="com.liftria.diagnostics"
+# App screens as "<shot name>=<route>"; routes that don't exist yet just show Expo Router's
+# not-found page, so this list can run ahead of the build.
+SCREENS="app-today=today app-train=train app-eat=eat app-progress=progress app-health=progress/health app-hiku=hiku app-settings=settings"
 STORIES="screen header card button chip banner snackbar sheet stepper toggle field list-row empty-state skeleton orb capsule-nav"
 mkdir -p "$OUT"
 adb wait-for-device
@@ -18,6 +21,7 @@ shot() { # mode name deep-link
 for mode in dark light; do
   if [ "$mode" = dark ]; then adb shell cmd uimode night yes; else adb shell cmd uimode night no; fi
   sleep 2
+  for entry in $SCREENS; do shot "$mode" "${entry%%=*}" "liftria://${entry#*=}"; done
   shot "$mode" index "liftria://dev/primitives"
   for id in $STORIES; do shot "$mode" "$id" "liftria://dev/primitives/$id"; done
 done
