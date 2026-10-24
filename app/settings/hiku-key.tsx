@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import * as Network from 'expo-network';
 import { View } from 'react-native';
-import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Toggle, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { deleteKey, getKey, isKeyWellFormed, keyState, saveKey, type KeyState } from '../../src/services/secure-storage';
@@ -13,7 +12,6 @@ type PrivacyFlags = { today: boolean; training: boolean; photos: boolean };
 const initialFlags: PrivacyFlags = { today: false, training: false, photos: false };
 
 export default function HikuKeySettings() {
-  const { theme } = useTheme();
   const [state, setState] = useState<KeyState>({ status: 'missing' });
   const [flags, setFlags] = useState<PrivacyFlags>(initialFlags);
   const [entry, setEntry] = useState('');
