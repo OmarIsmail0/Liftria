@@ -128,7 +128,7 @@ export default function HikuKeySettings() {
     </Card>
     <Card title="Usage and model">
       <ListRow title="Usage and what is sent" detail="Hiku request details · Coming soon" />
-      <Typography tone="secondary" size="small">Hiku uses Anthropic's Claude Haiku model.</Typography>
+      <Typography tone="secondary" size="small">Hiku uses Anthropic’s Claude Haiku model.</Typography>
     </Card>
     <Sheet visible={deletionOpen} title="Delete your API key?"
       description="Hiku stops working until you add a key. Your food diary is not affected."

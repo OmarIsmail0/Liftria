@@ -19,7 +19,8 @@ export default function SettingsHome() {
     <Card title="Personalization">
       <ListRow title="Units and appearance" detail="Weight, height, theme, visual style and dashboard controls"
         onPress={() => router.push('/settings/preferences')} />
-      <ListRow title="Hiku and API key" detail="Manage your private Anthropic key · Coming soon" />
+      <ListRow title="Hiku and API key" detail="Test, replace or delete your private Anthropic key"
+        onPress={() => router.push('/settings/hiku-key')} />
     </Card>
     <Card title="Notifications and data">
       <ListRow title="Notifications" detail="Workout alerts and meal reminders · Coming soon" />
