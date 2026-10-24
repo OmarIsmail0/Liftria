@@ -4,6 +4,7 @@ import {
 import { AccessibilityInfo, Platform, useColorScheme, useWindowDimensions } from 'react-native';
 import { createTheme, type LiftriaTheme, type ThemeMode, type VisualStyle } from './tokens';
 import { resolveStartupAccessibility } from './startupAccessibility';
+import { getTypedSetting, setTypedSetting } from '../services/database/settings';
 
 export type ThemePreferences = { mode: ThemeMode; style: VisualStyle };
 
@@ -39,7 +40,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 type Props = {
   children: ReactNode;
-  /** Hydration from Settings (Phase 2 step 8) will call setPreferences after SQLite loads. */
+  /** The typed local settings repository hydrates these before the navigation shell appears. */
   initialMode?: ThemeMode;
   initialStyle?: VisualStyle;
 };
@@ -56,7 +57,27 @@ export function ThemeProvider({
   const [highTextContrast, setHighTextContrast] = useState(true);
   const [reduceTransparency, setReduceTransparency] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(true);
-  const [ready, setReady] = useState(false);
+  const [accessibilityReady, setAccessibilityReady] = useState(false);
+  const [settingsReady, setSettingsReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    // Missing/corrupt values fall back to defaults; an unavailable DB does not
+    // block the app. The native splash stays up while initial values load.
+    void Promise.all([getTypedSetting('theme'), getTypedSetting('style')])
+      .then(([mode, style]) => {
+        if (!mounted) return;
+        setPreferences({
+          mode: mode.ok ? mode.value : initialMode,
+          style: style.ok ? style.value : initialStyle,
+        });
+      })
+      .catch(() => { /* database unavailable: keep initial theme */ })
+      .finally(() => { if (mounted) setSettingsReady(true); });
+    return () => { mounted = false; };
+  }, [initialMode, initialStyle]);
+
+  const ready = accessibilityReady && settingsReady;
 
   useEffect(() => {
     let mounted = true;
@@ -73,7 +94,7 @@ export function ThemeProvider({
       setHighTextContrast(values.highTextContrast);
       setReduceTransparency(values.reduceTransparency);
       setReduceMotion(values.reduceMotion);
-      setReady(true);
+      setAccessibilityReady(true);
     });
 
     // Subscriptions continue updating theme after the first frame. If a device
@@ -102,9 +123,19 @@ export function ThemeProvider({
   const value = useMemo<ThemeContextValue>(() => ({
     theme,
     preferences,
-    setMode: (next: ThemeMode) => setPreferences(current => ({ ...current, mode: next })),
-    setStyle: (next: VisualStyle) => setPreferences(current => ({ ...current, style: next })),
-    setPreferences,
+    setMode: (next: ThemeMode) => {
+      setPreferences(current => ({ ...current, mode: next }));
+      void setTypedSetting('theme', next);
+    },
+    setStyle: (next: VisualStyle) => {
+      setPreferences(current => ({ ...current, style: next }));
+      void setTypedSetting('style', next);
+    },
+    setPreferences: (next: ThemePreferences) => {
+      setPreferences(next);
+      void setTypedSetting('theme', next.mode);
+      void setTypedSetting('style', next.style);
+    },
     highTextContrast,
     reduceTransparency,
     reduceMotion,
