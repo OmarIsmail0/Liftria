@@ -7,7 +7,7 @@ import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, requestHistoryReadPermission } from '../../../src/services/health';
 import { metricTypes, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
-import { phase2EnergyMessage } from '../../../src/features/health/presentation';
+import { ageLabel, phase2EnergyMessage } from '../../../src/features/health/presentation';
 
 const names: Partial<Record<MetricType, string>> = {
   steps: 'Steps', 'heart-rate': 'Heart rate', 'exercise-session': 'Exercise sessions',
@@ -64,7 +64,7 @@ export default function HealthOverview() {
           const first = result?.sources[0];
           const detail = result?.state === 'value'
             ? result.sources.length > 1 ? 'Separate sources · no combined total'
-              : `${first?.label ?? 'Source unknown'}${first?.stale ? ' · Stale' : ''}${result.unverified ? ' · Unverified device' : ''}`
+              : `${first?.label ?? 'Source unknown'}${first?.stale ? ` · Stale · ${ageLabel(first.latestAt)}` : ''}${result.unverified ? ' · Unverified device' : ''}`
             : result?.note ?? 'Checking permissions…';
           const amount = result?.state === 'value' && result.total !== null
             ? `${Math.round(result.total).toLocaleString()} ${first?.unit ?? ''}` : null;

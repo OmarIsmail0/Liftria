@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { router } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import * as Network from 'expo-network';
@@ -9,6 +10,7 @@ import { getCurrentTarget, type Target } from '../../src/services/database/targe
 import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState, type KeyState } from '../../src/services/secure-storage';
 import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/useHealthSnapshot';
+import { ageLabel } from '../../src/features/health/presentation';
 
 type LocalToday = {
   profile: Profile | null; target: Target | null; hideNumbers: boolean;
@@ -40,6 +42,13 @@ export default function TodayTab() {
     });
     setLocalLoading(false);
   }
+  useEffect(() => {
+    const subscription = Network.addNetworkStateListener(net => {
+      setLocal(previous => ({ ...previous,
+        offline: net.isConnected === false || net.isInternetReachable === false }));
+    });
+    return () => subscription.remove();
+  }, []);
   useEffect(() => {
     let mounted = true;
     // Schedule after the effect callback so React's render is not synchronously cascaded.
@@ -100,13 +109,15 @@ export default function TodayTab() {
       <Card rim="health" title="Activity today">
         {steps?.state === 'value' ? steps.sources.map(source =>
           <ListRow key={source.origin} title={`${source.label} steps`}
-            detail={source.stale ? 'Stale reading' : 'Health Connect · read only'}
+            detail={source.stale ? `Stale · ${ageLabel(source.latestAt)}` : 'Health Connect · read only'}
             suffix={<Typography>{source.value.toLocaleString()}</Typography>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
           : <Typography tone="secondary">Steps: {steps?.note ?? 'Checking Health Connect…'}</Typography>}
         {hr?.state === 'value' ? hr.sources.map(source =>
           <ListRow key={source.origin} title={`Heart rate · ${source.label}`}
-            detail="Unverified device · not confirmed from a watch"
+            detail={source.stale
+              ? `Stale · ${ageLabel(source.latestAt)} · unverified device`
+              : 'Unverified device · not confirmed from a watch'}
             suffix={<Typography>{source.value} bpm</Typography>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
           : <Typography tone="secondary">Heart rate: {hr?.note ?? 'Checking Health Connect…'}</Typography>}

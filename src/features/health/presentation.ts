@@ -112,3 +112,14 @@ export function onlyLocalDayRecords(metric: MetricType, records: HealthValue[], 
       (metric === 'sleep-session' || a >= from);
   });
 }
+
+/** Freshness labels use the record timestamp, never the time a cached row was re-read. */
+export function ageLabel(timestamp: string, nowMs = Date.now()): string {
+  const time = Date.parse(timestamp);
+  if (!Number.isFinite(time)) return 'Time unknown';
+  const elapsedMinutes = Math.max(0, Math.floor((nowMs - time) / 60000));
+  if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
+  const hours = Math.floor(elapsedMinutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  return `${Math.floor(hours / 24)} d ago`;
+}

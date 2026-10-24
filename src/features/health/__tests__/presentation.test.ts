@@ -1,4 +1,4 @@
-import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords } from '../presentation';
+import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords, ageLabel } from '../presentation';
 import type { HealthValue, AggregateValue, IntervalSample } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
@@ -66,4 +66,10 @@ test('Today filters cached step intervals from yesterday and refuses cross-midni
   const filtered = onlyLocalDayRecords('steps',[old,cross,today],from,until);
   expect(filtered).toHaveLength(1);
   expect(summarizeRecords('steps',filtered,'granted',true,now).total).toBe(500);
+});
+
+test('stale age reads from recorded time, not cache refresh timestamp', () => {
+  expect(ageLabel(end, now)).toBe('30 min ago');
+  expect(ageLabel(end, now+7*3600000)).toBe('7 h ago');
+  expect(ageLabel(end, now+2*86400000)).toBe('2 d ago');
 });

@@ -22,6 +22,7 @@ const empty: HealthSnapshot = {
 };
 const refreshIntervalMs = 15 * 60 * 1000;
 let lastForegroundRead = 0;
+let lastActualReadAt: string | null = null;
 
 export async function loadHealthSnapshot(metrics: readonly MetricType[], readLive = true): Promise<HealthSnapshot> {
   const availability = await healthConnect.getAvailability();
@@ -42,9 +43,12 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
           metric === 'total-calories' || metric === 'basal-metabolic-rate') continue;
       const result = await healthConnect.read(metric, { start: from, end: until });
       if (result.status === 'ok') fresh.push(...result.records);
-      if (result.status === 'error' && !all.some(v => 'metric' in v && v.metric === metric)) {
-        readings[metric] = { ...emptyMetricState(metric, 'granted', true),
-          state: 'error', note: 'Could not read Health Connect. Try again.' };
+      if (result.status === 'error') {
+        const prior = summarizeRecords(metric, all, 'granted', true);
+        readings[metric] = { ...prior, state: 'error',
+          note: 'Could not read Health Connect. Cached readings may be stale. Try again.' };
+      } else if (result.status === 'permission-denied') {
+        readings[metric] = emptyMetricState(metric, 'denied', true);
       }
     }
     // Keeping old cache entries is fine; each source has independent freshness.
@@ -53,13 +57,14 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
       all = [...fresh, ...all];
     }
     lastForegroundRead = Date.now();
+    lastActualReadAt = new Date(lastForegroundRead).toISOString();
   }
   for (const metric of metrics) {
     if (readings[metric]) continue;
     readings[metric] = summarizeRecords(metric, onlyLocalDayRecords(metric, all, localStart, now), permissions[metric] ?? 'unknown', available);
   }
 
-  return { availability, permissions, readings, records: all, readAt: new Date().toISOString() };
+  return { availability, permissions, readings, records: all, readAt: lastActualReadAt };
 }
 
 /** Foreground reads are at most once per 15 min; manual refresh always overrides that gate. */
