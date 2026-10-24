@@ -24,6 +24,7 @@ beforeEach(() => {
 test('ON-3 writes a nullable metric profile using the real validated repository contract', async () => {
   expect(draftProfileInput(emptyDraft)).toMatchObject({
     name: null, heightCm: null, weightKg: null, birthYear: null,
+    sexForFormula: null, activity: null, goal: null,
   });
   expect(await persistProfile(base)).toBe(true);
   expect(saveProfile).toHaveBeenCalledWith({
@@ -52,5 +53,17 @@ test('manual calories below 1000 and negative macros never reach INSERT', async 
   expect(await persistTarget(manual, 'manual')).toBe(true);
   expect(addTarget).toHaveBeenCalledWith({
     kcal: 1900, proteinG: 130, fatG: 55, carbsG: 220, source: 'manual', inputs: null,
+  });
+});
+
+test('ON-3 Continue cannot invent activity, goal or formula sex before any choice', async () => {
+  const untouched = { ...emptyDraft, name: 'Someone', heightCm: '170' };
+  expect(await persistProfile(untouched)).toBe(true);
+  expect(saveProfile).toHaveBeenCalledWith(expect.objectContaining({
+    name: 'Someone', heightCm: 170, sexForFormula: null, activity: null, goal: null,
+  }));
+  expect(draftTargetInput(untouched, 'estimate')).toBeNull();
+  expect(draftProfileInput(emptyDraft)).toMatchObject({
+    sexForFormula: null, activity: null, goal: null,
   });
 });

@@ -6,14 +6,14 @@ import type { Activity, FormulaSex, Goal } from './targetEstimate';
 /** Non-secret form draft. Validated profile and targets go to v2 repositories. */
 export type OnboardingDraft = {
   name: string; birthYear: string; heightCm: string; weightKg: string;
-  sexForFormula: FormulaSex;
-  activity: Activity; goal: Goal;
+  sexForFormula: FormulaSex | null;
+  activity: Activity | null; goal: Goal | null;
   selectedWatch: string;
   manualKcal: string; manualProtein: string; manualFat: string; manualCarbs: string;
 };
 export const emptyDraft: OnboardingDraft = {
   name: '', birthYear: '', heightCm: '', weightKg: '',
-  sexForFormula: 'unspecified', activity: 'some', goal: 'maintain',
+  sexForFormula: null, activity: null, goal: null,
   selectedWatch: 'No watch',
   manualKcal: '', manualProtein: '', manualFat: '', manualCarbs: '',
 };
@@ -29,9 +29,10 @@ export async function readDraft(): Promise<OnboardingDraft> {
     const value = parsed as Record<string, unknown>;
     const fields = { ...emptyDraft };
     for (const key of Object.keys(fields) as (keyof OnboardingDraft)[]) {
-      if (typeof value[key] === 'string') {
+      if (typeof value[key] === 'string' ||
+          (value[key] === null && (key === 'sexForFormula' || key === 'activity' || key === 'goal'))) {
         // Only known fields are serialized. Secrets must never enter this table.
-        (fields as Record<string, string>)[key] = value[key];
+        (fields as Record<string, unknown>)[key] = value[key];
       }
     }
     return fields;

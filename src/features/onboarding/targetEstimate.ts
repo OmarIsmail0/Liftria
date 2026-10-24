@@ -28,9 +28,9 @@ export function profileAge(birthYear: number, nowYear = new Date().getFullYear()
 }
 
 export function canEstimateTarget(
-  p: Partial<FormulaProfile>, nowYear = new Date().getFullYear(),
+  p: Partial<{ [K in keyof FormulaProfile]: FormulaProfile[K] | null }>, nowYear = new Date().getFullYear(),
 ): p is FormulaProfile {
-  const age = p.birthYear === undefined ? NaN : profileAge(p.birthYear, nowYear);
+  const age = p.birthYear == null ? NaN : profileAge(p.birthYear, nowYear);
   return Number.isInteger(age) && age >= 16 && age <= 100 &&
     typeof p.heightCm === 'number' && Number.isFinite(p.heightCm) && p.heightCm >= 120 && p.heightCm <= 230 &&
     typeof p.weightKg === 'number' && Number.isFinite(p.weightKg) && p.weightKg >= 35 && p.weightKg <= 300 &&

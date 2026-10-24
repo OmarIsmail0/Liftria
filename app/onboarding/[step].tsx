@@ -34,7 +34,7 @@ const descriptions: Record<OnboardingStep, string> = {
 };
 
 function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
-  label: string; choices: readonly { value: T; label: string }[]; selected: T; onChange: (v: T) => void;
+  label: string; choices: readonly { value: T; label: string }[]; selected: T | null; onChange: (v: T) => void;
 }) {
   const { theme } = useTheme();
   return <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.space[2] }}>
