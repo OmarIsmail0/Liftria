@@ -7,30 +7,28 @@ import { backOrReplace } from '../../src/navigation/back';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
 
-const planned = [
-  { heading: 'Profile and goals', detail: 'Profile and calorie targets' },
-  { heading: 'Units and appearance', detail: 'Theme, style and units' },
-  { heading: 'Hiku and API key', detail: 'Private key management' },
-  { heading: 'Notifications', detail: 'Workout and meal reminders' },
-  { heading: 'Health Connect', detail: 'Permissions and data sources' },
-  { heading: 'Data and storage', detail: 'Local data and privacy' },
-] as const;
-
-/** ST-1 shell: Appearance is available now (TASK-13); other settings arrive in Step 8. */
+/** ST-1: grouped local Settings, with Phase 3/4 features explicitly labeled Future. */
 export default function SettingsHome() {
   const { theme } = useTheme();
   const taps = useRef(initialVersionTapState);
   return <Screen>
     <Header title="Settings" onBack={() => backOrReplace(router, '/(tabs)/today')} />
-    <Card>
-      {planned.map(item => <ListRow key={item.heading} title={item.heading}
-        detail={item.heading === 'Units and appearance'
-          ? 'Theme and visual style · Units coming in Phase 2 step 8'
-          : item.detail + ' · Coming in Phase 2 step 8'}
-        onPress={item.heading === 'Units and appearance' ? () => router.push('/settings/appearance') : undefined} />)}
+    <Card title="Your plan">
+      <ListRow title="Profile and goals" detail="Your stored profile, goal and calorie target · Coming soon" />
+    </Card>
+    <Card title="Personalization">
+      <ListRow title="Units and appearance" detail="Weight, height, theme, visual style and dashboard controls"
+        onPress={() => router.push('/settings/preferences')} />
+      <ListRow title="Hiku and API key" detail="Manage your private Anthropic key · Coming soon" />
+    </Card>
+    <Card title="Notifications and data">
+      <ListRow title="Notifications" detail="Workout alerts and meal reminders · Coming soon" />
+      <ListRow title="Health Connect" detail="Read-only permissions and sources"
+        onPress={() => router.push('/(tabs)/progress/health')} />
+      <ListRow title="Data and storage" detail="Cached records and privacy · Coming soon" />
     </Card>
     <Card title="About and help">
-      <Typography tone="secondary">Liftria is local-first. Detailed settings arrive later in Phase 2.</Typography>
+      <Typography tone="secondary">Liftria is local-first. No account or external database is required.</Typography>
       <Pressable accessibilityRole="button" accessibilityLabel="App version"
         onPress={() => {
           const next = advanceVersionTap(taps.current, Date.now());
