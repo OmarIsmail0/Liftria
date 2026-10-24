@@ -120,7 +120,10 @@ export default function OnboardingStepScreen() {
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError('Local settings could not be read.'); } });
     void healthConnect.getAvailability().then(availability => {
-      if (mounted) setHealthAvailability(availability);
+      if (mounted) {
+        setHealthAvailability(availability);
+        if (availability !== 'available') setHealthStatus(availabilityMessage(availability));
+      }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
     return () => { mounted = false; };
   }, []);

@@ -32,8 +32,8 @@ export function availabilityMessage(
   availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported',
 ): string {
   switch (availability) {
-    case 'not-installed': return 'Health Connect is not installed. Install it or continue without syncing.';
-    case 'needs-update': return 'Health Connect may not be installed or may need an update. Get it from Play Store, or continue without syncing.';
+    case 'not-installed': return 'Health Connect is not installed. Get it from Play Store, or continue without syncing. Liftria works without it.';
+    case 'needs-update': return 'Health Connect may not be installed or may need an update. Get it from Play Store, or continue without syncing. Liftria works without it.';
     case 'unsupported': return 'Health Connect is not supported on this device. Liftria still works locally.';
     default: return 'Health Connect is available. Choose which records Liftria may read.';
   }

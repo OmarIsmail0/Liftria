@@ -2,7 +2,7 @@ import { proposedTargetUpdate, parseOptionalNumber } from '../profileTargets';
 import type { Target } from '../../../services/database/targets';
 const current: Target = { id:1,kcal:2650,proteinG:155,fatG:75,carbsG:340,
   source:'estimate',inputs:{ weightKg:78.4 },createdAt:'2026-10-24T00:00:00Z' };
-const input = { name:null,sexForFormula:'male' as const,birthYear:1996,heightCm:180,
+const input = { name:null,sexForFormula:'male' as const,birthYear:1994,heightCm:175,
   weightKg:80,activity:'active' as const,goal:'maintain' as const };
 test('ST-2 offers an explicit target update when a stored estimate changes', () => {
   const proposal = proposedTargetUpdate(input,current,2026);
