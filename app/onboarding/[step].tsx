@@ -7,8 +7,7 @@ import { emptyDraft, readDraft, readSavedStep, writeDraft, writeStep, markOnboar
   type OnboardingDraft } from '../../src/features/onboarding/draft';
 import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep,
   type OnboardingStep } from '../../src/features/onboarding/flow';
-import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING,
-  type FormulaProfile } from '../../src/features/onboarding/targetEstimate';
+import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
 import { saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
@@ -95,7 +94,6 @@ function parseMetric(value: string): number | null {
 export default function OnboardingStepScreen() {
   const query = useLocalSearchParams<{ step: string }>();
   const step: OnboardingStep = isOnboardingStep(query.step) ? query.step : 'welcome';
-  const { theme } = useTheme();
   const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
   const [age, setAge] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -103,6 +101,7 @@ export default function OnboardingStepScreen() {
   const [error, setError] = useState<string | null>(null);
   const [floorOpen, setFloorOpen] = useState(false);
   const [editManual, setEditManual] = useState(false);
+  const [manualWarning, setManualWarning] = useState(false);
   const [healthStatus, setHealthStatus] = useState('Not connected');
   const [keyInput, setKeyInput] = useState('');
   const [keySaved, setKeySaved] = useState(false);
@@ -172,6 +171,21 @@ export default function OnboardingStepScreen() {
     router.replace({ pathname: '/onboarding/[step]', params: { step: 'goal' } });
   }
 
+  // Until PR #9 is merged, this preserves the choice as a LOCAL onboarding draft,
+  // never as an invented current target. Final commit to v2 targets is a separate gate.
+  async function chooseTarget(source: 'estimate' | 'manual') {
+    setBusy(true); setError(null);
+    const chosen = source === 'estimate' ? estimate : {
+      kcal: Number(draft.manualKcal), proteinG: Number(draft.manualProtein),
+      fatG: Number(draft.manualFat), carbsG: Number(draft.manualCarbs),
+      source: 'manual' as const, inputs: null,
+    };
+    const saved = chosen && (await setSetting('onboarding.targetDraft', JSON.stringify(chosen))).ok;
+    setBusy(false);
+    if (!saved) { setError('Could not save your target draft locally.'); return; }
+    await go('health');
+  }
+
   async function requestHealth() {
     setBusy(true); setError(null);
     try {
@@ -218,7 +232,7 @@ export default function OnboardingStepScreen() {
 
   const primary = step === 'welcome' ? 'Get started' : step === 'privacy' ? 'I understand'
     : step === 'done' ? 'Open Today' : step === 'profile' ? 'Continue'
-    : step === 'target' ? 'Continue without a target' : 'Continue';
+    : step === 'target' ? (estimate ? 'Use this estimate' : 'Continue without a target') : 'Continue';
 
   const child = step === 'welcome'
     ? <Card rim="hiku">
@@ -261,6 +275,7 @@ export default function OnboardingStepScreen() {
                 <Orb eaten={0} target={estimate.kcal} active={false} />
                 <Typography size="head">{estimate.kcal.toLocaleString()} kcal · Estimate</Typography>
                 <Typography tone="secondary">Protein {estimate.proteinG} g · Fat {estimate.fatG} g · Carbs {estimate.carbsG} g</Typography>
+                <Typography tone="secondary" size="small">The target choice is saved as a local draft until the Step 4 target repository is integrated.</Typography>
                 {estimate.lessPrecise && <Typography tone="secondary">Estimate, less precise (sex for formula not specified).</Typography>}
                 {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{FLOOR_WARNING}</Typography>}
                 <Button variant="secondary" label="Set my own numbers" onPress={() => {
@@ -311,8 +326,11 @@ export default function OnboardingStepScreen() {
       }
       if (step === 'done') { void finish(); return; }
       if (step === 'target' && estimate) {
-        setFloorOpen(targetSafety(estimate.kcal, null).warning);
-        if (!targetSafety(estimate.kcal, null).warning) void go('health');
+        const safety = targetSafety(estimate.kcal, null);
+        if (safety.blocked) { setError('A target below 1,000 kcal cannot be saved.'); return; }
+        setManualWarning(false);
+        setFloorOpen(safety.warning);
+        if (!safety.warning) void chooseTarget('estimate');
         return;
       }
       void go(nextOnboardingStep(step));
@@ -321,7 +339,8 @@ export default function OnboardingStepScreen() {
     {child}
     <Sheet visible={floorOpen} title="Check your calorie target" description={FLOOR_WARNING}
       onClose={() => setFloorOpen(false)}>
-      <Button label="Use this estimate anyway" fullWidth onPress={() => { setFloorOpen(false); void go('health'); }} />
+      <Button label={manualWarning ? 'Use my target anyway' : 'Use this estimate anyway'} fullWidth
+        onPress={() => { setFloorOpen(false); void chooseTarget(manualWarning ? 'manual' : 'estimate'); }} />
     </Sheet>
     <Sheet visible={editManual} title="Set my own numbers" description="A target below 1,000 kcal cannot be saved."
       onClose={() => setEditManual(false)}>
@@ -332,10 +351,15 @@ export default function OnboardingStepScreen() {
       <Button label="Save my target" fullWidth onPress={() => {
         const amount = Number(draft.manualKcal);
         const safety = targetSafety(amount, estimate?.kcal ?? null);
+        const macros = [draft.manualProtein, draft.manualFat, draft.manualCarbs];
         if (safety.blocked) { setError('A target below 1,000 kcal cannot be saved.'); setEditManual(false); return; }
+        if (macros.some(value => !value.trim() || !Number.isFinite(Number(value)) || Number(value) < 0)) {
+          setError('Enter non-negative protein, fat and carbohydrate amounts.'); setEditManual(false); return;
+        }
         setEditManual(false);
+        setManualWarning(true);
         if (safety.warning) setFloorOpen(true);
-        else void go('health');
+        else void chooseTarget('manual');
       }} />
     </Sheet>
   </Frame>;
