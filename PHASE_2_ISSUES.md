@@ -11,7 +11,7 @@ The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 P
 **Order:**
 1. ~~TASK-6 to TASK-10~~ DONE in PR #6. ~~Step 3~~ DONE in PR #7. TASK-4 merged in PR #8 (owner checks open; nothing for you).
 2. **Step 4 + TASK-13: PR #9.** Finish review fixes only. Nothing new goes in it.
-3. **PR A: `Phase 2 / Look and onboarding` = TASK-11 + TASK-12 + Step 5 (onboarding ON-1…ON-9). Start now.**
+3. **PR A: `Phase 2 / Look and onboarding` — IN PROGRESS in draft PR #10** (TASK-11/12 and ON screens built; v2 repository wiring and device checks pending).
    - TASK-11 and TASK-12 first, in `src/design/**`. The onboarding screens then use the improved orb and cards.
    - Step 5 per PHASE_2_PROMPT §3.5 and USER_FLOWS flow 1. It uses PR #9's `profile`, `settings` and `targets` repositories. Branch from `main`; when PR #9 merges, merge `main` in (a merge commit).
    - Includes the Mifflin-St Jeor × activity + goal tests (the sample profile gives 2,650), the < 1,200 / > 25% floor sheet, the real Health Connect permission request, and the key saved through SecureStore.
