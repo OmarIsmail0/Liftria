@@ -4,17 +4,81 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
-# Next up (updated 2026-10-24, after PR #7 merged)
+# Next up (updated 2026-10-24, Step 4 starts in parallel with PR #8)
 
 **Order:**
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
 2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
-3. **TASK-4: build and signing — in progress in draft PR #8** (CI and owner signing/update test pending). See TASK-4 below and PHASE_2_PROMPT.md §2 (Devices, Signing, App identity). Notes for this PR:
+3. **TASK-4: build and signing:** PR #8, approved by Claude on `7526c67` (CI green, emulator check passed). Stays open until the owner's trusted signed `main` build and N → N+1 update test pass. **Don't push to PR #8 unless a new review comment asks you to.**
+4. **Step 4: data layer. Start now, in parallel** (see "Step 4: data layer" below). Add **TASK-13** (theme control) to the same PR.
+5. **TASK-11 and TASK-12: orb and card polish.** One new draft PR, `Phase 2 / TASK-11–12: empty orb and card depth`, branched from `main`. Start it after Step 4's first green CI. It touches only `src/design/**` (primitives and tokens) and the tests for them.
+6. Then steps 5–9 of PHASE_2_PROMPT.md §3 in order.
+
+## Owner feedback on the emulator, 2026-10-24 (Today screen, light theme)
+
+> "The circle at the top looks ugly and cheap, same with the squares. Also I couldn't change to dark mode."
+
+Compare with `docs/phase1/reference/today-light.png` and `today-dark.png`. Much of Today's content is still the Step 3 placeholder (Step 6 builds the deck, the checklist and real data). These three tasks fix what's wrong **now**, in the primitives every screen uses.
+
+### TASK-11: the empty Pulse Orb must look like a glass orb, not a flat disc
+**Cause:** in `OrbArtwork`, `progress === null` draws a flat `glass.card` circle with a `glass.border` hairline. There's no gradient, no depth and no glow, so on light ambient it reads as a white plate.
+**Spec (DESIGN_SYSTEM §1 "first day shows an empty glass orb"):**
+1. **Fill:** the same radial sphere as the filled orb (`orb.1` centre → `orb.2` → `orb.3` edge), at **0.22 opacity in light** and **0.30 in dark**, drawn over `glass.card`. It must read as the same orb, unlit.
+2. **Rim:** a 1.5dp circular stroke with a linear gradient at 140°: `glass.highlight` at 0.9 (top-left) → `orb.3` at 0.35 (bottom-right). No flat grey hairline.
+3. **Halo:** a radial glow behind the orb in `orb.3`, about 1.3× the orb's radius, from 0.18 at the edge of the orb to 0 (light), 0.28 (dark). Use the existing `orbGlow*` visual tokens; add tokens rather than literals if you need new values.
+4. **Highlight:** no white specular blob in **light** mode (that's the grey smudge PR #7 removed). In dark mode keep the highlight at `orbHighlightOpacity × 0.5`.
+5. **No ring** without a target (spec: "never a ring against an invented target"). Ink stays `color.text.primary`, and contrast must still pass the token contrast test on the new fill (add the pair).
+6. **Solid style:** unchanged (`bg.raised` + `border.strong`). Reduced motion: no breathe (already).
+7. **Tests:** a unit test for the empty-orb fill opacities per mode, and the existing orb tests stay green. Add the empty orb to the primitives story so the emulator visual check shows it in both themes.
+
+### TASK-12: cards need depth (the "squares" look flat)
+**Cause:** in light mode `rim.strength` is 0.15 and `rim.glow` 0.07, `rim = 'none'` cards get no outer shadow, and there's no drop shadow at all. On the light ambient the cards look like flat white rectangles.
+**Spec (prototype `.card` and the reference images):**
+1. **Drop shadow on every Aurora card** (all rims, including `none`, but not `flat`), with RN 0.86 `boxShadow`: light `0 8px 24px rgba(18,22,28,0.08)` plus `0 1px 2px rgba(18,22,28,0.06)`, dark `0 10px 30px rgba(0,0,0,0.35)`. Put them in tokens (`elevation.card`), not literals.
+2. **Light-mode rim:** `rim.strength` 0.15 → **0.35** and `rim.glow` 0.07 → **0.10**. Dark stays as it is.
+3. **Neutral rim (`none`):** use `color.border.strong` at the rim's start stop instead of `glass.border`, so the 140° rim line is visible on light.
+4. **Card fill (light):** the sheen's top stop should read whiter than the body. Check `glass.highlight` against the reference; if it's lower than about 0.9, raise it in tokens.
+5. Re-run the contrast test. Secondary text on the new fill must still pass 4.5:1.
+6. **Visual check section** in the PR: Today and the primitives story in light and dark, compared with `today-light.png` and `today-dark.png`. Claude compares them with the emulator screenshots.
+
+### TASK-13: let the owner switch theme and style now (do it in the Step 4 PR)
+**Cause:** `ThemeProvider` only follows the system theme, and ST-3 was planned for Step 8, so there's no in-app control.
+1. Add `app/settings/appearance.tsx`, the **Appearance** part of ST-3 only:
+   - Theme: System / Dark / Light
+   - Style: Aurora Rim / Solid, with the line "Solid turns on by itself with high-contrast text or Reduce transparency."
+   - Both are segmented controls using the existing primitives. They apply live and persist through Step 4's settings repository (`theme`, `style`). Units stay for Step 8.
+2. Make the "Units and appearance" row in `app/settings/index.tsx` open it. That's the one allowed edit to that file. If PR #8 has merged by then, merge `main` first.
+3. On cold start, the saved theme must apply before the first frame (hydrate before `ready`), so there's no Light → Dark flash. Add a test.
+4. Ask Claude in the PR to add `liftria://settings/appearance` to the emulator visual check.
+
+## Step 4: data layer (one new draft PR, `Phase 2 / Step 4: data layer`)
+
+PHASE_2_PROMPT.md §3 item 4. **Branch from `main`, not from PR #8.** To keep the two PRs from conflicting, don't edit `app.config.ts`, `.github/**`, `src/config/**`, `scripts/**` or `app/settings/index.tsx` (PR #8 owns them). If you need one of them, ask in the PR; after PR #8 merges, merge `main` into your branch (a merge commit, no rebase).
+
+1. **Migration v2** in `src/services/database/` (`DB_SCHEMA_VERSION = 2`):
+   - Migrations are an ordered list (`v1`, `v2`, …). Each runs in its own `withExclusiveTransactionAsync`, ends with `PRAGMA user_version = n`, and uses `IF NOT EXISTS` so it's idempotent. A fresh install runs v1 then v2; a v1 database runs only v2. Keep the "schema is newer than app" guard.
+   - Keep every v1 table and the energy provenance guards unchanged (`saveHealthValues` / `listCachedHealth`). The Phase 0 diagnostics route must keep working.
+   - Rename the file from `liftria-phase0.db` to `liftria.db`. `com.liftria.app` is a fresh install, so no data is lost, and it's cheaper now than after friends have data.
+2. **`profile`:** one row (`id = 1`) with name (optional, ≤ 30), `sex_for_formula` (`male` | `female` | `unspecified`), `birth_year`, `height_cm`, `weight_kg`, activity (`sitting` | `some` | `active`), goal (`lose` | `maintain` | `build`), `updated_at`. Every field except `id` is nullable: onboarding steps are skippable. Store `birth_year`, not age (ON-3 asks for age; convert with the current year). Validate with zod against ON-3's ranges (age 16–100, 120–230 cm, 35–300 kg), always in metric. Units are a setting, never a stored conversion.
+3. **`settings`:** reuse the existing `app_settings` key/value table; don't add a second one. Add a typed repository with zod and a default per key: `theme` (system/dark/light, default system), `style` (aurora/solid, default aurora), `units.weight` (kg/lb), `units.height` (cm/ftin), `units.energy` (kcal only), `hideNumbers`, `keepScreenOn`, `haptics` (booleans), `onboarding.step` (number) and `onboarding.completedAt` (ISO or null). An invalid stored value reads as the default and never throws. Wire the existing ThemeProvider to persist theme and style through it.
+4. **`targets`** (append-only history): `id`, `kcal`, `protein_g`, `fat_g`, `carbs_g`, `source` (`estimate` | `manual`), `inputs_json` (for an estimate: the profile values and factors used; null for manual), `created_at`. The current target is the newest row. The repository refuses `kcal < 1000` (ON-5: can't be saved). No row means "No target yet" (TD-7), never 0. Don't put the Mifflin formula here; Step 5 owns it.
+5. **Don't** create gym, nutrition or weight-log tables (Phases 3 and 4).
+6. **Tests** (Jest, in the style of the existing mock-backed `database.test.ts`): fresh install → v2; v1 → v2 keeps `app_settings` and both health-cache tables; running v2 twice is a no-op; newer-than-app is rejected; profile validation edges; settings defaults and invalid-value fallback; target history order, `< 1000` rejected, and no target ≠ 0. Say clearly in the PR that these are mock-backed, not proof of Android SQLite.
+7. **Device check (owner):** add a "Schema version" row and the profile/targets/settings counts to the Phase 0 diagnostics route, so the owner can read them on the S22 after installing.
+
+**Done when:** CI is green and the PR lists what was verified (CI output) and what wasn't (device).
+
+---
+
+## TASK-4 notes (kept for reference)
+
+**Notes for PR #8 (TASK-4: build and signing):**
    - You **may** edit `.github/workflows/phase0.yml` for signing only: read the keystore from secrets (`LIFTRIA_KEYSTORE_BASE64`, `LIFTRIA_KEYSTORE_PASSWORD`, `LIFTRIA_KEY_ALIAS`, `LIFTRIA_KEY_PASSWORD`), decode it to a temp file, never `echo` or log any of them, and keep `permissions: contents: read`. Pull-request builds from forks have no secrets: fall back to an unsigned/debug-signed release and say so in the log.
    - Keep the PR-build `RELEASE_ARCHS` logic: pull requests must still include `x86_64` (the emulator visual check needs it). Main/release builds become `arm64-v8a,armeabi-v7a`.
    - Keep the artifact name `liftria-phase0-s22-arm64-apks` and `*release*.apk` in the file name, or ask Claude to update `visual-check.yml` in the same PR review.
    - Write the owner's step-by-step keystore instructions in the PR description (a `keytool` command the owner runs on their own computer, then the four GitHub secrets). Never generate a key in CI.
-4. Then steps 4–9 of PHASE_2_PROMPT.md §3 in order.
+
+## Rules for every PR
 
 **Lessons from PR #6 (follow them in every new screen):**
 - `react-native-svg` on Android drops the alpha of `rgba()` stop colors. Always use `stopProps()` from `VisualGeometry.ts`.
@@ -141,7 +205,7 @@ In the Aurora style, the `train` button variant is a 135° linear gradient from 
 | TASK-1 | `src/design/ThemeProvider.tsx` | Do on this branch | DONE (commit `3e9a670`; implementation and regression test) |
 | TASK-2 | `src/design/ThemeProvider.tsx`, `app/_layout.tsx` | Do on this branch | DONE (commit `3e9a670`; startup fallback regression tests) |
 | TASK-3 | `app/index.tsx` (Phase 0 diagnostics) | Do on this branch | DONE (existing branch implementation; verified in CI run #42) |
-| TASK-4 | Build config, CI | Draft PR #8; before any APK goes to friends | IN PROGRESS (CI + owner signed-release/update tests pending) |
+| TASK-4 | Build config, CI | Separate PR, **after step 3**, and before any APK goes to friends | OPEN |
 | TASK-5 | Step 2 | **Next PR: start now** (PR #4 merged 2026-10-22) | OPEN |
 
 ---
