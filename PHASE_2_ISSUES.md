@@ -9,7 +9,7 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 **Order:**
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
 2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
-3. **TASK-4: build and signing. Start now** (one new draft PR, `Phase 2 / TASK-4: app id, minSdk and release signing`). See TASK-4 below and PHASE_2_PROMPT.md §2 (Devices, Signing, App identity). Notes for this PR:
+3. **TASK-4: build and signing — in progress in draft PR #8** (CI and owner signing/update test pending). See TASK-4 below and PHASE_2_PROMPT.md §2 (Devices, Signing, App identity). Notes for this PR:
    - You **may** edit `.github/workflows/phase0.yml` for signing only: read the keystore from secrets (`LIFTRIA_KEYSTORE_BASE64`, `LIFTRIA_KEYSTORE_PASSWORD`, `LIFTRIA_KEY_ALIAS`, `LIFTRIA_KEY_PASSWORD`), decode it to a temp file, never `echo` or log any of them, and keep `permissions: contents: read`. Pull-request builds from forks have no secrets: fall back to an unsigned/debug-signed release and say so in the log.
    - Keep the PR-build `RELEASE_ARCHS` logic: pull requests must still include `x86_64` (the emulator visual check needs it). Main/release builds become `arm64-v8a,armeabi-v7a`.
    - Keep the artifact name `liftria-phase0-s22-arm64-apks` and `*release*.apk` in the file name, or ask Claude to update `visual-check.yml` in the same PR review.
@@ -141,7 +141,7 @@ In the Aurora style, the `train` button variant is a 135° linear gradient from 
 | TASK-1 | `src/design/ThemeProvider.tsx` | Do on this branch | DONE (commit `3e9a670`; implementation and regression test) |
 | TASK-2 | `src/design/ThemeProvider.tsx`, `app/_layout.tsx` | Do on this branch | DONE (commit `3e9a670`; startup fallback regression tests) |
 | TASK-3 | `app/index.tsx` (Phase 0 diagnostics) | Do on this branch | DONE (existing branch implementation; verified in CI run #42) |
-| TASK-4 | Build config, CI | Separate PR, **after step 3**, and before any APK goes to friends | OPEN |
+| TASK-4 | Build config, CI | Draft PR #8; before any APK goes to friends | IN PROGRESS (CI + owner signed-release/update tests pending) |
 | TASK-5 | Step 2 | **Next PR: start now** (PR #4 merged 2026-10-22) | OPEN |
 
 ---
