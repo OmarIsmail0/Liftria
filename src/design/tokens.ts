@@ -44,7 +44,8 @@ const palette = {
     orb: { 1: '#FFCF5E', 2: '#FF8F6B', 3: '#7B5CFF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFC2A3', 2: '#FF8F6B', 3: '#D9487A' },
     sheet: { glass: 'rgba(16,17,30,0.94)' },
-    elevation: { card: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.35)' },
+    elevation: { card: '0 10px 30px rgba(0,0,0,0.35)' },
+    orbEmpty: { fillOpacity: 0.30, haloOpacity: 0.28, rimWidth: 1.5, rimStart: 0.9, rimEnd: 0.35 },
   },
   light: {
     color: {
@@ -67,11 +68,11 @@ const palette = {
     },
     aurora: { base: '#EEF0F7' },
     glass: {
-      card: 'rgba(255,255,255,0.78)', highlight: 'rgba(255,255,255,0.75)',
+      card: 'rgba(255,255,255,0.78)', highlight: 'rgba(255,255,255,0.92)',
       border: 'rgba(255,255,255,0.90)',
       shadow: 'inset 0 1px 0 rgba(255,255,255,0.90), 0 14px 34px rgba(60,70,120,0.14)',
     },
-    rim: { strength: 0.15, glow: 0.07 },
+    rim: { strength: 0.35, glow: 0.10 },
     ambient: {
       train: 'rgba(255,170,140,0.60)', hiku: 'rgba(170,150,255,0.55)',
       health: 'rgba(120,225,200,0.50)', eat: 'rgba(255,215,130,0.50)',
@@ -80,7 +81,8 @@ const palette = {
     orb: { 1: '#FFE09A', 2: '#FFB496', 3: '#B9A8FF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFD9C7', 2: '#FFB496', 3: '#F08DB0' },
     sheet: { glass: 'rgba(255,255,255,0.95)' },
-    elevation: { card: '0 1px 2px rgba(18,22,28,0.06), 0 6px 18px rgba(18,22,28,0.07)' },
+    elevation: { card: '0 8px 24px rgba(18,22,28,0.08), 0 1px 2px rgba(18,22,28,0.06)' },
+    orbEmpty: { fillOpacity: 0.22, haloOpacity: 0.18, rimWidth: 1.5, rimStart: 0.9, rimEnd: 0.35 },
   },
 } as const;
 

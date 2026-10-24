@@ -57,6 +57,6 @@ export function cssLinearGradient(angleDeg: number, width: number, height: numbe
 }
 
 /** An unfilled first-day glass orb must not show the filled sphere's white spotlight. */
-export function shouldShowOrbHighlight(progress: number | null, style: 'aurora' | 'solid'): boolean {
-  return progress !== null && style === 'aurora';
+export function shouldShowOrbHighlight(progress: number | null, style: 'aurora' | 'solid', mode: 'dark' | 'light' = 'light'): boolean {
+  return style === 'aurora' && (progress !== null || mode === 'dark');
 }

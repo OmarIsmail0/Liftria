@@ -95,6 +95,15 @@ describe.each(['dark', 'light'] as ColorScheme[])('%s Liftria tokens', mode => {
     },
   );
 
+  test('empty orb text contrasts against unlit sphere stops over glass', () => {
+    const underlay = blend(rgba(t.glass.card), rgba(t.aurora.base));
+    const sphereStops = [t.orb[1], t.orb[2], t.orb[3]];
+    for (const stop of sphereStops) {
+      const emptyFill = blend([...rgba(stop).slice(0, 3), t.orbEmpty.fillOpacity] as RGBA, underlay);
+      expect(ratio(t.color.text.primary, emptyFill)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   test('orb text is legible at its two text-bearing fill stops', () => {
     expect(ratio(t.orb.ink, t.orb[1])).toBeGreaterThanOrEqual(mode === 'dark' ? 6.28 : 10.19);
     expect(ratio(t.orb.ink, t.orb[2])).toBeGreaterThanOrEqual(mode === 'dark' ? 6.28 : 10.19);
