@@ -138,7 +138,7 @@ describe('nullable metric profile with ON-3 guardrails', () => {
     });
     expect(complete).toMatchObject({ ok: true, value: { id: 1, weightKg: 35 } });
     expect(await getProfile()).toMatchObject({ ok: true, value: { name: 'A'.repeat(30), birthYear: currentYear - 16 } });
-    expect(state.profile?.id).toBe(1);
+    expect(state.profile).toMatchObject({ id: 1 });
   });
   test('age 16–100, height 120–230, weight 35–300 inclusive; outside rejected', async () => {
     expect(profileSchema.safeParse({ birthYear: currentYear - 100, heightCm: 230, weightKg: 300 }).success).toBe(true);
