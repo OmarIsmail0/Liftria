@@ -26,7 +26,7 @@ export default function TodayTab() {
       <Typography tone="secondary">Your profile, targets, and Health Connect setup arrive during onboarding in this phase.</Typography>
     </Card>
     <Card title="Activity today" rim="health">
-      <Typography tone="secondary">Health Connect data isn't loaded in this navigation preview.</Typography>
+      <Typography tone="secondary">Health Connect data is not loaded in this navigation preview.</Typography>
     </Card>
   </Screen>;
 }
