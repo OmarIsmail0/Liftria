@@ -222,7 +222,7 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
       source: 'estimate', inputs: { activityFactor: 1.375 } });
     expect(created.ok).toBe(true);
     const row = state.targets[0];
-    expect(row).toBeDefined();
+    if (!row) throw new Error('Target mock failed to save test row');
     row.inputs_json = '{"partial":';
     expect(await getCurrentTarget()).toMatchObject({ ok: true, value: {
       id: 1, kcal: 2200, source: 'estimate', inputs: null,
