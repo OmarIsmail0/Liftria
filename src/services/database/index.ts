@@ -245,6 +245,7 @@ export async function listCachedHealth(limit = 100): Promise<DbResult<HealthValu
 export type LocalStorageCounts = {
   workouts: number; meals: number; healthSamples: number;
   healthAggregates: number; targetVersions: number; profiles: number;
+  databaseBytes: number;
 };
 export async function localStorageCounts(): Promise<DbResult<LocalStorageCounts>> {
   return dbOperation(async db => {
@@ -256,7 +257,10 @@ export async function localStorageCounts(): Promise<DbResult<LocalStorageCounts>
     const [workouts, meals, healthSamples, healthAggregates, targetVersions, profiles] =
       await Promise.all([count('test_workout_sessions'),count('test_nutrition_entries'),
         count('health_samples'),count('health_aggregates'),count('targets'),count('profile')]);
-    return { workouts, meals, healthSamples, healthAggregates, targetVersions, profiles };
+    const pages = await db.getFirstAsync<{ page_count: number }>('PRAGMA page_count');
+    const size = await db.getFirstAsync<{ page_size: number }>('PRAGMA page_size');
+    const databaseBytes = Math.max(0, (pages?.page_count ?? 0) * (size?.page_size ?? 0));
+    return { workouts, meals, healthSamples, healthAggregates, targetVersions, profiles, databaseBytes };
   });
 }
 
@@ -281,8 +285,17 @@ export async function deleteLocalDatabase(): Promise<DbResult<void>> {
     dbPromise = null;
     await SQLite.deleteDatabaseAsync(DB_NAME);
     return { ok: true, value: undefined };
-  } catch {
+  } catch (error: unknown) {
     dbPromise = null;
+    // Retrying after DB deletion and a later SecureStore failure is required.
+    // Only an explicit missing-file error counts as already deleted, not arbitrary SQLite errors.
+    if (isMissingDatabaseError(error)) return { ok: true, value: undefined };
     return { ok: false, error: { code:'db-error', message:'Could not remove Liftria local database.' } };
   }
+}
+
+// Idempotent deletion: a missing file is already gone; permission/I/O errors remain failures.
+export function isMissingDatabaseError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /ENOENT|no such file|does not exist|not found|could not find/i.test(message);
 }

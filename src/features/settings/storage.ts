@@ -12,14 +12,25 @@ export async function clearHealthCacheOnPhone(): Promise<{ ok: boolean; message:
 export type DeleteLocalOutcome =
   | {ok:true}
   | {ok:false;stage:'database'|'key';message:string};
+export type DeletionOps = {
+  removeDatabase: typeof deleteLocalDatabase;
+  removeKey: typeof deleteKey;
+};
+export const deletionOps: DeletionOps = { removeDatabase: deleteLocalDatabase, removeKey: deleteKey };
+/** Only v2 SQLite and SecureStore contain user-managed data in Phase 2. No app-created document files exist. */
+export function deletionIncludesAppFiles(): boolean { return false; }
+export function formatLocalDatabaseSize(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return 'Size unavailable';
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
 
 /** Database first, Android Keystore key second. Never claim success after partial failure. */
-export async function deleteEverythingOnPhone(confirmation:string): Promise<DeleteLocalOutcome> {
+export async function deleteEverythingOnPhone(confirmation:string, ops: DeletionOps = deletionOps): Promise<DeleteLocalOutcome> {
   if (!canDeleteEverything(confirmation)) return {ok:false,stage:'database',message:'Type DELETE to confirm.'};
-  const database = await deleteLocalDatabase();
+  const database = await ops.removeDatabase();
   if (!database.ok) return {ok:false,stage:'database',
     message:'Could not delete the Liftria database. Your key was not changed. Try again.'};
-  const key = await deleteKey();
+  const key = await ops.removeKey();
   if (key.status !== 'missing') return {ok:false,stage:'key',
     message:'Local database was deleted, but the saved API key could not be removed. Retry deletion from Settings.'};
   return {ok:true};

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
@@ -6,11 +6,21 @@ import { Card, Header, ListRow, Screen, Typography } from '../../src/design/prim
 import { backOrReplace } from '../../src/navigation/back';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
+import { localStorageCounts } from '../../src/services/database';
+import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
 
 /** ST-1: grouped local Settings, with Phase 3/4 features explicitly labeled Future. */
 export default function SettingsHome() {
   const { theme } = useTheme();
   const taps = useRef(initialVersionTapState);
+  const [databaseSize, setDatabaseSize] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void localStorageCounts().then(result => {
+      if(alive && result.ok) setDatabaseSize(formatLocalDatabaseSize(result.value.databaseBytes));
+    });
+    return () => { alive = false; };
+  }, []);
   return <Screen>
     <Header title="Settings" onBack={() => backOrReplace(router, '/(tabs)/today')} />
     <Card title="Your plan">
@@ -46,7 +56,7 @@ export default function SettingsHome() {
       </Pressable>
     </Card>
     <View style={{ alignItems: 'center' }}>
-      <Typography tone="secondary" size="small">Your data stays on this phone.</Typography>
+      <Typography tone="secondary" size="small">Everything is on this phone · {databaseSize ?? 'Calculating storage…'}</Typography>
     </View>
   </Screen>;
 }

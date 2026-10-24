@@ -5,10 +5,10 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts, type LocalStorageCounts } from '../../src/services/database';
-import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone } from '../../src/features/settings/storage';
+import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 
 export default function DataAndStorage() {
-  const { theme } = useTheme();
+  const { theme, resetLocalPreferences } = useTheme();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
   const [confirmation,setConfirmation]=useState('');
   const [open,setOpen]=useState(false);
@@ -38,6 +38,9 @@ export default function DataAndStorage() {
       if(!result.ok){setMessage(result.message);setOpen(false);return;}
       // All app-owned Phase 2 data and the saved key are gone. Return to fresh onboarding.
       setOpen(false);setConfirmation('');
+      resetLocalPreferences();
+      // Remove the Settings and (tabs) back stacks before routing to fresh onboarding.
+      router.dismissAll();
       router.replace({pathname:'/onboarding/[step]',params:{step:'welcome'}});
     }catch{setMessage('Could not finish deletion. Check the key in Settings and try again.');setOpen(false);}
     finally{setBusy(false);}
@@ -52,6 +55,7 @@ export default function DataAndStorage() {
         <ListRow title="Cached health records" detail={String(counts.healthSamples+counts.healthAggregates)} />
         <ListRow title="Calorie target versions" detail={String(counts.targetVersions)} />
         <ListRow title="Saved profiles" detail={String(counts.profiles)} />
+        <ListRow title="Database size" detail={formatLocalDatabaseSize(counts.databaseBytes)} />
       </> : <Typography tone="secondary">Reading local counts…</Typography>}
       <Typography tone="secondary" size="small">These are actual stored row counts. Workout and meal logging arrive in later phases.</Typography>
     </Card>
@@ -66,7 +70,7 @@ export default function DataAndStorage() {
       <Typography tone="secondary" size="small">If you lose or reset this phone, your Liftria data is gone. Backup is planned.</Typography>
     </Card>
     <Card title="Delete all data">
-      <Typography tone="secondary">Delete local Liftria data and your saved Anthropic key. No Undo.</Typography>
+      <Typography tone="secondary">Delete your profile, calorie targets, preferences, onboarding progress, cached health records, local workouts and meals, and Hiku API key. No Undo.</Typography>
       <Typography tone="secondary" size="small">Health Connect and Samsung Health records stay in their original apps. Anthropic request logs are not deleted. This version does not save user photos or generated workout files.</Typography>
       <Button label="Delete all data" variant="danger" disabled={busy} onPress={()=>setOpen(true)} />
     </Card>
@@ -74,7 +78,7 @@ export default function DataAndStorage() {
       <Typography tone="secondary">ⓘ {message}</Typography>
     </View>}
     <Sheet visible={open} destructive title="Delete everything from Liftria?"
-      description="This deletes all Liftria database rows and your local API key. Data held by Health Connect, Samsung Health and Anthropic is not deleted."
+      description="Deletes: profile, targets, settings, onboarding, health cache, Liftria workouts and meals, and saved Hiku key. Does not delete Health Connect or Samsung Health originals or Anthropic request logs. There is no undo."
       onClose={()=>{if(!busy){setOpen(false);setConfirmation('')}}}>
       <Field label="Type DELETE to confirm" value={confirmation} onChangeText={setConfirmation}
         placeholder="DELETE" />
