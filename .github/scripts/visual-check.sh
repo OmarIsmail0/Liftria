@@ -5,7 +5,7 @@ set -uo pipefail
 APK="$1"; OUT="$2"
 # App screens as "<shot name>=<route>"; routes that don't exist yet just show Expo Router's
 # not-found page, so this list can run ahead of the build.
-SCREENS="app-today=today app-train=train app-eat=eat app-progress=progress app-health=progress/health app-hiku=hiku app-settings=settings"
+SCREENS="app-today=today app-train=train app-eat=eat app-progress=progress app-health=progress/health app-hiku=hiku app-settings=settings app-appearance=settings/appearance"
 STORIES="screen header card button chip banner snackbar sheet stepper toggle field list-row empty-state skeleton orb capsule-nav"
 mkdir -p "$OUT"
 adb wait-for-device
