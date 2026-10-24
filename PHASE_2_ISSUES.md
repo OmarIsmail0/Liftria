@@ -4,13 +4,22 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
-# Next up (updated 2026-10-22, after PR #5 merged)
+# Next up (updated 2026-10-24, after PR #6 merged)
 
 **Order:**
-1. **TASK-6 to TASK-10: visual fidelity fix for the primitives** (one new draft PR, `Phase 2 / Step 2b: Aurora Rim visual fidelity`). **Do this before step 3**, because every screen is built on these primitives.
-2. **Step 3: navigation shell.** The first PR the owner can *see* as real Liftria screens.
+1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
+2. **Step 3: navigation shell. Start now** (one new draft PR, `Phase 2 / Step 3: navigation shell`), per PHASE_2_PROMPT.md §3 step 3. Also in this PR:
+   - **Edge-to-edge system bars:** the ambient background must run behind the status bar and the Android navigation bar (transparent bars, content padded by safe-area insets). Today the navigation bar shows a hard black edge under the app.
+   - The capsule nav sits above the gesture/navigation bar inset, never under it.
 3. **TASK-4: build and signing.** After step 3, before any APK goes to friends.
 4. Then steps 4–9 of PHASE_2_PROMPT.md §3 in order.
+
+**Lessons from PR #6 (follow them in every new screen):**
+- `react-native-svg` on Android drops the alpha of `rgba()` stop colors. Always use `stopProps()` from `VisualGeometry.ts`.
+- For CSS-angle gradients use `cssLinearGradient(angle, width, height)` with `gradientUnits="userSpaceOnUse"`.
+- Size an `absoluteFill` `Svg` from the parent's measured `onLayout` width/height, never `"100%"` (it resolves to the wrong box).
+- No large `rx` on an SVG `Rect` for pills; let the rounded, `overflow: 'hidden'` parent clip it.
+- The **Visual check** workflow posts emulator screenshots of `liftria://dev/primitives/*` on every PR build. For step 3, add the new tab roots to `.github/scripts/visual-check.sh`'s screen list **only by asking in the PR**; Claude edits workflows and scripts.
 
 **Process rules:**
 - Never add or change workflows to run npm or push commits (no `contents: write`). If you need a lockfile regenerated, say so in the PR, and Claude will do it.
@@ -22,7 +31,7 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 # Review 2: PR #5, Step 2 (primitives), merged before review (2026-10-22)
 
-**Follow-up:** TASK-6 through TASK-10 are implemented on the Step 2b draft branch; awaiting dependency lockfile regeneration, green CI and owner phone screenshot comparison before changing their status to DONE.
+**Follow-up:** TASK-6 through TASK-10 are DONE (PR #6 merged 2026-10-24 after green CI, emulator screenshots and the owner's phone check).
 
 **Verdict: CHANGES NEEDED (visual fidelity).** The structure, tokens, touch sizes, TalkBack labels and tests are good. But on the owner's phone the result doesn't look like the design. The owner's screenshot of the Primitive lab shows hard-edged solid circles, Roboto text and flat card borders.
 
@@ -32,11 +41,11 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 | Task | What | Status |
 |---|---|---|
-| TASK-6 | Ambient background: soft radial glows, not circles | IMPLEMENTED — CI + phone visual pending |
-| TASK-7 | Bundle Archivo and Figtree | IMPLEMENTED — CI + phone visual pending |
-| TASK-8 | Card: rim gradient edge, outer glow, glass sheen | IMPLEMENTED — CI + phone visual pending |
-| TASK-9 | Orb: radial gradient fill + continuous ring arc | IMPLEMENTED — CI + phone visual pending |
-| TASK-10 | Gradient on the Train button | IMPLEMENTED — CI + phone visual pending |
+| TASK-6 | Ambient background: soft radial glows, not circles | DONE (PR #6, merged `cf83680`; CI green, emulator + owner phone check) |
+| TASK-7 | Bundle Archivo and Figtree | DONE (PR #6, merged `cf83680`; CI green, emulator + owner phone check) |
+| TASK-8 | Card: rim gradient edge, outer glow, glass sheen | DONE (PR #6, merged `cf83680`; CI green, emulator + owner phone check) |
+| TASK-9 | Orb: radial gradient fill + continuous ring arc | DONE (PR #6, merged `cf83680`; CI green, emulator + owner phone check) |
+| TASK-10 | Gradient on the Train button | DONE (PR #6, merged `cf83680`; CI green, emulator + owner phone check) |
 
 ## TASK-6: Ambient background (soft radial glows)
 
