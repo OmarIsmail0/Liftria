@@ -22,6 +22,7 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
       contentStyle: { backgroundColor: theme.background } }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="onboarding" />
       <Stack.Screen name="settings" />
       <Stack.Screen name="dev" />
     </Stack>
