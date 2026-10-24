@@ -1,4 +1,4 @@
-import { releaseVersion } from '../releaseVersion';
+import releaseVersion from '../releaseVersion.json';
 
 test('Android release identifier starts above the Phase 0 test version', () => {
   expect(releaseVersion.name).toBe('0.1.0');

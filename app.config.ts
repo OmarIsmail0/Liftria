@@ -1,5 +1,5 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-import { releaseVersion } from './src/config/releaseVersion';
+import releaseVersion from './src/config/releaseVersion.json';
 
 const healthReadPermissions = [
   'android.permission.health.READ_STEPS',
