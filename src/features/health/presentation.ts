@@ -191,3 +191,42 @@ export function ageLabel(timestamp: string, nowMs = Date.now()): string {
   if (hours < 24) return `${hours} h ago`;
   return `${Math.floor(hours / 24)} d ago`;
 }
+
+export function healthAvailabilityText(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported'): string {
+  switch(availability) {
+    case 'available': return 'Health Connect is available.';
+    case 'not-installed': return 'Health Connect is not installed. Liftria works without it.';
+    case 'needs-update': return 'Health Connect needs an update. Liftria works without it.';
+    default: return 'Health Connect is not supported on this device. Liftria works without it.';
+  }
+}
+export function canInstallHealthConnect(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported'): boolean {
+  return availability === 'not-installed' || availability === 'needs-update';
+}
+
+/** Week charts use seven independent local-day bins, never a combined multi-origin value. */
+export function dailyStepsBySource(records: HealthValue[], start: Date, end: Date): HourlySeries[] {
+  const groups = new Map<string, number[]>();
+  const seen = new Set<string>();
+  for (const r of records) {
+    if (r.kind !== 'interval' || r.metric !== 'steps' || !r.dataOrigin ||
+        !Number.isFinite(r.value) || r.value < 0) continue;
+    const id = r.adapter + ':' + r.dataOrigin + ':' + r.recordId;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const from = Date.parse(r.start), to = Date.parse(r.end);
+    if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from) continue;
+    const bins = groups.get(r.dataOrigin) ?? Array.from({length:7},() => 0);
+    for (let d=0; d<7; d++) {
+      const binFrom = new Date(start); binFrom.setDate(binFrom.getDate()+d);
+      const binTo = new Date(binFrom); binTo.setDate(binTo.getDate()+1);
+      const shared = Math.max(0, Math.min(to,end.getTime(),binTo.getTime()) -
+        Math.max(from,start.getTime(),binFrom.getTime()));
+      if (shared > 0) bins[d] = (bins[d] ?? 0) + r.value * shared / (to-from);
+    }
+    groups.set(r.dataOrigin,bins);
+  }
+  return [...groups.entries()].map(([origin,values]) => ({
+    origin,label:sourceName(origin),values:values.map(Math.round),
+  }));
+}
