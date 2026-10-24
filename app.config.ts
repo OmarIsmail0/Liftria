@@ -1,5 +1,6 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import releaseVersion from './src/config/releaseVersion.json';
+import { resolveAndroidVersionCode } from './src/config/androidVersion';
 
 const healthReadPermissions = [
   'android.permission.health.READ_STEPS',
@@ -26,7 +27,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: { typedRoutes: true },
   android: {
     package: 'com.liftria.app',
-    versionCode: releaseVersion.androidCode,
+    versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
     permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
     allowBackup: false,
     blockedPermissions: [

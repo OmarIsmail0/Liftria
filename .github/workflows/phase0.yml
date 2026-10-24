@@ -77,6 +77,16 @@ jobs:
           test -f "$sdk/ndk/$NDK_VERSION/source.properties"
       - name: Test release signing Gradle template patch
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+      # GitHub Actions expressions have no arithmetic (+) operator. Compute the same
+      # 100 + github.run_number with Bash integer arithmetic, before Expo prebuild.
+      # GITHUB_RUN_NUMBER increases for each invocation of this workflow.
+      - name: Allocate trusted Android versionCode
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          code=$((100 + GITHUB_RUN_NUMBER))
+          printf 'LIFTRIA_ANDROID_VERSION_CODE=%s\n' "$code" >> "$GITHUB_ENV"
+          echo "Trusted main build Android versionCode: $code"
       - name: Expo Android prebuild
         run: npx expo prebuild --clean --platform android --no-install
 
@@ -196,8 +206,10 @@ jobs:
       - name: Verify APK metadata and signatures
         env:
           EXPECTED_ARCHS: ${{ github.event_name == 'pull_request' && 'arm64-v8a,x86_64' || 'arm64-v8a,armeabi-v7a' }}
+          TRUSTED_MAIN_BUILD: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
         run: |
           python3 - <<'PY'
+          import json
           import os
           from pathlib import Path
           import re
@@ -211,8 +223,22 @@ jobs:
           releases = list(Path('android/app/build/outputs/apk/release').glob('*release*.apk'))
           if not releases:
               raise SystemExit('No release APK found for verification')
+          fallback_code = json.loads(Path('src/config/releaseVersion.json').read_text())['androidCode']
+          trusted_main = os.environ['TRUSTED_MAIN_BUILD'] == 'true'
           for apk in releases:
               metadata = subprocess.check_output([str(aapt[-1]), 'dump', 'badging', str(apk)], text=True)
+              match = re.search(r"\bversionCode='([0-9]+)'", metadata)
+              if not match:
+                  raise SystemExit('Cannot parse release APK versionCode')
+              version_code = int(match.group(1))
+              print('APK Android versionCode:', version_code)
+              if trusted_main:
+                  if version_code <= fallback_code:
+                      raise SystemExit('Trusted release versionCode did not exceed the JSON baseline')
+                  if version_code != int(os.environ['LIFTRIA_ANDROID_VERSION_CODE']):
+                      raise SystemExit('Trusted release versionCode disagrees with automatic run number')
+              elif version_code != fallback_code:
+                  raise SystemExit('PR/test APK must use the JSON fallback versionCode')
               if "name='com.liftria.app'" not in metadata:
                   raise SystemExit('Wrong release APK application ID')
               if "sdkVersion:'28'" not in metadata:
