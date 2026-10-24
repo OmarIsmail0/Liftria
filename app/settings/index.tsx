@@ -14,7 +14,8 @@ export default function SettingsHome() {
   return <Screen>
     <Header title="Settings" onBack={() => backOrReplace(router, '/(tabs)/today')} />
     <Card title="Your plan">
-      <ListRow title="Profile and goals" detail="Your stored profile, goal and calorie target · Coming soon" />
+      <ListRow title="Profile and goals" detail="Edit your profile and confirm any estimated target change"
+        onPress={() => router.push('/settings/profile')} />
     </Card>
     <Card title="Personalization">
       <ListRow title="Units and appearance" detail="Weight, height, theme, visual style and dashboard controls"
@@ -23,12 +24,16 @@ export default function SettingsHome() {
         onPress={() => router.push('/settings/hiku-key')} />
     </Card>
     <Card title="Notifications and data">
-      <ListRow title="Notifications" detail="Workout alerts and meal reminders · Coming soon" />
+      <ListRow title="Notifications" detail="Rest timers and meal reminders · future availability"
+        onPress={() => router.push('/settings/notifications')} />
       <ListRow title="Health Connect" detail="Read-only permissions and sources"
         onPress={() => router.push('/(tabs)/progress/health')} />
-      <ListRow title="Data and storage" detail="Cached records and privacy · Coming soon" />
+      <ListRow title="Data and storage" detail="Actual local counts, cache clearing and DELETE confirmation"
+        onPress={() => router.push('/settings/data')} />
     </Card>
     <Card title="About and help">
+      <ListRow title="Help, privacy and licenses" detail="Chips legend, app version, local-first privacy"
+        onPress={() => router.push('/settings/about')} />
       <Typography tone="secondary">Liftria is local-first. No account or external database is required.</Typography>
       <Pressable accessibilityRole="button" accessibilityLabel="App version"
         onPress={() => {
