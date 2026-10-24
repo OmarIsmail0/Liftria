@@ -5,6 +5,7 @@ import { AccessibilityInfo, Platform, useColorScheme, useWindowDimensions } from
 import { createTheme, type LiftriaTheme, type ThemeMode, type VisualStyle } from './tokens';
 import { resolveStartupAccessibility } from './startupAccessibility';
 import { getTypedSetting, setTypedSetting } from '../services/database/settings';
+import { hydrateThemePreferences, canRenderThemedNavigation } from './themePreferences';
 
 export type ThemePreferences = { mode: ThemeMode; style: VisualStyle };
 
@@ -64,20 +65,18 @@ export function ThemeProvider({
     let mounted = true;
     // Missing/corrupt values fall back to defaults; an unavailable DB does not
     // block the app. The native splash stays up while initial values load.
-    void Promise.all([getTypedSetting('theme'), getTypedSetting('style')])
-      .then(([mode, style]) => {
-        if (!mounted) return;
-        setPreferences({
-          mode: mode.ok ? mode.value : initialMode,
-          style: style.ok ? style.value : initialStyle,
-        });
-      })
-      .catch(() => { /* database unavailable: keep initial theme */ })
-      .finally(() => { if (mounted) setSettingsReady(true); });
+    void hydrateThemePreferences({ mode: initialMode, style: initialStyle }, {
+      theme: () => getTypedSetting('theme'),
+      style: () => getTypedSetting('style'),
+    }).then(saved => {
+      if (mounted) setPreferences(saved);
+    }).finally(() => {
+      if (mounted) setSettingsReady(true);
+    });
     return () => { mounted = false; };
   }, [initialMode, initialStyle]);
 
-  const ready = accessibilityReady && settingsReady;
+  const ready = canRenderThemedNavigation(accessibilityReady, settingsReady);
 
   useEffect(() => {
     let mounted = true;
