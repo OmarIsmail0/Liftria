@@ -26,6 +26,8 @@ The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 P
 
 **Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once `verify` is green and Claude's code review is clean (plus the emulator screenshots, when Claude asked for a `build`-labeled run). The owner tests the phase-end APK on the phone and reports problems, which become fix tasks.
 
+**This file is Claude's.** Don't edit `PHASE_2_ISSUES.md` on your PR branches: every edit causes a merge conflict, and a conflicted PR runs no CI at all. Put progress notes in your PR description instead.
+
 **Builds (owner's decision, 2026-10-24): per phase, not per PR.** Every push runs only `verify` (about a minute). The 35-minute Android build runs (1) by hand on `main` at the end of a phase, or when the owner wants an APK, and (2) on a PR only if Claude adds the `build` label to get emulator screenshots of a UI-heavy change. Keep PRs as drafts, batch your fixes into few pushes, and never add the label or mark PRs ready yourself.
 
 **For every big PR:**
