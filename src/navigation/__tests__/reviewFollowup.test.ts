@@ -16,7 +16,8 @@ describe('back button with direct deep links', () => {
     ['/settings', 'Developer tools'],
     ['/dev', 'Primitive lab and diagnostics'],
     ['/dev/primitives', 'Direct primitive story'],
-  ] as const)('without history, %s is the parent of %s', (parent) => {
+  ] as const)('without history, %s is the parent of %s', (parent, screen) => {
+    expect(screen).toBeTruthy();
     const nav = { canGoBack: jest.fn(() => false), back: jest.fn(), replace: jest.fn() };
     backOrReplace(nav, parent);
     expect(nav.back).not.toHaveBeenCalled();
