@@ -46,6 +46,8 @@ cloud session couldn't reach the owner's Chrome. You can: use the **`chatgpt-cha
   Health, Settings, then an accessibility pass.
 - **The relay line** the owner sends GPT after each review:
   > Read PHASE_2_ISSUES.md on main and the latest comments on your open PR, and do the next open task.
+
+  From Phase 3 on, the relay line points to `PHASE_3_ISSUES.md` instead.
 - **Still open on the owner's phone:** a watch workout test, the Hiku photo test (Claude Test B),
   and "Read health cache" in Settings → 7 taps on Version → Developer tools → Phase 0 diagnostics.
 
