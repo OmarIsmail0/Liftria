@@ -19,3 +19,8 @@ export function previousOnboardingStep(step: OnboardingStep): OnboardingStep {
 export function optionalStep(step: OnboardingStep): boolean {
   return onboardingSteps.indexOf(step) >= onboardingSteps.indexOf(firstOptionalStep) && step !== 'done';
 }
+
+/** ON-3 Skip bypasses estimate; ON-4 Skip still visits ON-5's incomplete state. */
+export function skipOnboardingStep(step: OnboardingStep): OnboardingStep {
+  return step === 'profile' ? 'health' : nextOnboardingStep(step);
+}

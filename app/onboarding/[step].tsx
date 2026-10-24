@@ -5,7 +5,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, Orb, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
-import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep,
+import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep, skipOnboardingStep,
   type OnboardingStep } from '../../src/features/onboarding/flow';
 import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
@@ -146,8 +146,8 @@ export default function OnboardingStepScreen() {
     finally { setBusy(false); }
   }
 
-  // Skipping profile or the goal intentionally avoids inventing a calculated target.
-  const skip = optionalStep(step) ? () => void go(step === 'profile' || step === 'goal' ? 'health' : nextOnboardingStep(step)) : undefined;
+  // Only ON-3 Skip bypasses the estimate; ON-4 Skip opens the incomplete ON-5 state.
+  const skip = optionalStep(step) ? () => void go(skipOnboardingStep(step)) : undefined;
   const back = step !== 'welcome' ? () => void go(previousOnboardingStep(step)) : undefined;
 
   async function continueProfile() {

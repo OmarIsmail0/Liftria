@@ -1,4 +1,4 @@
-import { onboardingSteps, isOnboardingStep, nextOnboardingStep, optionalStep, previousOnboardingStep } from '../flow';
+import { onboardingSteps, isOnboardingStep, nextOnboardingStep, optionalStep, previousOnboardingStep, skipOnboardingStep } from '../flow';
 
 test('all nine ON IDs appear in the correct first-launch order', () => {
   expect(onboardingSteps).toEqual(['welcome', 'privacy', 'profile', 'goal', 'target', 'health', 'watch', 'hiku', 'done']);
@@ -15,4 +15,10 @@ test('privacy acknowledgement is mandatory; all later integration steps can be s
   expect(optionalStep('profile')).toBe(true);
   expect(optionalStep('hiku')).toBe(true);
   expect(optionalStep('done')).toBe(false);
+});
+
+test('ON-3 Skip bypasses the estimate; ON-4 Skip opens ON-5 without inventing inputs', () => {
+  expect(skipOnboardingStep('profile')).toBe('health');
+  expect(skipOnboardingStep('goal')).toBe('target');
+  expect(skipOnboardingStep('target')).toBe('health');
 });
