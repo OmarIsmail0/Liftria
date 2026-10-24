@@ -38,6 +38,44 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
 }
 
 /** Provenance chips are informative, never independent tap targets. */
+
+/** Radio-group segmented control: one accessible, selected option per group. */
+export function SegmentedControl<T extends string>({ label, options, value, onChange }: {
+  label: string; options: readonly { value: T; label: string }[];
+  value: T; onChange: (next: T) => void;
+}) {
+  const { theme } = useTheme();
+  return <View accessibilityRole="radiogroup" accessibilityLabel={label}
+    style={{
+      flexDirection: 'row', alignItems: 'stretch',
+      borderColor: theme.controlOutline, borderWidth: theme.size.border.thin,
+      borderRadius: theme.radius.pill, overflow: 'hidden',
+      backgroundColor: theme.color.bg.raised,
+    }}>
+    {options.map((option, index) => {
+      const selected = option.value === value;
+      return <Pressable key={option.value} accessibilityRole="radio"
+        accessibilityLabel={option.label} accessibilityState={{ selected, checked: selected }}
+        onPress={() => onChange(option.value)}
+        style={({ pressed }) => ({
+          minWidth: theme.size.touch.min, minHeight: theme.size.touch.min,
+          flex: 1, alignItems: 'center', justifyContent: 'center',
+          paddingVertical: theme.space[2], paddingHorizontal: theme.space[2],
+          backgroundColor: selected ? theme.color.action.primary.bg : theme.color.bg.raised,
+          borderStartWidth: index === 0 ? 0 : theme.size.border.thin,
+          borderColor: theme.controlOutline, opacity: pressed ? 0.8 : 1,
+        })}>
+        <Text allowFontScaling style={{
+          fontFamily: fontFamilyFor('Figtree', selected ? '700' : '600'),
+          fontSize: theme.type.small.size,
+          color: selected ? theme.color.action.primary.fg : theme.color.text.primary,
+          textAlign: 'center',
+        }}>{option.label}</Text>
+      </Pressable>;
+    })}
+  </View>;
+}
+
 export function Chip({ kind, label }: { kind: ProvenanceKind; label?: string }) {
   const { theme } = useTheme();
   const p = provenancePresentation(theme, kind);

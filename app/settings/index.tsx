@@ -16,7 +16,7 @@ const planned = [
   { heading: 'Data and storage', detail: 'Local data and privacy' },
 ] as const;
 
-/** ST-1 shell only: editable settings and persistence arrive in Step 8. */
+/** ST-1 shell: Appearance is available now (TASK-13); other settings arrive in Step 8. */
 export default function SettingsHome() {
   const { theme } = useTheme();
   const taps = useRef(initialVersionTapState);
@@ -24,7 +24,10 @@ export default function SettingsHome() {
     <Header title="Settings" onBack={() => backOrReplace(router, '/(tabs)/today')} />
     <Card>
       {planned.map(item => <ListRow key={item.heading} title={item.heading}
-        detail={item.detail + ' · Coming in Phase 2 step 8'} />)}
+        detail={item.heading === 'Units and appearance'
+          ? 'Theme and visual style · Units coming in Phase 2 step 8'
+          : item.detail + ' · Coming in Phase 2 step 8'}
+        onPress={item.heading === 'Units and appearance' ? () => router.push('/settings/appearance') : undefined} />)}
     </Card>
     <Card title="About and help">
       <Typography tone="secondary">Liftria is local-first. Detailed settings arrive later in Phase 2.</Typography>

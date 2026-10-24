@@ -27,7 +27,8 @@ type MockDatabase = {
 };
 const mockDb: MockDatabase = {
   execAsync: jest.fn(async (sql: string) => {
-    if (sql.includes('PRAGMA user_version = 1')) state.schema = 1;
+    const match = sql.match(/PRAGMA user_version = (\d+)/);
+    if (match) state.schema = Number(match[1]);
   }),
   getFirstAsync: jest.fn(async (sql: string, args: unknown[] = []) => {
     if (sql.includes('PRAGMA user_version')) return { user_version: state.schema };
@@ -97,7 +98,7 @@ jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb)
 
 test('versioned migration, marker persistence and multirow insert', async () => {
   await initializeDatabase();
-  expect(await schemaVersion()).toEqual({ ok: true, value: 1 });
+  expect(await schemaVersion()).toEqual({ ok: true, value: 2 });
   expect(mockDb.withExclusiveTransactionAsync).toHaveBeenCalled();
   expect((await addTestData()).ok).toBe(true);
   const read = await readTestData();
