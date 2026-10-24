@@ -2,7 +2,7 @@
 # Installs a Liftria APK on the running emulator and screenshots the app's screens and every
 # hidden primitive story in dark and light mode. Usage: visual-check.sh <apk> <out-dir>
 set -uo pipefail
-APK="$1"; OUT="$2"; PKG="com.liftria.diagnostics"
+APK="$1"; OUT="$2"
 # App screens as "<shot name>=<route>"; routes that don't exist yet just show Expo Router's
 # not-found page, so this list can run ahead of the build.
 SCREENS="app-today=today app-train=train app-eat=eat app-progress=progress app-health=progress/health app-hiku=hiku app-settings=settings"
@@ -10,6 +10,10 @@ STORIES="screen header card button chip banner snackbar sheet stepper toggle fie
 mkdir -p "$OUT"
 adb wait-for-device
 adb install -r -g "$APK" || { echo "::error::APK install failed"; exit 1; }
+# The app id changes in TASK-4 (com.liftria.diagnostics -> com.liftria.app); find whichever is installed.
+PKG=$(adb shell pm list packages | tr -d '\r' | sed -n 's/^package:\(com\.liftria\..*\)$/\1/p' | head -n1)
+test -n "$PKG" || { echo "::error::No com.liftria.* package installed"; exit 1; }
+echo "Package: $PKG"
 adb shell getprop ro.product.cpu.abilist > "$OUT/abilist.txt"
 adb logcat -c
 shot() { # mode name deep-link

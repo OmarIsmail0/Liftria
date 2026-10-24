@@ -4,14 +4,16 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
-# Next up (updated 2026-10-24, after PR #6 merged)
+# Next up (updated 2026-10-24, after PR #7 merged)
 
 **Order:**
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
-2. **Step 3: navigation shell. In progress — draft PR #7, CI and device visual approval pending.** Per PHASE_2_PROMPT.md §3 step 3. Also in this PR:
-   - **Edge-to-edge system bars:** the ambient background must run behind the status bar and the Android navigation bar (transparent bars, content padded by safe-area insets). Today the navigation bar shows a hard black edge under the app.
-   - The capsule nav sits above the gesture/navigation bar inset, never under it.
-3. **TASK-4: build and signing.** After step 3, before any APK goes to friends.
+2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
+3. **TASK-4: build and signing. Start now** (one new draft PR, `Phase 2 / TASK-4: app id, minSdk and release signing`). See TASK-4 below and PHASE_2_PROMPT.md §2 (Devices, Signing, App identity). Notes for this PR:
+   - You **may** edit `.github/workflows/phase0.yml` for signing only: read the keystore from secrets (`LIFTRIA_KEYSTORE_BASE64`, `LIFTRIA_KEYSTORE_PASSWORD`, `LIFTRIA_KEY_ALIAS`, `LIFTRIA_KEY_PASSWORD`), decode it to a temp file, never `echo` or log any of them, and keep `permissions: contents: read`. Pull-request builds from forks have no secrets: fall back to an unsigned/debug-signed release and say so in the log.
+   - Keep the PR-build `RELEASE_ARCHS` logic: pull requests must still include `x86_64` (the emulator visual check needs it). Main/release builds become `arm64-v8a,armeabi-v7a`.
+   - Keep the artifact name `liftria-phase0-s22-arm64-apks` and `*release*.apk` in the file name, or ask Claude to update `visual-check.yml` in the same PR review.
+   - Write the owner's step-by-step keystore instructions in the PR description (a `keytool` command the owner runs on their own computer, then the four GitHub secrets). Never generate a key in CI.
 4. Then steps 4–9 of PHASE_2_PROMPT.md §3 in order.
 
 **Lessons from PR #6 (follow them in every new screen):**
@@ -19,7 +21,7 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 - For CSS-angle gradients use `cssLinearGradient(angle, width, height)` with `gradientUnits="userSpaceOnUse"`.
 - Size an `absoluteFill` `Svg` from the parent's measured `onLayout` width/height, never `"100%"` (it resolves to the wrong box).
 - No large `rx` on an SVG `Rect` for pills; let the rounded, `overflow: 'hidden'` parent clip it.
-- The **Visual check** workflow posts emulator screenshots of `liftria://dev/primitives/*` on every PR build. For step 3, add the new tab roots to `.github/scripts/visual-check.sh`'s screen list **only by asking in the PR**; Claude edits workflows and scripts.
+- The **Visual check** workflow posts emulator screenshots of the tab screens, Settings and `liftria://dev/primitives/*` on every PR build. To add new screens to it, **ask in the PR**; Claude edits `visual-check.yml` and `.github/scripts/visual-check.sh`.
 
 **Process rules:**
 - Never add or change workflows to run npm or push commits (no `contents: write`). If you need a lockfile regenerated, say so in the PR, and Claude will do it.
