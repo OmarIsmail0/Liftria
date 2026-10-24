@@ -16,7 +16,7 @@ const state: {
   profile: null, targets: [], nextTargetId: 1, migrations: [],
 };
 
-const db = {
+const mockDb = {
   execAsync: jest.fn(async (sql: string) => {
     const marker = /PRAGMA user_version = (\d+)/.exec(sql);
     if (marker) {
@@ -70,14 +70,14 @@ const db = {
     }
     throw new Error('Unexpected SQL: ' + sql);
   }),
-  withExclusiveTransactionAsync: jest.fn(async (action: (tx: typeof db) => Promise<void>) => {
-    await action(db);
+  withExclusiveTransactionAsync: jest.fn(async (action: (tx: typeof mockDb) => Promise<void>) => {
+    await action(mockDb);
   }),
 };
 
-jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => db) }));
+jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb) }));
 
-const asDb = db as unknown as SQLite.SQLiteDatabase;
+const asDb = mockDb as unknown as SQLite.SQLiteDatabase;
 const currentYear = new Date().getUTCFullYear();
 
 describe('monotonic, separate and additive migrations', () => {
@@ -89,14 +89,14 @@ describe('monotonic, separate and additive migrations', () => {
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_aggregates');
     expect(DB_MIGRATIONS[1].sql).toContain('CREATE TABLE IF NOT EXISTS targets');
     expect(DB_MIGRATIONS[1].sql).not.toContain('CREATE TABLE app_settings');
-    const before = db.withExclusiveTransactionAsync.mock.calls.length;
+    const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await initializeDatabase();
     expect(state.schema).toBe(2);
     expect(state.migrations).toEqual([1, 2]);
-    expect(db.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
     expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('liftria.db');
     await initializeDatabase();
-    expect(db.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
   });
 
   test('v1 existing settings and both health caches remain after v2; re-run is no-op', async () => {
@@ -105,7 +105,7 @@ describe('monotonic, separate and additive migrations', () => {
     state.settings.set('persisted', 'value');
     state.health.set('health-connect:1', { payload_json: '{}' });
     state.aggregates.set('health-connect:energy', { payload_json: '{}' });
-    const before = db.withExclusiveTransactionAsync.mock.calls.length;
+    const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await migrateDatabase(asDb);
     expect(state.schema).toBe(2);
     expect(state.migrations).toEqual([2]);
@@ -113,14 +113,14 @@ describe('monotonic, separate and additive migrations', () => {
     expect(state.health.size).toBe(1);
     expect(state.aggregates.size).toBe(1);
     await migrateDatabase(asDb);
-    expect(db.withExclusiveTransactionAsync.mock.calls.length - before).toBe(1);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(1);
   });
 
   test('newer-than-app schema is rejected without running SQL', async () => {
     state.schema = 3;
-    const before = db.withExclusiveTransactionAsync.mock.calls.length;
+    const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await expect(migrateDatabase(asDb)).rejects.toThrow('Database schema is newer than app');
-    expect(db.withExclusiveTransactionAsync.mock.calls.length).toBe(before);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length).toBe(before);
     state.schema = 2;
   });
 });
@@ -149,9 +149,9 @@ describe('nullable metric profile with ON-3 guardrails', () => {
     expect(profileSchema.safeParse({ weightKg: 34.9 }).success).toBe(false);
     expect(profileSchema.safeParse({ weightKg: 300.1 }).success).toBe(false);
     expect(profileSchema.safeParse({ name: 'X'.repeat(31) }).success).toBe(false);
-    const count = db.runAsync.mock.calls.length;
+    const count = mockDb.runAsync.mock.calls.length;
     expect((await saveProfile({ heightCm: 100 })).ok).toBe(false);
-    expect(db.runAsync.mock.calls.length).toBe(count);
+    expect(mockDb.runAsync.mock.calls.length).toBe(count);
   });
 });
 
@@ -192,10 +192,10 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
     expect(targetSchema.safeParse({
       kcal: 999, proteinG: 100, fatG: 40, carbsG: 200, source: 'manual', inputs: null,
     }).success).toBe(false);
-    const count = db.runAsync.mock.calls.length;
+    const count = mockDb.runAsync.mock.calls.length;
     const rejected = await addTarget({ kcal: 999, proteinG: 100, fatG: 40, carbsG: 200, source: 'manual', inputs: null });
     expect(rejected.ok).toBe(false);
-    expect(db.runAsync.mock.calls.length).toBe(count);
+    expect(mockDb.runAsync.mock.calls.length).toBe(count);
     expect(await getCurrentTarget()).toEqual({ ok: true, value: null });
   });
   test('manual followed by estimate retains history, newest first', async () => {
