@@ -114,3 +114,10 @@ test('HE-2 week steps split by local dates without summing separate providers', 
   expect(vals[0]?.values.reduce((sum,n) => sum+n,0)).toBe(1400);
   expect(vals[1]?.values.reduce((sum,n) => sum+n,0)).toBe(200);
 });
+
+test('midnight step clipping never treats an invalid zero-length interval as a step value', () => {
+  const from = new Date('2026-10-24T00:00:00Z');
+  const to = new Date('2026-10-25T00:00:00Z');
+  const bad = { ...steps('bad','phone',99), start:from.toISOString(),end:from.toISOString() };
+  expect(onlyLocalDayRecords('steps',[bad],from,to)).toEqual([]);
+});

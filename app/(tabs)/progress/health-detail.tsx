@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -41,33 +41,28 @@ export default function HealthMetricDetail() {
   const [window, setWindow] = useState<'day' | 'week'>('day');
   const [week, setWeek] = useState<HealthSummary | null>(null);
   const [weekRecords, setWeekRecords] = useState<HealthValue[]>([]);
+  const [weekRefresh, setWeekRefresh] = useState(0);
   const [showEstimate, setShowEstimate] = useState(false);
   const [estimate, setEstimate] = useState<{ kcal: number; type: string } | null>(null);
   const permitted = snapshot.permissions[metric] === 'granted';
   const available = snapshot.availability === 'available';
   const base = snapshot.readings[metric];
-  const result = window === 'week' ? week : base;
+  const result = window === 'week' ? (!available || !permitted
+    ? emptyMetricState(metric, snapshot.permissions[metric] ?? 'unknown', available) : week) : base;
   const today = new Date(), start = new Date(today);
   start.setHours(0,0,0,0);
   const weekStart = new Date(start); weekStart.setDate(weekStart.getDate() - 6);
   const rangeStart = window === 'day' ? start : weekStart;
   // Week never falls back to day readings or a previous metric's results.
   const sourceRecords = window === 'day' ? snapshot.records : weekRecords;
-  const records = useMemo(() => {
-    const from = rangeStart.getTime(), until = Date.now();
-    if (!permitted || !available || (window === 'week' && week === null)) return [];
-    return sourceRecords.filter((r): r is HealthRecord => r.kind !== 'aggregate' &&
-      metricOf(r) === metric && Date.parse(recordTime(r)) >= from &&
-      Date.parse(recordTime(r)) <= until)
+  const rangeStartMs = rangeStart.getTime();
+  const records: HealthRecord[] = !permitted || !available || (window === 'week' && week === null)
+    ? [] : sourceRecords.filter((r): r is HealthRecord => r.kind !== 'aggregate' &&
+      metricOf(r) === metric && Date.parse(recordTime(r)) >= rangeStartMs &&
+      Date.parse(recordTime(r)) <= today.getTime())
       .sort((a,b) => recordTime(b).localeCompare(recordTime(a))).slice(0,50);
-  }, [sourceRecords, metric, permitted, available, window, week, rangeStart.getTime()]);
   useEffect(() => {
-    if (window !== 'week') return;
-    if (!available || !permitted) {
-      setWeek(emptyMetricState(metric, snapshot.permissions[metric] ?? 'unknown', available));
-      setWeekRecords([]);
-      return;
-    }
+    if (window !== 'week' || !available || !permitted) return;
     let mounted = true;
     const until = new Date(), from = new Date(until);
     from.setDate(from.getDate() - 6); from.setHours(0,0,0,0);
@@ -87,7 +82,7 @@ export default function HealthMetricDetail() {
     }).catch(() => { if (mounted) setWeek({ ...emptyMetricState(metric,'granted',true),
       state:'error', note:'Could not read this week.' }); });
     return () => { mounted = false; };
-  }, [metric, window, available, permitted, snapshot.permissions[metric]]);
+  }, [metric, window, available, permitted, snapshot.permissions[metric], weekRefresh]);
 
   useEffect(() => {
     if (metric !== 'active-calories' || !available ||
@@ -113,7 +108,7 @@ export default function HealthMetricDetail() {
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
-      setWeek(null); void refresh(true);
+      setWeek(null); setWeekRecords([]); setWeekRefresh(v => v+1); void refresh(true);
     }} colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}>
     <Header title={label[metric] ?? metric} subtitle="Read-only · source details"
       onBack={() => backOrReplace(router, '/(tabs)/progress')} />
@@ -122,7 +117,7 @@ export default function HealthMetricDetail() {
         <Button label="Day" size="sm" variant={window === 'day' ? 'primary' : 'secondary'}
           onPress={() => { setWeek(null); setWindow('day'); }} />
         <Button label="Week" size="sm" variant={window === 'week' ? 'primary' : 'secondary'}
-          onPress={() => { setWeek(null); setWindow('week'); }} />
+          onPress={() => { setWeek(null); setWeekRecords([]); setWeekRefresh(v => v+1); setWindow('week'); }} />
       </View>
       {energy ? <>
         <Typography>{phase2EnergyMessage(snapshot.permissions[metric] ?? 'unknown', available)}</Typography>
@@ -134,7 +129,7 @@ export default function HealthMetricDetail() {
           <Typography>{estimate.kcal.toLocaleString()} kcal · {estimate.type}</Typography>
           <Typography tone="secondary">No measured contributing source. Not used anywhere in Liftria.</Typography>
         </>}
-      </> : window === 'week' && week === null ? <Typography tone="secondary">Loading this week's readings…</Typography>
+      </> : window === 'week' && week === null && available && permitted ? <Typography tone="secondary">Loading this week's readings…</Typography>
         : result?.state === 'value' ? <>
           {metric === 'steps' && result.total !== null &&
             <Typography size="metric-l">{result.total.toLocaleString()} steps</Typography>}
