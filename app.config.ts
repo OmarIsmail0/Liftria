@@ -1,4 +1,6 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+import releaseVersion from './src/config/releaseVersion.json';
+import { resolveAndroidVersionCode } from './src/config/androidVersion';
 
 const healthReadPermissions = [
   'android.permission.health.READ_STEPS',
@@ -16,16 +18,16 @@ const healthReadPermissions = [
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Liftria Diagnostics',
+  name: 'Liftria',
   slug: 'liftria',
   scheme: 'liftria',
-  version: '0.0.1',
+  version: releaseVersion.name,
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   android: {
-    package: 'com.liftria.diagnostics',
-    versionCode: 1,
+    package: 'com.liftria.app',
+    versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
     permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
     allowBackup: false,
     blockedPermissions: [
@@ -41,7 +43,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-secure-store',
     'react-native-health-connect',
     ['expo-build-properties', {
-      android: { minSdkVersion: 26, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
+      android: { minSdkVersion: 28, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
     }],
   ],
 });

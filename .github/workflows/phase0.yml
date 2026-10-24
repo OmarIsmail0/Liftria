@@ -75,17 +75,84 @@ jobs:
             sleep 5
           done
           test -f "$sdk/ndk/$NDK_VERSION/source.properties"
+      - name: Test release signing Gradle template patch
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+      # GitHub Actions expressions have no arithmetic (+) operator. Compute the same
+      # 100 + github.run_number with Bash integer arithmetic, before Expo prebuild.
+      # GITHUB_RUN_NUMBER increases for each invocation of this workflow.
+      - name: Allocate trusted Android versionCode
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          code=$((100 + GITHUB_RUN_NUMBER))
+          printf 'LIFTRIA_ANDROID_VERSION_CODE=%s\n' "$code" >> "$GITHUB_ENV"
+          echo "Trusted main build Android versionCode: $code"
       - name: Expo Android prebuild
         run: npx expo prebuild --clean --platform android --no-install
-      - name: Compile S22 Ultra ARM64 debug (dev client) and embedded-bundle release APKs
-        working-directory: android
-        # PR release APKs also carry x86_64 so the emulator visual check can run them;
-        # phones keep using the arm64 libraries. Debug and main builds stay arm64 only.
+
+      # Only a trusted main build may access release secrets. Never expose them to
+      # pull-request code (including same-repo PRs), or to non-main dispatches.
+      - name: Prepare trusted release keystore
+        id: release_signing
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
         env:
-          RELEASE_ARCHS: ${{ github.event_name == 'pull_request' && 'arm64-v8a,x86_64' || 'arm64-v8a' }}
+          KEYSTORE_BASE64: ${{ secrets.LIFTRIA_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.LIFTRIA_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.LIFTRIA_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.LIFTRIA_KEY_PASSWORD }}
         run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::warning::No complete release-signing configuration. A debug-signed release will be produced: NOT FOR SHARING."
+            exit 0
+          fi
+          umask 077
+          keyfile="$RUNNER_TEMP/liftria-release.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
+          test -s "$keyfile"
+          if ! keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::Release keystore validation failed. Refusing to ship under an unexpected certificate."
+            exit 1
+          fi
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+          echo "Trusted signing keystore loaded to the temporary runner directory."
+
+      - name: Configure trusted signing in generated Gradle file
+        if: ${{ steps.release_signing.outputs.ready == 'true' }}
+        env:
+          LIFTRIA_SIGNING_KEYSTORE: ${{ format('{0}/liftria-release.jks', runner.temp) }}
+          LIFTRIA_KEYSTORE_PASSWORD: ${{ secrets.LIFTRIA_KEYSTORE_PASSWORD }}
+          LIFTRIA_KEY_ALIAS: ${{ secrets.LIFTRIA_KEY_ALIAS }}
+          LIFTRIA_KEY_PASSWORD: ${{ secrets.LIFTRIA_KEY_PASSWORD }}
+        run: python3 scripts/configure_release_signing.py android/app/build.gradle
+
+      - name: Compile ARM64 debug and embedded-bundle release APKs
+        working-directory: android
+        # Preserve x86_64 on PR releases for the emulator visual-check workflow.
+        # Main releases target both 64-bit and 32-bit Android 9+ phones.
+        env:
+          RELEASE_ARCHS: ${{ github.event_name == 'pull_request' && 'arm64-v8a,x86_64' || 'arm64-v8a,armeabi-v7a' }}
+          LIFTRIA_SIGNING_KEYSTORE: ${{ steps.release_signing.outputs.ready == 'true' && format('{0}/liftria-release.jks', runner.temp) || '' }}
+          LIFTRIA_KEYSTORE_PASSWORD: ${{ steps.release_signing.outputs.ready == 'true' && secrets.LIFTRIA_KEYSTORE_PASSWORD || '' }}
+          LIFTRIA_KEY_ALIAS: ${{ steps.release_signing.outputs.ready == 'true' && secrets.LIFTRIA_KEY_ALIAS || '' }}
+          LIFTRIA_KEY_PASSWORD: ${{ steps.release_signing.outputs.ready == 'true' && secrets.LIFTRIA_KEY_PASSWORD || '' }}
+        run: |
+          set -euo pipefail
           ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
           ./gradlew assembleRelease -PreactNativeArchitectures="$RELEASE_ARCHS" --no-daemon --max-workers=2
+
+      - name: Mark non-distributable release APKs NOT FOR SHARING
+        if: ${{ steps.release_signing.outputs.ready != 'true' }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          releases = list(Path('android/app/build/outputs/apk/release').glob('*-release.apk'))
+          if not releases:
+              raise SystemExit('No release APK found for mandatory NOT FOR SHARING label')
+          for path in releases:
+              path.rename(path.with_name(path.stem + '-NOT-FOR-SHARING.apk'))
+          print('Release APKs use a development/test certificate — NOT FOR SHARING.')
+          PY
       # Upload before the permission gate so a failed gate still leaves the APKs to inspect.
       - name: Upload debug and release APK artifacts
         uses: actions/upload-artifact@v6
@@ -128,5 +195,62 @@ jobs:
           shipped = {name for name, _ in permissions('release')} & FORBIDDEN
           if shipped:
               raise SystemExit(f'Forbidden permission in release APK: {sorted(shipped)}')
-          print('Release APK permissions OK')
+
+          # Verify the new package and manifest, never the previous Phase 0 identity.
+          root = ET.parse(next(Path('android/app/build/intermediates/merged_manifests').glob('release/**/AndroidManifest.xml'))).getroot()
+          if root.get('package') != 'com.liftria.app':
+              raise SystemExit('Wrong Android package: expected com.liftria.app')
+          print('Release APK package and permissions OK: com.liftria.app')
           PY
+
+      - name: Verify APK metadata and signatures
+        env:
+          EXPECTED_ARCHS: ${{ github.event_name == 'pull_request' && 'arm64-v8a,x86_64' || 'arm64-v8a,armeabi-v7a' }}
+          TRUSTED_MAIN_BUILD: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          sdk = Path(os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT') or '/usr/local/lib/android/sdk')
+          aapt = sorted((sdk / 'build-tools').glob('*/aapt'))
+          apksigner = sorted((sdk / 'build-tools').glob('*/apksigner'))
+          if not aapt or not apksigner:
+              raise SystemExit('Missing Android build tools: cannot verify release')
+          releases = list(Path('android/app/build/outputs/apk/release').glob('*release*.apk'))
+          if not releases:
+              raise SystemExit('No release APK found for verification')
+          fallback_code = json.loads(Path('src/config/releaseVersion.json').read_text())['androidCode']
+          trusted_main = os.environ['TRUSTED_MAIN_BUILD'] == 'true'
+          for apk in releases:
+              metadata = subprocess.check_output([str(aapt[-1]), 'dump', 'badging', str(apk)], text=True)
+              match = re.search(r"\bversionCode='([0-9]+)'", metadata)
+              if not match:
+                  raise SystemExit('Cannot parse release APK versionCode')
+              version_code = int(match.group(1))
+              print('APK Android versionCode:', version_code)
+              if trusted_main:
+                  if version_code <= fallback_code:
+                      raise SystemExit('Trusted release versionCode did not exceed the JSON baseline')
+                  if version_code != int(os.environ['LIFTRIA_ANDROID_VERSION_CODE']):
+                      raise SystemExit('Trusted release versionCode disagrees with automatic run number')
+              elif version_code != fallback_code:
+                  raise SystemExit('PR/test APK must use the JSON fallback versionCode')
+              if "name='com.liftria.app'" not in metadata:
+                  raise SystemExit('Wrong release APK application ID')
+              if "sdkVersion:'28'" not in metadata:
+                  raise SystemExit('Wrong APK minSdk: expected Android 9 (API 28)')
+              native = next((line for line in metadata.splitlines() if line.startswith('native-code:')), '')
+              for arch in os.environ['EXPECTED_ARCHS'].split(','):
+                  if f"'{arch}'" not in native:
+                      raise SystemExit('Missing required native architecture: ' + arch)
+              subprocess.run([str(apksigner[-1]), 'verify', str(apk)], check=True)
+              print('Verified package, API 28, architectures and APK signature: ' + apk.name)
+          PY
+
+      - name: Remove temporary release keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/liftria-release.jks"
