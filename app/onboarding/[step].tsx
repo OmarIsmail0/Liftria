@@ -10,6 +10,7 @@ import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, pr
 import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
+import { availabilityMessage, missingHealthPermissions } from '../../src/features/onboarding/healthPermissionCopy';
 import { saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
@@ -100,6 +101,8 @@ export default function OnboardingStepScreen() {
   const [editManual, setEditManual] = useState(false);
   const [manualWarning, setManualWarning] = useState(false);
   const [healthStatus, setHealthStatus] = useState('Not connected');
+  const [healthAvailability, setHealthAvailability] = useState<'available' | 'not-installed' | 'needs-update' | 'unsupported' | null>(null);
+  const [healthMissing, setHealthMissing] = useState<string[]>([]);
   const [keyInput, setKeyInput] = useState('');
   const [keySaved, setKeySaved] = useState(false);
 
@@ -111,6 +114,9 @@ export default function OnboardingStepScreen() {
       setAge(d.birthYear ? String(profileAge(Number(d.birthYear))) : '');
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError('Local settings could not be read.'); } });
+    void healthConnect.getAvailability().then(availability => {
+      if (mounted) setHealthAvailability(availability);
+    }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
     return () => { mounted = false; };
   }, []);
 
@@ -172,15 +178,16 @@ export default function OnboardingStepScreen() {
     setBusy(true); setError(null);
     try {
       const availability = await healthConnect.getAvailability();
-      if (availability !== 'available') { setHealthStatus('Health Connect is ' + availability + '. Update Health Connect or choose Not now.'); return; }
+      setHealthAvailability(availability);
+      if (availability !== 'available') { setHealthStatus(availabilityMessage(availability)); return; }
       const permissions = await healthConnect.requestPermissions([...metricTypes]);
       const granted = Object.values(permissions).filter(p => p === 'granted').length;
       const history = await requestHistoryReadPermission();
-      setHealthStatus(granted === 0 ? 'No permissions granted. You can continue without them.'
-        : granted === metricTypes.length
-          ? 'All ' + granted + ' data types allowed. History: ' + history
-          : granted + ' of ' + metricTypes.length + ' data types allowed. History: ' + history +
-            '. Some health cards may say Not allowed.');
+      setHealthMissing(missingHealthPermissions(permissions));
+      setHealthStatus(granted === metricTypes.length
+        ? 'All ' + granted + ' data types allowed. History: ' + history
+        : granted + ' of ' + metricTypes.length + ' data types allowed. History: ' + history +
+          '. You can continue without the missing permissions.');
     } catch { setHealthStatus('Health Connect could not finish. You can continue without it.'); }
     finally { setBusy(false); }
   }
@@ -272,8 +279,11 @@ export default function OnboardingStepScreen() {
                 <Typography tone="secondary">Data may start from the day you connect. Phone and watch records stay separate.</Typography>
                 <Button label="Open Health Connect permissions" onPress={() => void requestHealth()} />
                 <Typography tone="secondary">{healthStatus}</Typography>
-                <Button variant="ghost" label="Update Health Connect" onPress={() =>
-                  void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />
+                {healthMissing.map(note => <Typography key={note} tone="secondary" size="small">ⓘ {note}</Typography>)}
+                {(healthAvailability === 'not-installed' || healthAvailability === 'needs-update' ||
+                  healthAvailability === 'unsupported') &&
+                  <Button variant="ghost" label="Update Health Connect" onPress={() =>
+                    void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
               </Card>
               : step === 'watch'
                 ? <Card title="Watch data guidance">
