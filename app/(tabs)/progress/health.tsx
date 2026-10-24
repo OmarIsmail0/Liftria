@@ -7,14 +7,13 @@ import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, requestHistoryReadPermission } from '../../../src/services/health';
 import { metricTypes, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
-import { sourceName } from '../../../src/features/health/presentation';
+import { phase2EnergyMessage } from '../../../src/features/health/presentation';
 
 const names: Partial<Record<MetricType, string>> = {
   steps: 'Steps', 'heart-rate': 'Heart rate', 'exercise-session': 'Exercise sessions',
   'sleep-session': 'Sleep', weight: 'Weight', 'body-fat': 'Body fat',
   'active-calories': 'Active energy',
 };
-const energyLabel = 'No measured source';
 
 export default function HealthOverview() {
   const { theme } = useTheme();
@@ -58,8 +57,8 @@ export default function HealthOverview() {
           const result = snapshot.readings[metric];
           if (metric === 'active-calories') {
             return <ListRow key={metric} title="Active energy"
-              detail={snapshot.energy ? `Source: ${sourceName(snapshot.energy.origin)} · Source-backed window` : energyLabel}
-              suffix={snapshot.energy ? <Typography>{Math.round(snapshot.energy.kcal)} kcal</Typography> : <Chip kind="off" label="Not measured" />}
+              detail={phase2EnergyMessage(snapshot.permissions[metric] ?? 'unknown', available)}
+              suffix={<Chip kind="off" label={phase2EnergyMessage(snapshot.permissions[metric] ?? 'unknown', available)} />}
               onPress={() => router.push({ pathname: '/(tabs)/progress/health-detail', params: { metric } })} />;
           }
           const first = result?.sources[0];

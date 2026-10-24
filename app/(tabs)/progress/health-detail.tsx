@@ -92,9 +92,7 @@ export default function HealthMetricDetail() {
             onPress={() => { setWeek(null); setWindow('week'); }} />
         </View>
         {energy ? <>
-          <Typography>{snapshot.energy
-            ? `${Math.round(snapshot.energy.kcal)} kcal · ${sourceName(snapshot.energy.origin)}`
-            : 'No measured source'}</Typography>
+          <Typography>No measured source</Typography>
           <Typography tone="secondary">Unattributed Health Connect energy estimates are hidden and never used in Liftria totals.</Typography>
           {estimate && <Button label={showEstimate ? 'Hide estimate' : 'Show estimate'} variant="ghost"
             onPress={() => setShowEstimate(v => !v)} />}

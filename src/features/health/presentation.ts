@@ -1,4 +1,4 @@
-import type { AggregateValue, HealthValue, MetricType, PermissionState } from '../../services/health/types';
+import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
 
 export type HealthReadingState = 'value' | 'no-data' | 'not-allowed' | 'not-available' | 'error';
 export type OriginSummary = { origin: string; label: string; value: number; unit: string; latestAt: string; stale: boolean };
@@ -88,17 +88,12 @@ export function summarizeRecords(
   };
 }
 
-/** Unattributed Health Connect energy is a provider estimate, not measured exercise. */
-export function measuredEnergy(aggregates: AggregateValue[]): { kcal: number; origin: string } | null {
-  const valid = aggregates.filter(item => (item.metric === 'active-calories' || item.metric === 'total-calories') &&
-    Number.isFinite(item.value) && item.value >= 0);
-  for (const item of valid) {
-    const fromList = item.dataOrigins?.filter(v => v.trim()) ?? [];
-    const origins = fromList.length ? fromList : item.dataOrigin ? [item.dataOrigin] : [];
-    // Multiple origins are not silently merged into a single measurement.
-    if (origins.length === 1) return { kcal: item.value, origin: origins[0]! };
-  }
-  return null;
+/** The daily-energy gate remains NOT READY: no HC aggregate is measured Phase-2 energy. */
+export function phase2EnergyMessage(permission: PermissionState, available: boolean): string {
+  if (!available) return 'Not available';
+  if (permission === 'denied') return 'Not allowed';
+  if (permission === 'unknown') return 'Permission not confirmed';
+  return 'No measured source';
 }
 
 /** Never sum a cached step or exercise interval from a different local day into Today. */

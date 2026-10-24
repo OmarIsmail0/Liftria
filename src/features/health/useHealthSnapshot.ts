@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import { healthConnect, readDailyEnergy } from '../../services/health';
+import { healthConnect } from '../../services/health';
 import { listCachedHealth, saveHealthValues } from '../../services/database';
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
-import { emptyMetricState, measuredEnergy, onlyLocalDayRecords, summarizeRecords, type HealthSummary } from './presentation';
+import { emptyMetricState, onlyLocalDayRecords, summarizeRecords, type HealthSummary } from './presentation';
 
 export const overviewMetrics = [
   'steps', 'heart-rate', 'exercise-session', 'sleep-session',
@@ -15,11 +15,10 @@ export type HealthSnapshot = {
   permissions: Partial<Record<MetricType, PermissionState>>;
   readings: Partial<Record<MetricType, HealthSummary>>;
   records: HealthValue[];
-  energy: { kcal: number; origin: string } | null;
   readAt: string | null;
 };
 const empty: HealthSnapshot = {
-  availability: 'unsupported', permissions: {}, readings: {}, records: [], energy: null, readAt: null,
+  availability: 'unsupported', permissions: {}, readings: {}, records: [], readAt: null,
 };
 const refreshIntervalMs = 15 * 60 * 1000;
 let lastForegroundRead = 0;
@@ -60,14 +59,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
     readings[metric] = summarizeRecords(metric, onlyLocalDayRecords(metric, all, localStart, now), permissions[metric] ?? 'unknown', available);
   }
 
-  let energy: HealthSnapshot['energy'] = null;
-  if (readLive && available && metrics.includes('active-calories')) {
-    const rows = await readDailyEnergy(1);
-    // Disallow unattributed fallback estimates even if Health Connect returned a number.
-    energy = measuredEnergy(rows.filter((row): row is Extract<typeof row, { status:'ok' }> =>
-      row.status === 'ok').map(row => row.value));
-  }
-  return { availability, permissions, readings, records: all, energy, readAt: new Date().toISOString() };
+  return { availability, permissions, readings, records: all, readAt: new Date().toISOString() };
 }
 
 /** Foreground reads are at most once per 15 min; manual refresh always overrides that gate. */

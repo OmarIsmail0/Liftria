@@ -9,7 +9,6 @@ import { getCurrentTarget, type Target } from '../../src/services/database/targe
 import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState, type KeyState } from '../../src/services/secure-storage';
 import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/useHealthSnapshot';
-import { sourceName } from '../../src/features/health/presentation';
 
 type LocalToday = {
   profile: Profile | null; target: Target | null; hideNumbers: boolean;
@@ -111,9 +110,7 @@ export default function TodayTab() {
             suffix={<Typography>{source.value} bpm</Typography>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
           : <Typography tone="secondary">Heart rate: {hr?.note ?? 'Checking Health Connect…'}</Typography>}
-        <Typography tone="secondary">Energy: {snapshot.energy
-          ? `${Math.round(snapshot.energy.kcal)} kcal · ${sourceName(snapshot.energy.origin)} (source-backed window)`
-          : 'No measured source'}</Typography>
+        <Typography tone="secondary">Energy: No measured source</Typography>
         {steps?.sources.length !== 1 && (steps?.sources.length ?? 0) > 1 &&
           <Typography tone="secondary" size="small">Each source is shown separately. Steps are never added across devices.</Typography>}
         <Button label="Health details and permissions" variant="ghost" fullWidth

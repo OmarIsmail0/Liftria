@@ -1,4 +1,4 @@
-import { emptyMetricState, measuredEnergy, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords } from '../presentation';
+import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords } from '../presentation';
 import type { HealthValue, AggregateValue, IntervalSample } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
@@ -37,13 +37,16 @@ test('lack of records is No data, never 0; denied is Not allowed', () => {
   expect(emptyMetricState('steps', 'denied', true)).toMatchObject({ state:'not-allowed', total:null });
   expect(emptyMetricState('steps', 'unknown', false)).toMatchObject({ state:'not-available', total:null });
 });
-test('unattributed or multi-origin energy never masquerades as measured', () => {
+test('single-origin HC total is not Phase-2 measured energy, including Samsung Health', () => {
   const base: AggregateValue = { kind:'aggregate', metric:'total-calories', adapter:'health-connect',
-    operation:'ENERGY_TOTAL', windowStart:start, windowEnd:end, value:1564.5, unit:'kcal', dataOrigins:[] };
-  expect(measuredEnergy([base])).toBeNull();
-  expect(measuredEnergy([{...base,dataOrigins:['phone','watch']}])).toBeNull();
-  expect(measuredEnergy([{...base,dataOrigins:['com.sec.android.app.shealth']}]))
-    .toEqual({ kcal: 1564.5, origin:'com.sec.android.app.shealth' });
+    operation:'ENERGY_TOTAL', windowStart:start, windowEnd:end, value:1564.5, unit:'kcal',
+    dataOrigins:['com.sec.android.app.shealth'] };
+  const summary = summarizeRecords('active-calories', [base], 'granted', true, now);
+  expect(summary.total).toBeNull();
+  expect(phase2EnergyMessage('granted', true)).toBe('No measured source');
+  expect(phase2EnergyMessage('denied', true)).toBe('Not allowed');
+  expect(phase2EnergyMessage('granted', false)).toBe('Not available');
+  expect(phase2EnergyMessage('unknown', true)).toBe('Permission not confirmed');
 });
 test('freshness thresholds: six hours for steps/HR, fourteen days for body mass', () => {
   expect(sourceStale('steps', end, now)).toBe(false);
