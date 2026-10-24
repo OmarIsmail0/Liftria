@@ -63,9 +63,7 @@ export default function TodayTab() {
   const promptHealth = !connectDismissed &&
     (snapshot.availability !== 'available' ||
       (snapshot.permissions.steps !== 'granted' && snapshot.permissions['heart-rate'] !== 'granted'));
-  const justUpdated = snapshot.readAt !== null &&
-    Date.now() - Date.parse(snapshot.readAt) >= 0 &&
-    Date.now() - Date.parse(snapshot.readAt) < 60_000;
+  const justUpdated = snapshot.fresh;
   if (localLoading) return <Screen embedded>
     <Header title="Today" subtitle="Loading your local data…" />
     <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>

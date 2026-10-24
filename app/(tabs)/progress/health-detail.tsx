@@ -44,7 +44,8 @@ export default function HealthMetricDetail() {
   const [weekRefresh, setWeekRefresh] = useState(0);
   const [showEstimate, setShowEstimate] = useState(false);
   const [estimate, setEstimate] = useState<{ kcal: number; type: string } | null>(null);
-  const permitted = snapshot.permissions[metric] === 'granted';
+  const permission = snapshot.permissions[metric];
+  const permitted = permission === 'granted';
   const available = snapshot.availability === 'available';
   const base = snapshot.readings[metric];
   const result = window === 'week' ? (!available || !permitted
@@ -82,7 +83,7 @@ export default function HealthMetricDetail() {
     }).catch(() => { if (mounted) setWeek({ ...emptyMetricState(metric,'granted',true),
       state:'error', note:'Could not read this week.' }); });
     return () => { mounted = false; };
-  }, [metric, window, available, permitted, snapshot.permissions[metric], weekRefresh]);
+  }, [metric, window, available, permitted, permission, weekRefresh]);
 
   useEffect(() => {
     if (metric !== 'active-calories' || !available ||
@@ -129,7 +130,7 @@ export default function HealthMetricDetail() {
           <Typography>{estimate.kcal.toLocaleString()} kcal · {estimate.type}</Typography>
           <Typography tone="secondary">No measured contributing source. Not used anywhere in Liftria.</Typography>
         </>}
-      </> : window === 'week' && week === null && available && permitted ? <Typography tone="secondary">Loading this week's readings…</Typography>
+      </> : window === 'week' && week === null && available && permitted ? <Typography tone="secondary">Loading weekly readings…</Typography>
         : result?.state === 'value' ? <>
           {metric === 'steps' && result.total !== null &&
             <Typography size="metric-l">{result.total.toLocaleString()} steps</Typography>}

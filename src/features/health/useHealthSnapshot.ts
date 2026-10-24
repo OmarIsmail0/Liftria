@@ -16,9 +16,10 @@ export type HealthSnapshot = {
   readings: Partial<Record<MetricType, HealthSummary>>;
   records: HealthValue[];
   readAt: string | null;
+  fresh: boolean; // true only when a live Health Connect read was attempted this refresh
 };
 const empty: HealthSnapshot = {
-  availability: 'unsupported', permissions: {}, readings: {}, records: [], readAt: null,
+  availability: 'unsupported', permissions: {}, readings: {}, records: [], readAt: null, fresh: false,
 };
 const refreshIntervalMs = 15 * 60 * 1000;
 let lastForegroundRead = 0;
@@ -30,6 +31,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
   const permissions: Partial<Record<MetricType, PermissionState>> = available ? await healthConnect.getPermissionStatus([...metrics]) : {};
   const cached = await listCachedHealth(500);
   let all: HealthValue[] = cached.ok ? cached.value : [];
+  let attempted = false;
   const readings: Partial<Record<MetricType, HealthSummary>> = {};
   const now = new Date();
   const localStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -41,6 +43,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
     for (const metric of metrics) {
       if (permissions[metric] !== 'granted' || metric === 'active-calories' ||
           metric === 'total-calories' || metric === 'basal-metabolic-rate') continue;
+      attempted = true;
       const result = await healthConnect.read(metric, { start: from, end: until });
       if (result.status === 'ok') fresh.push(...result.records);
       if (result.status === 'error') {
@@ -57,14 +60,15 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
       all = [...fresh, ...all];
     }
     lastForegroundRead = Date.now();
-    lastActualReadAt = new Date(lastForegroundRead).toISOString();
+    if (attempted) lastActualReadAt = new Date(lastForegroundRead).toISOString();
   }
   for (const metric of metrics) {
     if (readings[metric]) continue;
     readings[metric] = summarizeRecords(metric, onlyLocalDayRecords(metric, all, localStart, now), permissions[metric] ?? 'unknown', available);
   }
 
-  return { availability, permissions, readings, records: all, readAt: lastActualReadAt };
+  return { availability, permissions, readings, records: all,
+    readAt: lastActualReadAt, fresh: attempted };
 }
 
 /** Foreground reads are at most once per 15 min; manual refresh always overrides that gate. */
