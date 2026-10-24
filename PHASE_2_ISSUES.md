@@ -4,37 +4,24 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
-# Next up (updated 2026-10-24: bigger PRs, owner's request)
+# Next up (updated 2026-10-24: three larger PRs)
 
-The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 PRs**, not 6, and the next PR starts as soon as the previous one's **code CI (verify) is green**. Don't wait for the Android build, the emulator check or the owner's device check before starting. Claude reviews in parallel, and the fixes go on the open PR.
+The remaining Phase 2 work uses **three PRs**. Start the next PR when the previous PR's code verification passes. Claude reviews in parallel; fixes stay on the open PR.
 
 **Order:**
-1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
-2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
-3. **TASK-4: build and signing:** merged in PR #8 (2026-10-24). Still open for two owner checks: a trusted signed `main` build (needs the 4 secrets) and the N → N+1 update test. Nothing for you to do here.
-4. **Step 4: data layer — IN PROGRESS in draft PR #9** (mock-backed tests green; native Android and owner check pending). Add **TASK-13** (theme control) to the same PR.
-5. **TASK-11 and TASK-12: orb and card polish.** One new draft PR, `Phase 2 / TASK-11–12: empty orb and card depth`, branched from `main`. Start it after Step 4's first green CI. It touches only `src/design/**` (primitives and tokens) and the tests for them.
-6. Then steps 5–9 of PHASE_2_PROMPT.md §3 in order.
-1. ~~TASK-6 to TASK-10~~ DONE in PR #6. ~~Step 3~~ DONE in PR #7. TASK-4 merged in PR #8 (owner checks open; nothing for you).
-2. ~~Step 4 + TASK-13~~ DONE in PR #9 (merged 2026-10-24; CI green, emulator check approved by Claude). Owner device check (Schema version 2, no theme flash) still open.
-3. **PR A: `Phase 2 / Look and onboarding` = TASK-11 + TASK-12 + Step 5 (onboarding ON-1…ON-9). Start now.**
-   - TASK-11 and TASK-12 first, in `src/design/**`. The onboarding screens then use the improved orb and cards.
-   - Step 5 per PHASE_2_PROMPT §3.5 and USER_FLOWS flow 1. It uses PR #9's `profile`, `settings` and `targets` repositories. Branch from `main`; when PR #9 merges, merge `main` in (a merge commit).
-   - Includes the Mifflin-St Jeor × activity + goal tests (the sample profile gives 2,650), the < 1,200 / > 25% floor sheet, the real Health Connect permission request, and the key saved through SecureStore.
-4. **PR B: `Phase 2 / Today and Health` = Step 6 (TD-1…TD-7) + Step 7 (HE-1…HE-6).** Start when PR A's verify is green. Provenance rules apply: phone ≠ watch steps, never added together; "Unverified" HR; Energy reads "No measured source" and never shows the HC estimate; no data ≠ 0.
-5. **PR C: `Phase 2 / Settings and polish` = Step 8 (ST-1…ST-7) + Step 9 (accessibility pass).** Start when PR B's verify is green. Delete-all with typed DELETE, the key test/replace/delete, live units/hide-numbers. Then 200% text, TalkBack, reduced motion, dark/light and Aurora/Solid on every Phase 2 screen.
+1. ~~TASK-6–10 and Step 3~~ DONE in PRs #6–7. TASK-4 merged in PR #8 (owner signing/update checks remain).
+2. ~~Step 4 + TASK-13~~ DONE in PR #9, merged 2026-10-24 with green CI and Claude-approved emulator screenshots (owner device check remains).
+3. ~~PR A: Look and onboarding~~ DONE in PR #10 (merged 2026-10-24; verify + Android build green, emulator screenshots approved by Claude). Follow-up for PR C: ON-6 must say "Get Health Connect" when Health Connect is not installed.
+4. **PR B: Today and Health — draft PR #11.** Finish the 7 items in Claude's latest review comment, then merge `main` (a merge commit) so the onboarding links work. Next after it merges: PR #12.
+5. **PR C: Settings and polish — draft PR #12.** Paused until PR #11 merges; then merge `main` into it and continue.
 
-**Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once CI is green (verify + android-build) **and** Claude has approved the emulator screenshots. The owner's phone check no longer blocks a merge: the owner tests the merged `main` build and reports problems, which become fix tasks. Keep PRs as drafts while you work; Claude marks them ready and merges.
+**Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once `verify` is green and Claude's code review is clean (plus the emulator screenshots, when Claude asked for a `build`-labeled run). The owner tests the phase-end APK on the phone and reports problems, which become fix tasks.
 
-**Builds (owner's request, 2026-10-24):** pushes to a **draft** PR run only `verify` (about a minute). The 35-minute Android build and the emulator check run once, when Claude marks the PR **Ready for review** after the code review is clean (or when the PR gets the `build` label). So: keep your PR a draft, fix the review comments, and **batch your fixes into as few pushes as you can**. Don't mark PRs ready yourself.
+**This file is Claude's.** Don't edit `PHASE_2_ISSUES.md` on your PR branches: every edit causes a merge conflict, and a conflicted PR runs no CI at all. Put progress notes in your PR description instead.
 
-**For every big PR:**
-- **Commits:** one commit per sub-step (e.g. "TASK-11", "ON-1–ON-3", "ON-4–ON-6"…), so the review can go part by part.
-- **PR description:**
-  - a checklist of every screen ID it covers, each marked built / tested / not done
-  - a Visual check section naming the routes. Ask Claude to add them to the emulator check.
-- **Accessibility from the start:** build it as you go, with ≥ 48dp targets, TalkBack labels as specified, and 200% text that never clips. Step 9 then only checks and fixes.
-- **Out of scope:** Phase 3/4 features, fake data, new dependencies without asking, and workflow edits.
+**Builds (owner's decision, 2026-10-24): per phase, not per PR.** Every push runs only `verify` (about a minute). The 35-minute Android build runs (1) by hand on `main` at the end of a phase, or when the owner wants an APK, and (2) on a PR only if Claude adds the `build` label to get emulator screenshots of a UI-heavy change. Keep PRs as drafts, batch your fixes into few pushes, and never add the label or mark PRs ready yourself.
+
+**Every big PR:** one commit per sub-step; screen ID checklist and Visual check routes in the description; 48dp minimum taps, TalkBack labels and 200% text handling from the start. Out of scope: Phase 3/4 features, fake data, new dependencies without owner consent, and workflow edits.
 
 ## Owner feedback on the emulator, 2026-10-24 (Today screen, light theme)
 
