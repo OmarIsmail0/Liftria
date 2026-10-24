@@ -55,3 +55,8 @@ export function cssLinearGradient(angleDeg: number, width: number, height: numbe
   const cx = width / 2, cy = height / 2;
   return { x1: cx - dx * half, y1: cy - dy * half, x2: cx + dx * half, y2: cy + dy * half };
 }
+
+/** An unfilled first-day glass orb must not show the filled sphere's white spotlight. */
+export function shouldShowOrbHighlight(progress: number | null, style: 'aurora' | 'solid'): boolean {
+  return progress !== null && style === 'aurora';
+}

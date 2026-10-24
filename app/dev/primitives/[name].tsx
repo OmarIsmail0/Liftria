@@ -9,6 +9,7 @@ import {
 } from '../../../src/design/primitives';
 import { buttonVariants, provenanceKinds } from '../../../src/design/primitives';
 import { isPrimitiveStoryId, primitiveStories } from '../../../src/design/primitives/stories';
+import { backOrReplace } from '../../../src/navigation/back';
 
 export default function PrimitiveStory() {
   const { name } = useLocalSearchParams<{ name: string }>();
@@ -28,7 +29,7 @@ export default function PrimitiveStory() {
   const alert = (text: string) => setMessage(text);
 
   return <Screen>
-    <Header title={label} subtitle="Native component test · hidden route" onBack={() => router.back()} />
+    <Header title={label} subtitle="Native component test · hidden route" onBack={() => backOrReplace(router, '/dev/primitives')} />
     {!id || !isPrimitiveStoryId(id) ? <EmptyState title="No matching story" description="Return to the primitive list." /> : <>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
         <Button label={preferences.mode === 'dark' ? 'Light' : 'Dark'} size="sm"

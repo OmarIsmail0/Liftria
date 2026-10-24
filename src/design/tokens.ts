@@ -103,7 +103,7 @@ const shared = {
   space: { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40 },
   radius: { sm: 8, md: 14, lg: 22, pill: 999 },
   layout: { gutter: 18, cardGap: 14, sheetMaxHeight: '90%' },
-  size: { touch: { min: 48, primary: 56, workout: 64, nav: 56 }, border: { thin: 1, rim: 1.2 } },
+  size: { iconStroke: 1.8, touch: { min: 48, primary: 56, workout: 64, nav: 56 }, border: { thin: 1, rim: 1.2 } },
   motion: {
     quick: { duration: 120, easing: 'standard' },
     base: { duration: 220, easing: [0.2, 0.8, 0.2, 1] },
