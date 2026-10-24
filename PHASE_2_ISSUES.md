@@ -16,7 +16,7 @@ The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 P
 5. **TASK-11 and TASK-12: orb and card polish.** One new draft PR, `Phase 2 / TASK-11–12: empty orb and card depth`, branched from `main`. Start it after Step 4's first green CI. It touches only `src/design/**` (primitives and tokens) and the tests for them.
 6. Then steps 5–9 of PHASE_2_PROMPT.md §3 in order.
 1. ~~TASK-6 to TASK-10~~ DONE in PR #6. ~~Step 3~~ DONE in PR #7. TASK-4 merged in PR #8 (owner checks open; nothing for you).
-2. **Step 4 + TASK-13: PR #9.** Finish review fixes only. Nothing new goes in it.
+2. ~~Step 4 + TASK-13~~ DONE in PR #9 (merged 2026-10-24; CI green, emulator check approved by Claude). Owner device check (Schema version 2, no theme flash) still open.
 3. **PR A: `Phase 2 / Look and onboarding` = TASK-11 + TASK-12 + Step 5 (onboarding ON-1…ON-9). Start now.**
    - TASK-11 and TASK-12 first, in `src/design/**`. The onboarding screens then use the improved orb and cards.
    - Step 5 per PHASE_2_PROMPT §3.5 and USER_FLOWS flow 1. It uses PR #9's `profile`, `settings` and `targets` repositories. Branch from `main`; when PR #9 merges, merge `main` in (a merge commit).
