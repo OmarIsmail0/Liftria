@@ -83,17 +83,17 @@ const currentYear = new Date().getUTCFullYear();
 describe('monotonic, separate and additive migrations', () => {
   test('fresh install runs v1 and v2 in distinct transactions, then caches the connection', async () => {
     expect(DB_NAME).toBe('liftria.db');
-    expect(DB_SCHEMA_VERSION).toBe(2);
-    expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2]);
+    expect(DB_SCHEMA_VERSION).toBe(3);
+    expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3]);
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_samples');
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_aggregates');
     expect(DB_MIGRATIONS[1].sql).toContain('CREATE TABLE IF NOT EXISTS targets');
     expect(DB_MIGRATIONS[1].sql).not.toContain('CREATE TABLE app_settings');
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await initializeDatabase();
-    expect(state.schema).toBe(2);
-    expect(state.migrations).toEqual([1, 2]);
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
+    expect(state.schema).toBe(3);
+    expect(state.migrations).toEqual([1, 2, 3]);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(3);
     expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('liftria.db');
     await initializeDatabase();
     expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
@@ -108,20 +108,20 @@ describe('monotonic, separate and additive migrations', () => {
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await migrateDatabase(asDb);
     expect(state.schema).toBe(2);
-    expect(state.migrations).toEqual([2]);
+    expect(state.migrations).toEqual([2, 3]);
     expect(state.settings.get('persisted')).toBe('value');
     expect(state.health.size).toBe(1);
     expect(state.aggregates.size).toBe(1);
     await migrateDatabase(asDb);
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(1);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
   });
 
   test('newer-than-app schema is rejected without running SQL', async () => {
-    state.schema = 3;
+    state.schema = 4;
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await expect(migrateDatabase(asDb)).rejects.toThrow('Database schema is newer than app');
     expect(mockDb.withExclusiveTransactionAsync.mock.calls.length).toBe(before);
-    state.schema = 2;
+    state.schema = 3;
   });
 });
 
