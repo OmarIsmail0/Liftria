@@ -14,11 +14,12 @@ export type HealthSnapshot = {
   availability: Awaited<ReturnType<typeof healthConnect.getAvailability>>;
   permissions: Partial<Record<MetricType, PermissionState>>;
   readings: Partial<Record<MetricType, HealthSummary>>;
+  records: HealthValue[];
   energy: { kcal: number; origin: string } | null;
   readAt: string | null;
 };
 const empty: HealthSnapshot = {
-  availability: 'unsupported', permissions: {}, readings: {}, energy: null, readAt: null,
+  availability: 'unsupported', permissions: {}, readings: {}, records: [], energy: null, readAt: null,
 };
 const refreshIntervalMs = 15 * 60 * 1000;
 let lastForegroundRead = 0;
@@ -64,7 +65,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
     energy = measuredEnergy(rows.filter((row): row is Extract<typeof row, { status:'ok' }> =>
       row.status === 'ok').map(row => row.value));
   }
-  return { availability, permissions, readings, energy, readAt: new Date().toISOString() };
+  return { availability, permissions, readings, records: all, energy, readAt: new Date().toISOString() };
 }
 
 /** Foreground reads are at most once per 15 min; manual refresh always overrides that gate. */
