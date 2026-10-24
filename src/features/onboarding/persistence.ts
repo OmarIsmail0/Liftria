@@ -44,7 +44,7 @@ export function draftTargetInput(draft: OnboardingDraft, source: 'estimate' | 'm
   const raw = [draft.manualKcal, draft.manualProtein, draft.manualFat, draft.manualCarbs];
   if (raw.some(v => !v.trim())) return null;
   const [kcal, proteinG, fatG, carbsG] = raw.map(Number);
-  if ([kcal, proteinG, fatG, carbsG].some(v => !Number.isFinite(v) || v < 0) ||
+  if ([kcal, proteinG, fatG, carbsG].some(v => v === undefined || !Number.isFinite(v) || v < 0) ||
       kcal === undefined || targetSafety(kcal, null).blocked) return null;
   return { kcal, proteinG: proteinG!, fatG: fatG!, carbsG: carbsG!, source: 'manual', inputs: null };
 }
