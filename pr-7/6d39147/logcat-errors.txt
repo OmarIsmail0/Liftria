@@ -1,0 +1,400 @@
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:120)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:92)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:47.417  2032  6291 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@ce8f1b2} with executor MoreExecutors.directExecutor()
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:120)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:91)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:47.418  2032  6236 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@c183e5f} with executor MoreExecutors.directExecutor()
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:93)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@570d175} with executor MoreExecutors.directExecutor()
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:93)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@32c617b} with executor MoreExecutors.directExecutor()
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:93)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:47.429  2032  6255 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:47.492  2032  6299 E MDD     : MDDManager Failed to init shared file metadata.
+10-24 03:53:48.104  6345  6362 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-24 03:53:48.104  6345  6362 E libc    : Access denied finding property "service.adb.tls.port"
+10-24 03:53:48.339  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/refreshzeroprefixtask/shared/ZeroPrefixTaskStats.pb.tmp
+10-24 03:53:48.618   497   545 E libprocessgroup: AddTidToCgroup failed to write '6403'; fd=67: Invalid argument
+10-24 03:53:48.618   497   545 E libprocessgroup: Failed to add task into cgroup
+10-24 03:53:48.949   497   819 E system_server: Invalid class loader spec: =UnsupportedClassLoaderContext=
+10-24 03:53:48.949   497   819 E PackageDexUsage: Unsupported context?
+10-24 03:53:49.135  2032  6253 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1792814028337
+10-24 03:53:49.136  2032  6253 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1792814028337
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@87b994a} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@d9879d8} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@b620016} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@d075b84} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.278  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@a7607a2} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.280  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@760abf0} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@fd0fbee} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@bc971c} with executor MoreExecutors.directExecutor()
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-24 03:53:49.281  2032  6249 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-24 03:53:50.320   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:53:52.926  2032  2381 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-24 03:53:52.926  2032  2381 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-24 03:53:53.779  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:53:58.747   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:01.342   497   595 E InputDispatcher: channel 'b1b0807 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:54:01.616  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:03.175   425   639 E IPCThreadState: binder thread pool (1 threads) starved for 143 ms
+10-24 03:54:06.931   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:09.410   497   595 E InputDispatcher: channel '2a63f98 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:54:09.470  5620  5620 E ActivityThread: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@f2c25a that was originally bound here
+10-24 03:54:09.470  5620  5620 E ActivityThread: android.app.ServiceConnectionLeaked: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@f2c25a that was originally bound here
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.app.LoadedApk$ServiceDispatcher.<init>(LoadedApk.java:1811)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcherCommon(LoadedApk.java:1683)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcher(LoadedApk.java:1662)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.app.ContextImpl.bindServiceCommon(ContextImpl.java:1819)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.app.ContextImpl.bindService(ContextImpl.java:1749)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.content.ContextWrapper.bindService(ContextWrapper.java:756)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at bdu.run(Unknown Source:1)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.os.Handler.handleCallback(Handler.java:938)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.os.Looper.loop(Looper.java:223)
+10-24 03:54:09.470  5620  5620 E ActivityThread: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-24 03:54:09.926  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:11.568   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:17.148  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:22.223   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:25.052  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:30.006   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:32.448   497   595 E InputDispatcher: channel 'e646711 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:54:32.737  2032  2384 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:37.724   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:40.396  2032  2384 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:45.211   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:47.637   497   595 E InputDispatcher: channel 'b24a341 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:54:47.899  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:54:52.872   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:54:55.657  2032  2384 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:00.683   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:02.211  6345  6486 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-24 03:55:02.211  6345  6486 E libc    : Access denied finding property "service.adb.tls.port"
+10-24 03:55:03.193   497   595 E InputDispatcher: channel '932d001 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:55:03.626  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:08.507   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:11.271  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:11.567   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:19.221  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:24.009   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:27.038  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:31.927   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:34.649  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:39.695   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:42.775  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:47.535   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:50.228   497   595 E InputDispatcher: channel 'f5b54d0 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:55:50.616  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:55:55.304   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:55:58.037  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:02.744   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:05.684  2032  2384 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:10.564   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:13.137   497   595 E InputDispatcher: channel 'c8131b com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:56:13.333  2032  2384 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:18.400   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:21.532   912  2147 E FrameEvents: updateAcquireFence: Did not find frame.
+10-24 03:56:21.555   912  2147 E FrameEvents: updateAcquireFence: Did not find frame.
+10-24 03:56:21.593   912   912 E libprocessgroup: set_timerslack_ns write failed: Operation not permitted
+10-24 03:56:23.303   912   912 E libprocessgroup: set_timerslack_ns write failed: Operation not permitted
+10-24 03:56:23.838  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:28.800   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:31.356   497   595 E InputDispatcher: channel 'e432d03 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:56:31.874  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:36.590   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:39.499  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:44.468   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:47.327   497   595 E InputDispatcher: channel 'ee4ba35 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:56:47.543  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:52.674   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:56:55.351   497   595 E InputDispatcher: channel '7e45f9e com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:56:55.638  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:56:56.743   425   639 E IPCThreadState: binder thread pool (1 threads) starved for 159 ms
+10-24 03:57:00.504   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:03.245  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:57:08.354   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:11.567   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:11.764  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:57:19.250  2032  2383 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:57:24.151   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:26.910  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:57:31.995   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:32.413  6345  6486 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-24 03:57:32.413  6345  6486 E libc    : Access denied finding property "service.adb.tls.port"
+10-24 03:57:34.704  2032  2297 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:57:34.946   425   639 E IPCThreadState: binder thread pool (1 threads) starved for 146 ms
+10-24 03:57:40.200   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:43.028  2032  2381 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-24 03:57:48.024   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:57:51.550  2032  7203 E ApplicationPropertiesBu: Date 2021-12-06T00:00:00Z is out of expected range.
+10-24 03:57:51.550  2032  7203 E ApplicationPropertiesBu: Date 2022-02-15T00:00:00Z is out of expected range.
+10-24 03:57:51.552  2032  7203 E ApplicationPropertiesBu: Date 2022-02-22T00:00:00Z is out of expected range.
+10-24 03:57:54.778  1381  2367 E GmsClient: unable to connect to service: com.google.android.gms.auth.key.retrieval.service.START on com.google.android.gms
+10-24 03:57:55.805   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:03.697   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:11.570   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:19.794   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:27.645   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:35.145   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:37.449   497   595 E InputDispatcher: channel '77a4d20 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:58:42.803   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:50.815   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:58:58.652   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:59:06.472   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:59:11.567   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:59:17.047   497   595 E InputDispatcher: channel '7365528 com.liftria.diagnostics/com.liftria.diagnostics.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-24 03:59:22.332   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-24 03:59:30.545   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
