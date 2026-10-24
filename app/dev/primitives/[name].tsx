@@ -21,7 +21,7 @@ export default function PrimitiveStory() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [message, setMessage] = useState('Meal removed');
   const [selectedTab, setSelectedTab] = useState<CapsuleTab>('today');
-  const [noTarget, setNoTarget] = useState(false);
+  const [noTarget, setNoTarget] = useState(true);
   const [hidden, setHidden] = useState(false);
   const [breathing, setBreathing] = useState(true);
   const [eaten, setEaten] = useState(1420);
@@ -104,6 +104,7 @@ export default function PrimitiveStory() {
         <Typography tone="secondary" size="small">No spinner or shimmer for short waits.</Typography>
       </Card>}
       {id === 'orb' && <>
+        <Typography tone="secondary" size="small">First-day empty glass orb: no calorie target and no invented ring.</Typography>
         <Orb eaten={eaten} target={noTarget ? null : 2650} hidden={hidden} active={breathing}
           onPress={() => alert('Open today\'s Eat diary')} />
         <Card title="Pulse Orb states" rim="eat">
