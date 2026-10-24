@@ -24,6 +24,8 @@ The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 P
 4. **PR B: `Phase 2 / Today and Health` = Step 6 (TD-1…TD-7) + Step 7 (HE-1…HE-6).** Start when PR A's verify is green. Provenance rules apply: phone ≠ watch steps, never added together; "Unverified" HR; Energy reads "No measured source" and never shows the HC estimate; no data ≠ 0.
 5. **PR C: `Phase 2 / Settings and polish` = Step 8 (ST-1…ST-7) + Step 9 (accessibility pass).** Start when PR B's verify is green. Delete-all with typed DELETE, the key test/replace/delete, live units/hide-numbers. Then 200% text, TalkBack, reduced motion, dark/light and Aurora/Solid on every Phase 2 screen.
 
+**Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once CI is green (verify + android-build) **and** Claude has approved the emulator screenshots. The owner's phone check no longer blocks a merge: the owner tests the merged `main` build and reports problems, which become fix tasks. Keep PRs as drafts while you work; Claude marks them ready and merges.
+
 **For every big PR:**
 - **Commits:** one commit per sub-step (e.g. "TASK-11", "ON-1–ON-3", "ON-4–ON-6"…), so the review can go part by part.
 - **PR description:**
