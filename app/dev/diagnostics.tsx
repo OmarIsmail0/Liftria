@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
+import { backOrReplace } from '../../src/navigation/back';
 import * as Application from 'expo-application';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
@@ -305,6 +307,7 @@ export default function Diagnostics() {
     <ScrollView style={common.page} contentContainerStyle={common.scroll} keyboardShouldPersistTaps="handled">
       {/* This diagnostics-only page is always dark, even when Android uses a light theme. */}
       <StatusBar barStyle="light-content" />
+      <Action label="Back to developer tools" onPress={() => backOrReplace(router, '/dev')} />
       <Text style={common.h1}>LIFTRIA / Phase 0</Text>
       <Text style={common.sub}>Local-first feasibility diagnostics · not the final UI</Text>
       <Section title="App / Device">

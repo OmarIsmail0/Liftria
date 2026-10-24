@@ -3,7 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import type { LiftriaTheme } from '../tokens';
 import type { CardRim } from './contracts';
-import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, stopProps, withOpacity } from './VisualGeometry';
+import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, shouldShowOrbHighlight, stopProps, withOpacity } from './VisualGeometry';
 
 export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme: LiftriaTheme }) {
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
@@ -87,6 +87,7 @@ export function OrbArtwork({ theme, size, progress }: {
 }) {
   const empty = progress === null;
   const solid = theme.effectiveStyle === 'solid';
+  const showHighlight = shouldShowOrbHighlight(progress, theme.effectiveStyle);
   const diameter = size - theme.space[10];
   const half = diameter / 2;
   const center = size / 2;
@@ -109,18 +110,18 @@ export function OrbArtwork({ theme, size, progress }: {
             <Stop offset="46%" {...stopProps(theme.orb[2])} />
             <Stop offset="100%" {...stopProps(theme.orb[3])} />
           </RadialGradient>
-          <RadialGradient id="orb-highlight" cx="34%" cy="28%" rx="50%" ry="50%" fx="34%" fy="28%">
+          {showHighlight && <RadialGradient id="orb-highlight" cx="34%" cy="28%" rx="50%" ry="50%" fx="34%" fy="28%">
             <Stop offset="0%" {...stopProps(theme.orb.highlight, theme.visual.orbHighlightOpacity)} />
             <Stop offset={(theme.visual.orbHighlightFade * 100) + '%'}
               {...stopProps(theme.orb.highlight, 0)} />
             <Stop offset="100%" {...stopProps(theme.orb.highlight, 0)} />
-          </RadialGradient>
+          </RadialGradient>}
         </Defs>
         <Circle cx={half} cy={half} r={half - (empty ? theme.size.border.thin : 0)}
           fill={empty ? theme.glass.card : solid ? theme.color.bg.raised : 'url(#sphere)'}
           stroke={empty ? theme.glass.border : solid ? theme.color.border.strong : 'none'}
           strokeWidth={empty || solid ? theme.size.border.thin : 0} />
-        {!solid && <Circle cx={half} cy={half} r={half} fill="url(#orb-highlight)" />}
+        {showHighlight && <Circle cx={half} cy={half} r={half} fill="url(#orb-highlight)" />}
       </Svg>
     </View>
     {!empty && <Svg width={size} height={size} style={StyleSheet.absoluteFill}>

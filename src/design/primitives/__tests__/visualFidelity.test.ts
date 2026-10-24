@@ -1,6 +1,6 @@
 import { createTheme } from '../../tokens';
 import { fontFamilyFor } from '../../fonts';
-import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps } from '../VisualGeometry';
+import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps, shouldShowOrbHighlight } from '../VisualGeometry';
 
 test('four fixed ellipse locations match the CSS prototype percentages', () => {
   expect(ambientGlows).toEqual([
@@ -93,4 +93,12 @@ describe('CSS-angle gradients resolve against the real card size', () => {
     expect(g.x1).toBeCloseTo(0); expect(g.x2).toBeCloseTo(200);
     expect(g.y1).toBeCloseTo(50); expect(g.y2).toBeCloseTo(50);
   });
+});
+
+test('an empty glass orb has no grey highlight, but a filled Aurora orb keeps it', () => {
+  expect(shouldShowOrbHighlight(null, 'aurora')).toBe(false);
+  expect(shouldShowOrbHighlight(null, 'solid')).toBe(false);
+  expect(shouldShowOrbHighlight(0, 'aurora')).toBe(true);
+  expect(shouldShowOrbHighlight(0.54, 'aurora')).toBe(true);
+  expect(shouldShowOrbHighlight(0.54, 'solid')).toBe(false);
 });
