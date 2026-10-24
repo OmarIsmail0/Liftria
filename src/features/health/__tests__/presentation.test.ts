@@ -1,10 +1,10 @@
 import { emptyMetricState, measuredEnergy, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords } from '../presentation';
-import type { HealthValue, AggregateValue } from '../../../services/health/types';
+import type { HealthValue, AggregateValue, IntervalSample } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
 const start = '2026-10-24T11:30:00.000Z';
 const now = Date.parse('2026-10-24T13:00:00.000Z');
-function steps(recordId: string, origin: string, count: number): HealthValue {
+function steps(recordId: string, origin: string, count: number): IntervalSample {
   return { adapter: 'health-connect', recordId, dataOrigin: origin,
     kind: 'interval', metric: 'steps', start, end, unit: 'count', value: count };
 }
