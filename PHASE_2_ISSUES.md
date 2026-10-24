@@ -4,17 +4,43 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
-# Next up (updated 2026-10-24, after PR #7 merged)
+# Next up (updated 2026-10-24, Step 4 starts in parallel with PR #8)
 
 **Order:**
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
 2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
-3. **TASK-4: build and signing. Start now** (one new draft PR, `Phase 2 / TASK-4: app id, minSdk and release signing`). See TASK-4 below and PHASE_2_PROMPT.md §2 (Devices, Signing, App identity). Notes for this PR:
+3. **TASK-4: build and signing:** open as draft PR #8. Its versionCode fix (`7526c67`) is in; Claude's final review waits on android-build and the emulator check. **Don't push to PR #8 unless a new review comment asks you to.**
+4. **Step 4: data layer. Start now, in parallel** (see "Step 4: data layer" below).
+5. Then steps 5–9 of PHASE_2_PROMPT.md §3 in order.
+
+## Step 4: data layer (one new draft PR, `Phase 2 / Step 4: data layer`)
+
+PHASE_2_PROMPT.md §3 item 4. **Branch from `main`, not from PR #8.** To keep the two PRs from conflicting, don't edit `app.config.ts`, `.github/**`, `src/config/**`, `scripts/**` or `app/settings/index.tsx` (PR #8 owns them). If you need one of them, ask in the PR; after PR #8 merges, merge `main` into your branch (a merge commit, no rebase).
+
+1. **Migration v2** in `src/services/database/` (`DB_SCHEMA_VERSION = 2`):
+   - Migrations are an ordered list (`v1`, `v2`, …). Each runs in its own `withExclusiveTransactionAsync`, ends with `PRAGMA user_version = n`, and uses `IF NOT EXISTS` so it's idempotent. A fresh install runs v1 then v2; a v1 database runs only v2. Keep the "schema is newer than app" guard.
+   - Keep every v1 table and the energy provenance guards unchanged (`saveHealthValues` / `listCachedHealth`). The Phase 0 diagnostics route must keep working.
+   - Rename the file from `liftria-phase0.db` to `liftria.db`. `com.liftria.app` is a fresh install, so no data is lost, and it's cheaper now than after friends have data.
+2. **`profile`:** one row (`id = 1`) with name (optional, ≤ 30), `sex_for_formula` (`male` | `female` | `unspecified`), `birth_year`, `height_cm`, `weight_kg`, activity (`sitting` | `some` | `active`), goal (`lose` | `maintain` | `build`), `updated_at`. Every field except `id` is nullable: onboarding steps are skippable. Store `birth_year`, not age (ON-3 asks for age; convert with the current year). Validate with zod against ON-3's ranges (age 16–100, 120–230 cm, 35–300 kg), always in metric. Units are a setting, never a stored conversion.
+3. **`settings`:** reuse the existing `app_settings` key/value table; don't add a second one. Add a typed repository with zod and a default per key: `theme` (system/dark/light, default system), `style` (aurora/solid, default aurora), `units.weight` (kg/lb), `units.height` (cm/ftin), `units.energy` (kcal only), `hideNumbers`, `keepScreenOn`, `haptics` (booleans), `onboarding.step` (number) and `onboarding.completedAt` (ISO or null). An invalid stored value reads as the default and never throws. Wire the existing ThemeProvider to persist theme and style through it.
+4. **`targets`** (append-only history): `id`, `kcal`, `protein_g`, `fat_g`, `carbs_g`, `source` (`estimate` | `manual`), `inputs_json` (for an estimate: the profile values and factors used; null for manual), `created_at`. The current target is the newest row. The repository refuses `kcal < 1000` (ON-5: can't be saved). No row means "No target yet" (TD-7), never 0. Don't put the Mifflin formula here; Step 5 owns it.
+5. **Don't** create gym, nutrition or weight-log tables (Phases 3 and 4).
+6. **Tests** (Jest, in the style of the existing mock-backed `database.test.ts`): fresh install → v2; v1 → v2 keeps `app_settings` and both health-cache tables; running v2 twice is a no-op; newer-than-app is rejected; profile validation edges; settings defaults and invalid-value fallback; target history order, `< 1000` rejected, and no target ≠ 0. Say clearly in the PR that these are mock-backed, not proof of Android SQLite.
+7. **Device check (owner):** add a "Schema version" row and the profile/targets/settings counts to the Phase 0 diagnostics route, so the owner can read them on the S22 after installing.
+
+**Done when:** CI is green and the PR lists what was verified (CI output) and what wasn't (device).
+
+---
+
+## TASK-4 notes (kept for reference)
+
+**Notes for PR #8 (TASK-4: build and signing):**
    - You **may** edit `.github/workflows/phase0.yml` for signing only: read the keystore from secrets (`LIFTRIA_KEYSTORE_BASE64`, `LIFTRIA_KEYSTORE_PASSWORD`, `LIFTRIA_KEY_ALIAS`, `LIFTRIA_KEY_PASSWORD`), decode it to a temp file, never `echo` or log any of them, and keep `permissions: contents: read`. Pull-request builds from forks have no secrets: fall back to an unsigned/debug-signed release and say so in the log.
    - Keep the PR-build `RELEASE_ARCHS` logic: pull requests must still include `x86_64` (the emulator visual check needs it). Main/release builds become `arm64-v8a,armeabi-v7a`.
    - Keep the artifact name `liftria-phase0-s22-arm64-apks` and `*release*.apk` in the file name, or ask Claude to update `visual-check.yml` in the same PR review.
    - Write the owner's step-by-step keystore instructions in the PR description (a `keytool` command the owner runs on their own computer, then the four GitHub secrets). Never generate a key in CI.
-4. Then steps 4–9 of PHASE_2_PROMPT.md §3 in order.
+
+## Rules for every PR
 
 **Lessons from PR #6 (follow them in every new screen):**
 - `react-native-svg` on Android drops the alpha of `rgba()` stop colors. Always use `stopProps()` from `VisualGeometry.ts`.
