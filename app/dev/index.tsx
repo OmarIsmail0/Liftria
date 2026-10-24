@@ -1,0 +1,16 @@
+import { router } from 'expo-router';
+import { Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
+
+/** Reached only from seven version taps in Settings or by a developer deep link. */
+export default function DeveloperHome() {
+  return <Screen>
+    <Header title="Developer tools" onBack={() => router.back()} />
+    <Typography tone="secondary">Local diagnostics and component previews. Not part of the normal tabs.</Typography>
+    <Card>
+      <ListRow title="Primitive lab" detail="Visual and accessibility preview screens"
+        onPress={() => router.push('/dev/primitives')} />
+      <ListRow title="Phase 0 diagnostics" detail="Health, SQLite and API test tools"
+        onPress={() => router.push('/dev/diagnostics')} />
+    </Card>
+  </Screen>;
+}
