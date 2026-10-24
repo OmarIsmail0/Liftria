@@ -24,9 +24,9 @@ The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 P
 4. **PR B: `Phase 2 / Today and Health` = Step 6 (TD-1…TD-7) + Step 7 (HE-1…HE-6).** Start when PR A's verify is green. Provenance rules apply: phone ≠ watch steps, never added together; "Unverified" HR; Energy reads "No measured source" and never shows the HC estimate; no data ≠ 0.
 5. **PR C: `Phase 2 / Settings and polish` = Step 8 (ST-1…ST-7) + Step 9 (accessibility pass).** Start when PR B's verify is green. Delete-all with typed DELETE, the key test/replace/delete, live units/hide-numbers. Then 200% text, TalkBack, reduced motion, dark/light and Aurora/Solid on every Phase 2 screen.
 
-**Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once CI is green (verify + android-build) **and** Claude has approved the emulator screenshots. The owner's phone check no longer blocks a merge: the owner tests the merged `main` build and reports problems, which become fix tasks. Keep PRs as drafts while you work; Claude marks them ready and merges.
+**Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once `verify` is green and Claude's code review is clean (plus the emulator screenshots, when Claude asked for a `build`-labeled run). The owner tests the phase-end APK on the phone and reports problems, which become fix tasks.
 
-**Builds (owner's request, 2026-10-24):** pushes to a **draft** PR run only `verify` (about a minute). The 35-minute Android build and the emulator check run once, when Claude marks the PR **Ready for review** after the code review is clean (or when the PR gets the `build` label). So: keep your PR a draft, fix the review comments, and **batch your fixes into as few pushes as you can**. Don't mark PRs ready yourself.
+**Builds (owner's decision, 2026-10-24): per phase, not per PR.** Every push runs only `verify` (about a minute). The 35-minute Android build runs (1) by hand on `main` at the end of a phase, or when the owner wants an APK, and (2) on a PR only if Claude adds the `build` label to get emulator screenshots of a UI-heavy change. Keep PRs as drafts, batch your fixes into few pushes, and never add the label or mark PRs ready yourself.
 
 **For every big PR:**
 - **Commits:** one commit per sub-step (e.g. "TASK-11", "ON-1–ON-3", "ON-4–ON-6"…), so the review can go part by part.

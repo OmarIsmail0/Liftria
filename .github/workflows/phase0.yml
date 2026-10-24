@@ -11,7 +11,7 @@ on:
       - '.github/workflows/visual-check.yml'
       - '.github/workflows/claude-*.yml'
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled]
+    types: [opened, synchronize, reopened, labeled]
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
@@ -48,17 +48,18 @@ jobs:
       - name: TypeScript, lint, Jest
         run: npm run check
 
-  # The 35-minute Android build runs only when it's needed (owner's request, 2026-10-24):
-  #  - on main after a code change (not for docs-only commits, see paths-ignore),
-  #  - on a pull request once it's marked "Ready for review", or when it gets the `build` label,
-  #  - or by hand (Actions > Run workflow).
-  # Draft PR pushes run only `verify` (about a minute).
+  # The 35-minute Android build runs per PHASE, not per PR (owner's decision, 2026-10-24):
+  #  - by hand: Actions > "Phase 0 code and Android verification" > Run workflow (on main
+  #    this is the signed, shareable APK; run it at the end of a phase or when the owner
+  #    wants to test on the phone),
+  #  - on a pull request only when Claude adds the `build` label (for emulator screenshots
+  #    of a UI-heavy PR).
+  # Every push and every PR still runs `verify` (about a minute).
   android-build:
     needs: verify
     if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.draft == false ||
-      contains(github.event.pull_request.labels.*.name, 'build')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'build'))
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
