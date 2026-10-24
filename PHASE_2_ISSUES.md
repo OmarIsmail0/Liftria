@@ -10,7 +10,7 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
 2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
 3. **TASK-4: build and signing:** open as draft PR #8. Its versionCode fix (`7526c67`) is in; Claude's final review waits on android-build and the emulator check. **Don't push to PR #8 unless a new review comment asks you to.**
-4. **Step 4: data layer. Start now, in parallel** (see "Step 4: data layer" below).
+4. **Step 4: data layer — IN PROGRESS in draft PR #9**, branched from main; CI and owner SQLite device check pending (see "Step 4: data layer" below).
 5. Then steps 5–9 of PHASE_2_PROMPT.md §3 in order.
 
 ## Step 4: data layer (one new draft PR, `Phase 2 / Step 4: data layer`)
