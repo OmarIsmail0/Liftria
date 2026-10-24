@@ -5,10 +5,10 @@ import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, Sheet, 
 import { backOrReplace } from '../../src/navigation/back';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { getProfile, profileSchema, saveProfile, type ProfileInput } from '../../src/services/database/profile';
-import { addTarget, getCurrentTarget, type Target } from '../../src/services/database/targets';
+import { addTarget, getCurrentTarget, targetSchema, type TargetInput, type Target } from '../../src/services/database/targets';
 import { getTypedSetting } from '../../src/services/database/settings';
 import { toMetricWeight, toMetricHeight, LB_PER_KG, CM_PER_IN, type WeightUnit, type HeightUnit } from '../../src/features/settings/units';
-import { parseOptionalNumber, proposedTargetUpdate, type PendingProfileTarget } from '../../src/features/settings/profileTargets';
+import { parseOptionalNumber, proposedTargetUpdate, estimateEditedProfile, checkSettingsTarget, type PendingProfileTarget } from '../../src/features/settings/profileTargets';
 
 type Form = {
   name:string; birthYear:string; heightCm:string; feet:string; inches:string; weight:string;
@@ -28,6 +28,12 @@ export default function ProfileAndGoals() {
   const [busy,setBusy] = useState(false);
   const [pending,setPending] = useState<PendingProfileTarget|null>(null);
   const [message,setMessage] = useState<string|null>(null);
+  const [targetEditor,setTargetEditor] = useState(false);
+  const [manualKcal,setManualKcal] = useState('');
+  const [manualProtein,setManualProtein] = useState('');
+  const [manualFat,setManualFat] = useState('');
+  const [manualCarbs,setManualCarbs] = useState('');
+  const [floorRequest,setFloorRequest] = useState<{ input:ProfileInput; target:TargetInput }|null>(null);
   useEffect(() => {
     let mounted = true;
     void Promise.all([getProfile(),getCurrentTarget(),
@@ -36,7 +42,14 @@ export default function ProfileAndGoals() {
       const wu = w.ok ? w.value : 'kg', hu = h.ok ? h.value : 'cm';
       setUnit({weight:wu,height:hu});
       const value = profile.ok ? profile.value : null;
-      setTarget(current.ok ? current.value : null);
+      const savedTarget = current.ok ? current.value : null;
+      setTarget(savedTarget);
+      if (savedTarget) {
+        setManualKcal(String(savedTarget.kcal));
+        setManualProtein(String(savedTarget.proteinG));
+        setManualFat(String(savedTarget.fatG));
+        setManualCarbs(String(savedTarget.carbsG));
+      }
       if (!value) return;
       const heightInches = value.heightCm !== null ? Math.round(value.heightCm / CM_PER_IN) : null;
       setForm({
@@ -68,31 +81,71 @@ export default function ProfileAndGoals() {
       activity:form.activity,goal:form.goal,
     };
   }
-  async function persist(input:ProfileInput,update:PendingProfileTarget|null) {
+  async function persist(input:ProfileInput,update:TargetInput|null) {
     setBusy(true);setMessage(null);
     try {
       const saved=await saveProfile(input);
       if (!saved.ok) { setMessage('Could not save the profile. Nothing else was changed.');return; }
       if (update) {
-        const next=await addTarget(update.estimate);
+        const next=await addTarget(update);
         if (!next.ok) {
           setMessage('Profile saved, but the new target was not saved. Your earlier target is unchanged.');
           setPending(null); return;
         }
         setTarget(next.value);
       }
-      setPending(null);setMessage(update ? 'Profile and new estimated target saved.' : 'Profile saved. Your target was kept.');
+      setPending(null);setTargetEditor(false);setFloorRequest(null);
+      setMessage(update ? 'Profile and target saved.' : 'Profile saved. Your target was kept.');
+      if (update) router.replace('/settings');
     } catch { setMessage('Could not save. Check the fields and try again.'); }
     finally { setBusy(false); }
   }
-  function onSave() {
-    const parsed=profileSchema.safeParse(inputFromForm());
-    if (!parsed.success) {
-      setMessage(parsed.error.issues.map(issue => issue.message).join(' '));return;
+  function queueTarget(input:ProfileInput,targetInput:TargetInput) {
+    const check=checkSettingsTarget(targetInput.kcal,input);
+    if(check.blocked) { setMessage(check.reason); setTargetEditor(false); setPending(null); return; }
+    if(check.warning) { setFloorRequest({input,target:targetInput}); setTargetEditor(false); setPending(null); return; }
+    void persist(input,targetInput);
+  }
+  function inputIfValid(): ProfileInput | null {
+    const result=profileSchema.safeParse(inputFromForm());
+    if (!result.success) {
+      setMessage(result.error.issues.map(issue=>issue.message).join(' '));
+      return null;
     }
-    const proposal=proposedTargetUpdate(parsed.data,target);
+    return result.data;
+  }
+  function useEditedEstimate() {
+    const input=inputIfValid();
+    if(!input) return;
+    const estimate=estimateEditedProfile(input);
+    if(!estimate) {
+      setMessage('Complete age, height, weight, formula sex, activity and goal to calculate an estimate.');
+      return;
+    }
+    queueTarget(input,estimate);
+  }
+  function useManualTarget() {
+    const input=inputIfValid();
+    if(!input) return;
+    const numbers=[manualKcal,manualProtein,manualFat,manualCarbs].map(n=>parseOptionalNumber(n));
+    if(numbers.some(n=>n===null || !Number.isFinite(n))) {
+      setMessage('Enter valid calories, protein, fat and carbs before saving a manual target.');
+      return;
+    }
+    const [kcal,proteinG,fatG,carbsG]=numbers as number[];
+    if(kcal<1000) { setMessage('A calorie target below 1,000 kcal cannot be saved.');return; }
+    const targetInput=targetSchema.safeParse({kcal,proteinG,fatG,carbsG,source:'manual',inputs:null});
+    if(!targetInput.success) {
+      setMessage(targetInput.error.issues.map(issue=>issue.message).join(' '));return;
+    }
+    queueTarget(input,targetInput.data);
+  }
+  function onSave() {
+    const input=inputIfValid();
+    if(!input) return;
+    const proposal=proposedTargetUpdate(input,target);
     if (proposal) setPending(proposal);
-    else void persist(parsed.data,null);
+    else void persist(input,null);
   }
   return <Screen>
     <Header title="Profile and goals" subtitle="Stored locally · optional fields"
@@ -126,7 +179,8 @@ export default function ProfileAndGoals() {
         options={[{value:'unset',label:'Not set'},{value:'lose',label:'Lose'},
           {value:'maintain',label:'Maintain'},{value:'build',label:'Build'}]} />
       <ListRow title="Current calorie target" detail={target ? `${target.kcal} kcal · ${target.source==='manual'?'Manual':'Estimate'}` : 'No target set'}
-        onPress={()=>router.push({pathname:'/onboarding/[step]',params:{step:'target'}})} />
+        onPress={()=>{setTargetEditor(true);setMessage(null)}} />
+      <Typography tone="secondary" size="small">Edit or recalculate here using your current form. No onboarding steps are changed.</Typography>
       {target?.source==='manual' && <Typography tone="secondary">Manual targets never change automatically when you save your profile.</Typography>}
     </Card>
     {message && <View accessibilityRole="alert"><Typography tone="secondary">ⓘ {message}</Typography></View>}
@@ -137,7 +191,28 @@ export default function ProfileAndGoals() {
       <Button label="Keep current target" fullWidth disabled={busy}
         onPress={()=>{if(pending)void persist(pending.input,null)}} />
       <Button label="Update target" variant="secondary" fullWidth disabled={busy}
-        onPress={()=>{if(pending)void persist(pending.input,pending)}} />
+        onPress={()=>{if(pending)queueTarget(pending.input,pending.estimate)}} />
+    </Sheet>
+    <Sheet visible={targetEditor} title="Edit calorie target"
+      description="Calculate from the edited profile above, or set a manual target. A manual target will never change automatically."
+      onClose={()=>setTargetEditor(false)}>
+      {estimateEditedProfile(inputFromForm()) ? <>
+        <Typography tone="secondary">Estimate from edited profile: {estimateEditedProfile(inputFromForm())?.kcal.toLocaleString()} kcal</Typography>
+        <Button label="Use this estimate" variant="secondary" fullWidth disabled={busy}
+          onPress={useEditedEstimate} />
+      </> : <Typography tone="secondary">Complete the optional profile fields above to calculate an estimate.</Typography>}
+      <Field label="Calories (kcal)" value={manualKcal} keyboardType="numeric" onChangeText={setManualKcal} />
+      <Field label="Protein (g)" value={manualProtein} keyboardType="numeric" onChangeText={setManualProtein} />
+      <Field label="Fat (g)" value={manualFat} keyboardType="numeric" onChangeText={setManualFat} />
+      <Field label="Carbs (g)" value={manualCarbs} keyboardType="numeric" onChangeText={setManualCarbs} />
+      <Button label="Save manual target" variant="secondary" disabled={busy} fullWidth onPress={useManualTarget} />
+    </Sheet>
+    <Sheet visible={floorRequest!==null} title="Calorie target caution"
+      description="This is lower than Liftria recommends without guidance from a professional. You can keep your current target or explicitly continue."
+      onClose={()=>setFloorRequest(null)}>
+      <Button label="Keep current target" fullWidth onPress={()=>setFloorRequest(null)} />
+      <Button label="Continue with this target" variant="secondary" fullWidth
+        disabled={busy} onPress={()=>{if(floorRequest)void persist(floorRequest.input,floorRequest.target)}} />
     </Sheet>
   </Screen>;
 }
