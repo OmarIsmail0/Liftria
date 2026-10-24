@@ -50,6 +50,7 @@ export default function PrimitiveStory() {
       {id === 'button' && <Card title="All button variants">
         {buttonVariants.map(variant => <Button key={variant} label={variant} variant={variant}
           onPress={() => alert(`Pressed ${variant}`)} fullWidth />)}
+        <Button label="Start workout" variant="train" fullWidth onPress={() => alert("Workout started")} />
         <Button label="Small button" size="sm" onPress={() => alert('Small')} />
         <Button label="Extra large log set" size="xl" variant="train" fullWidth onPress={() => alert('Logged')} />
         <Button label="Disabled" disabled onPress={() => alert('Should not happen')} />
@@ -101,18 +102,22 @@ export default function PrimitiveStory() {
         <Skeleton /><Skeleton height={theme.size.touch.workout} />
         <Typography tone="secondary" size="small">No spinner or shimmer for short waits.</Typography>
       </Card>}
-      {id === 'orb' && <Card title="Pulse Orb: estimated target" rim="eat">
+      {id === 'orb' && <>
         <Orb eaten={eaten} target={noTarget ? null : 2650} hidden={hidden} active={breathing}
           onPress={() => alert('Open today\'s Eat diary')} />
+        <Card title="Pulse Orb states" rim="eat">
         <Typography tone="secondary">Estimate · Eaten of target</Typography>
         <Typography tone="secondary" size="small">Reduce motion active: {reduceMotion ? 'Yes — orb stays still' : 'No'}</Typography>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
           <Button size="sm" label="Add 180" onPress={() => setEaten(v => v + 180)} />
+          <Button size="sm" label="First day: 0" onPress={() => { setEaten(0); setNoTarget(true); }} />
+          <Button size="sm" label="Reset sample" onPress={() => { setEaten(1420); setNoTarget(false); }} />
           <Button size="sm" label="No target" onPress={() => setNoTarget(v => !v)} />
           <Button size="sm" label="Hide numbers" onPress={() => setHidden(v => !v)} />
           <Button size="sm" label="Pause" onPress={() => setBreathing(v => !v)} />
         </View>
-      </Card>}
+        </Card>
+      </>}
       {id === 'capsule-nav' && <Card title="Five-tab capsule">
         <CapsuleNav active={selectedTab} onSelect={setSelectedTab} />
         <Typography tone="secondary" size="small">Selected tab: {selectedTab}</Typography>

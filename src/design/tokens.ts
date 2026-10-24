@@ -41,7 +41,7 @@ const palette = {
       health: 'rgba(25,194,160,0.38)', eat: 'rgba(255,190,80,0.26)',
     },
     train: { gradEnd: '#FF6A6A' },
-    orb: { 1: '#FFCF5E', 2: '#FF8F6B', 3: '#7B5CFF', ink: '#120B22' },
+    orb: { 1: '#FFCF5E', 2: '#FF8F6B', 3: '#7B5CFF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFC2A3', 2: '#FF8F6B', 3: '#D9487A' },
     sheet: { glass: 'rgba(16,17,30,0.94)' },
     elevation: { card: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.35)' },
@@ -77,7 +77,7 @@ const palette = {
       health: 'rgba(120,225,200,0.50)', eat: 'rgba(255,215,130,0.50)',
     },
     train: { gradEnd: '#B8322E' },
-    orb: { 1: '#FFE09A', 2: '#FFB496', 3: '#B9A8FF', ink: '#120B22' },
+    orb: { 1: '#FFE09A', 2: '#FFB496', 3: '#B9A8FF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFD9C7', 2: '#FFB496', 3: '#F08DB0' },
     sheet: { glass: 'rgba(255,255,255,0.95)' },
     elevation: { card: '0 1px 2px rgba(18,22,28,0.06), 0 6px 18px rgba(18,22,28,0.07)' },
@@ -103,14 +103,15 @@ const shared = {
   space: { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40 },
   radius: { sm: 8, md: 14, lg: 22, pill: 999 },
   layout: { gutter: 18, cardGap: 14, sheetMaxHeight: '90%' },
-  size: { touch: { min: 48, primary: 56, workout: 64, nav: 56 }, border: { thin: 1, rim: 1.5 } },
+  size: { touch: { min: 48, primary: 56, workout: 64, nav: 56 }, border: { thin: 1, rim: 1.2 } },
   motion: {
     quick: { duration: 120, easing: 'standard' },
     base: { duration: 220, easing: [0.2, 0.8, 0.2, 1] },
     slow: { duration: 550, range: [500, 600], easing: [0.2, 0.8, 0.2, 1] },
     breathe: { duration: 5000, scale: 1.03 },
   },
-  orbSize: { today: 236, compact: 200, diary: 132, ringStroke: 12, segments: 48 },
+  visual: { cardGlowBlur: 34, orbGlowInnerBlur: 60, orbGlowOuterBlur: 120, orbHighlightOpacity: 0.5, orbHighlightFade: 0.3, ambientFade: 0.7 },
+  orbSize: { today: 236, compact: 200, diary: 132, ringStroke: 4, segments: 48 },
 } as const;
 
 /**

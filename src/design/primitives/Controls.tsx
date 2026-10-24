@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Modal, Pressable, ScrollView, Text, TextInput, View, type KeyboardTypeOptions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
+import { fontFamilyFor } from '../fonts';
+import { TrainGradient } from './VisualEffects';
 import { buttonColors, buttonHeight, provenancePresentation, type ButtonSize, type ButtonVariant,
   type ProvenanceKind } from './contracts';
 import { Typography } from './Surfaces';
@@ -14,19 +16,24 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
 }) {
   const { theme } = useTheme();
   const colors = buttonColors(theme, variant);
+  const gradient = variant === 'train' && theme.effectiveStyle === 'aurora';
+  const [box, setBox] = useState({ width: 0, height: 0 });
   return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
     accessibilityState={{ disabled }} disabled={disabled} onPress={onPress}
+    onLayout={gradient ? e => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }) : undefined}
     style={({ pressed }) => ({
       minHeight: buttonHeight(theme, size), minWidth: theme.size.touch.min,
       alignItems: 'center', justifyContent: 'center', alignSelf: fullWidth ? 'stretch' : 'flex-start',
       flexShrink: 1,
       paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
       paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
-      borderWidth: variant === 'ghost' ? 0 : theme.size.border.thin, borderColor: colors.border,
-      backgroundColor: colors.bg, opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
+      borderWidth: variant === 'ghost' || gradient
+        ? 0 : theme.size.border.thin, borderColor: colors.border,
+      backgroundColor: colors.bg, overflow: 'hidden', opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
     })}>
+    {gradient && <TrainGradient theme={theme} width={box.width} height={box.height} />}
     <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
-      fontWeight: '700', textAlign: 'center', flexShrink: 1 }}>{label}</Text>
+      fontFamily: fontFamilyFor('Figtree', '700'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
   </Pressable>;
 }
 
@@ -41,8 +48,8 @@ export function Chip({ kind, label }: { kind: ProvenanceKind; label?: string }) 
       borderStyle: p.dashed ? 'dashed' : 'solid', paddingHorizontal: theme.space[3],
       paddingVertical: theme.space[1], borderRadius: theme.radius.pill,
       flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-    <Text importantForAccessibility="no" style={{ color: p.fg, fontSize: theme.type.small.size }}>{p.glyph}</Text>
-    <Text allowFontScaling style={{ color: p.fg, fontSize: theme.type.small.size, fontWeight: '600' }}>{text}</Text>
+    <Text importantForAccessibility="no" style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree','400') }}>{p.glyph}</Text>
+    <Text allowFontScaling style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', '600') }}>{text}</Text>
   </View>;
 }
 
@@ -67,7 +74,7 @@ export function Stepper({ label, value, onChange, min = 0, max = 999, step = 1, 
       </Pressable>
       <View style={{ paddingHorizontal: theme.space[3], minWidth: theme.size.touch.workout, alignItems: 'center' }}
         accessible accessibilityLabel={`${label}, ${value} ${unit}`}>
-        <Text allowFontScaling style={{ fontSize: theme.type.metric.m.size, fontWeight: '800',
+        <Text allowFontScaling style={{ fontSize: theme.type.metric.m.size, fontFamily: fontFamilyFor('Archivo', '800'),
           color: theme.color.text.primary, fontVariant: ['tabular-nums'] }}>{value}</Text>
         {unit ? <Typography tone="secondary" size="small">{unit}</Typography> : null}
       </View>
@@ -116,7 +123,7 @@ export function Field({ label, value, onChangeText, placeholder, secure = false,
       style={{ minHeight: theme.size.touch.min, borderWidth: theme.size.border.thin, borderColor: error ? theme.color.status.danger : theme.controlOutline,
         backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md,
         paddingHorizontal: theme.space[3], paddingVertical: theme.space[2],
-        fontSize: theme.type.body.size, color: theme.color.text.primary }} />
+        fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400'), color: theme.color.text.primary }} />
     {error && <Typography tone="secondary" size="small">{error}</Typography>}
   </View>;
 }
@@ -131,14 +138,14 @@ export function Snackbar({ message, onUndo, onDismiss }: {
     minHeight: theme.size.touch.min, paddingStart: theme.space[4], paddingEnd: theme.space[2],
     flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
     <Text allowFontScaling style={{ flex: 1, color: theme.color.action.primary.fg,
-      fontSize: theme.type.body.size }}>{message}</Text>
+      fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400') }}>{message}</Text>
     {onUndo && <Pressable accessibilityRole="button" accessibilityLabel="Undo" onPress={onUndo}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: theme.color.action.primary.fg, fontWeight: '700' }}>Undo</Text>
+      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>Undo</Text>
     </Pressable>}
     {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel="Dismiss message" onPress={onDismiss}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: theme.color.action.primary.fg }}>×</Text>
+      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>×</Text>
     </Pressable>}
   </View>;
 }
