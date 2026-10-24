@@ -9,8 +9,8 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 # Next up (2026-10-24)
 
 **Order:**
-1. **Phase 2 finishes first:** PR #12 (Settings and polish) must be merged before you start Phase 3.
-2. **PR D: `Phase 3 / Library and data`. Start once PR #12 is merged.**
+1. **Phase 2:** PR #12 (Settings and polish) is approved and about to merge. Make no more changes to it.
+2. **PR D: `Phase 3 / Library and data`. Start now** (owner's go, 2026-10-24), as a new draft PR branched from `main`. PR #12 also touches `src/services/database/index.ts` (deleteLocalDatabase), so when PR #12 merges, merge `main` into PR D with a merge commit and keep both changes.
    - Schema v3 and repositories.
    - Exercise pack loader (from `assets/data/exercises/free-exercise-db.json`) and the 17-region test.
    - `BodyMap`.
@@ -37,7 +37,7 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
   - a checklist of every screen ID, each marked built / tested / not done
   - CI evidence
   - "Visual check" routes, so Claude can add them to the emulator check
-- **New dependencies:** only the ones listed in PHASE_3_PROMPT §2, added in the PR that needs them. Ask Claude to regenerate the lockfile.
+- **New dependencies:** the owner **approved** the four in PHASE_3_PROMPT §2 (expo-keep-awake, expo-notifications, expo-document-picker, expo-file-system). Add each in the PR that needs it and ask Claude to regenerate the lockfile. Nothing else without asking.
 - **Never:**
   - workflow edits
   - fabricated results
