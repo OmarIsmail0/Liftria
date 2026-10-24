@@ -248,22 +248,25 @@ export function historyPermissionMessage(status: 'granted' | 'denied' | 'unverif
 export function recordsInWindow(metric: MetricType, values: HealthValue[], start: Date, end: Date): HealthValue[] {
   if (metric === 'steps') return onlyLocalDayRecords(metric, values, start, end);
   const from = start.getTime(), until = end.getTime();
-  return values.flatMap(record => {
-    if (record.kind === 'aggregate') return [];
+  const result: HealthValue[] = [];
+  for (const record of values) {
+    if (record.kind === 'aggregate') continue;
     const recordMetric = record.kind === 'session' ? 'exercise-session' :
       record.kind === 'sleep' ? 'sleep-session' : record.metric;
-    if (recordMetric !== metric) return [];
+    if (recordMetric !== metric) continue;
     if (record.kind === 'series') {
-      const points = record.points.filter(p => {
-        const at = Date.parse(p.time);
+      const points = record.points.filter(point => {
+        const at = Date.parse(point.time);
         return Number.isFinite(at) && at >= from && at <= until;
       });
-      return points.length ? [{ ...record, points }] : [];
+      if (points.length) result.push({ ...record, points });
+      continue;
     }
     const time = record.kind === 'instant' || record.kind === 'rate'
       ? Date.parse(record.time) : Date.parse(record.end);
-    return Number.isFinite(time) && time >= from && time <= until ? [record] : [];
-  });
+    if (Number.isFinite(time) && time >= from && time <= until) result.push(record);
+  }
+  return result;
 }
 
 /** Today intentionally preserves yesterday's newest HR as stale instead of showing it as current. */
