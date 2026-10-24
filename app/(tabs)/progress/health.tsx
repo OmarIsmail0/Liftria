@@ -69,8 +69,13 @@ export default function HealthOverview() {
           const amount = result?.state === 'value' && result.total !== null
             ? `${Math.round(result.total).toLocaleString()} ${first?.unit ?? ''}` : null;
           return <ListRow key={metric} title={names[metric] ?? metric} detail={detail}
-            suffix={amount ? <Typography>{amount}</Typography> : <Chip kind={result?.state === 'not-allowed' ? 'off' : 'pending'}
-              label={result?.state === 'no-data' ? 'No data' : result?.state === 'not-allowed' ? 'Not allowed' : result?.state === 'not-available' ? 'Unavailable' : result?.state === 'value' ? 'Sources' : 'Pending'} />}
+            suffix={result?.state === 'value' ? <View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
+              {amount && <Typography>{amount}</Typography>}
+              {first && <Chip kind={metric === 'heart-rate' ? 'pending' : first.label === 'Phone' ? 'phone' : 'pending'}
+                label={metric === 'heart-rate' ? 'Unverified device' : first.label} />}
+              {first?.stale && <Chip kind="stale" label={ageLabel(first.latestAt)} />}
+            </View> : <Chip kind={result?.state === 'not-allowed' ? 'off' : 'pending'}
+              label={result?.state === 'no-data' ? 'No data' : result?.state === 'not-allowed' ? 'Not allowed' : result?.state === 'not-available' ? 'Unavailable' : result?.state === 'error' ? 'Read error' : 'Pending'} />}
             onPress={() => router.push({ pathname: '/(tabs)/progress/health-detail', params: { metric } })} />;
         })}
       </Card>

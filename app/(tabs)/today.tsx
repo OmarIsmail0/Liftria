@@ -109,7 +109,12 @@ export default function TodayTab() {
         {steps?.state === 'value' ? steps.sources.map(source =>
           <ListRow key={source.origin} title={`${source.label} steps`}
             detail={source.stale ? `Stale · ${ageLabel(source.latestAt)}` : 'Health Connect · read only'}
-            suffix={<Typography>{source.value.toLocaleString()}</Typography>}
+            suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
+              <Typography>{source.value.toLocaleString()}</Typography>
+              <Chip kind={source.label === 'Phone' ? 'phone' : 'pending'}
+                label={source.label === 'Phone' ? 'Phone' : 'Unverified device'} />
+              {source.stale && <Chip kind="stale" label={ageLabel(source.latestAt)} />}
+            </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
           : <Typography tone="secondary">Steps: {steps?.note ?? 'Checking Health Connect…'}</Typography>}
         {hr?.state === 'value' ? hr.sources.map(source =>
@@ -117,7 +122,11 @@ export default function TodayTab() {
             detail={source.stale
               ? `Stale · ${ageLabel(source.latestAt)} · unverified device`
               : 'Unverified device · not confirmed from a watch'}
-            suffix={<Typography>{source.value} bpm</Typography>}
+            suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
+              <Typography>{source.value} bpm</Typography>
+              <Chip kind="pending" label="Unverified device" />
+              {source.stale && <Chip kind="stale" label={ageLabel(source.latestAt)} />}
+            </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
           : <Typography tone="secondary">Heart rate: {hr?.note ?? 'Checking Health Connect…'}</Typography>}
         <Typography tone="secondary">Energy: No measured source</Typography>
