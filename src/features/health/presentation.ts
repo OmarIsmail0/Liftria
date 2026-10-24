@@ -96,21 +96,89 @@ export function phase2EnergyMessage(permission: PermissionState, available: bool
   return 'No measured source';
 }
 
-/** Never sum a cached step or exercise interval from a different local day into Today. */
+/** Daily steps that straddle midnight are clipped proportionally, not silently discarded.
+ * Does not merge separate app/device origins; records retain their unique IDs.
+ */
 export function onlyLocalDayRecords(metric: MetricType, records: HealthValue[], start: Date, end: Date): HealthValue[] {
   if (metric !== 'steps' && metric !== 'exercise-session' && metric !== 'sleep-session') return records;
   const from = start.getTime(), until = end.getTime();
-  return records.filter(r => {
-    if (r.kind === 'aggregate') return false;
-    if (metric === 'steps' && r.kind !== 'interval') return false;
-    if (metric === 'exercise-session' && r.kind !== 'session') return false;
-    if (metric === 'sleep-session' && r.kind !== 'sleep') return false;
-    if (r.kind !== 'interval' && r.kind !== 'session' && r.kind !== 'sleep') return false;
-    const a = Date.parse(r.start), b = Date.parse(r.end);
-    // Sleep can begin yesterday; a completed session counted today ends today.
-    return Number.isFinite(a) && Number.isFinite(b) && b >= from && b <= until &&
-      (metric === 'sleep-session' || a >= from);
-  });
+  const result: HealthValue[] = [];
+  for (const record of records) {
+    if (record.kind === 'aggregate') continue;
+    if (metric === 'steps') {
+      if (record.kind !== 'interval' || record.metric !== 'steps') continue;
+      const a = Date.parse(record.start), b = Date.parse(record.end);
+      if (!Number.isFinite(a) || !Number.isFinite(b) || b <= a || !Number.isFinite(record.value)) continue;
+      const overlapStart = Math.max(a, from), overlapEnd = Math.min(b, until);
+      if (overlapEnd <= overlapStart) continue;
+      const scaled = Math.round(record.value * (overlapEnd - overlapStart) / (b - a));
+      if (scaled <= 0) continue;
+      result.push({ ...record, start: new Date(overlapStart).toISOString(),
+        end: new Date(overlapEnd).toISOString(), value: scaled });
+      continue;
+    }
+    if (metric === 'exercise-session' && record.kind !== 'session') continue;
+    if (metric === 'sleep-session' && record.kind !== 'sleep') continue;
+    if (record.kind !== 'session' && record.kind !== 'sleep') continue;
+    const a = Date.parse(record.start), b = Date.parse(record.end);
+    if (Number.isFinite(a) && Number.isFinite(b) && b >= from && b <= until &&
+        (metric === 'sleep-session' || a >= from)) result.push(record);
+  }
+  return result;
+}
+
+export type HourlySeries = { origin: string; label: string; values: number[] };
+/** Per-source hourly counts; no source totals are ever stacked or silently combined. */
+export function hourlyStepsBySource(records: HealthValue[], start: Date, end: Date): HourlySeries[] {
+  const startMs = start.getTime(), endMs = end.getTime();
+  const groups = new Map<string, number[]>();
+  const seen = new Set<string>();
+  for (const r of records) {
+    if (r.kind !== 'interval' || r.metric !== 'steps' || !r.dataOrigin ||
+        !Number.isFinite(r.value) || r.value < 0) continue;
+    const id = r.adapter + ':' + r.dataOrigin + ':' + r.recordId;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const from = Date.parse(r.start), to = Date.parse(r.end);
+    if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from) continue;
+    const span = Math.max(from, startMs), stop = Math.min(to, endMs);
+    if (stop <= span) continue;
+    const hours = groups.get(r.dataOrigin) ?? Array.from({ length: 24 }, () => 0);
+    for (let hour = 0; hour < 24; hour++) {
+      const bucketStart = new Date(start); bucketStart.setHours(hour, 0, 0, 0);
+      const bucketEnd = new Date(bucketStart); bucketEnd.setHours(hour + 1);
+      const shared = Math.max(0, Math.min(stop, bucketEnd.getTime()) - Math.max(span, bucketStart.getTime()));
+      if (shared > 0) hours[hour] = (hours[hour] ?? 0) + r.value * shared / (to - from);
+    }
+    groups.set(r.dataOrigin, hours);
+  }
+  return [...groups.entries()].map(([origin, values]) => ({
+    origin, label: sourceName(origin), values: values.map(Math.round),
+  }));
+}
+
+export type HeartSample = { time: string; bpm: number; origin: string };
+export function heartRateSamples(records: HealthValue[], start: Date, end: Date): HeartSample[] {
+  const seen = new Set<string>(), out: HeartSample[] = [];
+  for (const r of records) {
+    if (r.kind !== 'series' || r.metric !== 'heart-rate') continue;
+    for (const pt of r.points) {
+      const at = Date.parse(pt.time);
+      const id = r.adapter + ':' + r.dataOrigin + ':' + r.recordId + ':' + pt.time;
+      if (!seen.has(id) && Number.isFinite(at) && at >= start.getTime() &&
+          at <= end.getTime() && Number.isFinite(pt.value)) {
+        seen.add(id);
+        out.push({ time: pt.time, bpm: pt.value, origin: r.dataOrigin });
+      }
+    }
+  }
+  return out.sort((a, b) => a.time.localeCompare(b.time));
+}
+
+export function earliestCachedRecordAt(records: HealthValue[]): string | null {
+  const times = records.map(r => r.kind === 'instant' || r.kind === 'rate' ? r.time :
+    r.kind === 'aggregate' ? r.windowStart : r.start).filter(t => Number.isFinite(Date.parse(t)));
+  return times.length ? times.sort()[0]! : null;
 }
 
 /** Freshness labels use the record timestamp, never the time a cached row was re-read. */
