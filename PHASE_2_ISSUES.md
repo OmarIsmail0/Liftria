@@ -15,9 +15,9 @@ The remaining Phase 2 work uses **three PRs**. Start the next PR when the previo
 4. **PR B: Today and Health** — Step 6 TD-1…TD-7 and Step 7 HE-1…HE-6, one draft PR after PR A's verify passes; keep phone/watch provenance separate and never show no-source energy as measured.
 5. **PR C: Settings and polish** — Step 8 ST-1…ST-7 and Step 9 accessibility, one draft PR after PR B's verify passes.
 
-**Merging:** Claude marks a PR ready and merges only after verify + Android build CI and emulator review pass. Owner phone checks happen on merged main and become follow-up tasks.
+**Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once `verify` is green and Claude's code review is clean (plus the emulator screenshots, when Claude asked for a `build`-labeled run). The owner tests the phase-end APK on the phone and reports problems, which become fix tasks.
 
-**Builds (owner's request, 2026-10-24):** pushes to a **draft** PR run only `verify` (about a minute). The 35-minute Android build and the emulator check run once, when Claude marks the PR **Ready for review** after the code review is clean (or when the PR gets the `build` label). So: keep your PR a draft, fix the review comments, and **batch your fixes into as few pushes as you can**. Don't mark PRs ready yourself.
+**Builds (owner's decision, 2026-10-24): per phase, not per PR.** Every push runs only `verify` (about a minute). The 35-minute Android build runs (1) by hand on `main` at the end of a phase, or when the owner wants an APK, and (2) on a PR only if Claude adds the `build` label to get emulator screenshots of a UI-heavy change. Keep PRs as drafts, batch your fixes into few pushes, and never add the label or mark PRs ready yourself.
 
 **Every big PR:** one commit per sub-step; screen ID checklist and Visual check routes in the description; 48dp minimum taps, TalkBack labels and 200% text handling from the start. Out of scope: Phase 3/4 features, fake data, new dependencies without owner consent, and workflow edits.
 

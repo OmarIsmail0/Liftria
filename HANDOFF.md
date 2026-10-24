@@ -61,7 +61,7 @@ cloud session couldn't reach the owner's Chrome. You can: use the **`chatgpt-cha
    `docs/phase1/reference/*.png`.
 3. Post one review comment on the PR, with numbered asks, then give the owner the relay line,
    or send it with `chatgpt-chat` when the owner asks.
-4. When a PR is green (verify + android-build) and the emulator screenshots are approved, **Claude merges it** (owner's decision, 2026-10-24); the owner tests the merged `main` build on the phone afterwards. After
+4. Claude merges a PR once `verify` is green and the code review is clean (owner's decision, 2026-10-24). Android APK builds are per phase: run the workflow by hand on `main` at a phase end (signed, shareable), or add the `build` label to a UI-heavy PR for emulator screenshots.
    the merge, update `PHASE_2_ISSUES.md` "Next up" on `main`.
 
 ## Rules that never bend
