@@ -5,6 +5,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
+import releaseVersion from '../../src/config/releaseVersion.json';
 
 const planned = [
   { heading: 'Profile and goals', detail: 'Profile and calorie targets' },
@@ -34,7 +35,7 @@ export default function SettingsHome() {
           if (next.unlocked) router.push('/dev');
         }}
         style={{ minHeight: theme.size.touch.min, justifyContent: 'center' }}>
-        <Typography tone="secondary" size="small">Version 0.0.1</Typography>
+        <Typography tone="secondary" size="small">Version {releaseVersion.name}</Typography>
       </Pressable>
     </Card>
     <View style={{ alignItems: 'center' }}>
