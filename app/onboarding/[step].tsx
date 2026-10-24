@@ -13,6 +13,7 @@ import { metricTypes } from '../../src/services/health/types';
 import { saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
+import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
 
 const watchOptions = ['Samsung Health', 'Fitbit', 'Garmin Connect', 'Pixel Watch (Fitbit)', 'Other', 'No watch'] as const;
 const titles: Record<OnboardingStep, string> = {
@@ -59,9 +60,9 @@ function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
   </View>;
 }
 
-function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, error, footer }: {
+function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, primaryDisabled = false, error, footer }: {
   children: ReactNode; step: OnboardingStep; onBack?: () => void; onSkip?: () => void;
-  primary: string; onPrimary: () => void; busy: boolean; error: string | null; footer?: ReactNode;
+  primary: string; onPrimary: () => void; busy: boolean; primaryDisabled?: boolean; error: string | null; footer?: ReactNode;
 }) {
   const { theme } = useTheme();
   const index = onboardingSteps.indexOf(step);
@@ -75,21 +76,16 @@ function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, error
       }}>
         <Typography tone="secondary">{descriptions[step]}</Typography>
         {children}
+        {error && <View accessibilityRole="alert" accessible style={{ paddingVertical: theme.space[2] }}>
+          <Typography tone="secondary" size="small">ⓘ {error}</Typography>
+        </View>}
       </ScrollView>
-      {error && <Text accessibilityRole="alert" style={{ color: theme.color.status.danger,
-        paddingVertical: theme.space[2], fontSize: theme.type.body.size }}>{error}</Text>}
       {footer}
       <View style={{ paddingVertical: theme.space[3], gap: theme.space[2] }}>
-        <Button label={busy ? 'Saving…' : primary} fullWidth disabled={busy} onPress={onPrimary} />
+        <Button label={busy ? 'Saving…' : primary} fullWidth disabled={busy || primaryDisabled} onPress={onPrimary} />
       </View>
     </KeyboardAvoidingView>
   </Screen>;
-}
-
-function parseMetric(value: string): number | null {
-  if (!value.trim()) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export default function OnboardingStepScreen() {
@@ -132,8 +128,7 @@ export default function OnboardingStepScreen() {
   const complete = draft.birthYear !== '' && draft.heightCm !== '' && draft.weightKg !== '' &&
     canEstimateTarget(profile);
   const estimate = complete ? estimateTarget(profile) : null;
-  const entered = draft.name.trim() !== '' || age.trim() !== '' ||
-    draft.heightCm.trim() !== '' || draft.weightKg.trim() !== '';
+  const errors = profileFieldErrors({ name: draft.name, age, heightCm: draft.heightCm, weightKg: draft.weightKg });
 
   async function go(next: OnboardingStep) {
     setBusy(true); setError(null);
@@ -152,16 +147,7 @@ export default function OnboardingStepScreen() {
 
   async function continueProfile() {
     const ageNumber = Number(age);
-    if (draft.name.trim().length > 30) { setError('Name must be 30 characters or fewer.'); return; }
-    if (entered && (age.trim() !== '' && (!Number.isInteger(ageNumber) || ageNumber < 16 || ageNumber > 100))) {
-      setError('Enter an age between 16 and 100.'); return;
-    }
-    if (draft.heightCm.trim() && (parseMetric(draft.heightCm) === null || Number(draft.heightCm) < 120 || Number(draft.heightCm) > 230)) {
-      setError('That height looks off. Check the unit.'); return;
-    }
-    if (draft.weightKg.trim() && (parseMetric(draft.weightKg) === null || Number(draft.weightKg) < 35 || Number(draft.weightKg) > 300)) {
-      setError('That weight looks off. Check the unit.'); return;
-    }
+    if (Object.values(errors).some(Boolean)) return;
     const nextDraft = { ...draft, birthYear: age.trim() ? String(new Date().getFullYear() - ageNumber) : '' };
     setDraft(nextDraft);
     setBusy(true);
@@ -244,10 +230,10 @@ export default function OnboardingStepScreen() {
       </Card>
       : step === 'profile'
         ? <Card title="Your profile (optional)">
-          <Field label="Name (optional)" value={draft.name} onChangeText={text => patch('name', text)} placeholder="What should we call you?" />
-          <Field label="Age (16–100)" value={age} onChangeText={setAge} keyboardType="numeric" placeholder="Years" />
-          <Field label="Height (cm)" value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" />
-          <Field label="Weight (kg)" value={draft.weightKg} onChangeText={text => patch('weightKg', text)} keyboardType="decimal-pad" placeholder="35–300" />
+          <Field label="Name (optional)" value={draft.name} onChangeText={text => patch('name', text)} placeholder="What should we call you?" error={errors.name} />
+          <Field label="Age (16–100)" value={age} onChangeText={setAge} keyboardType="numeric" placeholder="Years" error={errors.age} />
+          <Field label="Height (cm)" value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" error={errors.heightCm} />
+          <Field label="Weight (kg)" value={draft.weightKg} onChangeText={text => patch('weightKg', text)} keyboardType="decimal-pad" placeholder="35–300" error={errors.weightKg} />
           <ChoiceGroup label="Sex for formula" selected={draft.sexForFormula}
             choices={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' },
               { value: 'unspecified', label: 'Prefer not to say' }]}
@@ -313,7 +299,9 @@ export default function OnboardingStepScreen() {
                     <Typography tone="secondary">No meals or workouts were invented during setup.</Typography>
                   </Card>;
 
-  return <Frame step={step} busy={busy} error={error} onBack={back} onSkip={skip}
+  return <Frame step={step} busy={busy} error={error}
+    primaryDisabled={step === 'profile' && Object.values(errors).some(Boolean)}
+    onBack={back} onSkip={skip}
     primary={primary} onPrimary={() => {
       if (step === 'profile') { void continueProfile(); return; }
       if (step === 'privacy') {
