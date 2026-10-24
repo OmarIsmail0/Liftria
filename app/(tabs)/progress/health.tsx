@@ -54,14 +54,14 @@ export default function HealthOverview() {
           }
           const first = result?.sources[0];
           const state = result?.state;
-          const detail = state === 'value'
+          const detail = result?.state === 'value'
             ? result.sources.length > 1 ? 'Separate app sources · no combined total'
               : `${first?.label ?? 'Unknown source'} · ${first ? ageLabel(first.latestAt) : 'time unknown'}${result.unverified ? ' · Device not recorded or verified' : ''}`
             : result?.note ?? 'Checking Health Connect…';
-          const amount = state === 'value' && result.total !== null
+          const amount = result?.state === 'value' && result.total !== null
             ? `${Math.round(result.total).toLocaleString()} ${first?.unit ?? ''}` : null;
           return <ListRow key={metric} title={names[metric] ?? metric} detail={detail}
-            suffix={state === 'value' ? <View style={{ alignItems:'flex-end',gap:theme.space[1] }}>
+            suffix={result?.state === 'value' ? <View style={{ alignItems:'flex-end',gap:theme.space[1] }}>
               {amount && <Typography>{amount}</Typography>}
               {first && <Chip kind={metric === 'heart-rate' ? 'pending' : first.label === 'Phone' ? 'phone' : 'pending'}
                 label={metric === 'heart-rate' ? 'Unverified device' : first.label} />}
