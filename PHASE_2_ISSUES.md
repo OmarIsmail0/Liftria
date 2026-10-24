@@ -9,7 +9,7 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 **Order:**
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
 2. ~~Step 3: navigation shell~~ DONE in PR #7 (merged 2026-10-24; CI green, emulator check approved by Claude).
-3. **TASK-4: build and signing:** PR #8, approved by Claude on `7526c67` (CI green, emulator check passed). Stays open until the owner's trusted signed `main` build and N → N+1 update test pass. **Don't push to PR #8 unless a new review comment asks you to.**
+3. **TASK-4: build and signing:** merged in PR #8 (2026-10-24). Still open for two owner checks: a trusted signed `main` build (needs the 4 secrets) and the N → N+1 update test. Nothing for you to do here.
 4. **Step 4: data layer. Start now, in parallel** (see "Step 4: data layer" below). Add **TASK-13** (theme control) to the same PR.
 5. **TASK-11 and TASK-12: orb and card polish.** One new draft PR, `Phase 2 / TASK-11–12: empty orb and card depth`, branched from `main`. Start it after Step 4's first green CI. It touches only `src/design/**` (primitives and tokens) and the tests for them.
 6. Then steps 5–9 of PHASE_2_PROMPT.md §3 in order.
