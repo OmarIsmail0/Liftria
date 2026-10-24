@@ -121,3 +121,13 @@ test('midnight step clipping never treats an invalid zero-length interval as a s
   const bad = { ...steps('bad','phone',99), start:from.toISOString(),end:from.toISOString() };
   expect(onlyLocalDayRecords('steps',[bad],from,to)).toEqual([]);
 });
+
+test('unknown or revoked permissions never show cached measurements', () => {
+  const cached = [steps('permitted','com.android.healthconnect.phone',800)];
+  expect(summarizeRecords('steps',cached,'unknown',true,now)).toMatchObject({
+    state:'no-data',total:null,note:'Permission not confirmed',
+  });
+  expect(summarizeRecords('steps',cached,'denied',true,now)).toMatchObject({
+    state:'not-allowed',total:null,
+  });
+});

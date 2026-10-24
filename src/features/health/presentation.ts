@@ -27,7 +27,8 @@ export function emptyMetricState(metric: MetricType, permission: PermissionState
   const state = !available ? 'not-available' : permission === 'denied' ? 'not-allowed' : 'no-data';
   return { metric, state, sources: [], total: null, latestAt: null, unverified: false,
     note: state === 'not-allowed' ? 'Not allowed' :
-      state === 'not-available' ? 'Not available' : 'No data' };
+      state === 'not-available' ? 'Not available' :
+        permission === 'unknown' ? 'Permission not confirmed' : 'No data' };
 }
 
 /** Group a metric by contributing app. Only one-origin steps expose a single total. */
@@ -35,7 +36,7 @@ export function summarizeRecords(
   metric: MetricType, records: HealthValue[], permission: PermissionState = 'granted', available = true,
   nowMs = Date.now(),
 ): HealthSummary {
-  if (!available || permission === 'denied') return emptyMetricState(metric, permission, available);
+  if (!available || permission !== 'granted') return emptyMetricState(metric, permission, available);
   const groups = new Map<string, { value: number; unit: string; latestAt: string }>();
   const seen = new Set<string>();
   for (const record of records) {

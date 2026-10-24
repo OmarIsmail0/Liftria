@@ -77,7 +77,7 @@ export default function TodayTab() {
   </Screen>;
   return <Screen embedded scroll={false}>
     <ScrollView refreshControl={<RefreshControl refreshing={refreshing}
-      onRefresh={() => { void Promise.all([refresh(true), loadLocal()]); }}
+      onRefresh={() => { void Promise.allSettled([refresh(true), loadLocal()]); }}
       colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}
       contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}>
       <Header title={local.profile?.name ? `${greeting}, ${local.profile.name}` : 'Welcome to Liftria'}
