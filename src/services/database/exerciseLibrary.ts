@@ -129,7 +129,7 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
   return filtered.map(e=>({e,rank:score(e)})).filter(x=>Number.isFinite(x.rank))
     .sort((a,b)=>a.rank-b.rank || a.e.name.localeCompare(b.e.name)).map(x=>x.e);
 }
-function uuid(): string {
+export function newGymId(): string {
   // Stable RFC4122 v4-shaped local ID; not a security token.
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, marker => {
     const random = Math.floor(Math.random()*16);
@@ -142,7 +142,7 @@ export async function createCustomExercise(input: CustomExerciseInput): Promise<
   const secondary = [...new Set(validated.secondaryMuscles)]
     .filter(m=>!primary.includes(m));
   const exercise: Exercise = {
-    ...validated, id: uuid(), aliases: [], primaryMuscles: primary,
+    ...validated, id: newGymId(), aliases: [], primaryMuscles: primary,
     secondaryMuscles: secondary, source: 'custom', retired: false, packCategory: null,
   };
   return dbOperation(async db => {
