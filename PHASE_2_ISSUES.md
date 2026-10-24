@@ -17,6 +17,8 @@ The remaining Phase 2 work uses **three PRs**. Start the next PR when the previo
 
 **Merging:** Claude marks a PR ready and merges only after verify + Android build CI and emulator review pass. Owner phone checks happen on merged main and become follow-up tasks.
 
+**Builds (owner's request, 2026-10-24):** pushes to a **draft** PR run only `verify` (about a minute). The 35-minute Android build and the emulator check run once, when Claude marks the PR **Ready for review** after the code review is clean (or when the PR gets the `build` label). So: keep your PR a draft, fix the review comments, and **batch your fixes into as few pushes as you can**. Don't mark PRs ready yourself.
+
 **Every big PR:** one commit per sub-step; screen ID checklist and Visual check routes in the description; 48dp minimum taps, TalkBack labels and 200% text handling from the start. Out of scope: Phase 3/4 features, fake data, new dependencies without owner consent, and workflow edits.
 
 ## Owner feedback on the emulator, 2026-10-24 (Today screen, light theme)
