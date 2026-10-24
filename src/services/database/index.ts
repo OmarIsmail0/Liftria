@@ -76,7 +76,6 @@ export const DB_MIGRATIONS = [
       created_at TEXT NOT NULL,
       CHECK ((source = 'manual' AND inputs_json IS NULL) OR (source = 'estimate' AND inputs_json IS NOT NULL))
     );
-    PRAGMA user_version = 2;
   ` },
 ] as const;
 

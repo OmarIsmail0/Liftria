@@ -180,7 +180,8 @@ describe('typed existing app_settings with default, corruption recovery and pers
     expect((await setTypedSetting('onboarding.completedAt', '2026-10-24T00:00:00Z')).ok).toBe(true);
     expect(await getTypedSetting('onboarding.step')).toEqual({ ok: true, value: 4 });
     expect((await setTypedSetting('units.energy', 'cal' as 'kcal')).ok).toBe(false);
-    expect(state.settings.get('units.energy')).toBeUndefined();
+    // Prior malformed raw value remains intact; the invalid write does not overwrite it.
+    expect(state.settings.get('units.energy')).toBe('{invalid');
   });
 });
 
