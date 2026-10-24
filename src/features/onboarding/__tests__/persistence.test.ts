@@ -1,4 +1,4 @@
-import { addTarget } from '../../../services/database/targets';
+import { addTarget, getCurrentTarget } from '../../../services/database/targets';
 import { saveProfile } from '../../../services/database/profile';
 import { draftProfileInput, draftTargetInput, persistProfile, persistTarget } from '../persistence';
 import { emptyDraft } from '../draft';
@@ -11,6 +11,7 @@ jest.mock('../../../services/database/profile', () => ({
 jest.mock('../../../services/database/targets', () => ({
   ...jest.requireActual('../../../services/database/targets'),
   addTarget: jest.fn(async () => ({ ok: true, value: {} })),
+  getCurrentTarget: jest.fn(async () => ({ ok: true, value: null })),
 }));
 const base = {
   ...emptyDraft, name: ' Casey ', birthYear: String(new Date().getFullYear() - 30),
@@ -66,4 +67,23 @@ test('ON-3 Continue cannot invent activity, goal or formula sex before any choic
   expect(draftProfileInput(emptyDraft)).toMatchObject({
     sexForFormula: null, activity: null, goal: null,
   });
+});
+
+test('ON-5 reopening the same estimate does not append duplicate target history', async () => {
+  const input = draftTargetInput(base, 'estimate');
+  expect(input).not.toBeNull();
+  jest.mocked(getCurrentTarget).mockResolvedValue({
+    ok: true, value: { ...input!, id: 4, createdAt: '2026-10-24T17:00:00Z' },
+  });
+  expect(await persistTarget(base, 'estimate')).toBe(true);
+  expect(addTarget).not.toHaveBeenCalled();
+});
+test('ON-5 appends when the estimate inputs actually change', async () => {
+  const input = draftTargetInput(base, 'estimate');
+  jest.mocked(getCurrentTarget).mockResolvedValue({
+    ok: true, value: { ...input!, id: 4, createdAt: '2026-10-24T17:00:00Z' },
+  });
+  const changed = { ...base, weightKg: '78.4' };
+  expect(await persistTarget(changed, 'estimate')).toBe(true);
+  expect(addTarget).toHaveBeenCalledTimes(1);
 });

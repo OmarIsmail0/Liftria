@@ -36,3 +36,10 @@ test('floor is a warning below 1200 or a deficit above 25%; under 1000 is blocke
   expect(targetSafety(2000, 2650)).toEqual({ blocked: false, warning: false });
   expect(targetSafety(1200, null)).toEqual({ blocked: false, warning: false });
 });
+
+test('documented ON-5 78.4 kg example records inputs instead of borrowing old weight', () => {
+  const r = estimateTarget({ ...sample, weightKg: 78.4 });
+  expect(r.inputs).toMatchObject({ weightKg: 78.4, age: 30, bmr: 1764, activityFactor: 1.375, goalFactor: 1.1 });
+  expect(r.kcal).toBe(2650);
+  expect(r.proteinG).toBe(155);
+});

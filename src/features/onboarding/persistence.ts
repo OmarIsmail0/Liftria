@@ -1,4 +1,4 @@
-import { addTarget, targetSchema, type TargetInput } from '../../services/database/targets';
+import { addTarget, getCurrentTarget, targetSchema, type TargetInput } from '../../services/database/targets';
 import { saveProfile, profileSchema, type ProfileInput } from '../../services/database/profile';
 import type { OnboardingDraft } from './draft';
 import { canEstimateTarget, estimateTarget, targetSafety } from './targetEstimate';
@@ -53,5 +53,14 @@ export async function persistTarget(draft: OnboardingDraft, source: 'estimate' |
   const input = draftTargetInput(draft, source);
   const validated = targetSchema.safeParse(input);
   if (!validated.success) return false;
-  return (await addTarget(validated.data)).ok;
+  const existing = await getCurrentTarget();
+  if (!existing.ok) return false;
+  const current = existing.value, next = validated.data;
+  // Reopening ON-5 or tapping Continue again must not append an identical snapshot.
+  if (current && current.source === next.source && current.kcal === next.kcal &&
+      current.proteinG === next.proteinG && current.fatG === next.fatG &&
+      current.carbsG === next.carbsG && JSON.stringify(current.inputs) === JSON.stringify(next.inputs)) {
+    return true;
+  }
+  return (await addTarget(next)).ok;
 }
