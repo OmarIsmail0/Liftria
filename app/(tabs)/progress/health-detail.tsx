@@ -49,10 +49,7 @@ export default function HealthMetricDetail() {
   const selected = records.find(r => r.recordId === recordId) ?? null;
 
   useEffect(() => {
-    if (window !== 'week' || snapshot.permissions[metric] !== 'granted') {
-      setWeek(null);
-      return;
-    }
+    if (window !== 'week' || snapshot.permissions[metric] !== 'granted') return;
     let mounted = true;
     const until = new Date(), from = new Date(until);
     from.setDate(from.getDate() - 6);
@@ -90,9 +87,9 @@ export default function HealthMetricDetail() {
       <Card rim="health" title="Measurement">
         <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
           <Button label="Day" size="sm" variant={window === 'day' ? 'primary' : 'secondary'}
-            onPress={() => setWindow('day')} />
+            onPress={() => { setWeek(null); setWindow('day'); }} />
           <Button label="Week" size="sm" variant={window === 'week' ? 'primary' : 'secondary'}
-            onPress={() => setWindow('week')} />
+            onPress={() => { setWeek(null); setWindow('week'); }} />
         </View>
         {energy ? <>
           <Typography>{snapshot.energy

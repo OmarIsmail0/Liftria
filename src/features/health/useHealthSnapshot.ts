@@ -82,11 +82,12 @@ export function useHealthSnapshot(metrics: readonly MetricType[]) {
     finally { setRefreshing(false); }
   }, [metrics]);
   useEffect(() => {
-    void refresh();
+    let mounted = true;
+    void Promise.resolve().then(() => { if (mounted) return refresh(); });
     const sub = AppState.addEventListener('change', state => {
       if (state === 'active') void refresh();
     });
-    return () => sub.remove();
+    return () => { mounted = false; sub.remove(); };
   }, [refresh]);
   return { snapshot, refreshing, refresh };
 }

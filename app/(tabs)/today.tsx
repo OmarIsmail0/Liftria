@@ -41,7 +41,12 @@ export default function TodayTab() {
     });
     setLocalLoading(false);
   }
-  useEffect(() => { void loadLocal(); }, []);
+  useEffect(() => {
+    let mounted = true;
+    // Schedule after the effect callback so React's render is not synchronously cascaded.
+    void Promise.resolve().then(() => { if (mounted) return loadLocal(); });
+    return () => { mounted = false; };
+  }, []);
   const date = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -76,7 +81,7 @@ export default function TodayTab() {
             `Protein ${local.target?.proteinG} g · Fat ${local.target?.fatG} g · Carbs ${local.target?.carbsG} g`}</Typography>
         </> : <>
           <Typography tone="secondary">Your first meal lights it up.</Typography>
-          <Typography tone="secondary" size="small">No target yet · Set a target whenever you're ready.</Typography>
+          <Typography tone="secondary" size="small">No target yet · Set a target whenever you’re ready.</Typography>
           <Button label="Set a target" variant="secondary" onPress={() => router.push('/settings')} />
         </>}
       </View>

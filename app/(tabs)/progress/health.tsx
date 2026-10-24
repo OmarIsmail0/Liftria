@@ -77,7 +77,7 @@ export default function HealthOverview() {
       </Card>
       <Card title="Where did my watch data go?">
         <Typography tone="secondary">Health Connect reports which app provided a record, not necessarily which device captured it.</Typography>
-        <Typography tone="secondary">Check your watch app's Health Connect sharing permissions. New readings may appear only after you connect.</Typography>
+        <Typography tone="secondary">Check your watch app’s Health Connect sharing permissions. New readings may appear only after you connect.</Typography>
         <Typography tone="secondary" size="small">Samsung Health, Fitbit, Garmin and other apps are not assumed to be watch measurements until verified.</Typography>
       </Card>
       <View style={{ alignItems: 'center' }}>
