@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
 import { router } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import * as Network from 'expo-network';
