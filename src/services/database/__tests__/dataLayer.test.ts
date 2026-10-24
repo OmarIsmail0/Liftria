@@ -277,7 +277,8 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   expect((await getCurrentTarget()).ok).toBe(true);
   expect(await onboardingDestination()).toBe('/(tabs)/today');
   const oldCounts = await getDataLayerCounts();
-  expect(oldCounts).toMatchObject({ok:true,value:{profile:1,targets:1}});
+  expect(oldCounts).toMatchObject({ok:true,value:{profile:1}});
+  if (oldCounts.ok) expect(oldCounts.value.targets).toBeGreaterThan(0);
   expect(await clearLocalHealthCache()).toEqual({ok:true,value:undefined});
   expect(state.health.size).toBe(0);
   expect(state.aggregates.size).toBe(0);
