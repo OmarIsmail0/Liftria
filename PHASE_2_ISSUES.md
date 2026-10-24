@@ -8,7 +8,7 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 **Order:**
 1. ~~TASK-6 to TASK-10: visual fidelity~~ DONE in PR #6.
-2. **Step 3: navigation shell. Start now** (one new draft PR, `Phase 2 / Step 3: navigation shell`), per PHASE_2_PROMPT.md §3 step 3. Also in this PR:
+2. **Step 3: navigation shell. In progress — draft PR #7, CI and device visual approval pending.** Per PHASE_2_PROMPT.md §3 step 3. Also in this PR:
    - **Edge-to-edge system bars:** the ambient background must run behind the status bar and the Android navigation bar (transparent bars, content padded by safe-area insets). Today the navigation bar shows a hard black edge under the app.
    - The capsule nav sits above the gesture/navigation bar inset, never under it.
 3. **TASK-4: build and signing.** After step 3, before any APK goes to friends.
