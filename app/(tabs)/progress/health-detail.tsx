@@ -7,28 +7,29 @@ import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, readDailyEnergy } from '../../../src/services/health';
 import { metricTypes, type HealthValue, type HealthRecord, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
-import { emptyMetricState, sourceName, summarizeRecords, type HealthSummary } from '../../../src/features/health/presentation';
+import { StepsChart, HeartRateChart } from '../../../src/features/health/HealthCharts';
+import { ageLabel, dailyStepsBySource, emptyMetricState, heartRateSamples,
+  hourlyStepsBySource, phase2EnergyMessage, sourceName, summarizeRecords,
+  type HealthSummary } from '../../../src/features/health/presentation';
 
-const label: Partial<Record<MetricType, string>> = {
+const label: Partial<Record<MetricType,string>> = {
   steps: 'Steps', 'heart-rate': 'Heart rate', 'exercise-session': 'Exercise sessions',
   'sleep-session': 'Sleep', weight: 'Weight', 'body-fat': 'Body fat',
   'active-calories': 'Active energy',
 };
-function metricOf(record: HealthValue): MetricType {
-  return record.kind === 'session' ? 'exercise-session'
-    : record.kind === 'sleep' ? 'sleep-session' : record.metric;
+function metricOf(r: HealthValue): MetricType {
+  return r.kind === 'session' ? 'exercise-session' : r.kind === 'sleep' ? 'sleep-session' : r.metric;
 }
-function recordTime(record: HealthValue): string {
-  return record.kind === 'instant' || record.kind === 'rate' ? record.time :
-    record.kind === 'aggregate' ? record.windowEnd : record.end;
+function recordTime(r: HealthValue): string {
+  return r.kind === 'instant' || r.kind === 'rate' ? r.time :
+    r.kind === 'aggregate' ? r.windowEnd : r.end;
 }
-function recordDescription(record: HealthValue): string {
-  if (record.kind === 'interval') return `${record.value.toLocaleString()} ${record.unit}`;
-  if (record.kind === 'series') return `${record.points.length} samples · bpm`;
-  if (record.kind === 'instant' || record.kind === 'rate') return `${record.value} ${record.unit}`;
-  if (record.kind === 'session') return `${Math.round(record.durationSec / 60)} minutes`;
-  if (record.kind === 'sleep') return 'Sleep session';
-  return `${record.value} ${record.unit}`;
+function recordDescription(r: HealthValue): string {
+  if (r.kind === 'interval') return `${r.value.toLocaleString()} ${r.unit}`;
+  if (r.kind === 'series') return `${r.points.length} heart-rate samples · bpm`;
+  if (r.kind === 'instant' || r.kind === 'rate') return `${r.value} ${r.unit}`;
+  if (r.kind === 'session') return `${Math.round(r.durationSec / 60)} minutes`;
+  return 'Sleep session';
 }
 
 export default function HealthMetricDetail() {
@@ -39,33 +40,58 @@ export default function HealthMetricDetail() {
   const { snapshot, refresh, refreshing } = useHealthSnapshot(overviewMetrics);
   const [window, setWindow] = useState<'day' | 'week'>('day');
   const [week, setWeek] = useState<HealthSummary | null>(null);
-  const [recordId, setRecordId] = useState<string | null>(null);
+  const [weekRecords, setWeekRecords] = useState<HealthValue[]>([]);
   const [showEstimate, setShowEstimate] = useState(false);
   const [estimate, setEstimate] = useState<{ kcal: number; type: string } | null>(null);
+  const permitted = snapshot.permissions[metric] === 'granted';
+  const available = snapshot.availability === 'available';
   const base = snapshot.readings[metric];
-  const result = window === 'week' && week !== null ? week : base;
-  const records = useMemo(() => snapshot.records.filter((r): r is HealthRecord => r.kind !== 'aggregate' && metricOf(r) === metric)
-    .sort((a,b) => recordTime(b).localeCompare(recordTime(a))).slice(0, 50), [snapshot.records, metric]);
-  const selected = records.find(r => r.recordId === recordId) ?? null;
-
+  const result = window === 'week' ? week : base;
+  const today = new Date(), start = new Date(today);
+  start.setHours(0,0,0,0);
+  const weekStart = new Date(start); weekStart.setDate(weekStart.getDate() - 6);
+  const rangeStart = window === 'day' ? start : weekStart;
+  // Week never falls back to day readings or a previous metric's results.
+  const sourceRecords = window === 'day' ? snapshot.records : weekRecords;
+  const records = useMemo(() => {
+    const from = rangeStart.getTime(), until = Date.now();
+    if (!permitted || !available || (window === 'week' && week === null)) return [];
+    return sourceRecords.filter((r): r is HealthRecord => r.kind !== 'aggregate' &&
+      metricOf(r) === metric && Date.parse(recordTime(r)) >= from &&
+      Date.parse(recordTime(r)) <= until)
+      .sort((a,b) => recordTime(b).localeCompare(recordTime(a))).slice(0,50);
+  }, [sourceRecords, metric, permitted, available, window, week, rangeStart.getTime()]);
   useEffect(() => {
-    if (window !== 'week' || snapshot.permissions[metric] !== 'granted') return;
+    if (window !== 'week') return;
+    if (!available || !permitted) {
+      setWeek(emptyMetricState(metric, snapshot.permissions[metric] ?? 'unknown', available));
+      setWeekRecords([]);
+      return;
+    }
     let mounted = true;
     const until = new Date(), from = new Date(until);
-    from.setDate(from.getDate() - 6);
-    from.setHours(0, 0, 0, 0);
+    from.setDate(from.getDate() - 6); from.setHours(0,0,0,0);
     void healthConnect.read(metric, { start: from, end: until }).then(value => {
       if (!mounted) return;
-      setWeek(value.status === 'ok'
-        ? summarizeRecords(metric, value.records, 'granted', true)
-        : emptyMetricState(metric, value.status === 'permission-denied' ? 'denied' : 'unknown',
-          value.status !== 'unavailable'));
-    }).catch(() => { if (mounted) setWeek(null); });
+      if (value.status === 'ok') {
+        setWeekRecords(value.records);
+        setWeek(summarizeRecords(metric, value.records, 'granted', true));
+      } else {
+        setWeekRecords([]);
+        setWeek(value.status === 'error'
+          ? { ...emptyMetricState(metric, 'granted', true), state: 'error',
+            note: 'Could not load this week from Health Connect.' }
+          : emptyMetricState(metric, value.status === 'permission-denied' ? 'denied' : 'unknown',
+            value.status !== 'unavailable'));
+      }
+    }).catch(() => { if (mounted) setWeek({ ...emptyMetricState(metric,'granted',true),
+      state:'error', note:'Could not read this week.' }); });
     return () => { mounted = false; };
-  }, [metric, window, snapshot.permissions]);
+  }, [metric, window, available, permitted, snapshot.permissions[metric]]);
 
   useEffect(() => {
-    if (metric !== 'active-calories') return;
+    if (metric !== 'active-calories' || !available ||
+        snapshot.permissions['active-calories'] !== 'granted') return;
     let mounted = true;
     void readDailyEnergy(1).then(rows => {
       if (!mounted) return;
@@ -74,65 +100,87 @@ export default function HealthMetricDetail() {
         ? { kcal: hidden.value.value, type: 'total energy' } : null);
     }).catch(() => { if (mounted) setEstimate(null); });
     return () => { mounted = false; };
-  }, [metric]);
+  }, [metric,available,snapshot.permissions]);
 
   const energy = metric === 'active-calories';
   const sourceRows = result?.sources ?? [];
-  return <Screen embedded scroll={false}>
-    <ScrollView contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh(true)}
-        colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}>
-      <Header title={label[metric] ?? metric} subtitle="Read-only · source details"
-        onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-      <Card rim="health" title="Measurement">
-        <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
-          <Button label="Day" size="sm" variant={window === 'day' ? 'primary' : 'secondary'}
-            onPress={() => { setWeek(null); setWindow('day'); }} />
-          <Button label="Week" size="sm" variant={window === 'week' ? 'primary' : 'secondary'}
-            onPress={() => { setWeek(null); setWindow('week'); }} />
-        </View>
-        {energy ? <>
-          <Typography>No measured source</Typography>
-          <Typography tone="secondary">Unattributed Health Connect energy estimates are hidden and never used in Liftria totals.</Typography>
-          {estimate && <Button label={showEstimate ? 'Hide estimate' : 'Show estimate'} variant="ghost"
-            onPress={() => setShowEstimate(v => !v)} />}
-          {showEstimate && estimate && <>
-            <Chip kind="estimate" label="Health Connect estimate" />
-            <Typography>{estimate.kcal.toLocaleString()} kcal · {estimate.type}</Typography>
-            <Typography tone="secondary">No contributing app recorded. Not used anywhere in Liftria.</Typography>
-          </>}
-        </> : result?.state === 'value' ? <>
-          {result.total !== null && <Typography size="metric-l">{result.total.toLocaleString()} {sourceRows[0]?.unit}</Typography>}
-          {result.total === null && <Typography>Sources are separate; no merged total.</Typography>}
+  const stepSeries = metric === 'steps' && permitted && available
+    ? window === 'day' ? hourlyStepsBySource(sourceRecords, start, today)
+      : dailyStepsBySource(sourceRecords, weekStart, today) : [];
+  const hrSamples = metric === 'heart-rate' && permitted && available
+    ? heartRateSamples(sourceRecords, rangeStart, today) : [];
+
+  return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
+    paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
+    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
+      setWeek(null); void refresh(true);
+    }} colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}>
+    <Header title={label[metric] ?? metric} subtitle="Read-only · source details"
+      onBack={() => backOrReplace(router, '/(tabs)/progress')} />
+    <Card rim="health" title="Measurement">
+      <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
+        <Button label="Day" size="sm" variant={window === 'day' ? 'primary' : 'secondary'}
+          onPress={() => { setWeek(null); setWindow('day'); }} />
+        <Button label="Week" size="sm" variant={window === 'week' ? 'primary' : 'secondary'}
+          onPress={() => { setWeek(null); setWindow('week'); }} />
+      </View>
+      {energy ? <>
+        <Typography>{phase2EnergyMessage(snapshot.permissions[metric] ?? 'unknown', available)}</Typography>
+        <Typography tone="secondary">Health Connect total energy can include estimates or resting energy. Liftria has no verified measured energy for Phase 2.</Typography>
+        {permitted && estimate && <Button label={showEstimate ? 'Hide estimate' : 'Show estimate'} variant="ghost"
+          onPress={() => setShowEstimate(v => !v)} />}
+        {permitted && showEstimate && estimate && <>
+          <Chip kind="estimate" label="Health Connect estimate" />
+          <Typography>{estimate.kcal.toLocaleString()} kcal · {estimate.type}</Typography>
+          <Typography tone="secondary">No measured contributing source. Not used anywhere in Liftria.</Typography>
+        </>}
+      </> : window === 'week' && week === null ? <Typography tone="secondary">Loading this week's readings…</Typography>
+        : result?.state === 'value' ? <>
+          {metric === 'steps' && result.total !== null &&
+            <Typography size="metric-l">{result.total.toLocaleString()} steps</Typography>}
+          {metric !== 'steps' && result.total !== null &&
+            <Typography size="metric-l">{result.total.toLocaleString()} {sourceRows[0]?.unit}</Typography>}
+          {result.total === null && <Typography>Sources are separate · no combined total.</Typography>}
           {result.unverified && <Chip kind="pending" label="Unverified device" />}
           {result.note ? <Typography tone="secondary">{result.note}</Typography> : null}
         </> : <Typography tone="secondary">{result?.note ?? 'Checking Health Connect…'}</Typography>}
-      </Card>
-      <Card title="Sources" rim="health">
-        {sourceRows.length ? sourceRows.map(source =>
-          <ListRow key={source.origin} title={source.label}
-            detail={`${source.origin} · ${source.stale ? 'Stale' : 'Fresh'}`}
-            suffix={<Typography>{source.value.toLocaleString()} {source.unit}</Typography>} />)
-          : <Typography tone="secondary">No source-backed records available.</Typography>}
-        <Typography size="small" tone="secondary">The same app may record measurements from a phone or a watch. App identity alone is not device identity.</Typography>
-      </Card>
-      <Card title="Recent records">
-        {records.length ? records.map(r =>
-          <ListRow key={r.adapter + ':' + r.recordId} title={recordDescription(r)}
-            detail={`${sourceName(r.dataOrigin ?? '')} · ${new Date(recordTime(r)).toLocaleString()}`}
-            onPress={() => setRecordId(r.recordId)} />)
-          : <Typography tone="secondary">No individual records available. Missing data is not zero.</Typography>}
-      </Card>
-      {selected && <Card title="Record details">
-        <Typography bold>Value: {recordDescription(selected)}</Typography>
-        <Typography>Recorded: {new Date(recordTime(selected)).toLocaleString()}</Typography>
-        <Typography>Data origin: {selected.dataOrigin}</Typography>
-        <Typography>Device: {selected.device?.model
-          ? `${selected.device.manufacturer ?? ''} ${selected.device.model}` : 'Not recorded by the source'}</Typography>
-        <Typography>Source record ID: {selected.recordId}</Typography>
-        <Typography tone="secondary">A data origin identifies the app. It is not proof of which device took a reading.</Typography>
-        <Button label="Close record detail" variant="ghost" onPress={() => setRecordId(null)} />
-      </Card>}
-    </ScrollView>
-  </Screen>;
+      {result?.state === 'value' && metric === 'steps' &&
+        <StepsChart series={stepSeries} period={window} />}
+      {result?.state === 'value' && metric === 'heart-rate' &&
+        <HeartRateChart samples={hrSamples} />}
+      {permitted && result?.state === 'value' && <Typography tone="secondary" size="small">
+        Each app source stays separate. Values come from records, not invented samples.
+      </Typography>}
+    </Card>
+    <Card title="Sources" rim="health">
+      {sourceRows.length && permitted ? sourceRows.map(source =>
+        <ListRow key={source.origin} title={source.label}
+          detail={`${source.origin} · ${source.stale ? 'Stale ' + ageLabel(source.latestAt) : 'Latest ' + ageLabel(source.latestAt)}`}
+          suffix={<Typography>{source.value.toLocaleString()} {source.unit}</Typography>} />)
+        : <Typography tone="secondary">No source-backed records available.</Typography>}
+      <Typography size="small" tone="secondary">App origin is not proof of which device took a measurement.</Typography>
+    </Card>
+    <Card title="What this means">
+      <Typography tone="secondary">{metric === 'steps'
+        ? 'Steps are counted separately for each source. A phone and watch may record the same walk, so Liftria does not add their totals.'
+        : metric === 'heart-rate'
+          ? 'Samples are individual heart-rate readings, not a verified resting rate. Samsung Health may omit device details.'
+          : metric === 'sleep-session'
+            ? 'Sleep needs tracking in the connected watch app and permission to share it.'
+            : metric === 'exercise-session'
+              ? 'Record an exercise session in your watch app and allow it to share with Health Connect.'
+              : energy ? 'Health Connect energy estimates are hidden unless you ask to view them.'
+                : 'Readings are grouped by provider. A missing reading is not zero.'}</Typography>
+    </Card>
+    <Card title="Recent records">
+      {records.length ? records.map(r =>
+        <ListRow key={r.adapter + ':' + r.dataOrigin + ':' + r.recordId}
+          title={recordDescription(r)}
+          detail={`${sourceName(r.dataOrigin)} · ${new Date(recordTime(r)).toLocaleString()}`}
+          onPress={() => router.push({ pathname: '/(tabs)/progress/health-record',
+            params: { metric, recordId: r.recordId, origin: r.dataOrigin,
+              adapter: r.adapter, readAt: snapshot.readAt ?? '' } })} />)
+        : <Typography tone="secondary">No individual records available for this range and permission.</Typography>}
+    </Card>
+  </ScrollView></Screen>;
 }

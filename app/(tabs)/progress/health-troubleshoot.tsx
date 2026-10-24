@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';

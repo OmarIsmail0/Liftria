@@ -1,4 +1,4 @@
-import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords, ageLabel, hourlyStepsBySource, heartRateSamples, earliestCachedRecordAt } from '../presentation';
+import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords, ageLabel, hourlyStepsBySource, heartRateSamples, earliestCachedRecordAt, dailyStepsBySource, healthAvailabilityText, canInstallHealthConnect } from '../presentation';
 import type { HealthValue, AggregateValue, IntervalSample } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
@@ -98,4 +98,19 @@ test('HE-2 heart-rate chart shows individual samples, no inferred watch origin',
   expect(result).toHaveLength(2);
   expect(result.map(x=>x.bpm)).toEqual([68,72]);
   expect(result[0]?.origin).toBe('com.sec.android.app.shealth');
+});
+
+test('HE-1 availability status is human copy, unsupported is not an install instruction', () => {
+  expect(healthAvailabilityText('needs-update')).not.toContain('needs-update');
+  expect(healthAvailabilityText('unsupported')).toMatch(/works without/);
+  expect(canInstallHealthConnect('unsupported')).toBe(false);
+  expect(canInstallHealthConnect('not-installed')).toBe(true);
+});
+test('HE-2 week steps split by local dates without summing separate providers', () => {
+  const from = new Date('2026-10-18T00:00:00.000Z');
+  const until = new Date('2026-10-25T00:00:00.000Z');
+  const vals = dailyStepsBySource([steps('a','phone',1400), steps('b','shealth',200)], from, until);
+  expect(vals).toHaveLength(2);
+  expect(vals[0]?.values.reduce((sum,n) => sum+n,0)).toBe(1400);
+  expect(vals[1]?.values.reduce((sum,n) => sum+n,0)).toBe(200);
 });

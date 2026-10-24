@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView } from 'react-native';
-import { useTheme } from '../../../src/design/ThemeProvider';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
-import { backOrReplace } from '../../../src/navigation/back';
 import { listCachedHealth } from '../../../src/services/database';
 import { healthConnect } from '../../../src/services/health';
 import { metricTypes, type HealthRecord, type MetricType, type PermissionState } from '../../../src/services/health/types';
@@ -20,7 +17,6 @@ function measuredValue(value: HealthRecord): string {
   return 'Sleep session';
 }
 export default function HealthRecordDetail() {
-  const { theme } = useTheme();
   const query = useLocalSearchParams<{ metric: string; recordId: string; origin: string; adapter: string; readAt?: string }>();
   const metric = metricTypes.includes(query.metric as MetricType) ? query.metric as MetricType : 'steps';
   const [record,setRecord] = useState<HealthRecord|null>(null);
@@ -45,7 +41,7 @@ export default function HealthRecordDetail() {
 
   return <Screen embedded>
     <Header title="Record detail" subtitle="Health Connect · read only"
-      onBack={() => backOrReplace(router, '/(tabs)/progress/health-detail')} />
+      onBack={() => { if (router.canGoBack()) router.back(); else router.replace({ pathname: '/(tabs)/progress/health-detail', params: { metric } }); }} />
     {loading ? <Typography tone="secondary">Checking permission and local cache…</Typography> :
       permission !== 'granted' ? <Card title="Not allowed">
         <Typography>This record is hidden until the Health Connect permission is allowed again.</Typography>
