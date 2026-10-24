@@ -26,6 +26,8 @@ The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 P
 
 **Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once CI is green (verify + android-build) **and** Claude has approved the emulator screenshots. The owner's phone check no longer blocks a merge: the owner tests the merged `main` build and reports problems, which become fix tasks. Keep PRs as drafts while you work; Claude marks them ready and merges.
 
+**Builds (owner's request, 2026-10-24):** pushes to a **draft** PR run only `verify` (about a minute). The 35-minute Android build and the emulator check run once, when Claude marks the PR **Ready for review** after the code review is clean (or when the PR gets the `build` label). So: keep your PR a draft, fix the review comments, and **batch your fixes into as few pushes as you can**. Don't mark PRs ready yourself.
+
 **For every big PR:**
 - **Commits:** one commit per sub-step (e.g. "TASK-11", "ON-1–ON-3", "ON-4–ON-6"…), so the review can go part by part.
 - **PR description:**

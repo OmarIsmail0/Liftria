@@ -5,9 +5,20 @@ on:
     branches: [main]
     paths-ignore:
       - 'docs/**'
-      - 'README.md'
-      - 'PHASE_0_ISSUES.md'
+      - '**/*.md'
+      - '.claude/**'
+      - '.github/scripts/visual-check.sh'
+      - '.github/workflows/visual-check.yml'
+      - '.github/workflows/claude-*.yml'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '.claude/**'
+      - '.github/scripts/visual-check.sh'
+      - '.github/workflows/visual-check.yml'
+      - '.github/workflows/claude-*.yml'
   workflow_dispatch:
 
 permissions:
@@ -15,8 +26,8 @@ permissions:
 
 concurrency:
   group: phase0-${{ github.ref }}
-  # A newer push to the same PR makes the running 40-minute build pointless.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # A newer push (PR or main) makes the running 35-minute build pointless.
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -37,8 +48,17 @@ jobs:
       - name: TypeScript, lint, Jest
         run: npm run check
 
+  # The 35-minute Android build runs only when it's needed (owner's request, 2026-10-24):
+  #  - on main after a code change (not for docs-only commits, see paths-ignore),
+  #  - on a pull request once it's marked "Ready for review", or when it gets the `build` label,
+  #  - or by hand (Actions > Run workflow).
+  # Draft PR pushes run only `verify` (about a minute).
   android-build:
     needs: verify
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.draft == false ||
+      contains(github.event.pull_request.labels.*.name, 'build')
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
