@@ -1,7 +1,6 @@
 import { MUSCLES, regionKey } from '../gymTypes';
 import { bundledExercises, normalizedName, packExercise, searchExercises } from '../exerciseLibrary';
 import { calculateRecords, estimatedOneRepMax, setVolume, workingSetCount } from '../gymMath';
-import type { Exercise } from '../gymTypes';
 
 test('bundled pack is complete with one-to-one mapping for exactly 17 regions', () => {
   const pack = bundledExercises();

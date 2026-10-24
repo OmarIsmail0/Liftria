@@ -9,7 +9,7 @@ test('v3 adds all gym tables, indexes and foreign keys without destructive migra
   expect(DB_SCHEMA_VERSION).toBe(3);
   expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1,2,3]);
   for (const table of expected) expect(schema).toContain('CREATE TABLE IF NOT EXISTS ' + table);
-  expect(schema).toContain('CHECK(kind IN (\\'working\\',\\'warm-up\\'))');
+  expect(schema).toContain("CHECK(kind IN (\'working\',\'warm-up\'))");
   expect(schema).toContain("CHECK(source IN ('manual','imported-file'))");
   expect(schema).not.toMatch(/DROP TABLE|DELETE FROM|ALTER TABLE/i);
 });
@@ -21,7 +21,7 @@ test('v2 upgrades only v3, atomically marking user_version last', async () => {
   const db = {
     execAsync: jest.fn(async (statement: string) => {
       sql.push(statement);
-      const m = /PRAGMA user_version = (\\d+)/.exec(statement);
+      const m = /PRAGMA user_version = (\d+)/.exec(statement);
       if (m) version = Number(m[1]);
     }),
     getFirstAsync: jest.fn(async () => ({ user_version: version })),

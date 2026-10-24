@@ -51,7 +51,7 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
   const size=mini?{width:82,height:150}:{width:300,height:270};
   const textColor=theme.color.text.secondary;
   const mapText=bodyMapDescription(primary,secondary);
-  const renderFigure=(parts:Shape[],offset:number,side:string)=><G key={side} x={offset}>
+  const renderFigure=(parts:Shape[],offset:number,side:string)=><G key={side} transform={'translate('+offset+',0)'}>
     <Circle cx={50} cy={12} r={10} fill={theme.color.track}
       stroke={theme.color.border.control} strokeWidth={0.9}/>
     {parts.map((shape,i)=>{
