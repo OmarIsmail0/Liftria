@@ -2,7 +2,8 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { AmbientBackdrop } from '../../src/design/primitives/VisualEffects';
-import { CapsuleNav, type CapsuleTab } from '../../src/design/primitives';
+import { CapsuleNav } from '../../src/design/primitives';
+import { activeCapsuleTab } from '../../src/navigation/routes';
 
 /** A single full-height backdrop covers scenes AND the space below the capsule. */
 export default function TabsLayout() {
@@ -13,8 +14,8 @@ export default function TabsLayout() {
       headerShown: false,
       sceneStyle: { backgroundColor: 'transparent' },
     }} tabBar={({ state, navigation }) => {
-      const active = state.routes[state.index]?.name as CapsuleTab | undefined;
-      return <CapsuleNav active={active ?? 'today'} onSelect={tab => {
+      const active = activeCapsuleTab(state.routes[state.index]?.name);
+      return <CapsuleNav active={active} onSelect={tab => {
         const route = state.routes.find(item => item.name === tab);
         if (!route) return;
         const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
