@@ -27,7 +27,7 @@ let lastForegroundRead = 0;
 export async function loadHealthSnapshot(metrics: readonly MetricType[], readLive = true): Promise<HealthSnapshot> {
   const availability = await healthConnect.getAvailability();
   const available = availability === 'available';
-  const permissions = available ? await healthConnect.getPermissionStatus([...metrics]) : {};
+  const permissions: Partial<Record<MetricType, PermissionState>> = available ? await healthConnect.getPermissionStatus([...metrics]) : {};
   const cached = await listCachedHealth(500);
   let all: HealthValue[] = cached.ok ? cached.value : [];
   const readings: Partial<Record<MetricType, HealthSummary>> = {};

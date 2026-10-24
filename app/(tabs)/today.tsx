@@ -67,8 +67,9 @@ export default function TodayTab() {
         active={!localLoading} onPress={() => router.push('/(tabs)/eat')} />
       <View style={{ gap: theme.space[2], alignItems: 'center' }}>
         {hasTarget ? <>
-          <Chip kind={local.target?.source === 'estimate' ? 'estimate' : 'measured'}
-            label={local.target?.source === 'estimate' ? 'Estimate' : 'Your target'} />
+          {local.target?.source === 'estimate'
+            ? <Chip kind="estimate" label="Estimate" />
+            : <Typography tone="secondary" size="small">Your target · manually set</Typography>}
           <Typography tone="secondary">{local.hideNumbers ? 'Your calorie target is saved' :
             `${local.target?.kcal.toLocaleString()} kcal target · Meals not yet logged`}</Typography>
           <Typography tone="secondary" size="small">{local.hideNumbers ? 'Macros are hidden' :
@@ -76,7 +77,7 @@ export default function TodayTab() {
         </> : <>
           <Typography tone="secondary">Your first meal lights it up.</Typography>
           <Typography tone="secondary" size="small">No target yet · Set a target whenever you're ready.</Typography>
-          <Button label="Set a target" variant="secondary" onPress={() => router.push('/onboarding/target')} />
+          <Button label="Set a target" variant="secondary" onPress={() => router.push('/settings')} />
         </>}
       </View>
       <Card title="Quick actions" rim="eat">
@@ -87,7 +88,7 @@ export default function TodayTab() {
       {(!local.onboardingFinished || !hasTarget) && <Card title="Getting started">
         <Typography tone="secondary">Add what matters to you. Every integration is optional.</Typography>
         <ListRow title="Continue setup" detail="Profile, target, health and Hiku"
-          onPress={() => router.push('/onboarding/profile')} />
+          onPress={() => router.push('/settings')} />
       </Card>}
       <Card rim="train" title="Training">
         <Typography tone="secondary">Coming in Phase 3: workouts and your training plan.</Typography>

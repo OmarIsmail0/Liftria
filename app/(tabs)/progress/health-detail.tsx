@@ -5,7 +5,7 @@ import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, readDailyEnergy } from '../../../src/services/health';
-import { metricTypes, type HealthValue, type MetricType } from '../../../src/services/health/types';
+import { metricTypes, type HealthValue, type HealthRecord, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 import { emptyMetricState, sourceName, summarizeRecords, type HealthSummary } from '../../../src/features/health/presentation';
 
@@ -44,7 +44,7 @@ export default function HealthMetricDetail() {
   const [estimate, setEstimate] = useState<{ kcal: number; type: string } | null>(null);
   const base = snapshot.readings[metric];
   const result = window === 'week' && week !== null ? week : base;
-  const records = useMemo(() => snapshot.records.filter(r => metricOf(r) === metric)
+  const records = useMemo(() => snapshot.records.filter((r): r is HealthRecord => r.kind !== 'aggregate' && metricOf(r) === metric)
     .sort((a,b) => recordTime(b).localeCompare(recordTime(a))).slice(0, 50), [snapshot.records, metric]);
   const selected = records.find(r => r.recordId === recordId) ?? null;
 
