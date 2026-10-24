@@ -100,3 +100,20 @@ export function measuredEnergy(aggregates: AggregateValue[]): { kcal: number; or
   }
   return null;
 }
+
+/** Never sum a cached step or exercise interval from a different local day into Today. */
+export function onlyLocalDayRecords(metric: MetricType, records: HealthValue[], start: Date, end: Date): HealthValue[] {
+  if (metric !== 'steps' && metric !== 'exercise-session' && metric !== 'sleep-session') return records;
+  const from = start.getTime(), until = end.getTime();
+  return records.filter(r => {
+    if (r.kind === 'aggregate') return false;
+    if (metric === 'steps' && r.kind !== 'interval') return false;
+    if (metric === 'exercise-session' && r.kind !== 'session') return false;
+    if (metric === 'sleep-session' && r.kind !== 'sleep') return false;
+    if (r.kind !== 'interval' && r.kind !== 'session' && r.kind !== 'sleep') return false;
+    const a = Date.parse(r.start), b = Date.parse(r.end);
+    // Sleep can begin yesterday; a completed session counted today ends today.
+    return Number.isFinite(a) && Number.isFinite(b) && b >= from && b <= until &&
+      (metric === 'sleep-session' || a >= from);
+  });
+}

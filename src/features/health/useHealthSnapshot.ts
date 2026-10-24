@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { healthConnect, readDailyEnergy } from '../../services/health';
 import { listCachedHealth, saveHealthValues } from '../../services/database';
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
-import { emptyMetricState, measuredEnergy, summarizeRecords, type HealthSummary } from './presentation';
+import { emptyMetricState, measuredEnergy, onlyLocalDayRecords, summarizeRecords, type HealthSummary } from './presentation';
 
 export const overviewMetrics = [
   'steps', 'heart-rate', 'exercise-session', 'sleep-session',
@@ -31,6 +31,8 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
   const cached = await listCachedHealth(500);
   let all: HealthValue[] = cached.ok ? cached.value : [];
   const readings: Partial<Record<MetricType, HealthSummary>> = {};
+  const now = new Date();
+  const localStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   if (readLive && available) {
     const until = new Date(), from = new Date(until);
@@ -55,7 +57,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
   }
   for (const metric of metrics) {
     if (readings[metric]) continue;
-    readings[metric] = summarizeRecords(metric, all, permissions[metric] ?? 'unknown', available);
+    readings[metric] = summarizeRecords(metric, onlyLocalDayRecords(metric, all, localStart, now), permissions[metric] ?? 'unknown', available);
   }
 
   let energy: HealthSnapshot['energy'] = null;

@@ -1,4 +1,4 @@
-import { emptyMetricState, measuredEnergy, sourceName, sourceStale, summarizeRecords } from '../presentation';
+import { emptyMetricState, measuredEnergy, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords } from '../presentation';
 import type { HealthValue, AggregateValue } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
@@ -50,4 +50,17 @@ test('freshness thresholds: six hours for steps/HR, fourteen days for body mass'
   expect(sourceStale('steps', end, now+7*3600000)).toBe(true);
   expect(sourceStale('weight', end, now+7*86400000)).toBe(false);
   expect(sourceStale('weight', end, now+15*86400000)).toBe(true);
+});
+
+test('Today filters cached step intervals from yesterday and refuses cross-midnight sums', () => {
+  const from = new Date('2026-10-24T00:00:00.000Z');
+  const until = new Date('2026-10-24T13:00:00.000Z');
+  const old: HealthValue = { ...steps('y','com.android.healthconnect.phone',9000),
+    start:'2026-10-23T09:00:00.000Z', end:'2026-10-23T10:00:00.000Z' };
+  const cross: HealthValue = { ...steps('cross','com.android.healthconnect.phone',1000),
+    start:'2026-10-23T23:45:00.000Z', end:'2026-10-24T00:15:00.000Z' };
+  const today = steps('today','com.android.healthconnect.phone',500);
+  const filtered = onlyLocalDayRecords('steps',[old,cross,today],from,until);
+  expect(filtered).toHaveLength(1);
+  expect(summarizeRecords('steps',filtered,'granted',true,now).total).toBe(500);
 });
