@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
 import { OrbArtwork } from './VisualEffects';
+import { TabIcon } from './TabIcon';
 import { capsuleTabs, orbSummary, type CapsuleTab } from './contracts';
 
 export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
@@ -56,37 +57,44 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   </Pressable>;
 }
 
-/** Navigation surface only; Expo Router integration and blur occur in Step 3. */
+/** One capsule shared by the five route roots; safe-area inset stays below its touch targets. */
 export function CapsuleNav({ active, onSelect }: {
   active: CapsuleTab; onSelect: (tab: CapsuleTab) => void;
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  return <View accessibilityRole="tablist" style={{
-    paddingHorizontal: theme.layout.gutter, paddingBottom: Math.max(insets.bottom, theme.space[4]),
-    paddingTop: theme.space[2], backgroundColor: 'transparent',
+  const glass = theme.effectiveStyle === 'aurora';
+  return <View style={{
+    paddingHorizontal: theme.space[4], paddingTop: theme.space[2],
+    paddingBottom: Math.max(insets.bottom, theme.space[4]),
+    backgroundColor: 'transparent',
   }}>
-    <View style={{
-      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
+    <View accessibilityRole="tablist" style={{
+      flexDirection: 'row', alignItems: 'center',
       minHeight: theme.size.touch.nav, borderRadius: theme.radius.pill,
-      padding: theme.space[1], borderWidth: theme.size.border.thin, borderColor: theme.controlOutline,
-      backgroundColor: theme.effectiveStyle === 'aurora' ? theme.glass.card : theme.color.bg.glass,
+      padding: theme.space[1], borderWidth: theme.size.border.thin,
+      borderColor: glass ? theme.glass.border : theme.color.border.strong,
+      backgroundColor: glass ? theme.glass.card : theme.color.bg.glass,
     }}>
       {capsuleTabs.map(tab => {
         const selected = tab.key === active;
+        const ink = selected ? theme.color.action.primary.fg : theme.color.text.secondary;
         return <Pressable key={tab.key} onPress={() => onSelect(tab.key)}
           accessibilityRole="tab" accessibilityLabel={tab.label}
           accessibilityState={{ selected }}
-          style={{ flex: selected ? 1.8 : 1, minWidth: theme.size.touch.min,
+          style={{
+            flex: selected ? 1.9 : 1, minWidth: theme.size.touch.min,
             minHeight: theme.size.touch.nav, alignItems: 'center', justifyContent: 'center',
             flexDirection: 'row', gap: theme.space[1], paddingHorizontal: theme.space[1],
             backgroundColor: selected ? theme.color.action.primary.bg : 'transparent',
-            borderRadius: theme.radius.pill }}>
-          <Text importantForAccessibility="no" style={{ fontSize: theme.type.head.size,
-            color: selected ? theme.color.action.primary.fg : theme.color.text.primary,
-            fontFamily: fontFamilyFor('Figtree','700') }}>{tab.glyph}</Text>
-          {selected && <Text allowFontScaling style={{ color: theme.color.action.primary.fg,
-            fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', theme.type.label.weight), flexShrink: 1 }}>{tab.label}</Text>}
+            borderRadius: theme.radius.pill,
+          }}>
+          <TabIcon name={tab.key} color={ink}
+            size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
+          {selected && <Text allowFontScaling maxFontSizeMultiplier={2} numberOfLines={2}
+            style={{ color: ink, fontSize: theme.type.small.size,
+              fontFamily: fontFamilyFor('Figtree', theme.type.label.weight),
+              flexShrink: 1, textAlign: 'center' }}>{tab.label}</Text>}
         </Pressable>;
       })}
     </View>

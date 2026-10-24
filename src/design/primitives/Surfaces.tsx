@@ -29,15 +29,15 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
 }
 
 /** Fixed ambient background; no expensive live blur or animated glows. */
-export function Screen({ children, scroll = true, padded = true }: {
-  children: ReactNode; scroll?: boolean; padded?: boolean;
+export function Screen({ children, scroll = true, padded = true, embedded = false }: {
+  children: ReactNode; scroll?: boolean; padded?: boolean; embedded?: boolean;
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom };
+  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
-  return <View style={[layout, { backgroundColor: theme.background }]}>
-    {theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
+  return <View style={[layout, { backgroundColor: embedded ? 'transparent' : theme.background }]}>
+    {!embedded && theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     {scroll
       ? <ScrollView contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}

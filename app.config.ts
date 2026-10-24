@@ -24,6 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   android: {
+    edgeToEdgeEnabled: true,
     package: 'com.liftria.diagnostics',
     versionCode: 1,
     permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
@@ -33,6 +34,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.SYSTEM_ALERT_WINDOW',
     ],
   },
+  // Keep the Android gesture bar transparent, allowing the screen background behind it.
+  androidNavigationBar: { enforceContrast: false },
   plugins: [
     'expo-router',
     'expo-splash-screen',
