@@ -1,4 +1,4 @@
-import { onboardingSteps, isOnboardingStep, nextOnboardingStep, optionalStep, previousOnboardingStep, skipOnboardingStep } from '../flow';
+import { onboardingSteps, isOnboardingStep, nextOnboardingStep, optionalStep, previousOnboardingStep, onboardingStepCaption, skipOnboardingStep } from '../flow';
 
 test('all nine ON IDs appear in the correct first-launch order', () => {
   expect(onboardingSteps).toEqual(['welcome', 'privacy', 'profile', 'goal', 'target', 'health', 'watch', 'hiku', 'done']);
@@ -21,4 +21,10 @@ test('ON-3 Skip bypasses the estimate; ON-4 Skip opens ON-5 without inventing in
   expect(skipOnboardingStep('profile')).toBe('health');
   expect(skipOnboardingStep('goal')).toBe('target');
   expect(skipOnboardingStep('target')).toBe('health');
+});
+
+test('ON-9 is a non-numbered completion screen', () => {
+  expect(onboardingStepCaption('welcome')).toBe('Step 1 of 8');
+  expect(onboardingStepCaption('hiku')).toBe('Step 8 of 8');
+  expect(onboardingStepCaption('done')).toBeNull();
 });

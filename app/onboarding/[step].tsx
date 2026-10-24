@@ -6,12 +6,12 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, Orb, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
-import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep, skipOnboardingStep,
+import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingStepCaption, previousOnboardingStep, skipOnboardingStep,
   type OnboardingStep } from '../../src/features/onboarding/flow';
 import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
-import { availabilityMessage, missingHealthPermissions } from '../../src/features/onboarding/healthPermissionCopy';
+import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall } from '../../src/features/onboarding/healthPermissionCopy';
 import { getKey, saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
@@ -62,25 +62,28 @@ function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
   </View>;
 }
 
-function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, primaryDisabled = false, error, footer }: {
+function InlineError({ message }: { message: string | null }) {
+  return message ? <View accessibilityRole="alert" accessible>
+    <Typography tone="secondary" size="small">ⓘ {message}</Typography>
+  </View> : null;
+}
+
+function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, primaryDisabled = false, footer }: {
   children: ReactNode; step: OnboardingStep; onBack?: () => void; onSkip?: () => void;
-  primary: string; onPrimary: () => void; busy: boolean; primaryDisabled?: boolean; error: string | null; footer?: ReactNode;
+  primary: string; onPrimary: () => void; busy: boolean; primaryDisabled?: boolean; footer?: ReactNode;
 }) {
   const { theme } = useTheme();
-  const index = onboardingSteps.indexOf(step);
+  const caption = onboardingStepCaption(step);
   return <Screen scroll={false}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <Header title={titles[step]} onBack={onBack} right={onSkip
         ? <Button label="Skip" size="sm" variant="ghost" onPress={onSkip} /> : undefined} />
-      <Typography size="small" tone="secondary">Step {index + 1} of {onboardingSteps.length}</Typography>
+      {caption && <Typography size="small" tone="secondary">{caption}</Typography>}
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{
         paddingVertical: theme.space[4], gap: theme.space[4], flexGrow: 1,
       }}>
         <Typography tone="secondary">{descriptions[step]}</Typography>
         {children}
-        {error && <View accessibilityRole="alert" accessible style={{ paddingVertical: theme.space[2] }}>
-          <Typography tone="secondary" size="small">ⓘ {error}</Typography>
-        </View>}
       </ScrollView>
       {footer}
       <View style={{ paddingVertical: theme.space[3], gap: theme.space[2] }}>
@@ -277,6 +280,7 @@ export default function OnboardingStepScreen() {
     ? <Card rim="hiku">
       <Typography size="head">A local-first space for daily progress</Typography>
       <Typography tone="secondary">Today starts empty. You decide what to connect and when to log.</Typography>
+          <InlineError message={error} />
     </Card>
     : step === 'privacy'
       ? <Card title="Privacy by design">
@@ -284,6 +288,7 @@ export default function OnboardingStepScreen() {
         <Typography>Profile, goals and history: stored on this phone.</Typography>
         <Typography>Hiku: uses your own Anthropic API key; each request requires your action.</Typography>
         <Typography tone="secondary" size="small">No backend account. No automatic AI uploads.</Typography>
+          <InlineError message={error} />
       </Card>
       : step === 'profile'
         ? <Card title="Your profile (optional)">
@@ -296,6 +301,7 @@ export default function OnboardingStepScreen() {
               { value: 'unspecified', label: 'Prefer not to say' }]}
             onChange={v => patch('sexForFormula', v)} />
           <Typography tone="secondary" size="small">Prefer not to say uses an averaged constant; the estimate is less precise.</Typography>
+          <InlineError message={error} />
         </Card>
         : step === 'goal'
           ? <Card title="Your plan">
@@ -307,6 +313,7 @@ export default function OnboardingStepScreen() {
             <ChoiceGroup label="Goal" selected={draft.goal}
               choices={[{ value: 'lose', label: 'Lose' }, { value: 'maintain', label: 'Maintain' },
                 { value: 'build', label: 'Build' }]} onChange={v => patch('goal', v)} />
+          <InlineError message={error} />
           </Card>
           : step === 'target'
             ? <Card rim="eat" title="Calorie and macro estimate">
@@ -323,6 +330,7 @@ export default function OnboardingStepScreen() {
                 }} />
               </> : <Typography tone="secondary">No estimate without complete age, height and weight. You can set your own numbers, or skip for now.</Typography>}
               {!estimate && <Button variant="secondary" label="Set my own numbers" onPress={() => setEditManual(true)} />}
+          <InlineError message={error} />
             </Card>
             : step === 'health'
               ? <Card rim="health" title="Connect on-device health data">
@@ -331,9 +339,9 @@ export default function OnboardingStepScreen() {
                 <Button label="Open Health Connect permissions" onPress={() => void requestHealth()} />
                 <Typography tone="secondary">{healthStatus}</Typography>
                 {healthMissing.map(note => <Typography key={note} tone="secondary" size="small">ⓘ {note}</Typography>)}
-                {(healthAvailability === 'not-installed' || healthAvailability === 'needs-update' ||
-                  healthAvailability === 'unsupported') &&
-                  <Button variant="ghost" label="Update Health Connect" onPress={() =>
+          <InlineError message={error} />
+                {offerHealthConnectInstall(healthAvailability) &&
+                  <Button variant="ghost" label={healthAvailability === 'not-installed' ? 'Get Health Connect' : 'Update Health Connect'} onPress={() =>
                     void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
               </Card>
               : step === 'watch'
@@ -346,6 +354,7 @@ export default function OnboardingStepScreen() {
                     <Typography>2. In Health Connect, grant this app permission to share new readings.</Typography>
                     <Typography tone="secondary">Sync starts today. Some brands are not yet verified; Liftria never assumes readings are from your watch.</Typography>
                   </>}
+                  <InlineError message={error} />
                 </Card>
                 : step === 'hiku'
                   ? <Card rim="hiku" title="Your private API key">
@@ -360,13 +369,15 @@ export default function OnboardingStepScreen() {
                       <Button label="Test key (optional)" variant="secondary" onPress={() => void testSavedKey()} disabled={busy} />
                     </>}
                     {keyTestResult && <Typography tone="secondary" size="small">{keyTestResult}</Typography>}
+          <InlineError message={error} />
                   </Card>
                   : <Card title="Your own pace">
                     <Typography>Everything you entered stays on this device. Return to Settings to change it later.</Typography>
                     <Typography tone="secondary">No meals or workouts were invented during setup.</Typography>
+          <InlineError message={error} />
                   </Card>;
 
-  return <Frame step={step} busy={busy} error={error}
+  return <Frame step={step} busy={busy}
     primaryDisabled={step === 'profile' && Object.values(errors).some(Boolean)}
     onBack={back} onSkip={skip}
     primary={primary} onPrimary={() => {

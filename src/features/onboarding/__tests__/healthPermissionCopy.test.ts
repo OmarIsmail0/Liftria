@@ -1,4 +1,4 @@
-import { availabilityMessage, missingHealthPermissions } from '../healthPermissionCopy';
+import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall } from '../healthPermissionCopy';
 import { metricTypes, type MetricType, type PermissionState } from '../../../services/health/types';
 
 test('ON-6 partial permissions name each missing metric and impact, not just a count', () => {
@@ -16,4 +16,12 @@ test('ON-6 maps provider states to human copy without leaking enums', () => {
     expect(msg).not.toContain(status);
     expect(msg.length).toBeGreaterThan(40);
   }
+});
+
+test('Health Connect install link is absent on unsupported devices', () => {
+  expect(offerHealthConnectInstall(null)).toBe(false);
+  expect(offerHealthConnectInstall('available')).toBe(false);
+  expect(offerHealthConnectInstall('unsupported')).toBe(false);
+  expect(offerHealthConnectInstall('not-installed')).toBe(true);
+  expect(offerHealthConnectInstall('needs-update')).toBe(true);
 });

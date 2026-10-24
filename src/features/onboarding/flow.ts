@@ -24,3 +24,8 @@ export function optionalStep(step: OnboardingStep): boolean {
 export function skipOnboardingStep(step: OnboardingStep): OnboardingStep {
   return step === 'profile' ? 'health' : nextOnboardingStep(step);
 }
+
+/** ON-9 is a completion screen, not one of the eight steps. */
+export function onboardingStepCaption(step: OnboardingStep): string | null {
+  return step === 'done' ? null : `Step ${onboardingSteps.indexOf(step) + 1} of 8`;
+}

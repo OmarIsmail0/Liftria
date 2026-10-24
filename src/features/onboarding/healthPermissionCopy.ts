@@ -38,3 +38,8 @@ export function availabilityMessage(
     default: return 'Health Connect is available. Choose which records Liftria may read.';
   }
 }
+
+/** Unsupported hardware has nothing to install/update via Play Store. */
+export function offerHealthConnectInstall(status: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null): boolean {
+  return status === 'not-installed' || status === 'needs-update';
+}
