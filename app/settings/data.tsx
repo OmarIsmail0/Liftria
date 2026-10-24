@@ -19,7 +19,7 @@ export default function DataAndStorage() {
     if(result.ok)setCounts(result.value);
     else setMessage('Could not read storage counts from your phone.');
   },[]);
-  useEffect(()=>{void load()},[load]);
+  useEffect(()=>{void Promise.resolve().then(() => load());},[load]);
   async function clearCache() {
     if(busy)return;
     setBusy(true);

@@ -13,11 +13,11 @@ export default function AboutHelp() {
     </Card>
     <Card title="What the chips mean">
       <Chip kind="phone" label="Phone" />
-      <Typography tone="secondary" size="small">Steps measured by the phone's own counter when that source is identified.</Typography>
+      <Typography tone="secondary" size="small">Steps measured by the phone’s own counter when that source is identified.</Typography>
       <Chip kind="pending" label="Unverified device" />
       <Typography tone="secondary" size="small">An app supplied the reading, but that does not establish which device recorded it.</Typography>
       <Chip kind="stale" label="Stale" />
-      <Typography tone="secondary" size="small">The most recent record is older than the metric's freshness window.</Typography>
+      <Typography tone="secondary" size="small">The most recent record is older than the metric’s freshness window.</Typography>
       <Chip kind="estimate" label="Estimate" />
       <Typography tone="secondary" size="small">Calculated or estimated; not a verified measurement.</Typography>
     </Card>
