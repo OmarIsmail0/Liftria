@@ -275,7 +275,7 @@ export default function OnboardingStepScreen() {
                 {estimate.lessPrecise && <Typography tone="secondary">Estimate, less precise (sex for formula not specified).</Typography>}
                 {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{FLOOR_WARNING}</Typography>}
                 <Button variant="secondary" label="Set my own numbers" onPress={() => {
-                  patch('manualKcal', String(estimate.kcal)); setEditManual(true);
+                  setDraft(current => ({ ...current, manualKcal: String(estimate.kcal), manualProtein: String(estimate.proteinG), manualFat: String(estimate.fatG), manualCarbs: String(estimate.carbsG) })); setEditManual(true);
                 }} />
               </> : <Typography tone="secondary">No estimate without complete age, height and weight. You can set your own numbers, or skip for now.</Typography>}
               {!estimate && <Button variant="secondary" label="Set my own numbers" onPress={() => setEditManual(true)} />}
