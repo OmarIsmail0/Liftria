@@ -123,7 +123,7 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
     if (name.includes(text)) return 3;
     if (name.split(' ').some(word => word.startsWith(text))) return 4;
     if (text.length >= 3 && (editDistance(name,text)<=2 ||
-        name.split(' ').some(word => editDistance(word,text)<=1))) return 5;
+        name.split(' ').some(word => editDistance(word,text)<=2))) return 5;
     return Infinity;
   };
   return filtered.map(e=>({e,rank:score(e)})).filter(x=>Number.isFinite(x.rank))

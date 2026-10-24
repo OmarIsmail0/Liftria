@@ -6,7 +6,7 @@ import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Typography } f
 import { useTheme } from '../../../../src/design/ThemeProvider';
 import { type Exercise } from '../../../../src/services/database/gymTypes';
 import { getExercise } from '../../../../src/services/database/exerciseLibrary';
-import { exerciseSessions, getInProgressSession, readRecords, addSessionExercise } from '../../../../src/services/database/gymRepositories';
+import { exerciseSessions, getInProgressSession, readRecords, appendExerciseToActiveSession } from '../../../../src/services/database/gymRepositories';
 import type { ExerciseRecord } from '../../../../src/services/database/gymMath';
 
 export default function ExerciseDetail(){
@@ -35,9 +35,8 @@ export default function ExerciseDetail(){
   },[id]));
   const add=async()=>{
     if(!active||!exercise)return;
-    // PR E supplies the exercise order, active rail and template choice.
-    // Avoid inventing target sets or silently creating a workout.
-    setStatus('Add to an active workout will be connected with the workout rail in the next build stage.');
+    const saved=await appendExerciseToActiveSession(exercise.id);
+    setStatus(saved.ok ? (saved.value ? 'Added to your active workout. No sets were logged.' : 'No active workout found.') : 'Could not add the exercise. Try again.');
   };
   if(loading)return <Screen embedded><Header title="Exercise" onBack={()=>router.back()}/><Typography>Loading exercise…</Typography></Screen>;
   if(!exercise)return <Screen embedded><Header title="Not found" onBack={()=>router.back()}/>
@@ -57,7 +56,7 @@ export default function ExerciseDetail(){
         <Button label="Add to a workout" variant="train" disabled={!active}
           onPress={()=>void add()}/>
         <Typography tone="secondary" size="small">{active
-          ?'Workout exercise rail is being wired in PR E. No exercise has been added yet.'
+          ?'Adds this exercise to your in-progress workout without logging suggested sets.'
           :'Start or choose a workout when active workouts and templates arrive in the next build stage.'}</Typography>
         {status&&<Typography>{status}</Typography>}
       </Card>

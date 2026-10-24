@@ -237,3 +237,22 @@ export async function exerciseSessions(exerciseId:string,limit=15): Promise<DbRe
     'WHERE se.exercise_id=? ORDER BY s.started_at DESC LIMIT ?',
     [exerciseId,limit])).map(asSession));
 }
+
+/** Explicitly append to an existing workout; never create or auto-log suggested sets. */
+export async function appendExerciseToActiveSession(exerciseId: string): Promise<DbResult<string | null>> {
+  return dbOperation(async db => {
+    let inserted: string | null = null;
+    await db.withExclusiveTransactionAsync(async tx => {
+      const active=await tx.getFirstAsync<{id:string}>(
+        "SELECT id FROM sessions WHERE state='in-progress' ORDER BY started_at DESC LIMIT 1");
+      if(!active)return;
+      const position=await tx.getFirstAsync<{next_position:number}>(
+        'SELECT COALESCE(MAX(position),-1)+1 AS next_position FROM session_exercises WHERE session_id=?',
+        [active.id]);
+      inserted=newGymId();
+      await tx.runAsync('INSERT INTO session_exercises(id,session_id,exercise_id,position) VALUES(?,?,?,?)',
+        [inserted,active.id,exerciseId,position?.next_position??0]);
+    });
+    return inserted;
+  });
+}

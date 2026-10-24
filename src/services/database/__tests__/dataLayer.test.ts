@@ -81,7 +81,7 @@ const asDb = mockDb as unknown as SQLite.SQLiteDatabase;
 const currentYear = new Date().getUTCFullYear();
 
 describe('monotonic, separate and additive migrations', () => {
-  test('fresh install runs v1 and v2 in distinct transactions, then caches the connection', async () => {
+  test('fresh install runs v1, v2 and v3 in distinct transactions, then caches the connection', async () => {
     expect(DB_NAME).toBe('liftria.db');
     expect(DB_SCHEMA_VERSION).toBe(3);
     expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3]);
@@ -96,10 +96,10 @@ describe('monotonic, separate and additive migrations', () => {
     expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(3);
     expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('liftria.db');
     await initializeDatabase();
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(3);
   });
 
-  test('v1 existing settings and both health caches remain after v2; re-run is no-op', async () => {
+  test('v1 existing settings and both health caches remain after v3; re-run is no-op', async () => {
     state.schema = 1;
     state.migrations = [];
     state.settings.set('persisted', 'value');
@@ -107,7 +107,7 @@ describe('monotonic, separate and additive migrations', () => {
     state.aggregates.set('health-connect:energy', { payload_json: '{}' });
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await migrateDatabase(asDb);
-    expect(state.schema).toBe(2);
+    expect(state.schema).toBe(3);
     expect(state.migrations).toEqual([2, 3]);
     expect(state.settings.get('persisted')).toBe('value');
     expect(state.health.size).toBe(1);
@@ -213,7 +213,7 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
       expect(all.value[1]?.inputs).toBeNull();
     }
     expect((await getDataLayerCounts())).toMatchObject({ ok: true,
-      value: { schema: 2, profile: 1, targets: 2 } });
+      value: { schema: 3, profile: 1, targets: 2 } });
   });
   test('a corrupted inputs_json keeps the target row readable (current and history)', async () => {
     state.targets = [];

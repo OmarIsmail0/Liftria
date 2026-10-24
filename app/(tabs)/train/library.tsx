@@ -47,7 +47,7 @@ export default function ExerciseLibrary() {
     .filter((e):e is Exercise=>Boolean(e)),[all,recent]);
   const row=(e:Exercise)=><ListRow key={e.id} title={e.name}
     detail={(e.equipment??'Equipment not specified')+' · '+e.primaryMuscles.join(', ')+(e.source==='custom'?' · My exercise':'')}
-    suffix={<View style={{width:55,height:70,justifyContent:'center'}}>
+    suffix={<View style={{width:85,height:150,justifyContent:'center'}}>
       <BodyMap mini primary={e.primaryMuscles} secondary={e.secondaryMuscles}/></View>}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>;
   return <Screen embedded scroll={false}>
