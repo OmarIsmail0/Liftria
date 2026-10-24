@@ -18,6 +18,6 @@ export async function testAnthropicKey(
 export function keyTestMessage(outcome: KeyTestOutcome): string {
   if (outcome === 'works') return 'Key works.';
   if (outcome === 'unauthorized') return 'Anthropic did not accept this key. Check the key and replace it.';
-  if (outcome === 'offline') return "Saved. We'll check it next time you're online.";
+  if (outcome === 'offline') return "Saved. Test it when you're online.";
   return 'Could not verify the key right now. Try again later.';
 }

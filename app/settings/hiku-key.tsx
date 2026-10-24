@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import * as Network from 'expo-network';
 import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, Sheet, Toggle, Typography } from '../../src/design/primitives';
+import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Toggle, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { deleteKey, getKey, isKeyWellFormed, keyState, saveKey, type KeyState } from '../../src/services/secure-storage';
 import { getTypedSetting, setTypedSetting } from '../../src/services/database/settings';
@@ -18,6 +18,8 @@ export default function HikuKeySettings() {
   const [replacing, setReplacing] = useState(false);
   const [deletionOpen, setDeletionOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testWorks, setTestWorks] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   useEffect(() => {
     let mounted = true;
@@ -42,6 +44,7 @@ export default function HikuKeySettings() {
       const result = await saveKey(entry);
       if (result.status === 'ready') {
         setState(result);
+        setTestWorks(false);
         setEntry('');
         setReplacing(false);
         setMessage('Key saved securely on this phone.');
@@ -52,15 +55,17 @@ export default function HikuKeySettings() {
 
   async function test() {
     if (busy) return;
-    setBusy(true); setMessage('Testing key…');
+    setBusy(true); setTesting(true); setMessage('Testing key…'); setTestWorks(false);
     try {
       const key = await getKey();
       if (!key) { setState({ status: 'missing' }); setMessage('Save a key before testing.'); return; }
       const net = await Network.getNetworkStateAsync();
       const offline = net.isConnected === false || net.isInternetReachable === false;
-      setMessage(keyTestMessage(await testAnthropicKey(key, offline)));
+      const outcome = await testAnthropicKey(key, offline);
+      setTestWorks(outcome === 'works');
+      setMessage(keyTestMessage(outcome));
     } catch { setMessage('Could not verify this key right now. Your saved key remains on the phone.'); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setTesting(false); }
   }
 
   async function deleteSavedKey() {
@@ -70,6 +75,7 @@ export default function HikuKeySettings() {
       const result = await deleteKey();
       if (result.status !== 'missing') { setMessage('Unable to delete the stored key. Try again.'); return; }
       setState(result);
+      setTestWorks(false);
       setEntry('');
       setReplacing(false);
       setDeletionOpen(false);
@@ -97,17 +103,18 @@ export default function HikuKeySettings() {
       {state.status === 'ready' && !replacing ? <>
         <Typography>Saved on this phone (Android Keystore)</Typography>
         <Typography tone="secondary">{state.hint}</Typography>
-        <Button label={busy ? 'Testing…' : 'Test key'} variant="secondary" onPress={() => void test()}
+        <Button label={testing ? 'Testing…' : 'Test key'} variant="secondary" onPress={() => void test()}
           disabled={busy} />
-        <Button label="Replace key" variant="ghost" onPress={() => setReplacing(true)} />
-        <Button label="Delete key" variant="ghost" onPress={() => setDeletionOpen(true)} />
+        {testWorks && <Chip kind="pending" label="First device test" />}
+        <Button label="Replace key" variant="ghost" disabled={busy} onPress={() => setReplacing(true)} />
+        <Button label="Delete key" variant="ghost" disabled={busy} onPress={() => setDeletionOpen(true)} />
       </> : <>
         <Typography tone="secondary" size="small">Hiku uses your own Anthropic key. Long-press the field to Paste from the Android clipboard. No key is stored in the Liftria database.</Typography>
         <Field label={replacing ? 'Replacement Anthropic key' : 'Anthropic API key'}
           value={entry} onChangeText={setEntry} secure placeholder="sk-ant-…" />
         <Button label={busy ? 'Saving…' : 'Save key'} fullWidth disabled={busy || !entry.trim()}
           onPress={() => void save()} />
-        {replacing && <Button label="Keep existing key" variant="ghost" onPress={() => {
+        {replacing && <Button label="Keep existing key" variant="ghost" disabled={busy} onPress={() => {
           setEntry(''); setReplacing(false);
         }} />}
       </>}
