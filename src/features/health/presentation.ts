@@ -240,7 +240,7 @@ export function historyPermissionMessage(status: 'granted' | 'denied' | 'unverif
     case 'granted': return 'Older records allowed';
     case 'denied': return 'Older records not allowed';
     case 'unverified': return 'Older-record access could not be confirmed';
-    case 'unavailable': return 'Older-record permission unavailable on this device';
+    case 'unavailable': return 'Older-record access cannot be requested on this device';
   }
 }
 
