@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, Orb, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
@@ -11,7 +12,7 @@ import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARN
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
 import { availabilityMessage, missingHealthPermissions } from '../../src/features/onboarding/healthPermissionCopy';
-import { saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
+import { getKey, saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
@@ -105,6 +106,7 @@ export default function OnboardingStepScreen() {
   const [healthMissing, setHealthMissing] = useState<string[]>([]);
   const [keyInput, setKeyInput] = useState('');
   const [keySaved, setKeySaved] = useState(false);
+  const [keyTestResult, setKeyTestResult] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -192,14 +194,62 @@ export default function OnboardingStepScreen() {
     finally { setBusy(false); }
   }
 
-  async function saveHikuKey() {
-    if (!isKeyWellFormed(keyInput)) { setError("That doesn't look like an Anthropic API key."); return; }
+  async function saveHikuKey(): Promise<boolean> {
+    if (!isKeyWellFormed(keyInput)) { setError("That doesn't look like an Anthropic API key."); return false; }
     setBusy(true); setError(null);
-    const result = await saveKey(keyInput);
-    setBusy(false);
-    if (result.status === 'ready') {
-      setKeySaved(true); setKeyInput('');
-    } else setError('The key could not be stored securely. Try again or skip.');
+    try {
+      const result = await saveKey(keyInput);
+      if (result.status !== 'ready') {
+        setError('The key could not be stored securely. Try again or skip.');
+        return false;
+      }
+      setKeySaved(true);
+      setKeyInput(''); // Never write the key to SQLite or an onboarding draft.
+      setKeyTestResult(null);
+      return true;
+    } catch {
+      setError('The key could not be stored securely. Try again or skip.');
+      return false;
+    } finally { setBusy(false); }
+  }
+
+  async function testSavedKey() {
+    setBusy(true); setError(null);
+    try {
+      const connection = await Network.getNetworkStateAsync();
+      if (connection.isConnected === false || connection.isInternetReachable === false) {
+        setKeyTestResult("Saved. We'll check it next time you're online.");
+        return;
+      }
+      const key = await getKey();
+      if (!key || !isKeyWellFormed(key)) {
+        setKeyTestResult('Save your key on this device before testing.');
+        return;
+      }
+      // Explicit user-initiated check only. No local profile, diary or health
+      // information is sent; key is used only in the request's auth header.
+      const response = await fetch('https://api.anthropic.com/v1/models?limit=1', {
+        method: 'GET',
+        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      });
+      setKeyTestResult(response.ok ? 'Key verified with Anthropic.' :
+        response.status === 401 ? 'Anthropic did not accept this key. Check it in Settings.' :
+          'Anthropic could not verify the key right now. Try again when online.');
+    } catch {
+      setKeyTestResult('Could not reach Anthropic. Your saved key remains on this device.');
+    } finally { setBusy(false); }
+  }
+
+  async function acknowledgePrivacy() {
+    if (busy) return;
+    setBusy(true); setError(null);
+    try {
+      const result = await setSetting('onboarding.privacyAcknowledged', JSON.stringify(true));
+      if (!result.ok) { setError('Could not save privacy acknowledgement.'); return; }
+      await go('profile');
+    } catch {
+      setError('Could not save privacy acknowledgement.');
+    } finally { setBusy(false); }
   }
 
   async function finish() {
@@ -299,11 +349,17 @@ export default function OnboardingStepScreen() {
                 </Card>
                 : step === 'hiku'
                   ? <Card rim="hiku" title="Your private API key">
-                    <Field label="Anthropic API key" value={keyInput} onChangeText={setKeyInput}
+                    <Field label="Anthropic API key" value={keyInput} onChangeText={value => {
+                      setKeyInput(value); setKeySaved(false); setKeyTestResult(null);
+                    }}
                       secure placeholder="sk-ant-…" />
-                    <Typography tone="secondary" size="small">Long-press the field to paste. You pay Anthropic directly; set a spending limit in Anthropic Console.</Typography>
+                    <Typography tone="secondary" size="small">Long-press in the key field and choose Paste. You pay Anthropic directly; set a spending limit in Anthropic Console.</Typography>
                     <Button label="Save key on this phone" onPress={() => void saveHikuKey()} disabled={keySaved || !keyInput.trim()} />
-                    {keySaved && <Typography tone="secondary">Key saved securely. Only the masked ending will appear in Settings.</Typography>}
+                    {keySaved && <>
+                      <Typography tone="secondary">Key saved securely. Only the masked ending will appear in Settings.</Typography>
+                      <Button label="Test key (optional)" variant="secondary" onPress={() => void testSavedKey()} disabled={busy} />
+                    </>}
+                    {keyTestResult && <Typography tone="secondary" size="small">{keyTestResult}</Typography>}
                   </Card>
                   : <Card title="Your own pace">
                     <Typography>Everything you entered stays on this device. Return to Settings to change it later.</Typography>
@@ -315,12 +371,13 @@ export default function OnboardingStepScreen() {
     onBack={back} onSkip={skip}
     primary={primary} onPrimary={() => {
       if (step === 'profile') { void continueProfile(); return; }
-      if (step === 'privacy') {
-        void setSetting('onboarding.privacyAcknowledged', JSON.stringify(true))
-          .then(result => { if (result.ok) void go('profile'); else setError('Could not save privacy acknowledgement.'); });
+      if (step === 'privacy') { void acknowledgePrivacy(); return; }
+      if (step === 'done') { void finish(); return; }
+      if (step === 'hiku' && keyInput.trim() && !keySaved) {
+        // Continue cannot silently discard an unsaved typed API key.
+        void (async () => { if (await saveHikuKey()) await go('done'); })();
         return;
       }
-      if (step === 'done') { void finish(); return; }
       if (step === 'goal') { void (async () => {
         setBusy(true);
         const saved = await persistProfile(draft);
