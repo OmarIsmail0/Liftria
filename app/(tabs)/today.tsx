@@ -9,7 +9,7 @@ import { getCurrentTarget, type Target } from '../../src/services/database/targe
 import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState, type KeyState } from '../../src/services/secure-storage';
 import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/useHealthSnapshot';
-import { ageLabel } from '../../src/features/health/presentation';
+import { ageLabel, heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/health/presentation';
 
 type LocalToday = {
   profile: Profile | null; target: Target | null; hideNumbers: boolean;
@@ -60,11 +60,12 @@ export default function TodayTab() {
   const hr = snapshot.readings['heart-rate'];
   const hasTarget = local.target !== null;
   const setupSteps = ['welcome','privacy','profile','goal','target','health','watch','hiku','done'] as const;
-  const promptHealth = !connectDismissed &&
+  const promptHealth = snapshot.loaded && snapshot.availability !== null && !connectDismissed &&
     (snapshot.availability !== 'available' ||
       (snapshot.permissions.steps !== 'granted' && snapshot.permissions['heart-rate'] !== 'granted'));
   const justUpdated = snapshot.fresh;
-  if (localLoading) return <Screen embedded>
+  const now = new Date();
+  if (localLoading || !snapshot.loaded) return <Screen embedded>
     <Header title="Today" subtitle="Loading your local data…" />
     <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
       <Skeleton height={theme.size.touch.workout} />
@@ -131,7 +132,7 @@ export default function TodayTab() {
         </View>
       </Card>}
       <Card rim="health" title="Activity today">
-        {snapshot.availability !== 'available' && <Button label="Connect Health Connect" variant="secondary"
+        {snapshot.availability !== 'available' && snapshot.availability !== null && <Button label="Connect Health Connect" variant="secondary"
           onPress={() => router.push('/(tabs)/progress/health-permissions')} />}
         {justUpdated && <Typography tone="secondary" size="small">Updated just now</Typography>}
         {steps?.state === 'value' ? steps.sources.map(source =>
@@ -147,17 +148,20 @@ export default function TodayTab() {
           : <Typography tone="secondary">Steps: {steps?.note ?? 'Checking Health Connect…'}</Typography>}
         {hr?.state === 'value' ? hr.sources.map(source =>
           <ListRow key={source.origin} title={`Heart rate · ${source.label}`}
-            detail={source.stale
-              ? `Stale · ${ageLabel(source.latestAt)} · unverified device`
-              : 'Unverified device · not confirmed from a watch'}
+            detail={heartRateTodayStatus(source.latestAt, now).stale
+              ? `Stale · ${heartRateTodayStatus(source.latestAt, now).age} · unverified device`
+              : 'Unverified device · from today, not confirmed from a watch'}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
               <Typography>{source.value} bpm</Typography>
               <Chip kind="pending" label="Unverified device" />
-              {source.stale && <Chip kind="stale" label={ageLabel(source.latestAt)} />}
+              {heartRateTodayStatus(source.latestAt, now).stale &&
+                <Chip kind="stale" label={heartRateTodayStatus(source.latestAt, now).age} />}
             </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
           : <Typography tone="secondary">Heart rate: {hr?.note ?? 'Checking Health Connect…'}</Typography>}
-        <Typography tone="secondary">Energy: No measured source</Typography>
+        <Typography tone="secondary">Energy: {phase2EnergyMessage(
+          snapshot.permissions['active-calories'] ?? 'unknown', snapshot.availability === 'available'
+        )}</Typography>
         {steps?.sources.length !== 1 && (steps?.sources.length ?? 0) > 1 &&
           <Typography tone="secondary" size="small">Each source is shown separately. Steps are never added across devices.</Typography>}
         <Button label="Health details and permissions" variant="ghost" fullWidth

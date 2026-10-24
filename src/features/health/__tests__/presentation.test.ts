@@ -1,4 +1,5 @@
-import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords, ageLabel, hourlyStepsBySource, heartRateSamples, earliestCachedRecordAt, dailyStepsBySource, healthAvailabilityText, canInstallHealthConnect } from '../presentation';
+import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords, ageLabel, hourlyStepsBySource, heartRateSamples, earliestCachedRecordAt, dailyStepsBySource, healthAvailabilityText, canInstallHealthConnect,
+  recordsInWindow, heartRateTodayStatus, historyPermissionMessage } from '../presentation';
 import type { HealthValue, AggregateValue, IntervalSample } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
@@ -130,4 +131,41 @@ test('unknown or revoked permissions never show cached measurements', () => {
   expect(summarizeRecords('steps',cached,'denied',true,now)).toMatchObject({
     state:'not-allowed',total:null,
   });
+});
+
+
+// Claude's final review: stable window scope and truthful loading/provenance copy.
+test('Today HR regards yesterday as stale even 10 minutes after midnight, today as current even after six hours', () => {
+  const now = new Date(2026, 9, 25, 0, 10);
+  const yesterday = new Date(2026, 9, 24, 22, 40).toISOString();
+  const prior = heartRateTodayStatus(yesterday, now);
+  expect(prior.stale).toBe(true);
+  expect(prior.age).toMatch(/yesterday 22:40/);
+  expect(heartRateTodayStatus(new Date(2026,9,25,0,1).toISOString(),now).stale).toBe(false);
+  expect(heartRateTodayStatus(new Date(2026,9,25,0,1).toISOString(),
+    new Date(2026,9,25,23,50)).stale).toBe(false);
+});
+test('read-error source summaries cannot use yesterday steps, old HR samples or old weight', () => {
+  const day = new Date(2026,9,25,0,0), now = new Date(2026,9,25,12,0);
+  const oldStep: IntervalSample = { ...steps('old','phone',9000),
+    start:new Date(2026,9,24,8).toISOString(), end:new Date(2026,9,24,9).toISOString() };
+  const todays: IntervalSample = { ...steps('new','phone',400),
+    start:new Date(2026,9,25,10).toISOString(), end:new Date(2026,9,25,11).toISOString() };
+  expect(summarizeRecords('steps',recordsInWindow('steps',[oldStep,todays],day,now),'granted',true).total)
+    .toBe(400);
+  const oldHr: HealthValue = { kind:'series',metric:'heart-rate',adapter:'health-connect',
+    recordId:'prior',dataOrigin:'com.sec.android.app.shealth',
+    start:new Date(2026,9,24,21).toISOString(),end:new Date(2026,9,24,22).toISOString(),
+    unit:'bpm',points:[{time:new Date(2026,9,24,22).toISOString(),value:72}] };
+  const todayHr: HealthValue = { ...oldHr,recordId:'current',start:new Date(2026,9,25,8).toISOString(),
+    end:new Date(2026,9,25,8,1).toISOString(),points:[{time:new Date(2026,9,25,8).toISOString(),value:75}] };
+  const filtered = recordsInWindow('heart-rate',[oldHr,todayHr],day,now);
+  expect(summarizeRecords('heart-rate',filtered,'granted',true).total).toBe(75);
+});
+test('history statuses are plain language and device status has unknown initial state', () => {
+  expect(healthAvailabilityText(null)).toMatch(/Checking/);
+  expect(canInstallHealthConnect(null)).toBe(false);
+  expect(historyPermissionMessage('unverified')).not.toContain('unverified');
+  expect(historyPermissionMessage('unavailable')).not.toContain('unavailable');
+  expect(historyPermissionMessage('granted')).toMatch(/allowed/);
 });

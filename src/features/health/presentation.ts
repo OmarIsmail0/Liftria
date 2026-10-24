@@ -193,15 +193,16 @@ export function ageLabel(timestamp: string, nowMs = Date.now()): string {
   return `${Math.floor(hours / 24)} d ago`;
 }
 
-export function healthAvailabilityText(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported'): string {
+export function healthAvailabilityText(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null): string {
   switch(availability) {
+    case null: return 'Checking Health Connect status…';
     case 'available': return 'Health Connect is available.';
     case 'not-installed': return 'Health Connect is not installed. Liftria works without it.';
     case 'needs-update': return 'Health Connect needs an update. Liftria works without it.';
     default: return 'Health Connect is not supported on this device. Liftria works without it.';
   }
 }
-export function canInstallHealthConnect(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported'): boolean {
+export function canInstallHealthConnect(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null): boolean {
   return availability === 'not-installed' || availability === 'needs-update';
 }
 
@@ -230,4 +231,50 @@ export function dailyStepsBySource(records: HealthValue[], start: Date, end: Dat
   return [...groups.entries()].map(([origin,values]) => ({
     origin,label:sourceName(origin),values:values.map(Math.round),
   }));
+}
+
+
+// Each permission state is presented as an Android-owned setting, never as device provenance.
+export function historyPermissionMessage(status: 'granted' | 'denied' | 'unverified' | 'unavailable'): string {
+  switch (status) {
+    case 'granted': return 'Older records allowed';
+    case 'denied': return 'Older records not allowed';
+    case 'unverified': return 'Older-record access could not be confirmed';
+    case 'unavailable': return 'Older-record permission unavailable on this device';
+  }
+}
+
+/** One local-day window with clipped intervals and heart-rate samples; never sum sources. */
+export function recordsInWindow(metric: MetricType, values: HealthValue[], start: Date, end: Date): HealthValue[] {
+  if (metric === 'steps') return onlyLocalDayRecords(metric, values, start, end);
+  const from = start.getTime(), until = end.getTime();
+  return values.flatMap(record => {
+    if (record.kind === 'aggregate') return [];
+    const recordMetric = record.kind === 'session' ? 'exercise-session' :
+      record.kind === 'sleep' ? 'sleep-session' : record.metric;
+    if (recordMetric !== metric) return [];
+    if (record.kind === 'series') {
+      const points = record.points.filter(p => {
+        const at = Date.parse(p.time);
+        return Number.isFinite(at) && at >= from && at <= until;
+      });
+      return points.length ? [{ ...record, points }] : [];
+    }
+    const time = record.kind === 'instant' || record.kind === 'rate'
+      ? Date.parse(record.time) : Date.parse(record.end);
+    return Number.isFinite(time) && time >= from && time <= until ? [record] : [];
+  });
+}
+
+/** Today intentionally preserves yesterday's newest HR as stale instead of showing it as current. */
+export function heartRateTodayStatus(latestAt: string, now: Date): { stale: boolean; age: string } {
+  const at = new Date(latestAt);
+  if (!Number.isFinite(at.getTime())) return { stale: true, age: 'Time unknown' };
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (at.getTime() >= midnight && at.getTime() <= now.getTime()) return { stale: false, age: ageLabel(latestAt, now.getTime()) };
+  const yesterday = new Date(midnight); yesterday.setDate(yesterday.getDate() - 1);
+  const time = at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const label = at.getTime() >= yesterday.getTime() && at.getTime() < midnight
+    ? `yesterday ${time}` : at.toLocaleDateString();
+  return { stale: true, age: `${label} · ${ageLabel(latestAt, now.getTime())}` };
 }

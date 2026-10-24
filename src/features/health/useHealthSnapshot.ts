@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { healthConnect } from '../../services/health';
 import { listCachedHealth, saveHealthValues } from '../../services/database';
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
-import { emptyMetricState, onlyLocalDayRecords, summarizeRecords, type HealthSummary } from './presentation';
+import { emptyMetricState, onlyLocalDayRecords, recordsInWindow, summarizeRecords, type HealthSummary } from './presentation';
 
 export const overviewMetrics = [
   'steps', 'heart-rate', 'exercise-session', 'sleep-session',
@@ -11,7 +11,8 @@ export const overviewMetrics = [
 ] as const satisfies readonly MetricType[];
 
 export type HealthSnapshot = {
-  availability: Awaited<ReturnType<typeof healthConnect.getAvailability>>;
+  availability: Awaited<ReturnType<typeof healthConnect.getAvailability>> | null;
+  loaded: boolean;
   permissions: Partial<Record<MetricType, PermissionState>>;
   readings: Partial<Record<MetricType, HealthSummary>>;
   records: HealthValue[];
@@ -19,7 +20,7 @@ export type HealthSnapshot = {
   fresh: boolean; // true only when a live Health Connect read was attempted this refresh
 };
 const empty: HealthSnapshot = {
-  availability: 'unsupported', permissions: {}, readings: {}, records: [], readAt: null, fresh: false,
+  availability: null, loaded: false, permissions: {}, readings: {}, records: [], readAt: null, fresh: false,
 };
 const refreshIntervalMs = 15 * 60 * 1000;
 let lastForegroundRead = 0;
@@ -47,7 +48,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
       const result = await healthConnect.read(metric, { start: from, end: until });
       if (result.status === 'ok') fresh.push(...result.records);
       if (result.status === 'error') {
-        const prior = summarizeRecords(metric, all, 'granted', true);
+        const prior = summarizeRecords(metric, recordsInWindow(metric, all, localStart, now), 'granted', true);
         readings[metric] = { ...prior, state: 'error',
           note: 'Could not read Health Connect. Cached readings may be stale. Try again.' };
       } else if (result.status === 'permission-denied') {
@@ -67,7 +68,7 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
     readings[metric] = summarizeRecords(metric, onlyLocalDayRecords(metric, all, localStart, now), permissions[metric] ?? 'unknown', available);
   }
 
-  return { availability, permissions, readings, records: all,
+  return { availability, loaded: true, permissions, readings, records: all,
     readAt: lastActualReadAt, fresh: attempted };
 }
 
@@ -79,7 +80,10 @@ export function useHealthSnapshot(metrics: readonly MetricType[]) {
     const live = force || Date.now() - lastForegroundRead >= refreshIntervalMs;
     setRefreshing(true);
     try { setSnapshot(await loadHealthSnapshot(metrics, live)); }
-    catch { /* Retain previous known, sourced records; never replace them with invented zeroes. */ }
+    catch {
+      // A failed availability check must not be mislabeled as unsupported hardware.
+      setSnapshot(previous => ({ ...previous, loaded: true, fresh: false }));
+    }
     finally { setRefreshing(false); }
   }, [metrics]);
   useEffect(() => {

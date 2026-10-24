@@ -9,7 +9,7 @@ import { metricTypes, type HealthValue, type HealthRecord, type MetricType } fro
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 import { StepsChart, HeartRateChart } from '../../../src/features/health/HealthCharts';
 import { ageLabel, dailyStepsBySource, emptyMetricState, heartRateSamples,
-  hourlyStepsBySource, phase2EnergyMessage, sourceName, summarizeRecords,
+  hourlyStepsBySource, phase2EnergyMessage, recordsInWindow, sourceName, summarizeRecords,
   type HealthSummary } from '../../../src/features/health/presentation';
 
 const label: Partial<Record<MetricType,string>> = {
@@ -48,12 +48,17 @@ export default function HealthMetricDetail() {
   const permitted = permission === 'granted';
   const available = snapshot.availability === 'available';
   const base = snapshot.readings[metric];
-  const result = window === 'week' ? (!available || !permitted
-    ? emptyMetricState(metric, snapshot.permissions[metric] ?? 'unknown', available) : week) : base;
   const today = new Date(), start = new Date(today);
   start.setHours(0,0,0,0);
   const weekStart = new Date(start); weekStart.setDate(weekStart.getDate() - 6);
   const rangeStart = window === 'day' ? start : weekStart;
+  const dayScoped = summarizeRecords(metric,
+    recordsInWindow(metric, snapshot.records, start, today),
+    snapshot.permissions[metric] ?? 'unknown', available);
+  const dayResult = base?.state === 'error'
+    ? { ...dayScoped, state: 'error' as const, note: base.note } : dayScoped;
+  const result = window === 'week' ? (!available || !permitted
+    ? emptyMetricState(metric, snapshot.permissions[metric] ?? 'unknown', available) : week) : dayResult;
   // Week never falls back to day readings or a previous metric's results.
   const sourceRecords = window === 'day' ? snapshot.records : weekRecords;
   const rangeStartMs = rangeStart.getTime();
@@ -71,7 +76,7 @@ export default function HealthMetricDetail() {
       if (!mounted) return;
       if (value.status === 'ok') {
         setWeekRecords(value.records);
-        setWeek(summarizeRecords(metric, value.records, 'granted', true));
+        setWeek(summarizeRecords(metric, recordsInWindow(metric, value.records, from, until), 'granted', true));
       } else {
         setWeekRecords([]);
         setWeek(value.status === 'error'
@@ -106,6 +111,10 @@ export default function HealthMetricDetail() {
   const hrSamples = metric === 'heart-rate' && permitted && available
     ? heartRateSamples(sourceRecords, rangeStart, today) : [];
 
+  if (!snapshot.loaded) return <Screen embedded>
+    <Header title={label[metric] ?? metric} subtitle="Loading health data…" />
+    <Typography tone="secondary">Checking Health Connect permission…</Typography>
+  </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {

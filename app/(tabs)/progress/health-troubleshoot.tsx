@@ -40,7 +40,7 @@ export default function HealthTroubleshoot() {
       {checks.map((item,i) => <ListRow key={i} title={`${i+1}. ${item.name}`}
         accessibilityLabel={`${item.name}. ${item.state}. ${item.detail}`}
         detail={item.detail}
-        suffix={<Chip kind={item.good ? 'phone' : 'pending'} label={item.state} />} />)}
+        suffix={<Chip kind={item.good ? 'off' : 'pending'} label={item.state} />} />)}
       <Typography tone="secondary" size="small">Unknown means we cannot verify it, not that your watch has failed.</Typography>
     </Card>
     <Card title="Something missing?">

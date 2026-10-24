@@ -7,7 +7,7 @@ import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, requestHistoryReadPermission } from '../../../src/services/health';
 import { metricTypes, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
-import { healthAvailabilityText, canInstallHealthConnect } from '../../../src/features/health/presentation';
+import { healthAvailabilityText, canInstallHealthConnect, historyPermissionMessage } from '../../../src/features/health/presentation';
 
 const names: Partial<Record<MetricType,string>> = {
   steps:'Steps', 'heart-rate':'Heart rate', 'exercise-session':'Exercise sessions',
@@ -37,12 +37,16 @@ export default function HealthPermissions() {
       const updated = await healthConnect.requestPermissions([...metricTypes]);
       const history = await requestHistoryReadPermission();
       const allowed = Object.values(updated).filter(v => v === 'granted').length;
-      setMessage(`${allowed} of ${metricTypes.length} read types allowed. History: ${history}.`);
+      setMessage(`${allowed} of ${metricTypes.length} read types allowed. ${historyPermissionMessage(history)}.`);
       await refresh(true);
     } catch { setMessage('Could not open the Android permission screen. Try Health Connect settings.'); }
     finally { setWorking(false); }
   }
 
+  if (!snapshot.loaded) return <Screen embedded>
+    <Header title="Health permissions" subtitle="Checking Health Connect…" />
+    <Typography tone="secondary">Loading Android permission status…</Typography>
+  </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
     <Header title="Health permissions" subtitle="Android permissions · read only"
@@ -62,7 +66,7 @@ export default function HealthPermissions() {
         return <ListRow key={type} title={names[type] ?? type}
           accessibilityLabel={`${names[type] ?? type}. ${value}. Opens Android permissions.`}
           detail={state === 'granted' ? 'Read only · managed by Android' : consequences[type] ?? 'Hidden until you allow it'}
-          suffix={<Chip kind={state === 'granted' ? 'phone' : 'off'} label={value} />}
+          suffix={<Chip kind="off" label={value} />}
           onPress={available ? () => void openPermissions() : undefined} />;
       })}
     </Card>

@@ -49,7 +49,9 @@ export default function HealthRecordDetail() {
         <Typography>No cached record matches this source and ID. Pull to refresh in Health.</Typography>
       </Card> : <>
         <Card rim="health" title="Recorded measurement">
-          <Chip kind="phone" label={sourceName(record.dataOrigin)} />
+          <Chip kind={record.kind === 'interval' && record.metric === 'steps' &&
+            sourceName(record.dataOrigin) === 'Phone' ? 'phone' : 'pending'}
+            label={sourceName(record.dataOrigin)} />
           <Chip kind="pending" label="Device not verified" />
           <ListRow title="Value" detail={measuredValue(record)} />
           <ListRow title="Time" detail={new Date(recordAt(record)).toLocaleString()} />

@@ -20,6 +20,12 @@ export default function HealthOverview() {
   const available = snapshot.availability === 'available';
   const allowed = overviewMetrics.filter(m => snapshot.permissions[m] === 'granted').length;
   const firstSeen = earliestCachedRecordAt(snapshot.records);
+  if (!snapshot.loaded) return <Screen embedded>
+    <Header title="Health" subtitle="Checking Health Connect…" />
+    <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
+      <Typography tone="secondary">Loading permission and health status…</Typography>
+    </View>
+  </Screen>;
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh(true)}
@@ -63,9 +69,12 @@ export default function HealthOverview() {
           return <ListRow key={metric} title={names[metric] ?? metric} detail={detail}
             suffix={result?.state === 'value' ? <View style={{ alignItems:'flex-end',gap:theme.space[1] }}>
               {amount && <Typography>{amount}</Typography>}
-              {first && <Chip kind={metric === 'heart-rate' ? 'pending' : first.label === 'Phone' ? 'phone' : 'pending'}
-                label={metric === 'heart-rate' ? 'Unverified device' : first.label} />}
-              {first?.stale && <Chip kind="stale" label={ageLabel(first.latestAt)} />}
+              {result.sources.map(source => <View key={source.origin}
+                style={{ alignItems:'flex-end', gap:theme.space[1] }}>
+                <Chip kind={metric === 'steps' && source.label === 'Phone' ? 'phone' : 'pending'}
+                  label={metric === 'heart-rate' ? source.label + ' · unverified device' : source.label} />
+                {source.stale && <Chip kind="stale" label={ageLabel(source.latestAt)} />}
+              </View>)}
             </View> : <Chip kind={state === 'not-allowed' ? 'off' : 'pending'}
               label={state === 'no-data' ? 'No data' : state === 'not-allowed' ? 'Not allowed' :
                 state === 'not-available' ? 'Unavailable' : state === 'error' ? 'Read error' : 'Pending'} />}
