@@ -132,7 +132,7 @@ export default function ProfileAndGoals() {
       setMessage('Enter valid calories, protein, fat and carbs before saving a manual target.');
       return;
     }
-    const [kcal,proteinG,fatG,carbsG]=numbers as number[];
+    const [kcal,proteinG,fatG,carbsG]=numbers as [number, number, number, number];
     if(kcal<1000) { setMessage('A calorie target below 1,000 kcal cannot be saved.');return; }
     const targetInput=targetSchema.safeParse({kcal,proteinG,fatG,carbsG,source:'manual',inputs:null});
     if(!targetInput.success) {
@@ -205,6 +205,7 @@ export default function ProfileAndGoals() {
       <Field label="Protein (g)" value={manualProtein} keyboardType="numeric" onChangeText={setManualProtein} />
       <Field label="Fat (g)" value={manualFat} keyboardType="numeric" onChangeText={setManualFat} />
       <Field label="Carbs (g)" value={manualCarbs} keyboardType="numeric" onChangeText={setManualCarbs} />
+      {message && <View accessibilityRole="alert"><Typography tone="secondary" size="small">ⓘ {message}</Typography></View>}
       <Button label="Save manual target" variant="secondary" disabled={busy} fullWidth onPress={useManualTarget} />
     </Sheet>
     <Sheet visible={floorRequest!==null} title="Calorie target caution"
