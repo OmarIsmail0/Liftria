@@ -131,10 +131,10 @@ export default function HealthMetricDetail() {
       {selected && <Card title="Record details">
         <Typography bold>Value: {recordDescription(selected)}</Typography>
         <Typography>Recorded: {new Date(recordTime(selected)).toLocaleString()}</Typography>
-        <Typography>Data origin: {selected.kind === 'aggregate' ? selected.dataOrigin ?? 'Not recorded' : selected.dataOrigin}</Typography>
-        <Typography>Device: {selected.kind !== 'aggregate' && selected.device?.model
+        <Typography>Data origin: {selected.dataOrigin}</Typography>
+        <Typography>Device: {selected.device?.model
           ? `${selected.device.manufacturer ?? ''} ${selected.device.model}` : 'Not recorded by the source'}</Typography>
-        <Typography>Source record ID: {selected.kind === 'aggregate' ? 'Aggregate window' : selected.recordId}</Typography>
+        <Typography>Source record ID: {selected.recordId}</Typography>
         <Typography tone="secondary">A data origin identifies the app. It is not proof of which device took a reading.</Typography>
         <Button label="Close record detail" variant="ghost" onPress={() => setRecordId(null)} />
       </Card>}
