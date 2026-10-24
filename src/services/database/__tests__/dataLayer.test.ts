@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import { DB_NAME, DB_MIGRATIONS, DB_SCHEMA_VERSION, initializeDatabase, migrateDatabase } from '../index';
 import { getProfile, profileSchema, saveProfile } from '../profile';
 import { decodeStoredSetting, getTypedSetting, setTypedSetting, settingDefaults } from '../settings';
-import { addTarget, getCurrentTarget, listTargetHistory, targetSchema } from '../targets';
+import { addTarget, decodeTargetInputs, getCurrentTarget, listTargetHistory, targetSchema } from '../targets';
 import { getDataLayerCounts } from '../summary';
 
 /* In-memory mock-backed contract tests, not Android SQLite device evidence. */
@@ -215,4 +215,30 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
     expect((await getDataLayerCounts())).toMatchObject({ ok: true,
       value: { schema: 2, profile: 1, targets: 2 } });
   });
+  test('a corrupted inputs_json keeps the target row readable (current and history)', async () => {
+    state.targets = [];
+    state.nextTargetId = 1;
+    const created = await addTarget({ kcal: 2200, proteinG: 145, fatG: 70, carbsG: 230,
+      source: 'estimate', inputs: { activityFactor: 1.375 } });
+    expect(created.ok).toBe(true);
+    const row = state.targets[0];
+    expect(row).toBeDefined();
+    row.inputs_json = '{"partial":';
+    expect(await getCurrentTarget()).toMatchObject({ ok: true, value: {
+      id: 1, kcal: 2200, source: 'estimate', inputs: null,
+    } });
+    expect(await listTargetHistory()).toMatchObject({ ok: true, value: [{
+      id: 1, kcal: 2200, inputs: null,
+    }] });
+    // Valid JSON of the wrong shape is not a valid input snapshot.
+    row.inputs_json = '[]';
+    expect(await getCurrentTarget()).toMatchObject({ ok: true, value: { inputs: null } });
+    row.inputs_json = '{"activityFactor":1.375}';
+    expect(await getCurrentTarget()).toMatchObject({ ok: true, value: {
+      inputs: { activityFactor: 1.375 },
+    } });
+    expect(decodeTargetInputs('42')).toBeNull();
+    expect(decodeTargetInputs('null')).toBeNull();
+  });
+
 });

@@ -26,11 +26,23 @@ type TargetRow = {
   source: Target['source']; inputs_json: string | null; created_at: string;
 };
 
+/** Corrupt legacy/partial JSON must never stop Today or a target history read. */
+export function decodeTargetInputs(raw: string | null): Record<string, unknown> | null {
+  if (raw === null) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    const result = z.record(z.string(), z.unknown()).safeParse(parsed);
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}
+
 function mapTarget(row: TargetRow): Target {
   return {
     id: row.id, kcal: row.kcal, proteinG: row.protein_g,
     fatG: row.fat_g, carbsG: row.carbs_g, source: row.source,
-    inputs: row.inputs_json === null ? null : JSON.parse(row.inputs_json) as Record<string, unknown>,
+    inputs: decodeTargetInputs(row.inputs_json),
     createdAt: row.created_at,
   };
 }
