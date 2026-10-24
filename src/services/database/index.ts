@@ -77,7 +77,7 @@ export const DB_MIGRATIONS = [
       CHECK ((source = 'manual' AND inputs_json IS NULL) OR (source = 'estimate' AND inputs_json IS NOT NULL))
     );
   ` },
-  { version: 3, sql: \`
+  { version: 3, sql: `
     CREATE TABLE IF NOT EXISTS exercises (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -145,7 +145,7 @@ export const DB_MIGRATIONS = [
       logged_at TEXT NOT NULL, rest_deadline TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets(session_exercise_id,position);
-  \` },
+  ` },
 ] as const;
 
 /** Fresh install runs v1, v2, then v3; older installations run only missing migrations. One exclusive transaction per version. */
