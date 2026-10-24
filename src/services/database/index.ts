@@ -17,19 +17,15 @@ function isUnattributedEnergy(value: HealthValue): boolean {
 }
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
-const DB_NAME = 'liftria-phase0.db';
-export const DB_SCHEMA_VERSION = 1;
+// New application id com.liftria.app gets a fresh on-device database. Do not rename
+// databases after shipping to friends without an explicit migration/copy strategy.
+export const DB_NAME = 'liftria.db';
+export const DB_SCHEMA_VERSION = 2;
 
-export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
-  if (!dbPromise) {
-    dbPromise = (async () => {
-      const db = await SQLite.openDatabaseAsync(DB_NAME);
-      await db.execAsync('PRAGMA foreign_keys = ON;');
-      const version = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
-      if ((version?.user_version ?? 0) > DB_SCHEMA_VERSION) throw new Error('Database schema is newer than app');
-      if ((version?.user_version ?? 0) < 1) {
-        await db.withExclusiveTransactionAsync(async (tx) => {
-          await tx.execAsync(`
+/** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
+export const DB_MIGRATIONS = [
+  { version: 1, sql: `
+
             CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS test_workout_sessions (
               id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL,
@@ -56,10 +52,56 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
               payload_json TEXT NOT NULL,
               PRIMARY KEY (adapter, operation, window_start, window_end)
             );
-            PRAGMA user_version = 1;
-          `);
-        });
-      }
+  ` },
+  { version: 2, sql: `
+    CREATE TABLE IF NOT EXISTS profile (
+      id INTEGER PRIMARY KEY CHECK(id = 1),
+      name TEXT,
+      sex_for_formula TEXT CHECK(sex_for_formula IN ('male','female','unspecified') OR sex_for_formula IS NULL),
+      birth_year INTEGER,
+      height_cm REAL,
+      weight_kg REAL,
+      activity TEXT CHECK(activity IN ('sitting','some','active') OR activity IS NULL),
+      goal TEXT CHECK(goal IN ('lose','maintain','build') OR goal IS NULL),
+      updated_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS targets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kcal REAL NOT NULL CHECK(kcal >= 1000),
+      protein_g REAL NOT NULL CHECK(protein_g >= 0),
+      fat_g REAL NOT NULL CHECK(fat_g >= 0),
+      carbs_g REAL NOT NULL CHECK(carbs_g >= 0),
+      source TEXT NOT NULL CHECK(source IN ('estimate','manual')),
+      inputs_json TEXT,
+      created_at TEXT NOT NULL,
+      CHECK ((source = 'manual' AND inputs_json IS NULL) OR (source = 'estimate' AND inputs_json IS NOT NULL))
+    );
+  ` },
+] as const;
+
+/** Fresh install runs v1 then v2; existing v1 runs only v2. One exclusive transaction per version. */
+export async function migrateDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
+  await db.execAsync('PRAGMA foreign_keys = ON;');
+  const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
+  const version = row?.user_version ?? 0;
+  if (!Number.isSafeInteger(version) || version < 0 || version > DB_SCHEMA_VERSION) {
+    throw new Error('Database schema is newer than app');
+  }
+  for (const migration of DB_MIGRATIONS) {
+    if (migration.version <= version) continue;
+    await db.withExclusiveTransactionAsync(async tx => {
+      // Transactional version write: a partial migration must not be marked complete.
+      await tx.execAsync(migration.sql);
+      await tx.execAsync('PRAGMA user_version = ' + migration.version + ';');
+    });
+  }
+}
+
+export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
+  if (!dbPromise) {
+    dbPromise = (async () => {
+      const db = await SQLite.openDatabaseAsync(DB_NAME);
+      await migrateDatabase(db);
       return db;
     })().catch((err: unknown) => { dbPromise = null; throw err; });
   }

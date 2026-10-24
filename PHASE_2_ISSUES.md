@@ -4,27 +4,20 @@ Claude's review notes for the build agent, written as tasks. Work through them i
 
 ---
 
-# Next up (updated 2026-10-24: bigger PRs, owner's request)
+# Next up (updated 2026-10-24: three larger PRs)
 
-The owner asked for bigger steps. From now on, Phase 2's remaining work is **3 PRs**, not 6, and the next PR starts as soon as the previous one's **code CI (verify) is green**. Don't wait for the Android build, the emulator check or the owner's device check before starting. Claude reviews in parallel, and the fixes go on the open PR.
+The remaining Phase 2 work uses **three PRs**. Start the next PR when the previous PR's code verification passes. Claude reviews in parallel; fixes stay on the open PR.
 
 **Order:**
-1. ~~TASK-6 to TASK-10~~ DONE in PR #6. ~~Step 3~~ DONE in PR #7. TASK-4 merged in PR #8 (owner checks open; nothing for you).
-2. **Step 4 + TASK-13: PR #9.** Finish review fixes only. Nothing new goes in it.
-3. **PR A: `Phase 2 / Look and onboarding` — IN PROGRESS in draft PR #10** (TASK-11/12 and ON screens built; v2 repository wiring and device checks pending).
-   - TASK-11 and TASK-12 first, in `src/design/**`. The onboarding screens then use the improved orb and cards.
-   - Step 5 per PHASE_2_PROMPT §3.5 and USER_FLOWS flow 1. It uses PR #9's `profile`, `settings` and `targets` repositories. Branch from `main`; when PR #9 merges, merge `main` in (a merge commit).
-   - Includes the Mifflin-St Jeor × activity + goal tests (the sample profile gives 2,650), the < 1,200 / > 25% floor sheet, the real Health Connect permission request, and the key saved through SecureStore.
-4. **PR B: `Phase 2 / Today and Health` = Step 6 (TD-1…TD-7) + Step 7 (HE-1…HE-6).** Start when PR A's verify is green. Provenance rules apply: phone ≠ watch steps, never added together; "Unverified" HR; Energy reads "No measured source" and never shows the HC estimate; no data ≠ 0.
-5. **PR C: `Phase 2 / Settings and polish` = Step 8 (ST-1…ST-7) + Step 9 (accessibility pass).** Start when PR B's verify is green. Delete-all with typed DELETE, the key test/replace/delete, live units/hide-numbers. Then 200% text, TalkBack, reduced motion, dark/light and Aurora/Solid on every Phase 2 screen.
+1. ~~TASK-6–10 and Step 3~~ DONE in PRs #6–7. TASK-4 merged in PR #8 (owner signing/update checks remain).
+2. ~~Step 4 + TASK-13~~ DONE in PR #9, merged 2026-10-24 with green CI and Claude-approved emulator screenshots (owner device check remains).
+3. **PR A: Look and onboarding — IN PROGRESS in draft PR #10.** TASK-11 + TASK-12 + ON-1…ON-9. PR #9 has merged: merge main into PR #10 without rebasing, then finish real profile/settings/targets persistence and cold-start routing.
+4. **PR B: Today and Health** — Step 6 TD-1…TD-7 and Step 7 HE-1…HE-6, one draft PR after PR A's verify passes; keep phone/watch provenance separate and never show no-source energy as measured.
+5. **PR C: Settings and polish** — Step 8 ST-1…ST-7 and Step 9 accessibility, one draft PR after PR B's verify passes.
 
-**For every big PR:**
-- **Commits:** one commit per sub-step (e.g. "TASK-11", "ON-1–ON-3", "ON-4–ON-6"…), so the review can go part by part.
-- **PR description:**
-  - a checklist of every screen ID it covers, each marked built / tested / not done
-  - a Visual check section naming the routes. Ask Claude to add them to the emulator check.
-- **Accessibility from the start:** build it as you go, with ≥ 48dp targets, TalkBack labels as specified, and 200% text that never clips. Step 9 then only checks and fixes.
-- **Out of scope:** Phase 3/4 features, fake data, new dependencies without asking, and workflow edits.
+**Merging:** Claude marks a PR ready and merges only after verify + Android build CI and emulator review pass. Owner phone checks happen on merged main and become follow-up tasks.
+
+**Every big PR:** one commit per sub-step; screen ID checklist and Visual check routes in the description; 48dp minimum taps, TalkBack labels and 200% text handling from the start. Out of scope: Phase 3/4 features, fake data, new dependencies without owner consent, and workflow edits.
 
 ## Owner feedback on the emulator, 2026-10-24 (Today screen, light theme)
 

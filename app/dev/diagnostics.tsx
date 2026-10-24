@@ -11,6 +11,7 @@ import {
   initializeDatabase, schemaVersion, addTestData, readTestData, clearTestData,
   setSetting, getSetting, saveHealthValues, listCachedHealth,
 } from '../../src/services/database';
+import { getDataLayerCounts, type DataLayerCounts } from '../../src/services/database/summary';
 import { keyState, saveKey, deleteKey, type KeyState } from '../../src/services/secure-storage';
 import { runMealEstimate, TEXT_EXAMPLE, DEFAULT_MODEL, type ImageData } from '../../src/services/anthropic';
 import { healthConnect, requestHistoryReadPermission, readDailyEnergy, type DailyEnergyRow } from '../../src/services/health';
@@ -69,6 +70,7 @@ const keySummary = (s: KeyState) => (s.status === 'ready' ? 'ready (masked)' : s
 
 export default function Diagnostics() {
   const [dbText, setDbTextRaw] = useState('Not initialized');
+  const [layerCounts, setLayerCounts] = useState<DataLayerCounts | null>(null);
   const [key, setKey] = useState('');
   const [storedKey, setStoredKeyRaw] = useState<KeyState>({ status: 'missing' });
   const [aiText, setAiTextRaw] = useState('Not tested');
@@ -142,7 +144,8 @@ export default function Diagnostics() {
   }, []);
 
   const showDb = async () => {
-    const result = await readTestData();
+    const [result, counts] = await Promise.all([readTestData(), getDataLayerCounts()]);
+    setLayerCounts(counts.ok ? counts.value : null);
     setDbText(result.ok ? JSON.stringify(result.value, null, 2) : result.error.message);
   };
   const refreshCached = async () => {
@@ -315,6 +318,8 @@ export default function Diagnostics() {
         <Text style={common.body}>Android API: {String(Platform.Version)} · OS {Device.osVersion ?? 'unknown'}</Text>
         <Text style={common.body}>Device: {Device.manufacturer ?? 'unknown'} {Device.modelName ?? 'unknown'}</Text>
         <Text style={common.body}>Database: {dbText}</Text>
+        <Text style={common.body}>Schema version: {layerCounts?.schema ?? 'Not read'}</Text>
+        <Text style={common.muted}>Profile rows: {layerCounts?.profile ?? '—'} · Target history rows: {layerCounts?.targets ?? '—'} · Setting rows: {layerCounts?.settings ?? '—'}</Text>
         <Text style={common.muted}>No app data is uploaded. Only the selected meal example/photo is sent to Claude after tapping Test.</Text>
       </Section>
       <Section title="SQLite / Local data">
