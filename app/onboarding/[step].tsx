@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, Orb, Screen, Sheet, Typography } from '../../src/design/primitives';
-import { emptyDraft, readDraft, readSavedStep, writeDraft, writeStep, markOnboardingComplete,
+import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
 import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep,
   type OnboardingStep } from '../../src/features/onboarding/flow';
@@ -12,6 +12,7 @@ import { healthConnect, requestHistoryReadPermission } from '../../src/services/
 import { metricTypes } from '../../src/services/health/types';
 import { saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
+import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 
 const watchOptions = ['Samsung Health', 'Fitbit', 'Garmin Connect', 'Pixel Watch (Fitbit)', 'Other', 'No watch'] as const;
 const titles: Record<OnboardingStep, string> = {
@@ -108,7 +109,7 @@ export default function OnboardingStepScreen() {
 
   useEffect(() => {
     let mounted = true;
-    void Promise.all([readDraft(), readSavedStep()]).then(([d]) => {
+    void readDraft().then(d => {
       if (!mounted) return;
       setDraft(d);
       setAge(d.birthYear ? String(profileAge(Number(d.birthYear))) : '');
@@ -145,7 +146,8 @@ export default function OnboardingStepScreen() {
     finally { setBusy(false); }
   }
 
-  const skip = optionalStep(step) ? () => void go(nextOnboardingStep(step)) : undefined;
+  // Skipping profile or the goal intentionally avoids inventing a calculated target.
+  const skip = optionalStep(step) ? () => void go(step === 'profile' || step === 'goal' ? 'health' : nextOnboardingStep(step)) : undefined;
   const back = step !== 'welcome' ? () => void go(previousOnboardingStep(step)) : undefined;
 
   async function continueProfile() {
@@ -163,7 +165,7 @@ export default function OnboardingStepScreen() {
     const nextDraft = { ...draft, birthYear: age.trim() ? String(new Date().getFullYear() - ageNumber) : '' };
     setDraft(nextDraft);
     setBusy(true);
-    const saved = await writeDraft(nextDraft);
+    const saved = await writeDraft(nextDraft) && await persistProfile(nextDraft);
     if (!saved) { setBusy(false); setError('Could not save profile draft locally.'); return; }
     const moved = await writeStep('goal');
     setBusy(false);
@@ -171,16 +173,10 @@ export default function OnboardingStepScreen() {
     router.replace({ pathname: '/onboarding/[step]', params: { step: 'goal' } });
   }
 
-  // Until PR #9 is merged, this preserves the choice as a LOCAL onboarding draft,
-  // never as an invented current target. Final commit to v2 targets is a separate gate.
+  // ON-5 persists a validated snapshot into v2 target history; no synthetic target.
   async function chooseTarget(source: 'estimate' | 'manual') {
     setBusy(true); setError(null);
-    const chosen = source === 'estimate' ? estimate : {
-      kcal: Number(draft.manualKcal), proteinG: Number(draft.manualProtein),
-      fatG: Number(draft.manualFat), carbsG: Number(draft.manualCarbs),
-      source: 'manual' as const, inputs: null,
-    };
-    const saved = chosen && (await setSetting('onboarding.targetDraft', JSON.stringify(chosen))).ok;
+    const saved = await persistTarget(draft, source);
     setBusy(false);
     if (!saved) { setError('Could not save your target draft locally.'); return; }
     await go('health');
@@ -222,7 +218,7 @@ export default function OnboardingStepScreen() {
 
   async function finishLater() {
     setBusy(true);
-    const saved = await writeDraft(draft) && (await setSetting('onboarding.deferred', JSON.stringify(true))).ok;
+    const saved = await writeDraft(draft) && await markOnboardingDeferred();
     setBusy(false);
     if (saved) router.replace('/(tabs)/today');
     else setError('Could not save your progress locally.');
@@ -275,13 +271,14 @@ export default function OnboardingStepScreen() {
                 <Orb eaten={0} target={estimate.kcal} active={false} />
                 <Typography size="head">{estimate.kcal.toLocaleString()} kcal · Estimate</Typography>
                 <Typography tone="secondary">Protein {estimate.proteinG} g · Fat {estimate.fatG} g · Carbs {estimate.carbsG} g</Typography>
-                <Typography tone="secondary" size="small">The target choice is saved as a local draft until the Step 4 target repository is integrated.</Typography>
+                <Typography tone="secondary" size="small">This estimate will be saved locally with the inputs used.</Typography>
                 {estimate.lessPrecise && <Typography tone="secondary">Estimate, less precise (sex for formula not specified).</Typography>}
                 {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{FLOOR_WARNING}</Typography>}
                 <Button variant="secondary" label="Set my own numbers" onPress={() => {
                   patch('manualKcal', String(estimate.kcal)); setEditManual(true);
                 }} />
-              </> : <Typography tone="secondary">No target yet. Add age, height and weight in Profile, or skip this for now.</Typography>}
+              </> : <Typography tone="secondary">No estimate without complete age, height and weight. You can set your own numbers, or skip for now.</Typography>}
+              {!estimate && <Button variant="secondary" label="Set my own numbers" onPress={() => setEditManual(true)} />}
             </Card>
             : step === 'health'
               ? <Card rim="health" title="Connect on-device health data">
@@ -325,6 +322,12 @@ export default function OnboardingStepScreen() {
         return;
       }
       if (step === 'done') { void finish(); return; }
+      if (step === 'goal') { void (async () => {
+        setBusy(true);
+        const saved = await persistProfile(draft);
+        setBusy(false);
+        if (saved) await go('target'); else setError('Could not save your profile and goal locally.');
+      })(); return; }
       if (step === 'target' && estimate) {
         const safety = targetSafety(estimate.kcal, null);
         if (safety.blocked) { setError('A target below 1,000 kcal cannot be saved.'); return; }
