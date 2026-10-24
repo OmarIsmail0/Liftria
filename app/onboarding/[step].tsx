@@ -264,6 +264,7 @@ export default function OnboardingStepScreen() {
                 <Orb eaten={0} target={estimate.kcal} active={false} />
                 <Typography size="head">{estimate.kcal.toLocaleString()} kcal · Estimate</Typography>
                 <Typography tone="secondary">Protein {estimate.proteinG} g · Fat {estimate.fatG} g · Carbs {estimate.carbsG} g</Typography>
+                <Typography tone="secondary" size="small">Mifflin-St Jeor: age {estimate.inputs.age}, height {estimate.inputs.heightCm} cm and weight {estimate.inputs.weightKg} kg determine resting calories; activity ×{estimate.inputs.activityFactor} and goal {Math.round((estimate.inputs.goalFactor - 1) * 100)}% adjust the estimate.</Typography>
                 <Typography tone="secondary" size="small">This estimate will be saved locally with the inputs used.</Typography>
                 {estimate.lessPrecise && <Typography tone="secondary">Estimate, less precise (sex for formula not specified).</Typography>}
                 {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{FLOOR_WARNING}</Typography>}
