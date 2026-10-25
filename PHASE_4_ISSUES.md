@@ -10,13 +10,13 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
 
 **Order:**
 1. ~~Phase 3~~ DONE: PRs #13–#16 merged. The phase-end APK is with the owner for S22 checks; their findings arrive as a separate fix task.
-2. **PR H: `Phase 4 / Arabic and RTL`.** In progress, PR #17.
+2. ~~**PR H: `Phase 4 / Arabic and RTL`.**~~ DONE: PR #17 merged (2026-10-25). Claude fixed a History crash (Hermes has no `Intl.PluralRules`; use `pluralForm()`).
    - PHASE_4_PROMPT §3: the `t()` dictionaries (en and ar), the language setting in ST-3, RTL layout, IBM Plex Sans Arabic (already in `assets/fonts/`), and Western digits.
    - Translate every existing screen: onboarding, Today, Health, Settings, and all of Train and Progress.
    - Add `expo-localization` and ask Claude to regenerate the lockfile.
    - List the Arabic chip and safety wording in the PR description for the owner to confirm.
 3. **PR P: `Phase 4 / Design polish (owner's S22 review)`.**
-   - Start when PR H's `verify` is green; branch from PR H.
+   - **Next: start now, branching from `main`.**
    - The owner tested the Phase 3 APK on the S22 (2026-10-25). **Apply these rules on every screen, not only the ones named:**
    1. **Top-right avatar circle ("L") → a Settings gear icon.**
       - Same line style and size as the tab icons, with no outline circle and a 48dp touch target.
