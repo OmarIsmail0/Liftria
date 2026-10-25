@@ -91,6 +91,12 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    9. **TR-8 muscles this workout.**
       - A small two-view body icon in the workout header opens a sheet: a front/back body map of the muscles worked so far, and a list of the 17 muscles with completed working sets (primary = 1, secondary = 0.5, warm-ups 0, the same rules as TR-14).
       - "Not logged yet" rows show "—", not 0.
+   10. **Arabic fixes from the PR #17 emulator check:**
+       - Mirror the back chevron in RTL.
+       - Translate equipment words ("body only", "barbell", "machine", "other", "foam roll").
+       - Translate the Strength range control (`1 Y / 3 M / 4 W`).
+       - Wrap number+unit and date ranges in bidi isolates (`\u2068…\u2069`), so "0 kcal" and "start – end" read in order in Arabic.
+       - **Hermes rule:** only `Intl.NumberFormat`, `Intl.DateTimeFormat` and `Intl.Collator` exist on Android. For plurals use `pluralForm()`.
    - **For screenshots:** list the routes for Today, Settings, Profile, onboarding profile/goal, and Train home in the PR description.
 4. **PR I: `Phase 4 / Diary, search and targets`.**
    - Starts when PR P's `verify` is green; branch from PR P.
