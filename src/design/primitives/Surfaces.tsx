@@ -3,6 +3,8 @@ import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { directionalChevron } from '../../i18n/layout';
 import { AmbientBackdrop, AuroraCardDecoration, cardOuterGlow } from './VisualEffects';
 import type { CardRim } from './contracts';
 
@@ -13,6 +15,7 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
   children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: TypographySize; bold?: boolean;
 }) {
   const { theme } = useTheme();
+  const { language } = useLanguage();
   const face = size === 'display' ? theme.type.display : size === 'title' ? theme.type.title :
     size === 'head' ? theme.type.head : size === 'metric-xl' ? theme.type.metric.xl :
     size === 'metric-l' ? theme.type.metric.l : size === 'metric-m' ? theme.type.metric.m :
@@ -20,7 +23,7 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
     size === 'button' ? theme.type.button : bold ? theme.type.body.strong : theme.type.body;
   const metric = size === 'metric-xl' || size === 'metric-l' || size === 'metric-m';
   return <Text allowFontScaling style={{
-    fontFamily: fontFamilyFor(face.face, face.weight), fontSize: face.size, lineHeight: face.line,
+    fontFamily: fontFamilyFor(face.face, face.weight, language === 'ar'), fontSize: face.size, lineHeight: face.line,
     fontVariant: metric ? ['tabular-nums'] : undefined,
     letterSpacing: size === 'label' ? theme.type.label.letterSpacingEm * theme.type.label.size : undefined,
     textTransform: size === 'label' ? 'uppercase' : undefined,
@@ -48,11 +51,12 @@ export function Header({ title, subtitle, onBack, right }: {
   title: string; subtitle?: string; onBack?: () => void; right?: ReactNode;
 }) {
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   return <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3], minHeight: theme.size.touch.primary }}>
-    {onBack && <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back"
+    {onBack && <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel={t('common.back')}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
         borderRadius: theme.radius.pill, borderWidth: theme.size.border.thin, borderColor: theme.controlOutline }}>
-      <Typography>‹</Typography>
+      <Typography>{directionalChevron('back', isRTL)}</Typography>
     </Pressable>}
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography size="title">{title}</Typography>
@@ -113,6 +117,7 @@ export function ListRow({ title, detail, onPress, suffix, accessibilityLabel }: 
   title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; accessibilityLabel?: string;
 }) {
   const { theme } = useTheme();
+  const { isRTL } = useLanguage();
   return <Pressable onPress={onPress} disabled={!onPress} accessible={Boolean(onPress)}
     accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? (detail ? `${title}. ${detail}` : title)}
     style={{ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
@@ -120,7 +125,7 @@ export function ListRow({ title, detail, onPress, suffix, accessibilityLabel }: 
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography bold>{title}</Typography>{detail && <Typography tone="secondary" size="small">{detail}</Typography>}
     </View>
-    {suffix ?? (onPress ? <Typography tone="secondary">›</Typography> : null)}
+    {suffix ?? (onPress ? <Typography tone="secondary">{directionalChevron('forward', isRTL)}</Typography> : null)}
   </Pressable>;
 }
 
@@ -137,7 +142,8 @@ export function EmptyState({ title, description, action }: {
 
 export function Skeleton({ height, width = '100%' }: { height?: number; width?: ViewStyle['width'] }) {
   const { theme } = useTheme();
-  return <View accessibilityLabel="Loading" accessibilityRole="progressbar" style={{
+  const { t } = useLanguage();
+  return <View accessibilityLabel={t('common.loading')} accessibilityRole="progressbar" style={{
     width, height: height ?? theme.size.touch.min, backgroundColor: theme.color.bg.raised,
     borderColor: theme.color.border.subtle, borderWidth: theme.size.border.thin, borderRadius: theme.radius.md,
   }} />;

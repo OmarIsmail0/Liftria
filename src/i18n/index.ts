@@ -19,7 +19,7 @@ export function formatNumber(language: AppLanguage, number: number, options?: In
 
 export function translate(language: AppLanguage, key: TranslationKey, params?: TranslationParams): string {
   const template: string = languages[language][key];
-  return template.replace(/\\{(\\w+)\\}/g, (match, name: string) => {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => {
     const value = params?.[name];
     return value === undefined ? match : typeof value === 'number' ? formatNumber(language, value) : value;
   });
