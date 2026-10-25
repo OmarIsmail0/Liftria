@@ -1,4 +1,5 @@
 import { Linking, RefreshControl, ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -19,6 +20,11 @@ const names: Partial<Record<MetricType,TranslationKey>> = {
 export default function HealthOverview() {
   const { theme } = useTheme();
   const { t, language } = useLanguage();
+  const [now,setNow]=useState(()=>Date.now());
+  useEffect(()=>{
+    const ticker=setInterval(()=>setNow(Date.now()),60_000);
+    return()=>clearInterval(ticker);
+  },[]);
   const locale = language==='ar'?'ar-EG-u-nu-latn':'en-US';
   const { snapshot, refreshing, refresh } = useHealthSnapshot(overviewMetrics);
   const available = snapshot.availability === 'available';
@@ -28,9 +34,7 @@ export default function HealthOverview() {
   const age=(iso:string):string=>{
     const at=Date.parse(iso);
     if(!Number.isFinite(at))return t('healthOverview.timeUnknown');
-    const checkedAt=snapshot.readAt?Date.parse(snapshot.readAt):NaN;
-    if(!Number.isFinite(checkedAt))return t('healthOverview.timeUnknown');
-    const mins=Math.max(0,Math.floor((checkedAt-at)/60000));
+    const mins=Math.max(0,Math.floor((now-at)/60000));
     if(mins<60)return t('healthOverview.minutesAgo',{count:mins});
     const hours=Math.floor(mins/60);
     return hours<24?t('healthOverview.hoursAgo',{count:hours}):

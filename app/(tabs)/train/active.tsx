@@ -115,7 +115,7 @@ export default function ActiveWorkoutScreen() {
       if(message)void AccessibilityInfo.announceForAccessibility(message==='30 seconds'?t('active.30seconds'):message==='10 seconds'?t('active.10seconds'):t('active.restOver'));
     }
     previousRestMs.current=remaining;
-  },[rest.remainingMs,rest.status,focused]);
+  },[rest.remainingMs,rest.status,focused,t]);
   const log=async()=>{
     if(!view||!exercise||busy)return;
     if(edit){

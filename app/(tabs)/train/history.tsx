@@ -28,7 +28,7 @@ export default function History(){
     return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();});
   const details=await Promise.all(thisMonth.map(s=>readHistoryDetail(s.id)));
   setVolume(details.reduce((v,x)=>v+(x.ok&&x.value?historyNumbers(x.value).volume:0),0));
- },[]);
+ },[t]);
  useFocusEffect(useCallback(()=>{
   void refresh();setUndo(peekUndo()!==null);
   void getTypedSetting('hideNumbers').then(x=>{if(x.ok)setHidden(x.value);});

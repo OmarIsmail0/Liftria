@@ -24,7 +24,7 @@ export default function AddWorkoutExercise() {
       else setError(t('pick.libraryError'));
     })();
     return()=>{live=false;};
-  },[]));
+  },[t]));
   const matches=useMemo(()=>searchExercises(all,query).slice(0,60),[all,query]);
   const add=async(exerciseId:string)=>{
     if(busy)return;

@@ -132,7 +132,7 @@ export default function OnboardingStepScreen() {
       }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
     return () => { mounted = false; };
-  }, []);
+  }, [language,t]);
 
   const patch = <K extends keyof OnboardingDraft>(key: K, value: OnboardingDraft[K]) =>
     setDraft(old => ({ ...old, [key]: value }));

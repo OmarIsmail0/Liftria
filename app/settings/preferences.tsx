@@ -41,7 +41,7 @@ export default function UnitsAndAppearance() {
     }).catch(() => { if (mounted) setError(t('preferences.readError')); })
       .finally(() => { if (mounted) setReady(true); });
     return () => { mounted = false; };
-  }, []);
+  }, [t]);
 
   async function changeLanguage(next: LanguagePreference) {
     const saved = await setLanguage(next);
