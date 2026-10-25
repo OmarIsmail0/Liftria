@@ -1,12 +1,14 @@
 import { Card, EmptyState, Header, Screen } from '../../src/design/primitives';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 
 /** No fake diary totals until Phase 4 adds the local meal repository. */
 export default function EatTab() {
+  const { t } = useLanguage();
   return <Screen embedded>
-    <Header title="Eat" />
+    <Header title={t('nav.eat')} />
     <Card rim="eat">
-      <EmptyState title="Coming in Phase 4"
-        description="Your food diary, targets and meal logging will appear here." />
+      <EmptyState title={t('placeholder.coming')}
+        description={t('eat.comingDetail')} />
     </Card>
   </Screen>;
 }

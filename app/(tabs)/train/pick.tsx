@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Button, Card, Field, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -7,6 +8,7 @@ import { replaceActiveExercise } from '../../../src/features/train/workoutData';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 
 export default function AddWorkoutExercise() {
+ const {t}=useLanguage();
   const {id,replaceId}=useLocalSearchParams<{id:string;replaceId?:string}>();
   const [query,setQuery]=useState('');
   const [all,setAll]=useState<Exercise[]>([]);
@@ -19,10 +21,10 @@ export default function AddWorkoutExercise() {
       const exercises=seeded.ok?await listExercises():null;
       if(!live)return;
       if(exercises?.ok)setAll(exercises.value);
-      else setError('Could not open the local exercise library.');
+      else setError(t('pick.libraryError'));
     })();
     return()=>{live=false;};
-  },[]));
+  },[t]));
   const matches=useMemo(()=>searchExercises(all,query).slice(0,60),[all,query]);
   const add=async(exerciseId:string)=>{
     if(busy)return;
@@ -30,17 +32,17 @@ export default function AddWorkoutExercise() {
     const saved=replaceId?await replaceActiveExercise(id,replaceId,exerciseId):
       await appendExerciseToActiveSession(exerciseId);
     if(saved.ok&&saved.value)router.replace({pathname:'/(tabs)/train/active',params:{id}});
-    else{setError('Could not add this exercise.');setBusy(false);}
+    else{setError(t('pick.addError'));setBusy(false);}
   };
   return <Screen embedded>
-    <Header title={replaceId?'Replace exercise':'Add exercise'} onBack={()=>router.back()}/>
-    <Card title="Your offline library">
-      <Field label="Search exercises" value={query} onChangeText={setQuery}/>
+    <Header title={replaceId?t('pick.replace'):t('pick.add')} onBack={()=>router.back()}/>
+    <Card title={t('pick.offlineLibrary')}>
+      <Field label={t('pick.search')} value={query} onChangeText={setQuery}/>
       {matches.map(e=><ListRow key={e.id} title={e.name}
-        detail={e.equipment??'Equipment not specified'} onPress={()=>void add(e.id)}/>)}
-      {matches.length===0&&<Typography tone="secondary">No matches. Try another name.</Typography>}
+        detail={e.equipment??t('pick.noEquipment')} onPress={()=>void add(e.id)}/>)}
+      {matches.length===0&&<Typography tone="secondary">{t('pick.noMatch')}</Typography>}
     </Card>
     {error&&<Typography>{error}</Typography>}
-    <Button label="Cancel" variant="secondary" disabled={busy} onPress={()=>router.back()}/>
+    <Button label={t('common.cancel')} variant="secondary" disabled={busy} onPress={()=>router.back()}/>
   </Screen>;
 }

@@ -5,6 +5,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
+import { useLanguage } from '../../i18n/LanguageProvider';
 import { TrainGradient } from './VisualEffects';
 import { buttonColors, buttonHeight, provenancePresentation, type ButtonSize, type ButtonVariant,
   type ProvenanceKind } from './contracts';
@@ -15,6 +16,7 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
   fullWidth?: boolean; accessibilityLabel?: string;
 }) {
   const { theme } = useTheme();
+  const { language } = useLanguage();
   const colors = buttonColors(theme, variant);
   const gradient = variant === 'train' && theme.effectiveStyle === 'aurora';
   const [box, setBox] = useState({ width: 0, height: 0 });
@@ -33,7 +35,7 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
     })}>
     {gradient && <TrainGradient theme={theme} width={box.width} height={box.height} />}
     <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
-      fontFamily: fontFamilyFor('Figtree', '700'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
+      fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
   </Pressable>;
 }
 
@@ -81,8 +83,9 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
 
 export function Chip({ kind, label }: { kind: ProvenanceKind; label?: string }) {
   const { theme } = useTheme();
+  const { t, language } = useLanguage();
   const p = provenancePresentation(theme, kind);
-  const text = label ?? p.label;
+  const text = label ?? t(`chips.${kind}`);
   return <View accessible accessibilityRole="text" accessibilityLabel={text}
     style={{ alignSelf: 'flex-start', minHeight: theme.space[6],
       backgroundColor: p.bg, borderColor: p.fg, borderWidth: p.dashed ? theme.size.border.thin : 0,
@@ -90,7 +93,7 @@ export function Chip({ kind, label }: { kind: ProvenanceKind; label?: string }) 
       paddingVertical: theme.space[1], borderRadius: theme.radius.pill,
       flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
     <Text importantForAccessibility="no" style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree','400') }}>{p.glyph}</Text>
-    <Text allowFontScaling style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', '600') }}>{text}</Text>
+    <Text allowFontScaling style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', '600', language === 'ar') }}>{text}</Text>
   </View>;
 }
 
@@ -99,6 +102,7 @@ export function Stepper({ label, value, onChange, min = 0, max = 999, step = 1, 
   min?: number; max?: number; step?: number; unit?: string;
 }) {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const minusDisabled = value - step < min;
   const plusDisabled = value + step > max;
   const buttonStyle = { minHeight: theme.size.touch.min, minWidth: theme.size.touch.primary,
@@ -109,7 +113,7 @@ export function Stepper({ label, value, onChange, min = 0, max = 999, step = 1, 
       backgroundColor: theme.color.bg.raised, borderColor: theme.controlOutline,
       borderWidth: theme.size.border.thin, borderRadius: theme.radius.md, alignSelf: 'flex-start' }}>
       <Pressable style={[buttonStyle, { opacity: minusDisabled ? 0.5 : 1 }]}
-        accessibilityRole="button" accessibilityLabel={`Decrease ${label}`} accessibilityState={{ disabled: minusDisabled }}
+        accessibilityRole="button" accessibilityLabel={t('accessibility.decrease', { label })} accessibilityState={{ disabled: minusDisabled }}
         disabled={minusDisabled} onPress={() => onChange(Math.max(min, value - step))}>
         <Typography>−</Typography>
       </Pressable>
@@ -120,7 +124,7 @@ export function Stepper({ label, value, onChange, min = 0, max = 999, step = 1, 
         {unit ? <Typography tone="secondary" size="small">{unit}</Typography> : null}
       </View>
       <Pressable style={[buttonStyle, { opacity: plusDisabled ? 0.5 : 1 }]}
-        accessibilityRole="button" accessibilityLabel={`Increase ${label}`} accessibilityState={{ disabled: plusDisabled }}
+        accessibilityRole="button" accessibilityLabel={t('accessibility.increase', { label })} accessibilityState={{ disabled: plusDisabled }}
         disabled={plusDisabled} onPress={() => onChange(Math.min(max, value + step))}>
         <Typography>+</Typography>
       </Pressable>
@@ -174,17 +178,18 @@ export function Snackbar({ message, onUndo, onDismiss }: {
   message: string; onUndo?: () => void; onDismiss?: () => void;
 }) {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   return <View accessibilityRole="alert" style={{
     backgroundColor: theme.color.action.primary.bg, borderRadius: theme.radius.pill,
     minHeight: theme.size.touch.min, paddingStart: theme.space[4], paddingEnd: theme.space[2],
     flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
     <Text allowFontScaling style={{ flex: 1, color: theme.color.action.primary.fg,
       fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400') }}>{message}</Text>
-    {onUndo && <Pressable accessibilityRole="button" accessibilityLabel="Undo" onPress={onUndo}
+    {onUndo && <Pressable accessibilityRole="button" accessibilityLabel={t('common.undo')} onPress={onUndo}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>Undo</Text>
+      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>{t('common.undo')}</Text>
     </Pressable>}
-    {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel="Dismiss message" onPress={onDismiss}
+    {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel={t('common.dismiss')} onPress={onDismiss}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>×</Text>
     </Pressable>}

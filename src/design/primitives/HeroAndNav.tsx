@@ -3,6 +3,7 @@ import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
+import { useLanguage } from '../../i18n/LanguageProvider';
 import { OrbArtwork } from './VisualEffects';
 import { TabIcon } from './TabIcon';
 import { capsuleTabs, orbSummary, type CapsuleTab } from './contracts';
@@ -11,8 +12,9 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   eaten: number; target: number | null; hidden?: boolean; active?: boolean; onPress?: () => void;
 }) {
   const { theme, reduceMotion } = useTheme();
+  const { language } = useLanguage();
   const [scale] = useState(() => new Animated.Value(1));
-  const summary = useMemo(() => orbSummary(eaten, target, hidden), [eaten, target, hidden]);
+  const summary = useMemo(() => orbSummary(eaten, target, hidden, language), [eaten, target, hidden, language]);
   useEffect(() => {
     scale.stopAnimation();
     if (!active || reduceMotion) { scale.setValue(1); return; }
@@ -49,7 +51,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
             letterSpacing: theme.type.label.letterSpacingEm * theme.type.label.size,
             textAlign: 'center' }}>{(parts[2] ?? '').toUpperCase()}</Text>
         </> : <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2}
-          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight),
+          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight, language === 'ar'),
             fontSize: theme.type.head.size, lineHeight: theme.type.head.line,
             textAlign: 'center' }}>{summary.label}</Text>}
       </View>
@@ -62,6 +64,7 @@ export function CapsuleNav({ active, onSelect }: {
   active: CapsuleTab; onSelect: (tab: CapsuleTab) => void;
 }) {
   const { theme } = useTheme();
+  const { language, t } = useLanguage();
   const insets = useSafeAreaInsets();
   const glass = theme.effectiveStyle === 'aurora';
   return <View style={{
@@ -80,7 +83,7 @@ export function CapsuleNav({ active, onSelect }: {
         const selected = tab.key === active;
         const ink = selected ? theme.color.action.primary.fg : theme.color.text.secondary;
         return <Pressable key={tab.key} onPress={() => onSelect(tab.key)}
-          accessibilityRole="tab" accessibilityLabel={tab.label}
+          accessibilityRole="tab" accessibilityLabel={t(`nav.${tab.key}`)}
           accessibilityState={{ selected }}
           style={{
             flex: selected ? 1.9 : 1, minWidth: theme.size.touch.min,
@@ -93,8 +96,8 @@ export function CapsuleNav({ active, onSelect }: {
             size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
           {selected && <Text allowFontScaling maxFontSizeMultiplier={2} numberOfLines={2}
             style={{ color: ink, fontSize: theme.type.small.size,
-              fontFamily: fontFamilyFor('Figtree', theme.type.label.weight),
-              flexShrink: 1, textAlign: 'center' }}>{tab.label}</Text>}
+              fontFamily: fontFamilyFor('Figtree', theme.type.label.weight, language === 'ar'),
+              flexShrink: 1, textAlign: 'center' }}>{t(`nav.${tab.key}`)}</Text>}
         </Pressable>;
       })}
     </View>

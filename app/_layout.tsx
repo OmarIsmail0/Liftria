@@ -4,6 +4,7 @@ import { Stack, router } from 'expo-router';
 import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { bundledFonts } from '../src/design/fonts';
+import { LanguageProvider } from '../src/i18n/LanguageProvider';
 import { ThemeProvider, useTheme } from '../src/design/ThemeProvider';
 import { subscribeRestNotificationResponse } from '../src/features/train/restAlerts';
 import { readWorkout } from '../src/features/train/workoutData';
@@ -54,5 +55,5 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(bundledFonts);
   if (fontError) throw fontError;
-  return <ThemeProvider><ReadyNavigator fontsLoaded={fontsLoaded} /></ThemeProvider>;
+  return <LanguageProvider><ThemeProvider><ReadyNavigator fontsLoaded={fontsLoaded} /></ThemeProvider></LanguageProvider>;
 }

@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
@@ -9,6 +10,7 @@ import type { Exercise } from '../../../src/services/database/gymTypes';
 
 export default function TemplateEditor() {
   const {theme}=useTheme();
+  const {t}=useLanguage();
   const {id,exerciseId}=useLocalSearchParams<{id?:string;exerciseId?:string}>();
   const [name,setName]=useState('');
   const [rest,setRest]=useState(120);
@@ -62,78 +64,78 @@ export default function TemplateEditor() {
     const result=await saveTemplate({name:name.trim(),restSec:rest,notes:notes||null,exercises},id);
     setBusy(false);
     if(result.ok){setSaved(true);router.replace('/(tabs)/train/plans');}
-    else setError('Could not save the template. Try again.');
+    else setError(t('template.saveError'));
   };
   const remove=async()=>{
     if(id){const result=await deleteTemplate(id);
-      if(!result.ok){setError('Could not delete template.');return;}}
+      if(!result.ok){setError(t('template.deleteError'));return;}}
     router.replace('/(tabs)/train/plans');
   };
   return <Screen embedded>
-    <Header title={id?'Edit template':'New template'} onBack={back}/>
-    <Card title="Workout details">
-      <Field label="Template name" value={name} onChangeText={setName} placeholder="Upper A"/>
-      <Field label="Notes (optional)" value={notes} onChangeText={setNotes} multiline/>
-      <Stepper label="Default rest" value={rest} onChange={setRest} min={0} max={600} step={15} unit="sec"/>
+    <Header title={id?t('template.edit'):t('template.new')} onBack={back}/>
+    <Card title={t('template.details')}>
+      <Field label={t('template.name')} value={name} onChangeText={setName} placeholder={t('template.nameExample')}/>
+      <Field label={t('template.notes')} value={notes} onChangeText={setNotes} multiline/>
+      <Stepper label={t('template.rest')} value={rest} onChange={setRest} min={0} max={600} step={15} unit="sec"/>
     </Card>
-    <Card title={'Exercises · '+exercises.length}>
+    <Card title={t('template.exerciseCount',{count:exercises.length})}>
       {(!name.trim()||exercises.length===0)&&<Typography tone="secondary">
-        {(!name.trim()&&exercises.length===0)?'Add a template name and at least one exercise to save.':
-          !name.trim()?'Add a template name to save.':'Add at least one exercise to save.'}
+        {(!name.trim()&&exercises.length===0)?t('template.needBoth'):
+          !name.trim()?t('template.needName'):t('template.needExercise')}
       </Typography>}
       {exercises.map((e,i)=>{
         const item=library.find(x=>x.id===e.exerciseId);
         return <View key={i} style={{gap:theme.space[2],paddingVertical:theme.space[3],
           borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
           <Typography bold>{item?.name??e.exerciseId}</Typography>
-          <Stepper label="Working sets" value={e.targetSets} min={1} max={20} step={1}
+          <Stepper label={t('template.workingSets')} value={e.targetSets} min={1} max={20} step={1}
             onChange={v=>update(i,{targetSets:v})}/>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
             <View style={{flex:1,minWidth:120}}>
-              <Stepper label="Reps min" value={e.repMin} min={1} max={100}
+              <Stepper label={t('template.repsMin')} value={e.repMin} min={1} max={100}
                 onChange={v=>update(i,{repMin:v,repMax:Math.max(v,e.repMax)})}/>
             </View>
             <View style={{flex:1,minWidth:120}}>
-              <Stepper label="Reps max" value={e.repMax} min={e.repMin} max={100}
+              <Stepper label={t('template.repsMax')} value={e.repMax} min={e.repMin} max={100}
                 onChange={v=>update(i,{repMax:v})}/>
             </View>
           </View>
-          <Stepper label="Exercise rest" value={e.restSec??rest} min={0} max={600} step={15}
+          <Stepper label={t('template.exerciseRest')} value={e.restSec??rest} min={0} max={600} step={15}
             unit="sec" onChange={v=>update(i,{restSec:v})}/>
           <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
-            <Button label="Move up" variant="secondary" disabled={i===0}
+            <Button label={t('template.moveUp')} variant="secondary" disabled={i===0}
               onPress={()=>setExercises(old=>{const next=[...old];const a=next[i-1],b=next[i];
                 if(a&&b){next[i-1]=b;next[i]=a;}return next;})}/>
-            <Button label="Move down" variant="secondary" disabled={i===exercises.length-1}
+            <Button label={t('template.moveDown')} variant="secondary" disabled={i===exercises.length-1}
               onPress={()=>setExercises(old=>{const next=[...old];const a=next[i+1],b=next[i];
                 if(a&&b){next[i+1]=b;next[i]=a;}return next;})}/>
-            <Button label="Remove" variant="ghost" onPress={()=>setExercises(old=>old.filter((_,n)=>n!==i))}/>
+            <Button label={t('template.remove')} variant="ghost" onPress={()=>setExercises(old=>old.filter((_,n)=>n!==i))}/>
           </View>
         </View>;
       })}
     </Card>
-    <Card title="Add exercise">
-      <Field label="Search library" value={query} onChangeText={setQuery} placeholder="Bench, squat, OHP"/>
+    <Card title={t('template.addExercise')}>
+      <Field label={t('template.searchLibrary')} value={query} onChangeText={setQuery} placeholder={t('template.searchExample')}/>
       {filtered.filter(e=>!exercises.some(row=>row.exerciseId===e.id)).map(e=>
-        <ListRow key={e.id} title={e.name} detail={e.equipment??'Bodyweight'}
+        <ListRow key={e.id} title={e.name} detail={e.equipment??t('template.bodyweight')}
           onPress={()=>add(e)}/>)}
-      <Button label="Browse muscle map" variant="secondary"
+      <Button label={t('template.browseMap')} variant="secondary"
         onPress={()=>router.push('/(tabs)/train/muscles')}/>
     </Card>
     {error&&<Typography>{error}</Typography>}
-    <Button label={busy?'Saving…':'Save template'} variant="train" fullWidth
+    <Button label={busy?t('template.saving'):t('template.save')} variant="train" fullWidth
       disabled={busy||!name.trim()||exercises.length===0}
       onPress={()=>void save()}/>
-    {id&&<Button label="Delete template" variant="danger" onPress={()=>setDeleteSheet(true)}/>}
-    <Sheet visible={discardSheet&&!saved} title="Discard template changes?"
-      description="Unsaved changes to this template will be lost." onClose={()=>setDiscardSheet(false)}>
-      <Button label="Keep editing" fullWidth onPress={()=>setDiscardSheet(false)}/>
-      <Button label="Discard changes" variant="danger" fullWidth onPress={()=>router.back()}/>
+    {id&&<Button label={t('template.delete')} variant="danger" onPress={()=>setDeleteSheet(true)}/>}
+    <Sheet visible={discardSheet&&!saved} title={t('template.discardTitle')}
+      description={t('template.discardDescription')} onClose={()=>setDiscardSheet(false)}>
+      <Button label={t('template.keepEditing')} fullWidth onPress={()=>setDiscardSheet(false)}/>
+      <Button label={t('template.discard')} variant="danger" fullWidth onPress={()=>router.back()}/>
     </Sheet>
-    <Sheet visible={deleteSheet} destructive title="Delete this template?"
-      description="Logged workouts will remain in your history." onClose={()=>setDeleteSheet(false)}>
-      <Button label="Keep template" fullWidth onPress={()=>setDeleteSheet(false)}/>
-      <Button label="Delete template" variant="danger" fullWidth onPress={()=>void remove()}/>
+    <Sheet visible={deleteSheet} destructive title={t('template.deleteTitle')}
+      description={t('template.deleteDescription')} onClose={()=>setDeleteSheet(false)}>
+      <Button label={t('template.keep')} fullWidth onPress={()=>setDeleteSheet(false)}/>
+      <Button label={t('template.delete')} variant="danger" fullWidth onPress={()=>void remove()}/>
     </Sheet>
   </Screen>;
 }

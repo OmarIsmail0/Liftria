@@ -1,4 +1,5 @@
 import type { LiftriaTheme } from '../tokens';
+import { translate, type AppLanguage } from '../../i18n';
 
 export const buttonVariants = ['primary', 'secondary', 'ghost', 'train', 'hiku', 'danger'] as const;
 export type ButtonVariant = typeof buttonVariants[number];
@@ -44,21 +45,22 @@ export function provenancePresentation(theme: LiftriaTheme, kind: ProvenanceKind
   }
 }
 
-export function orbSummary(eaten: number, target: number | null, hidden = false) {
+export function orbSummary(eaten: number, target: number | null, hidden = false, language: AppLanguage = 'en') {
   const safeEaten = Math.max(0, Math.round(eaten));
-  if (hidden) return { label: target === null ? 'Numbers are hidden' : safeEaten > target ? 'A bit over' : 'On track', progress: target === null ? null : Math.min(1, target > 0 ? safeEaten / target : 0), accessibilityLabel: 'Numbers are hidden' };
+  if (hidden) return { label: target === null ? translate(language, 'orb.hidden') : safeEaten > target ? translate(language, 'orb.over') : translate(language, 'orb.onTrack'), progress: target === null ? null : Math.min(1, target > 0 ? safeEaten / target : 0), accessibilityLabel: translate(language, 'orb.hidden') };
   if (target === null || target <= 0) return {
-    label: `${safeEaten.toLocaleString('en-US')} kcal eaten`,
+    label: translate(language, 'orb.eaten', { count: safeEaten }),
     progress: null,
-    accessibilityLabel: `${safeEaten.toLocaleString('en-US')} kilocalories eaten, no target set`,
+    accessibilityLabel: language === 'en' ? `${safeEaten.toLocaleString('en-US')} kilocalories eaten, no target set` : translate(language, 'orb.noTargetA11y', { count: safeEaten }),
   };
   const left = target - safeEaten;
-  const label = left >= 0 ? `${left.toLocaleString('en-US')} kcal left` : `+${Math.abs(left).toLocaleString('en-US')} kcal over`;
+  const label = left >= 0 ? translate(language, 'orb.left', { count: left }) : translate(language, 'orb.overTarget', { count: Math.abs(left) });
   return {
     label,
     progress: Math.min(1, safeEaten / target),
-    accessibilityLabel: left >= 0
+    accessibilityLabel: language === 'en' ? (left >= 0
       ? `${left.toLocaleString('en-US')} kilocalories left. ${safeEaten.toLocaleString('en-US')} of ${target.toLocaleString('en-US')} eaten, estimated target`
-      : `${Math.abs(left).toLocaleString('en-US')} kilocalories over. ${safeEaten.toLocaleString('en-US')} of ${target.toLocaleString('en-US')} eaten, estimated target`,
+      : `${Math.abs(left).toLocaleString('en-US')} kilocalories over. ${safeEaten.toLocaleString('en-US')} of ${target.toLocaleString('en-US')} eaten, estimated target`) :
+      translate(language, left >= 0 ? 'orb.leftA11y' : 'orb.overA11y', { remaining: Math.abs(left), eaten: safeEaten, target }),
   };
 }

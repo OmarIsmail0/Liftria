@@ -1,44 +1,46 @@
 import { router } from 'expo-router';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import releaseVersion from '../../src/config/releaseVersion.json';
 
 export default function AboutHelp() {
+  const { t: tr } = useLanguage();
   return <Screen>
-    <Header title="About and help" subtitle="Privacy and open-source notices"
+    <Header title={tr('p4.about.0')} subtitle={tr('p4.about.1')}
       onBack={()=>backOrReplace(router,'/settings')} />
-    <Card title="Liftria">
-      <Typography>Version {releaseVersion.name} · Android build {releaseVersion.androidCode}</Typography>
-      <Typography tone="secondary">A local-first fitness app. No account, external Liftria server or analytics.</Typography>
+    <Card title={tr('p4.about.2')}>
+      <Typography>{tr('p4.about.versionBuild',{version:releaseVersion.name,build:releaseVersion.androidCode})}</Typography>
+      <Typography tone="secondary">{tr('p4.about.17')}</Typography>
     </Card>
-    <Card title="What the chips mean">
-      <Chip kind="phone" label="Phone" />
-      <Typography tone="secondary" size="small">Steps measured by the phone’s own counter when that source is identified.</Typography>
-      <Chip kind="pending" label="Unverified device" />
-      <Typography tone="secondary" size="small">An app supplied the reading, but that does not establish which device recorded it.</Typography>
-      <Chip kind="stale" label="Stale" />
-      <Typography tone="secondary" size="small">The most recent record is older than the metric’s freshness window.</Typography>
-      <Chip kind="estimate" label="Estimate" />
-      <Typography tone="secondary" size="small">Calculated or estimated; not a verified measurement.</Typography>
+    <Card title={tr('p4.about.3')}>
+      <Chip kind="phone" label={tr('p4.about.4')} />
+      <Typography tone="secondary" size="small">{tr('p4.about.18')}</Typography>
+      <Chip kind="pending" label={tr('p4.about.5')} />
+      <Typography tone="secondary" size="small">{tr('p4.about.19')}</Typography>
+      <Chip kind="stale" label={tr('p4.about.6')} />
+      <Typography tone="secondary" size="small">{tr('p4.about.20')}</Typography>
+      <Chip kind="estimate" label={tr('p4.about.7')} />
+      <Typography tone="secondary" size="small">{tr('p4.about.21')}</Typography>
     </Card>
-    <Card title="Help">
-      <ListRow title="Health Connect permissions" detail="Review which data Liftria can read"
+    <Card title={tr('p4.about.8')}>
+      <ListRow title={tr('p4.about.9')} detail={tr('p4.about.10')}
         onPress={()=>router.push('/(tabs)/progress/health-permissions')} />
-      <ListRow title="Watch sync troubleshooting" detail="Five checks, without pretending a watch is verified"
+      <ListRow title={tr('p4.about.11')} detail={tr('p4.about.12')}
         onPress={()=>router.push('/(tabs)/progress/health-troubleshoot')} />
-      <ListRow title="Hiku and your API key" detail="Manage your private Anthropic key"
+      <ListRow title={tr('p4.about.13')} detail={tr('p4.about.14')}
         onPress={()=>router.push('/settings/hiku-key')} />
     </Card>
-    <Card title="Licenses and attribution">
-      <Typography>Archivo and Figtree · SIL Open Font License</Typography>
-      <Typography>free-exercise-db · Unlicense</Typography>
-      <Typography>USDA FoodData Central · U.S. government public-domain data</Typography>
-      <Typography tone="secondary" size="small">Exercise and nutrition integrations are planned; listing a source does not imply its data was downloaded onto this phone.</Typography>
+    <Card title={tr('p4.about.15')}>
+      <Typography>{tr('p4.about.22')}</Typography>
+      <Typography>{tr('p4.about.23')}</Typography>
+      <Typography>{tr('p4.about.24')}</Typography>
+      <Typography tone="secondary" size="small">{tr('p4.about.25')}</Typography>
     </Card>
-    <Card title="Privacy summary">
-      <Typography tone="secondary">Profile, preferences and available Health Connect records stay on your phone. Health Connect is read only; Liftria never writes or deletes records in the provider.</Typography>
-      <Typography tone="secondary">Hiku is the only feature that makes an Anthropic API request, and only when you request it. Your personal API key is stored with Android SecureStore, not the Liftria database.</Typography>
-      <Typography tone="secondary">If you lose this phone, there is no cloud Liftria backup yet.</Typography>
+    <Card title={tr('p4.about.16')}>
+      <Typography tone="secondary">{tr('p4.about.26')}</Typography>
+      <Typography tone="secondary">{tr('p4.about.27')}</Typography>
+      <Typography tone="secondary">{tr('p4.about.28')}</Typography>
     </Card>
   </Screen>;
 }

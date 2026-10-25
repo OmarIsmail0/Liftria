@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { getProfile, profileSchema, saveProfile, type ProfileInput } from '../../src/services/database/profile';
 import { addTarget, getCurrentTarget, targetSchema, type TargetInput, type Target } from '../../src/services/database/targets';
 import { getTypedSetting } from '../../src/services/database/settings';
@@ -20,6 +21,7 @@ const empty: Form = { name:'',birthYear:'',heightCm:'',feet:'',inches:'',weight:
 const fmt = (n:number|null, decimal=false):string => n === null ? '' : decimal ? n.toFixed(1) : String(n);
 
 export default function ProfileAndGoals() {
+  const {t}=useLanguage();
   const { theme } = useTheme();
   const [form,setForm] = useState<Form>(empty);
   const [unit,setUnit] = useState<{weight:WeightUnit;height:HeightUnit}>({weight:'kg',height:'cm'});
@@ -60,10 +62,10 @@ export default function ProfileAndGoals() {
         weight:value.weightKg === null ? '' : fmt(wu === 'lb' ? value.weightKg * LB_PER_KG : value.weightKg,true),
         sexForFormula:value.sexForFormula,activity:value.activity,goal:value.goal,
       });
-    }).catch(() => { if (mounted) setMessage('Unable to read your saved profile.'); })
+    }).catch(() => { if (mounted) setMessage(t('profileSettings.readError')); })
       .finally(() => { if (mounted) setReady(true); });
     return () => { mounted = false; };
-  }, []);
+  }, [t]);
   function patch<K extends keyof Form>(key:K,value:Form[K]) {
     setForm(prev=>({...prev,[key]:value}));setMessage(null);
   }
@@ -85,31 +87,31 @@ export default function ProfileAndGoals() {
     setBusy(true);setMessage(null);
     try {
       const saved=await saveProfile(input);
-      if (!saved.ok) { setMessage('Could not save the profile. Nothing else was changed.');return; }
+      if (!saved.ok) { setMessage(t('profileSettings.saveError'));return; }
       if (update) {
         const next=await addTarget(update);
         if (!next.ok) {
-          setMessage('Profile saved, but the new target was not saved. Your earlier target is unchanged.');
+          setMessage(t('profileSettings.targetSaveError'));
           setPending(null); return;
         }
         setTarget(next.value);
       }
       setPending(null);setTargetEditor(false);setFloorRequest(null);
-      setMessage(update ? 'Profile and target saved.' : 'Profile saved. Your target was kept.');
+      setMessage(update ? t('profileSettings.savedTogether') : t('profileSettings.savedProfile'));
       if (update) router.replace('/settings');
-    } catch { setMessage('Could not save. Check the fields and try again.'); }
+    } catch { setMessage(t('profileSettings.saveFailed')); }
     finally { setBusy(false); }
   }
   function queueTarget(input:ProfileInput,targetInput:TargetInput) {
     const check=checkSettingsTarget(targetInput.kcal,input);
-    if(check.blocked) { setMessage(check.reason); setTargetEditor(false); setPending(null); return; }
+    if(check.blocked) { setMessage(t('profileSettings.belowFloor')); setTargetEditor(false); setPending(null); return; }
     if(check.warning) { setFloorRequest({input,target:targetInput}); setTargetEditor(false); setPending(null); return; }
     void persist(input,targetInput);
   }
   function inputIfValid(): ProfileInput | null {
     const result=profileSchema.safeParse(inputFromForm());
     if (!result.success) {
-      setMessage(result.error.issues.map(issue=>issue.message).join(' '));
+      setMessage(t('profileSettings.invalidProfile'));
       return null;
     }
     return result.data;
@@ -119,7 +121,7 @@ export default function ProfileAndGoals() {
     if(!input) return;
     const estimate=estimateEditedProfile(input);
     if(!estimate) {
-      setMessage('Complete age, height, weight, formula sex, activity and goal to calculate an estimate.');
+      setMessage(t('profileSettings.missingRequired'));
       return;
     }
     queueTarget(input,estimate);
@@ -129,14 +131,14 @@ export default function ProfileAndGoals() {
     if(!input) return;
     const numbers=[manualKcal,manualProtein,manualFat,manualCarbs].map(n=>parseOptionalNumber(n));
     if(numbers.some(n=>n===null || !Number.isFinite(n))) {
-      setMessage('Enter valid calories, protein, fat and carbs before saving a manual target.');
+      setMessage(t('profileSettings.invalidManual'));
       return;
     }
     const [kcal,proteinG,fatG,carbsG]=numbers as [number, number, number, number];
-    if(kcal<1000) { setMessage('A calorie target below 1,000 kcal cannot be saved.');return; }
+    if(kcal<1000) { setMessage(t('profileSettings.belowFloor'));return; }
     const targetInput=targetSchema.safeParse({kcal,proteinG,fatG,carbsG,source:'manual',inputs:null});
     if(!targetInput.success) {
-      setMessage(targetInput.error.issues.map(issue=>issue.message).join(' '));return;
+      setMessage(t('profileSettings.invalidTarget'));return;
     }
     queueTarget(input,targetInput.data);
   }
@@ -148,71 +150,71 @@ export default function ProfileAndGoals() {
     else void persist(input,null);
   }
   return <Screen>
-    <Header title="Profile and goals" subtitle="Stored locally · optional fields"
+    <Header title={t('profileSettings.title')} subtitle={t('profileSettings.subtitle')}
       onBack={() => backOrReplace(router,'/settings')} />
-    <Card title="Profile">
-      <Field label="Name (optional)" value={form.name} onChangeText={v=>patch('name',v)} />
-      <Typography tone="secondary" size="small">Used only to estimate your calorie target. You can leave this blank.</Typography>
-      <SegmentedControl label="Sex for the formula" value={form.sexForFormula ?? 'unset'}
+    <Card title={t('profileSettings.profile')}>
+      <Field label={t('profileSettings.name')} value={form.name} onChangeText={v=>patch('name',v)} />
+      <Typography tone="secondary" size="small">{t('profileSettings.sexNote')}</Typography>
+      <SegmentedControl label={t('profileSettings.sex')} value={form.sexForFormula ?? 'unset'}
         onChange={v=>patch('sexForFormula',v==='unset'?null:v)}
-        options={[{value:'unset',label:'Not set'},{value:'male',label:'Male'},{value:'female',label:'Female'},
-          {value:'unspecified',label:'Prefer not to say'}]} />
-      <Field label="Birth year" value={form.birthYear} keyboardType="number-pad"
-        onChangeText={v=>patch('birthYear',v)} placeholder="e.g. 1996" />
-      {unit.height === 'cm' ? <Field label="Height (cm)" value={form.heightCm} keyboardType="decimal-pad"
+        options={[{value:'unset',label:t('profileSettings.notSet')},{value:'male',label:t('profileSettings.male')},{value:'female',label:t('profileSettings.female')},
+          {value:'unspecified',label:t('profileSettings.unspecified')}]} />
+      <Field label={t('profileSettings.birthYear')} value={form.birthYear} keyboardType="number-pad"
+        onChangeText={v=>patch('birthYear',v)} placeholder={t('profileSettings.yearExample')} />
+      {unit.height === 'cm' ? <Field label={t('profileSettings.heightCm')} value={form.heightCm} keyboardType="decimal-pad"
         onChangeText={v=>patch('heightCm',v)} /> :
         <View style={{gap:theme.space[2]}}>
-          <Field label="Height (feet)" value={form.feet} keyboardType="number-pad" onChangeText={v=>patch('feet',v)} />
-          <Field label="Height (inches)" value={form.inches} keyboardType="number-pad" onChangeText={v=>patch('inches',v)} />
+          <Field label={t('profileSettings.heightFeet')} value={form.feet} keyboardType="number-pad" onChangeText={v=>patch('feet',v)} />
+          <Field label={t('profileSettings.heightInches')} value={form.inches} keyboardType="number-pad" onChangeText={v=>patch('inches',v)} />
         </View>}
-      <Field label={unit.weight==='kg'?'Weight (kg)':'Weight (lb)'} value={form.weight}
+      <Field label={unit.weight==='kg'?t('profileSettings.weightKg'):t('profileSettings.weightLb')} value={form.weight}
         keyboardType="decimal-pad" onChangeText={v=>patch('weight',v)} />
-      <Typography tone="secondary" size="small">Measurements are stored in metric, whatever units you choose.</Typography>
+      <Typography tone="secondary" size="small">{t('profileSettings.metricNote')}</Typography>
     </Card>
-    <Card title="Activity and goal">
-      <SegmentedControl label="Activity" value={form.activity ?? 'unset'}
+    <Card title={t('profileSettings.activityGoal')}>
+      <SegmentedControl label={t('profileSettings.activity')} value={form.activity ?? 'unset'}
         onChange={v=>patch('activity',v==='unset'?null:v)}
-        options={[{value:'unset',label:'Not set'},{value:'sitting',label:'Sitting'},
-          {value:'some',label:'Some'},{value:'active',label:'Active'}]} />
-      <SegmentedControl label="Goal" value={form.goal ?? 'unset'}
+        options={[{value:'unset',label:t('profileSettings.notSet')},{value:'sitting',label:t('profileSettings.sitting')},
+          {value:'some',label:t('profileSettings.some')},{value:'active',label:t('profileSettings.active')}]} />
+      <SegmentedControl label={t('profileSettings.goal')} value={form.goal ?? 'unset'}
         onChange={v=>patch('goal',v==='unset'?null:v)}
-        options={[{value:'unset',label:'Not set'},{value:'lose',label:'Lose'},
-          {value:'maintain',label:'Maintain'},{value:'build',label:'Build'}]} />
-      <ListRow title="Current calorie target" detail={target ? `${target.kcal} kcal · ${target.source==='manual'?'Manual':'Estimate'}` : 'No target set'}
+        options={[{value:'unset',label:t('profileSettings.notSet')},{value:'lose',label:t('profileSettings.lose')},
+          {value:'maintain',label:t('profileSettings.maintain')},{value:'build',label:t('profileSettings.build')}]} />
+      <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${target.kcal} kcal · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
         onPress={()=>{setTargetEditor(true);setMessage(null)}} />
-      <Typography tone="secondary" size="small">Edit or recalculate here using your current form. No onboarding steps are changed.</Typography>
-      {target?.source==='manual' && <Typography tone="secondary">Manual targets never change automatically when you save your profile.</Typography>}
+      <Typography tone="secondary" size="small">{t('profileSettings.editNote')}</Typography>
+      {target?.source==='manual' && <Typography tone="secondary">{t('profileSettings.manualNote')}</Typography>}
     </Card>
     {message && <View accessibilityRole="alert"><Typography tone="secondary">ⓘ {message}</Typography></View>}
-    <Button label={busy ? 'Saving…' : 'Save profile'} fullWidth disabled={!ready||busy} onPress={onSave} />
-    <Sheet visible={pending!==null} title="Update your estimated target?"
-      description={pending ? `Your estimated target changes from ${pending.previous.kcal.toLocaleString()} to ${pending.estimate.kcal.toLocaleString()} kcal. This is optional.` : undefined}
+    <Button label={busy ? t('profileSettings.saving') : t('profileSettings.saveProfile')} fullWidth disabled={!ready||busy} onPress={onSave} />
+    <Sheet visible={pending!==null} title={t('profileSettings.updateTitle')}
+      description={pending ? t('profileSettings.updateDescription',{before:pending.previous.kcal,after:pending.estimate.kcal}) : undefined}
       onClose={()=>setPending(null)}>
-      <Button label="Keep current target" fullWidth disabled={busy}
+      <Button label={t('profileSettings.keepTarget')} fullWidth disabled={busy}
         onPress={()=>{if(pending)void persist(pending.input,null)}} />
-      <Button label="Update target" variant="secondary" fullWidth disabled={busy}
+      <Button label={t('profileSettings.updateTarget')} variant="secondary" fullWidth disabled={busy}
         onPress={()=>{if(pending)queueTarget(pending.input,pending.estimate)}} />
     </Sheet>
-    <Sheet visible={targetEditor} title="Edit calorie target"
-      description="Calculate from the edited profile above, or set a manual target. A manual target will never change automatically."
+    <Sheet visible={targetEditor} title={t('profileSettings.editTarget')}
+      description={t('profileSettings.editTargetDesc')}
       onClose={()=>setTargetEditor(false)}>
       {estimateEditedProfile(inputFromForm()) ? <>
-        <Typography tone="secondary">Estimate from edited profile: {estimateEditedProfile(inputFromForm())?.kcal.toLocaleString()} kcal</Typography>
-        <Button label="Use this estimate" variant="secondary" fullWidth disabled={busy}
+        <Typography tone="secondary">{t('profileSettings.estimateDescription',{kcal:estimateEditedProfile(inputFromForm())?.kcal??0})}</Typography>
+        <Button label={t('profileSettings.useEstimate')} variant="secondary" fullWidth disabled={busy}
           onPress={useEditedEstimate} />
-      </> : <Typography tone="secondary">Complete the optional profile fields above to calculate an estimate.</Typography>}
-      <Field label="Calories (kcal)" value={manualKcal} keyboardType="numeric" onChangeText={setManualKcal} />
-      <Field label="Protein (g)" value={manualProtein} keyboardType="numeric" onChangeText={setManualProtein} />
-      <Field label="Fat (g)" value={manualFat} keyboardType="numeric" onChangeText={setManualFat} />
-      <Field label="Carbs (g)" value={manualCarbs} keyboardType="numeric" onChangeText={setManualCarbs} />
+      </> : <Typography tone="secondary">{t('profileSettings.missingEstimate')}</Typography>}
+      <Field label={t('profileSettings.calories')} value={manualKcal} keyboardType="numeric" onChangeText={setManualKcal} />
+      <Field label={t('profileSettings.protein')} value={manualProtein} keyboardType="numeric" onChangeText={setManualProtein} />
+      <Field label={t('profileSettings.fat')} value={manualFat} keyboardType="numeric" onChangeText={setManualFat} />
+      <Field label={t('profileSettings.carbs')} value={manualCarbs} keyboardType="numeric" onChangeText={setManualCarbs} />
       {message && <View accessibilityRole="alert"><Typography tone="secondary" size="small">ⓘ {message}</Typography></View>}
-      <Button label="Save manual target" variant="secondary" disabled={busy} fullWidth onPress={useManualTarget} />
+      <Button label={t('profileSettings.saveManual')} variant="secondary" disabled={busy} fullWidth onPress={useManualTarget} />
     </Sheet>
-    <Sheet visible={floorRequest!==null} title="Calorie target caution"
-      description="This is lower than Liftria recommends without guidance from a professional. You can keep your current target or explicitly continue."
+    <Sheet visible={floorRequest!==null} title={t('profileSettings.caution')}
+      description={t('profileSettings.cautionDesc')}
       onClose={()=>setFloorRequest(null)}>
-      <Button label="Keep current target" fullWidth onPress={()=>setFloorRequest(null)} />
-      <Button label="Continue with this target" variant="secondary" fullWidth
+      <Button label={t('profileSettings.keepTarget')} fullWidth onPress={()=>setFloorRequest(null)} />
+      <Button label={t('profileSettings.continueTarget')} variant="secondary" fullWidth
         disabled={busy} onPress={()=>{if(floorRequest)void persist(floorRequest.input,floorRequest.target)}} />
     </Sheet>
   </Screen>;

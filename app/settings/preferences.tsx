@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { View } from 'react-native';
-import { Button, Card, Header, ListRow, Screen, SegmentedControl, Toggle, Typography } from '../../src/design/primitives';
+import { I18nManager, View } from 'react-native';
+import { useLanguage, systemLanguage } from '../../src/i18n/LanguageProvider';
+import { resolveLanguage, type LanguagePreference } from '../../src/i18n';
+import { Button, Card, Header, ListRow, Screen, SegmentedControl, Sheet, Toggle, Typography } from '../../src/design/primitives';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { backOrReplace } from '../../src/navigation/back';
 import { getTypedSetting, setTypedSetting } from '../../src/services/database/settings';
@@ -16,6 +18,8 @@ const defaults: Prefs = { weight: 'kg', height: 'cm', hideNumbers: false,
 
 export default function UnitsAndAppearance() {
   const { theme } = useTheme();
+  const { t, preference, setLanguage } = useLanguage();
+  const [reopen, setReopen] = useState(false);
   const [values, setValues] = useState<Prefs>(defaults);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +38,17 @@ export default function UnitsAndAppearance() {
         haptics: haptics.ok ? haptics.value : true,
         smallPlates: plates.ok ? plates.value : false,
       });
-    }).catch(() => { if (mounted) setError('Unable to read saved settings. Defaults are displayed.'); })
+    }).catch(() => { if (mounted) setError(t('preferences.readError')); })
       .finally(() => { if (mounted) setReady(true); });
     return () => { mounted = false; };
-  }, []);
+  }, [t]);
+
+  async function changeLanguage(next: LanguagePreference) {
+    const saved = await setLanguage(next);
+    if (!saved) { setError(t('language.saveError')); return; }
+    setError(null);
+    if ((resolveLanguage(next, systemLanguage()) === 'ar') !== I18nManager.isRTL) setReopen(true);
+  }
 
   async function change<K extends keyof Prefs>(name: K, value: Prefs[K]) {
     const old = values[name];
@@ -51,40 +62,52 @@ export default function UnitsAndAppearance() {
              await setTypedSetting('haptics', value as boolean);
     if (!saved.ok) {
       setValues(previous => ({ ...previous, [name]: old }));
-      setError('Could not save this setting on your phone. Try again.');
+      setError(t('preferences.saveError'));
     }
   }
 
   return <Screen>
-    <Header title="Units and appearance" subtitle="Local preferences"
+    <Header title={t('preferences.title')} subtitle={t('preferences.subtitle')}
       onBack={() => backOrReplace(router, '/settings')} />
-    <Card title="Units">
-      <Typography tone="secondary" size="small">Units change how measurements are shown. Your stored values remain metric.</Typography>
-      <SegmentedControl label="Weight" options={[{ value:'kg', label:'kg' }, { value:'lb', label:'lb' }]}
-        value={values.weight} onChange={v => void change('weight', v)} />
-      <SegmentedControl label="Height" options={[{ value:'cm', label:'cm' }, { value:'ftin', label:'ft / in' }]}
-        value={values.height} onChange={v => void change('height', v)} />
-      <Toggle label="Small plates" detail="1.25 kg increments for your workout weight stepper."
-        value={values.smallPlates} onChange={v => void change('smallPlates', v)} />
-      <Typography tone="secondary">Energy: kcal</Typography>
-      <Typography tone="secondary" size="small">kJ is planned for a future release.</Typography>
+    <Card title={t('language.title')}>
+      <Typography tone="secondary" size="small">{t('language.description')}</Typography>
+      <SegmentedControl label={t('language.title')} value={preference}
+        options={[{ value: 'system', label: t('common.system') },
+          { value: 'ar', label: t('common.arabic') },
+          { value: 'en', label: t('common.english') }] as const}
+        onChange={v => void changeLanguage(v)} />
     </Card>
-    <Card title="Appearance">
-      <ListRow title="Theme and visual style" detail="System / Dark / Light · Aurora Rim / Solid"
+    <Card title={t('preferences.units')}>
+      <Typography tone="secondary" size="small">{t('preferences.unitsDescription')}</Typography>
+      <SegmentedControl label={t('preferences.weight')} options={[{ value:'kg', label:'kg' }, { value:'lb', label:'lb' }]}
+        value={values.weight} onChange={v => void change('weight', v)} />
+      <SegmentedControl label={t('preferences.height')} options={[{ value:'cm', label:'cm' }, { value:'ftin', label:'ft / in' }]}
+        value={values.height} onChange={v => void change('height', v)} />
+      <Toggle label={t('preferences.smallPlates')} detail={t('preferences.smallPlatesDetail')}
+        value={values.smallPlates} onChange={v => void change('smallPlates', v)} />
+      <Typography tone="secondary">{t('preferences.energy')}</Typography>
+      <Typography tone="secondary" size="small">{t('preferences.kjFuture')}</Typography>
+    </Card>
+    <Card title={t('preferences.appearance')}>
+      <ListRow title={t('preferences.themeRow')} detail={t('preferences.themeDetail')}
         onPress={() => router.push('/settings/appearance')} />
     </Card>
-    <Card title="Display and feedback">
-      <Toggle label="Hide numbers on dashboards" detail="Summaries use words instead of counts; Settings and targets remain readable."
+    <Card title={t('preferences.display')}>
+      <Toggle label={t('preferences.hide')} detail={t('preferences.hideDetail')}
         value={values.hideNumbers} onChange={v => void change('hideNumbers', v)} />
-      <Toggle label="Keep the screen on during workouts" detail="Only during an active workout."
+      <Toggle label={t('preferences.keepOn')} detail={t('preferences.keepOnDetail')}
         value={values.keepScreenOn} onChange={v => void change('keepScreenOn', v)} />
-      <Toggle label="Haptics" detail="Vibration feedback where supported."
+      <Toggle label={t('preferences.haptics')} detail={t('preferences.hapticsDetail')}
         value={values.haptics} onChange={v => void change('haptics', v)} />
     </Card>
-    {!ready && <Typography tone="secondary">Loading saved preferences…</Typography>}
+    {!ready && <Typography tone="secondary">{t('preferences.loading')}</Typography>}
     {error && <View accessibilityRole="alert" style={{ paddingVertical: theme.space[2] }}>
       <Typography tone="secondary">ⓘ {error}</Typography>
     </View>}
-    <Button label="Back to Settings" variant="ghost" onPress={() => backOrReplace(router, '/settings')} />
+    <Button label={t('preferences.back')} variant="ghost" onPress={() => backOrReplace(router, '/settings')} />
+    <Sheet visible={reopen} title={t('language.restartTitle')}
+      description={t('language.restartDescription')} onClose={() => setReopen(false)}>
+      <Button label={t('common.ok')} fullWidth onPress={() => setReopen(false)} />
+    </Sheet>
   </Screen>;
 }

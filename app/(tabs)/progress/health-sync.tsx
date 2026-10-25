@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
@@ -8,8 +9,9 @@ import { getSetting } from '../../../src/services/database';
 
 const supported = ['Samsung Health','Fitbit','Garmin Connect','Pixel Watch (Fitbit)','Other'] as const;
 export default function HealthSyncGuide() {
+ const {t}=useLanguage();
   const { theme } = useTheme();
-  const [app, setApp] = useState<string>('your watch app');
+  const [app, setApp] = useState<string>('');
   useEffect(() => {
     let mounted = true;
     void getSetting('onboarding.flowDraft').then(value => {
@@ -26,26 +28,26 @@ export default function HealthSyncGuide() {
   }, []);
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title="Watch sync guide" subtitle={app}
+    <Header title={t('healthSync.title')} subtitle={app||t('healthSync.watchApp')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title="Five things to check" rim="health">
+    <Card title={t('healthSync.checklist')} rim="health">
       {[
-        ['1','Open '+app+' on your phone','Make sure your watch measurements have synced into that app.'],
-        ['2','Open the app settings','Look for Connected apps, Health Connect or data sharing.'],
-        ['3','Find Health Connect','Allow '+app+' to write the types your watch tracks.'],
-        ['4','Allow Liftria to read','Use Liftria’s Health permissions screen to grant read access.'],
-        ['5','Keep the watch in sync','New records may appear after syncing. History is not guaranteed.'],
+        ['1',t('healthSync.step1',{app:app||t('healthSync.watchApp')}),t('healthSync.step1Detail')],
+        ['2',t('healthSync.step2'),t('healthSync.step2Detail')],
+        ['3',t('healthSync.step3'),t('healthSync.step3Detail',{app:app||t('healthSync.watchApp')})],
+        ['4',t('healthSync.step4'),t('healthSync.step4Detail')],
+        ['5',t('healthSync.step5'),t('healthSync.step5Detail')],
       ].map(([n,title,detail]) => <ListRow key={n} title={n+'. '+title} detail={detail} />)}
-      <Typography tone="secondary" size="small">Steps vary by brand and version. Samsung Health is the tested example; other app paths need verification.</Typography>
+      <Typography tone="secondary" size="small">{t('healthSync.versions')}</Typography>
     </Card>
-    <Card title="History starts when sharing starts">
-      <Typography>Health Connect may not expose older watch data. Liftria cannot force another app to backfill it.</Typography>
-      <Typography tone="secondary">No record does not mean no workout happened.</Typography>
+    <Card title={t('healthSync.historyTitle')}>
+      <Typography>{t('healthSync.history')}</Typography>
+      <Typography tone="secondary">{t('healthSync.noRecord')}</Typography>
     </Card>
     <View style={{ gap: theme.space[2] }}>
-      <Button label="Open Liftria health permissions" variant="secondary" fullWidth
+      <Button label={t('healthSync.permissions')} variant="secondary" fullWidth
         onPress={() => router.push('/(tabs)/progress/health-permissions')} />
-      <Button label="Check again" fullWidth
+      <Button label={t('healthSync.recheck')} fullWidth
         onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
     </View>
   </ScrollView></Screen>;

@@ -1,41 +1,43 @@
 import type { MetricType, PermissionState } from '../../services/health/types';
+import { translate, type AppLanguage, type TranslationKey } from '../../i18n';
 import { metricTypes } from '../../services/health/types';
 
-const consequences: Record<MetricType, string> = {
-  steps: 'Daily steps will not appear.',
-  'heart-rate': 'Workout heart rate will not show.',
-  'active-calories': 'Active energy will remain unavailable.',
-  'total-calories': 'Total energy remains hidden without a measured source.',
-  'basal-metabolic-rate': 'Resting metabolic rate will not appear.',
-  'exercise-session': 'Exercise sessions will not appear.',
-  'sleep-session': 'Sleep will not appear.',
-  weight: 'Weight trends will not appear.',
-  'body-fat': 'Body fat trends will not appear.',
-  'lean-body-mass': 'Lean body mass will not appear.',
+const names: Record<MetricType, TranslationKey> = {
+  steps: 'onboarding.health.steps', 'heart-rate': 'onboarding.health.heart',
+  'active-calories': 'onboarding.health.activeEnergy', 'total-calories': 'onboarding.health.totalEnergy',
+  'basal-metabolic-rate': 'onboarding.health.bmr', 'exercise-session': 'onboarding.health.sessions',
+  'sleep-session': 'onboarding.health.sleep', weight: 'onboarding.health.weight',
+  'body-fat': 'onboarding.health.bodyFat', 'lean-body-mass': 'onboarding.health.leanMass',
+};
+const consequences: Record<MetricType, TranslationKey> = {
+  steps: 'onboarding.health.stepsMissing', 'heart-rate': 'onboarding.health.heartMissing',
+  'active-calories': 'onboarding.health.activeMissing', 'total-calories': 'onboarding.health.totalMissing',
+  'basal-metabolic-rate': 'onboarding.health.bmrMissing', 'exercise-session': 'onboarding.health.sessionsMissing',
+  'sleep-session': 'onboarding.health.sleepMissing', weight: 'onboarding.health.weightMissing',
+  'body-fat': 'onboarding.health.fatMissing', 'lean-body-mass': 'onboarding.health.leanMissing',
 };
 
-const names: Record<MetricType, string> = {
-  steps: 'Steps', 'heart-rate': 'Heart rate', 'active-calories': 'Active energy',
-  'total-calories': 'Total energy', 'basal-metabolic-rate': 'Basal metabolic rate',
-  'exercise-session': 'Exercise sessions', 'sleep-session': 'Sleep',
-  weight: 'Weight', 'body-fat': 'Body fat', 'lean-body-mass': 'Lean body mass',
-};
-
-export function missingHealthPermissions(permissions: Record<MetricType, PermissionState>): string[] {
-  return metricTypes.filter(t => permissions[t] !== 'granted').map(metric => {
-    const status = permissions[metric] === 'denied' ? 'not allowed' : 'permission not confirmed';
-    return `${names[metric]} ${status}: ${consequences[metric]}`;
+export function missingHealthPermissions(
+  permissions: Record<MetricType, PermissionState>, language: AppLanguage = 'en',
+): string[] {
+  return metricTypes.filter(metric => permissions[metric] !== 'granted').map(metric => {
+    const status = permissions[metric] === 'denied' ? 'onboarding.health.notAllowed' : 'onboarding.health.unconfirmed';
+    if (language === 'en') return `${translate(language, names[metric])} ${translate(language, status)}: ${translate(language, consequences[metric])}`;
+    return translate(language, 'onboarding.health.missing', {
+      name: translate(language, names[metric]), status: translate(language, status),
+      consequence: translate(language, consequences[metric]),
+    });
   });
 }
 
 export function availabilityMessage(
-  availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported',
+  availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported', language: AppLanguage = 'en',
 ): string {
   switch (availability) {
-    case 'not-installed': return 'Health Connect is not installed. Get it from Play Store, or continue without syncing. Liftria works without it.';
-    case 'needs-update': return 'Health Connect may not be installed or may need an update. Get it from Play Store, or continue without syncing. Liftria works without it.';
-    case 'unsupported': return 'Health Connect is not supported on this device. Liftria still works locally.';
-    default: return 'Health Connect is available. Choose which records Liftria may read.';
+    case 'not-installed': return translate(language, 'onboarding.health.notInstalled');
+    case 'needs-update': return translate(language, 'onboarding.health.needsUpdate');
+    case 'unsupported': return translate(language, 'onboarding.health.unsupported');
+    default: return translate(language, 'onboarding.health.available');
   }
 }
 
