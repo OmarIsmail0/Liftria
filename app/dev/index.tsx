@@ -18,6 +18,8 @@ export default function DeveloperHome() {
         onPress={() => router.push('/dev/demo-workout')} />
       <ListRow title="Demo history" detail="Three finished Demo sessions, only when requested"
         onPress={() => router.push('/dev/demo-history')} />
+      <ListRow title="Demo import" detail="Fixture opens IM-2 preview, no saved rows"
+        onPress={() => router.push('/dev/demo-import')} />
     </Card>
   </Screen>;
 }

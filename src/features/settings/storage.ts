@@ -1,5 +1,6 @@
 import { clearLocalHealthCache, deleteLocalDatabase, localStorageCounts } from '../../services/database';
 import { deleteKey } from '../../services/secure-storage';
+import { clearImportDraft } from '../import/importDraft';
 
 export function canDeleteEverything(text: string): boolean { return text === 'DELETE'; }
 
@@ -33,6 +34,7 @@ export async function deleteEverythingOnPhone(confirmation:string, ops: Deletion
   const key = await ops.removeKey();
   if (key.status !== 'missing') return {ok:false,stage:'key',
     message:'Local database was deleted, but the saved API key could not be removed. Retry deletion from Settings.'};
+  clearImportDraft();
   return {ok:true};
 }
 
