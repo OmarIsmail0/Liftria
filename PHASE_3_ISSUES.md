@@ -11,8 +11,8 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 **Order:**
 1. ~~Phase 2~~ DONE: PR #12 merged 2026-10-25. **Follow-up in PR D:** the ST-6 "Workouts" count must read the real `sessions` table (it counts the Phase 0 test table today).
 2. ~~PR D: Library and data~~ DONE in PR #13 (merged 2026-10-25; verify + Android build green, emulator screenshots approved by Claude).
-3. **PR E: `Phase 3 / Train and active workout`.** In review, PR #14. `verify` is green; Claude is running the emulator screenshots and will merge. Nothing for you to do on it. Pull before any further push (Claude pushed `6adb2a5`).
-4. **PR F: `Phase 3 / History, records and progress`. Start now.**
+3. ~~PR E: Train and active workout~~ DONE in PR #14 (merged 2026-10-25; verify + Android build green, emulator screenshots checked by Claude). Claude fixed on the way: Hermes-safe `newGymId()` (never call `crypto.*`), the blocked legacy storage permissions, and the TR-8 dock's bottom safe-area inset.
+4. **PR F: `Phase 3 / History, records and progress`.** In review, PR #15. **Next: merge `main` into your branch (merge commit, never rebase)**, then Claude runs the emulator screenshots.
    - **Branch from `phase3/train-active-workout`** (PR E isn't merged yet), named `phase3/history-records`. Open a draft PR against `main`. Until PR E merges, its diff includes PR E's commits; that's expected.
    - After Claude merges PR #14, merge `main` into your branch with a merge commit. Never rebase.
    - Scope: TR-11, TR-12, TR-13, PR-2, TR-14 and the TR-1 Muscles card. PHASE_3_PROMPT §4.3 has the rules: 8 s Undo on delete, records recalculated after edit and delete, the Estimate chip, and the recovery formula unit-tested on the worked example including the 24/48/72 h and score 1/4 boundaries. No red, and never "fatigued".
