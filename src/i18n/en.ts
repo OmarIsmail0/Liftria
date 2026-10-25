@@ -104,7 +104,7 @@ export const en = {
   'count.workouts.two': '{count} workouts',
   'count.workouts.few': '{count} workouts',
   'count.workouts.many': '{count} workouts',
-  'count.workouts.other': '{count} workouts'
+  'count.workouts.other': '{count} workouts',
   "placeholder.coming": "Coming in Phase 4",
   "eat.comingDetail": "Your food diary, targets and meal logging will appear here.",
   "hiku.comingDetail": "Photo and text meal analysis will require your own API key and a network connection.",

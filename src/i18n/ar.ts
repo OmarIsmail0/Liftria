@@ -105,7 +105,7 @@ export const ar: Record<TranslationKey, string> = {
   'count.workouts.two': 'تمرينان',
   'count.workouts.few': '{count} تمارين',
   'count.workouts.many': '{count} تمرينًا',
-  'count.workouts.other': '{count} تمرين'
+  'count.workouts.other': '{count} تمرين',
   "placeholder.coming": "قادم في المرحلة الرابعة",
   "eat.comingDetail": "ستظهر هنا يوميات الطعام والأهداف وتسجيل الوجبات.",
   "hiku.comingDetail": "يتطلب تحليل الوجبات بالنص أو الصورة مفتاح API الخاص بك واتصالًا بالإنترنت.",
