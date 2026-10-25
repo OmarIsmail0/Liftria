@@ -28,6 +28,24 @@ test('built-in IDs remain unchanged; OHP alias and local typo/fuzzy searches', (
 });
 
 test.each([
+  ['Barbell_Bench_Press_-_Medium_Grip','weighted',false],
+  ['Barbell_Curl','weighted',false],
+  ['Arnold_Dumbbell_Press','dumbbell',false],
+  ['One_Arm_Dumbbell_Bench_Press','dumbbell',true],
+  ['Band_Assisted_Pull-Up','assisted',false],
+  ['Single-Arm_Push-Up','bodyweight',true],
+  ['Single_Leg_Glute_Bridge','bodyweight',true],
+  ['Cable_One_Arm_Tricep_Extension','weighted',true],
+  ['Extended_Range_One-Arm_Kettlebell_Floor_Press','dumbbell',true],
+  ['Alternating_Kettlebell_Press','weighted',true],
+  ['Alternating_Floor_Press','weighted',true],
+] as const)('%s uses %s and unilateral=%s', (id,type,unilateral) => {
+  const item = bundledExercises().find(exercise => exercise.id === id);
+  expect(item).toBeDefined();
+  expect(item).toMatchObject({ type, unilateral });
+});
+
+test.each([
   ['weighted',50,8,400,50*(1+8/30)],
   ['dumbbell',20,10,400,20*(1+10/30)],
   ['assisted',25,8,0,null],
