@@ -178,8 +178,11 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
   if(!Number.isInteger(repCount)||repCount<0||repCount>500||
     !Number.isFinite(weight)||weight<0)throw new ImportParseError('invalid','Invalid set on row '+(index+2)+'.',expectedColumns(source),columns);
   let date:ReturnType<typeof whenFrom>;
-  try{date=whenFrom(v(dt));}catch{
-   throw new ImportParseError('invalid','Invalid workout date on row '+(index+2)+'.',
+  try{date=whenFrom(v(dt));}catch(reason){
+   const ambiguity=reason instanceof Error&&reason.message.startsWith('Ambiguous workout date');
+   throw new ImportParseError('invalid',ambiguity?
+    reason.message+' Row '+(index+2)+'. Convert dates to unambiguous YYYY-MM-DD before importing.':
+    'Invalid workout date on row '+(index+2)+'.',
     expectedColumns(source),columns);
   }
   const sessionTitle=v(title)||'Imported workout';

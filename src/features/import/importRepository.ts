@@ -14,15 +14,6 @@ function decodeBatchMetadata(raw:string):BatchUndoMetadata{
  const data=value as BatchUndoMetadata;
  return {ids:data.ids,settingsBefore:data.settingsBefore??{}};
 }
-async function restoreSettings(
- tx:{runAsync:(sql:string,params:unknown[])=>Promise<unknown>},
- previous:Record<string,string|null>
-):Promise<void>{
- for(const [key,value] of Object.entries(previous)){
-  if(value===null)await tx.runAsync('DELETE FROM app_settings WHERE key=?',[key]);
-  else await tx.runAsync('INSERT INTO app_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',[key,value]);
- }
-}
 export type ImportBatch={id:string;source:Importer;fileName:string|null;count:number;
  sets:number;skipped:number;createdExercises:string[];createdAt:string};
 export type ImportOutcome={batchId:string;workouts:number;sets:number;skipped:number;custom:number};
@@ -196,7 +187,10 @@ export async function undoLastImport():Promise<DbResult<UndoOutcome|null>>{
     }
    }
    await tx.runAsync('DELETE FROM import_batches WHERE id=?',[batch.id]);
-   await restoreSettings(tx,metadata.settingsBefore);
+   for(const [key,value] of Object.entries(metadata.settingsBefore)){
+    if(value===null)await tx.runAsync('DELETE FROM app_settings WHERE key=?',[key]);
+    else await tx.runAsync('INSERT INTO app_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',[key,value]);
+   }
    if(!(LAST_IMPORT in metadata.settingsBefore))
     await tx.runAsync('DELETE FROM app_settings WHERE key=?',[LAST_IMPORT]);
    removed={sessions:rows.length,sets:counter?.total??0,custom:deletedCustom,keptCustom};

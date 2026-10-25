@@ -26,3 +26,14 @@ test('unmatched never silently uses a fuzzy suggestion; user selection or rememb
  expect(resolveImportMappings(parsed,empty,{'No Such Exercise ABC':'custom'})
   .find(x=>x.name==='No Such Exercise ABC')?.resolvedId).toBeNull();
 });
+
+test('the preview respects preferred display unit while DB weights remain kg',()=>{
+ const kilograms=createImportPlan(parsed,empty,'kg',{},'kg');
+ const pounds=createImportPlan(parsed,empty,'kg',{},'lb');
+ const kg=kilograms.changes.find(c=>c.exerciseName==='No Such Exercise ABC');
+ const lb=pounds.changes.find(c=>c.exerciseName==='No Such Exercise ABC');
+ expect(kg?.after).toContain('kg');
+ expect(lb?.after).toContain('lb');
+ expect(Number.parseFloat(lb!.after)).toBeCloseTo(35*2.2046226218,1);
+ expect(kilograms.workouts).toEqual(pounds.workouts);
+});
