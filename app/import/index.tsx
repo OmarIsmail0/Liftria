@@ -25,7 +25,7 @@ export default function ImportStart(){
    const asset=result.assets[0],file=new File(asset.uri);
    let text='';
    try{text=await file.text();}
-   finally{try{file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
+   finally{try{await file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
    try{
     const parsed=parseImportCsv(source,asset.name,text);
     setImportDraft({parsed,error:null,source,fileName:asset.name});
