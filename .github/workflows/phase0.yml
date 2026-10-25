@@ -189,10 +189,27 @@ jobs:
           from pathlib import Path
 
           ANDROID = '{http://schemas.android.com/apk/res/android}'
+          # POST_NOTIFICATIONS is allowed from Phase 3 (TR-9 rest notification, asked in context).
+          # Alarm, boot, storage, location and foreground-service permissions need device evidence
+          # and the owner's OK first (PHASE_3_PROMPT §2).
           FORBIDDEN = {
               'android.permission.RECORD_AUDIO',
               'android.permission.SYSTEM_ALERT_WINDOW',
               'android.permission.CAMERA',
+              'android.permission.SCHEDULE_EXACT_ALARM',
+              'android.permission.USE_EXACT_ALARM',
+              'android.permission.RECEIVE_BOOT_COMPLETED',
+              'android.permission.READ_EXTERNAL_STORAGE',
+              'android.permission.WRITE_EXTERNAL_STORAGE',
+              'android.permission.MANAGE_EXTERNAL_STORAGE',
+              'android.permission.READ_MEDIA_IMAGES',
+              'android.permission.READ_MEDIA_VIDEO',
+              'android.permission.READ_MEDIA_AUDIO',
+              'android.permission.ACCESS_FINE_LOCATION',
+              'android.permission.ACCESS_COARSE_LOCATION',
+              'android.permission.FOREGROUND_SERVICE',
+              'android.permission.FOREGROUND_SERVICE_SHORT_SERVICE',
+              'android.permission.FOREGROUND_SERVICE_SPECIAL_USE',
           }
 
           def permissions(variant):
