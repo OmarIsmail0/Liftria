@@ -97,7 +97,9 @@ const context:ImportContext={days:[],importedHashes:[],remembered:{},exercises:[
 test('one commit inserts provenance and a later identical hash adds nothing',async()=>{
  const p=createImportPlan(parseImportCsv('csv','demo.csv',csv),context,null);
  expect(p.setCount).toBe(2);
- const done=await commitImport(p);
+ const updates:number[]=[];
+ const done=await commitImport(p,(n,total)=>{expect(total).toBe(2);updates.push(n);});
+ expect(updates).toEqual([1,2]);
  expect(done).toMatchObject({ok:true,value:{workouts:2,sets:2,custom:1}});
  expect(mockState.sessions.every(s=>s.source==='imported-file'&&!!s.import_batch_id)).toBe(true);
  expect((await lastImportBatch()).ok).toBe(true);

@@ -9,6 +9,7 @@ let outcome:{ok:true;result:ImportOutcome}|{ok:false;reason:string}|null=null;
 export const setImportDraft=(next:Draft)=>{draft=next;pending=null;outcome=null;};
 export const getImportDraft=()=>draft;
 export const setPendingImport=(plan:ImportPlan)=>{pending=plan;outcome=null;};
+export const peekPendingImport=()=>pending;
 export const takePendingImport=()=>{const value=pending;pending=null;return value;};
 export const setImportOutcome=(value:typeof outcome)=>{outcome=value;};
 export const getImportOutcome=()=>outcome;

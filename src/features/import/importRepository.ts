@@ -42,7 +42,8 @@ export async function lastImportBatch():Promise<DbResult<ImportBatch|null>>{
  });
 }
 /** Records, muscle map and history are derived live from the rows this transaction inserts. */
-export async function commitImport(plan:ImportPlan):Promise<DbResult<ImportOutcome>>{
+export async function commitImport(plan:ImportPlan,
+  onProgress?:(completed:number,total:number)=>void):Promise<DbResult<ImportOutcome>>{
  if(!canImportPlan(plan))return {ok:false,error:{code:'db-error',message:'Import needs a nonempty valid plan and explicit units.'}};
  return dbOperation(async db=>{
   const id=newGymId(),made:string[]=[],when=new Date().toISOString();
@@ -89,6 +90,7 @@ export async function commitImport(plan:ImportPlan):Promise<DbResult<ImportOutco
    }
    await tx.runAsync('UPDATE import_batches SET created_exercises=? WHERE id=?',
     [JSON.stringify(made),id]);
+   let processed=0;
    for(const workout of plan.workouts){
     const sessionId=newGymId();
     await tx.runAsync('INSERT INTO sessions(id,title,source,importer,import_batch_id,started_at,ended_at,notes,state) '+
@@ -113,6 +115,10 @@ export async function commitImport(plan:ImportPlan):Promise<DbResult<ImportOutco
        newGymId(),seId,set.position,set.kind,fromImportWeight(set.weight,unit),set.reps,set.loggedAt,
       ]);
     }
+    processed++;
+    if(processed===plan.workouts.length||
+      processed%Math.max(1,Math.ceil(plan.workouts.length/4))===0)
+      onProgress?.(processed,plan.workouts.length);
    }
    for(const mapping of plan.mappings){
     // Only explicit choices are remembered; suggestions were never applied.
