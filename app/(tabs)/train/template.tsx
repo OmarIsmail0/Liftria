@@ -21,8 +21,8 @@ export default function TemplateEditor() {
   const [discardSheet,setDiscardSheet]=useState(false);
   const [error,setError]=useState<string|null>(null);
   const [busy,setBusy]=useState(false);
-  const baseline=useRef(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
-  const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline.current;
+  const [baseline,setBaseline]=useState(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
+  const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline;
   const dirtyRef=useRef(dirty);
   useEffect(()=>{dirtyRef.current=dirty;},[dirty]);
   const back=()=>{if(dirty)setDiscardSheet(true);else router.back();};
@@ -36,8 +36,8 @@ export default function TemplateEditor() {
       const existing=templates.ok?templates.value.find(t=>t.id===id):undefined;
       if(existing){setName(existing.name);setRest(existing.restSec);setNotes(existing.notes??'');
         setExercises(existing.exercises);
-        baseline.current=JSON.stringify({name:existing.name,rest:existing.restSec,
-          notes:existing.notes??'',exercises:existing.exercises});}
+        setBaseline(JSON.stringify({name:existing.name,rest:existing.restSec,
+          notes:existing.notes??'',exercises:existing.exercises}));}
       else if(exerciseId){
         const entry=[{exerciseId,targetSets:3,repMin:8,repMax:12,restSec:null,notes:null}];
         setExercises(entry);
