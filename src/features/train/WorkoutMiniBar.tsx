@@ -11,14 +11,14 @@ export default function WorkoutMiniBar() {
   const {theme}=useTheme();
   const path=usePathname();
   const [workout,setWorkout]=useState<ActiveWorkout|null>(null);
-  const [now,setNow]=useState(0);
+  const [now,setNow]=useState(() => Date.now());
   useEffect(()=>{
     let mounted=true;
     const refresh=()=>{void readInProgressWorkout().then(result=>{
       if(mounted&&result.ok)setWorkout(result.value);
     });};
     refresh();
-    const timer=setInterval(()=>{setNow(Date.now());refresh();},5000);
+    const timer=setInterval(()=>setNow(Date.now()),5000);
     return()=>{mounted=false;clearInterval(timer);};
   },[path]);
   if(!workout||path.includes('/train/active')||path.includes('/train/preview')||

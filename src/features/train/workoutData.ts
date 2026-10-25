@@ -3,6 +3,7 @@ import { newGymId } from '../../services/database/exerciseLibrary';
 import { setVolume } from '../../services/database/gymMath';
 import type { ExerciseType } from '../../services/database/gymTypes';
 import { restDeadline } from './restClock';
+import { cancelSessionRestAlerts } from './restAlerts';
 
 export type ActiveExercise = {
   id:string; exerciseId:string; name:string; type:ExerciseType; unilateral:boolean;
@@ -73,7 +74,7 @@ export async function startManualWorkout(title:string, templateId:string|null=nu
     await db.withExclusiveTransactionAsync(async tx=>{
       const active=await tx.getFirstAsync<{id:string}>(
         "SELECT id FROM sessions WHERE state='in-progress' ORDER BY started_at DESC LIMIT 1");
-      if(active){resultId=active.id;return;}
+      if(active)throw new Error('Existing in-progress workout must be resumed or discarded explicitly.');
       const id=newGymId(),now=new Date().toISOString();
       await tx.runAsync('INSERT INTO sessions (id,title,template_id,source,started_at,state) '+
         "VALUES(?,?,?,'manual',?,'in-progress')",[id,title.trim(),templateId,now]);
@@ -152,6 +153,7 @@ export async function updateRestDeadline(setId:string,sessionId:string,deadline:
 }
 /** Finishing never writes untouched suggested sets. Rotation advances only after finish. */
 export async function completeWorkout(id:string,notes:string|null):Promise<DbResult<boolean>> {
+  try{await cancelSessionRestAlerts(id);}catch{return {ok:false,error:{code:'db-error',message:'Could not cancel rest alerts. Retry finish.'}};}
   return dbOperation(async db=>{
     let updated=false;
     await db.withExclusiveTransactionAsync(async tx=>{
@@ -161,15 +163,24 @@ export async function completeWorkout(id:string,notes:string|null):Promise<DbRes
       updated=(await tx.runAsync(
         "UPDATE sessions SET state='finished',ended_at=?,notes=? WHERE id=? AND state='in-progress'",
         [new Date().toISOString(),notes,id])).changes>0;
-      if(updated&&s.template_id)await tx.runAsync(
-        "UPDATE plans SET next_index=next_index+1 WHERE type='rotation' AND active=1 "+
-        'AND schedule_json LIKE ?', ['%"'+s.template_id+'"%']);
+      if(updated&&s.template_id){
+        const plans=await tx.getAllAsync<{id:string;next_index:number;schedule_json:string}>(
+          "SELECT id,next_index,schedule_json FROM plans WHERE type='rotation' AND active=1");
+        for(const plan of plans){
+          const sequence=JSON.parse(plan.schedule_json) as unknown;
+          if(Array.isArray(sequence)&&sequence.length>0&&
+            sequence[plan.next_index%sequence.length]===s.template_id){
+            await tx.runAsync('UPDATE plans SET next_index=next_index+1 WHERE id=?',[plan.id]);
+          }
+        }
+      }
     });
     return updated;
   });
 }
 /** Discard is exposed only from home / finish summary, with an explicit confirmation. */
 export async function discardInProgressWorkout(id:string):Promise<DbResult<boolean>> {
+  try{await cancelSessionRestAlerts(id);}catch{return {ok:false,error:{code:'db-error',message:'Could not cancel rest alerts. Retry discard.'}};}
   return dbOperation(async db=>{
     let removed=false;
     await db.withExclusiveTransactionAsync(async tx=>{

@@ -2,8 +2,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
-import { startManualWorkout } from '../../../src/features/train/workoutData';
-import { Button, Card, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { startManualWorkout, readInProgressWorkout, discardInProgressWorkout, type ActiveWorkout } from '../../../src/features/train/workoutData';
+import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { listTemplates, exerciseSessions, type Template } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { Exercise, Muscle } from '../../../src/services/database/gymTypes';
@@ -15,6 +15,7 @@ export default function WorkoutPreview() {
   const [last,setLast]=useState<Record<string,string>>({});
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState<string|null>(null);
+  const [existing,setExisting]=useState<ActiveWorkout|null>(null);
   useFocusEffect(useCallback(()=>{
     let live=true;
     void (async()=>{
@@ -39,12 +40,26 @@ export default function WorkoutPreview() {
     })();
     return()=>{live=false;};
   },[templateId]));
-  const begin=async()=>{
-    if(busy)return;
+  const create=async()=>{
     setBusy(true);
     const started=await startManualWorkout(template?.name??'Empty workout',templateId??null);
     if(started.ok)router.replace({pathname:'/(tabs)/train/active',params:{id:started.value}});
     else {setError('Could not start workout. Try again.');setBusy(false);}
+  };
+  const begin=async()=>{
+    if(busy)return;
+    const session=await readInProgressWorkout();
+    if(!session.ok){setError('Could not check the active workout. Retry.');return;}
+    if(session.value){setExisting(session.value);return;}
+    await create();
+  };
+  const replaceExisting=async()=>{
+    if(!existing)return;
+    setBusy(true);
+    const removed=await discardInProgressWorkout(existing.id);
+    if(!removed.ok||!removed.value){setError('Could not discard the previous workout.');setBusy(false);return;}
+    setExisting(null);
+    await create();
   };
   const muscles=[...new Set((template?.exercises??[]).flatMap(e=>lookup[e.exerciseId]?.primaryMuscles??[]))] as Muscle[];
   return <Screen embedded>
@@ -67,5 +82,14 @@ export default function WorkoutPreview() {
         fullWidth disabled={busy} onPress={()=>void begin()}/>
       <Typography tone="secondary" size="small">Nothing is logged until you tap Log set.</Typography>
     </View>
+    <Sheet visible={existing!==null} title="Workout already in progress"
+      description={'You have '+(existing?.title??'a workout')+' in progress. Resume it, or discard it and start '+(template?.name??'Empty workout')+'?'}
+      onClose={()=>setExisting(null)}>
+      <Button label={'Resume '+(existing?.title??'workout')} variant="train" fullWidth
+        onPress={()=>{if(existing)router.replace({pathname:'/(tabs)/train/active',params:{id:existing.id}});}}/>
+      <Button label="Keep current workout" variant="secondary" fullWidth onPress={()=>setExisting(null)}/>
+      <Button label={'Discard and start '+(template?.name??'empty workout')} variant="danger" fullWidth
+        disabled={busy} onPress={()=>void replaceExisting()}/>
+    </Sheet>
   </Screen>;
 }

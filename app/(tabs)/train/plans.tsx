@@ -41,7 +41,10 @@ export default function PlansScreen() {
     if(!name.trim()||templates.length===0)return;
     setBusy(true);
     const selected=type==='weekly'?weekday:rotation;
-    const saved=await savePlan({name:name.trim(),type,schedule:selected,nextIndex:0,active:true},
+    const unchangedRotation=active?.type==='rotation'&&type==='rotation'&&
+      JSON.stringify(active.schedule)===JSON.stringify(rotation);
+    const saved=await savePlan({name:name.trim(),type,schedule:selected,
+      nextIndex:unchangedRotation?active.nextIndex:0,active:true},
       active?.id);
     if(saved.ok){setNotice('Plan saved on your phone.');
       const result=await listPlans();if(result.ok)setPlans(result.value);
