@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
+import { muscleLabel } from '../../i18n/muscles';
 import { listPlans, listSessions, listTemplates, saveTemplate, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
 import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
@@ -116,7 +117,7 @@ export default function TrainHome() {
       {muscles.every(m=>m.lastCredit===null)?
         <Typography tone="secondary">{t('train.noMuscles')}</Typography>:
         <Typography tone="secondary">{t('train.trainedRecently', { names: muscles.filter(m=>m.band==='higher').sort((a,b)=>b.score-a.score)
-          .slice(0,3).map(m=>m.muscle).join(', ') || t('train.recentSessions') })}
+          .slice(0,3).map(m=>muscleLabel(language,m.muscle)).join(', ') || t('train.recentSessions') })}
           {muscles.some(m=>m.band==='ready')?' '+t('train.otherReady'):''}</Typography>}
       <Typography tone="tertiary" size="small">{t('train.recoveryEstimate')}</Typography>
       <Button label={t('train.openMuscles')} variant="secondary" onPress={()=>router.push('/(tabs)/train/recovery')}/>
