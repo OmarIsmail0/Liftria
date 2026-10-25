@@ -113,3 +113,11 @@ test('TR-14 uses local calendar days rather than elapsed 24-hour labels',()=>{
   expect(recoveryRowText(recent.find(r=>r.muscle==='lower back')!,'untrained',NOW))
     .toBe('No direct sets yet · helper today');
 });
+
+test('imported unilateral exercise without L/R sides is a complete ordinary set',()=>{
+  const imported={...row(1,['chest']),sessionExerciseId:'imported',unilateral:true,
+    side:null,type:'dumbbell' as const,weight:22,reps:8};
+  const out=calculateMuscleRecovery([imported],NOW);
+  expect(out.find(x=>x.muscle==='chest')?.score).toBe(1);
+  expect(strengthWeeks([imported],NOW).at(-1)?.volume).toBe(22*8*2);
+});

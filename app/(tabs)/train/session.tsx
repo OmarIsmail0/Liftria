@@ -79,7 +79,9 @@ export default function SessionDetail(){
    <ListRow title="Duration" detail={Math.round(duration/60000)+' min'}/>
    <ListRow title="Working sets" detail={String(stats.sets)}/>
    <ListRow title="Volume" detail={Math.round(fromKg(stats.volume,unit)).toLocaleString()+' '+unit}/>
-   {data.session.importer&&<Typography tone="secondary">Imported from {data.session.importer}</Typography>}
+   {data.session.importer&&<Typography tone="secondary">Imported from {data.session.importer}
+    {data.session.importedAt?' · imported '+new Date(data.session.importedAt).toLocaleDateString():''}
+   </Typography>}
   </Card>
   {data.exercises.map(e=><Card key={e.id} title={e.name}>
    {editing?draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{

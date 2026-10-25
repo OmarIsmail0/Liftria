@@ -59,11 +59,15 @@ export default function History(){
   <Card title="Recent workouts">
    {sessions.length===0?<Typography tone="secondary">Finish a workout to build your history.</Typography>:
     sessions.map(s=><ListRow key={s.id} title={s.title}
-      detail={new Date(s.startedAt).toLocaleDateString()+(s.importer?' · '+s.importer:'')}
+      detail={new Date(s.startedAt).toLocaleDateString()+(s.importer?' · Imported from '+s.importer:'')}
       onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}
       suffix={<Button label="Delete" variant="ghost" onPress={()=>setSelected(s)}/>}/>)}
-   {sessions.length===0&&<Button label="Start a workout" variant="train"
-     onPress={()=>router.push('/(tabs)/train/preview')}/>}
+   {sessions.length===0&&<>
+    <Button label="Start a workout" variant="train"
+     onPress={()=>router.push('/(tabs)/train/preview')}/>
+    <Button label="Switching from another app? Import your history" variant="secondary"
+     onPress={()=>router.push('/import')}/>
+   </>}
   </Card>
   <Button label="Records" variant="secondary" onPress={()=>router.push('/(tabs)/train/records')}/>
   {undo&&<Snackbar message="Workout deleted. Records updated." onUndo={()=>void restore()}

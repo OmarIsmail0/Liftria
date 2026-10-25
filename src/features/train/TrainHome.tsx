@@ -99,6 +99,10 @@ export default function TrainHome() {
           </View>}
         </View>}
       </Card>}
+    {logged.length===0&&<Card title="Switching from another app?">
+      <Typography tone="secondary">Import your history from Hevy, Strong, FitNotes or CSV. All on this phone.</Typography>
+      <Button label="Import your history" variant="secondary" onPress={()=>router.push('/import')}/>
+    </Card>}
     <Card title="Explore">
       <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
         <Button label="Templates & plans" variant="secondary" onPress={()=>router.push('/(tabs)/train/plans')}/>

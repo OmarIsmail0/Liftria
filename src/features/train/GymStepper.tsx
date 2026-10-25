@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
 
@@ -29,7 +29,7 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
     <Typography size="head">{direction<0?'−':'+'}</Typography>
   </Pressable>;
   return <View style={{gap:theme.space[2],flex:1,minWidth:150}}>
-    <Typography tone="secondary" size="small">{label}</Typography>
+    <Typography tone="secondary" size="small">{label}{unit&&label.toLowerCase().includes(unit)?'':' · '+unit}</Typography>
     <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[1]}}>
       {control(-1,'Decrease')}
       {editing?<TextInput autoFocus accessibilityLabel={'Enter '+label}
@@ -41,7 +41,9 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
         <Pressable accessibilityRole="button" accessibilityLabel={label+', '+value+' '+unit+', edit with keypad'}
           onPress={()=>{setTyped(String(value));setEditing(true);}}
           style={{flex:1,minHeight:64,justifyContent:'center',alignItems:'center'}}>
-          <Typography bold>{value} {unit}</Typography>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}
+            style={{color:theme.color.text.primary,fontSize:theme.type.body.size,
+              fontWeight:'700',textAlign:'center'}}>{value}</Text>
         </Pressable>}
       {control(1,'Increase')}
     </View>

@@ -38,6 +38,8 @@ export function completedLogicalSets(rows:StrengthObservation[]):StrengthObserva
   for(const pair of pairs.values()){
     const first=pair[0];if(!first)continue;
     if(!first.unilateral){result.push(...pair);continue;}
+    // Imports have no L/R sides; a null-side row represents a whole ordinary set.
+    if(pair.some(r=>r.side===null)){result.push(...pair.filter(r=>r.side===null));continue;}
     if(pair.some(r=>r.side==='L')&&pair.some(r=>r.side==='R')){
       // A pair gets one muscle credit; later timestamp is the completion time.
       result.push([...pair].sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0]!);
@@ -88,7 +90,7 @@ export function strengthWeeks(rows:StrengthObservation[],now:Date,count=8):Stren
     // Dumbbell pair sides are each half of the per-hand ×2 contribution.
     const volume=selected.filter(s=>completedKeys.has(s.sessionExerciseId+':'+s.position))
       .reduce((sum,s)=>sum+setVolume(s.type,s)*
-        (s.unilateral&&s.type==='dumbbell'?0.5:1),0);
+        (s.unilateral&&s.side!==null&&s.type==='dumbbell'?0.5:1),0);
     return {label:start.toLocaleDateString(undefined,{month:'short',day:'numeric'}),
       start,end,volume,logged:grouped.length>0};
   });

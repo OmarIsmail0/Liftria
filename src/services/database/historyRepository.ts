@@ -6,7 +6,7 @@ import { calculateRecords, setVolume, type RecordObservation } from './gymMath';
 import type { ExerciseType, Muscle } from './gymTypes';
 
 export type HistorySession={id:string;title:string;startedAt:string;endedAt:string;notes:string|null;
-  source:string;importer:string|null};
+  source:string;importer:string|null;importedAt?:string|null};
 export type HistorySet={id:string;sessionExerciseId:string;position:number;kind:'working'|'warm-up';
   side:'L'|'R'|null;weight:number;reps:number;loggedAt:string;restDeadline:string|null};
 export type HistoryExercise={id:string;exerciseId:string;name:string;type:ExerciseType;unilateral:boolean;
@@ -33,10 +33,13 @@ export async function listCompletedWorkouts(limit=250):Promise<DbResult<HistoryS
 export async function readHistoryDetail(id:string):Promise<DbResult<HistoryDetail|null>>{
   return dbOperation(async db=>{
     const session=await db.getFirstAsync<{
-      id:string;title:string;started_at:string;ended_at:string;notes:string|null;source:string;importer:string|null
-    }>("SELECT id,title,started_at,ended_at,notes,source,importer FROM sessions "+
+      id:string;title:string;started_at:string;ended_at:string;notes:string|null;source:string;importer:string|null;import_batch_id:string|null
+    }>("SELECT id,title,started_at,ended_at,notes,source,importer,import_batch_id FROM sessions "+
       "WHERE id=? AND state='finished'",[id]);
     if(!session)return null;
+    const importDate=session.import_batch_id?
+      (await db.getFirstAsync<{created_at:string}>('SELECT created_at FROM import_batches WHERE id=?',
+        [session.import_batch_id]))?.created_at??null:null;
     const rows=await db.getAllAsync<{
       id:string;exercise_id:string;name:string;type:ExerciseType;unilateral:number;position:number;
       primary_muscles:string|null;secondary_muscles:string|null
@@ -58,7 +61,7 @@ export async function readHistoryDetail(id:string):Promise<DbResult<HistoryDetai
     }
     return {session:{id:session.id,title:session.title,startedAt:session.started_at,
       endedAt:session.ended_at??session.started_at,notes:session.notes,
-      source:session.source,importer:session.importer},exercises};
+      source:session.source,importer:session.importer,importedAt:importDate},exercises};
   });
 }
 export function historyNumbers(detail:HistoryDetail):{sets:number;volume:number}{
@@ -68,10 +71,11 @@ export function historyNumbers(detail:HistoryDetail):{sets:number;volume:number}
     const byPosition=new Map<number,HistorySet[]>();
     for(const set of working)byPosition.set(set.position,[...(byPosition.get(set.position)??[]),set]);
     for(const pair of byPosition.values()){
-      if(e.unilateral && !(pair.some(s=>s.side==='L')&&pair.some(s=>s.side==='R')))continue;
+      if(e.unilateral && !(pair.some(s=>s.side==='L')&&pair.some(s=>s.side==='R'))&&
+        !pair.some(s=>s.side===null))continue;
       sets++;
       for(const set of pair)volume+=setVolume(e.type,set)*
-        (e.unilateral&&e.type==='dumbbell'?0.5:1);
+        (e.unilateral&&set.side!==null&&e.type==='dumbbell'?0.5:1);
     }
   }
   return {sets,volume};

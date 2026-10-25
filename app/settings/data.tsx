@@ -5,11 +5,14 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts, type LocalStorageCounts } from '../../src/services/database';
+import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 
 export default function DataAndStorage() {
   const { theme, resetLocalPreferences } = useTheme();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
+  const [imported,setImported]=useState<ImportBatch|null>(null);
+  const [undoVisible,setUndoVisible]=useState(false);
   const [confirmation,setConfirmation]=useState('');
   const [open,setOpen]=useState(false);
   const [busy,setBusy]=useState(false);
@@ -17,6 +20,8 @@ export default function DataAndStorage() {
   const load=useCallback(async()=>{
     const result=await localStorageCounts();
     if(result.ok)setCounts(result.value);
+    const batch=await lastImportBatch();
+    if(batch.ok)setImported(batch.value);
     else setMessage('Could not read storage counts from your phone.');
   },[]);
   useEffect(()=>{void Promise.resolve().then(() => load());},[load]);
@@ -29,6 +34,19 @@ export default function DataAndStorage() {
       if(result.ok)await load();
     }catch{setMessage('Health cache could not be cleared. Try again.')}
     finally{setBusy(false);}
+  }
+  async function removeImport(){
+    if(busy||!imported)return;
+    setBusy(true);
+    try{
+      const result=await undoLastImport();
+      setUndoVisible(false);
+      if(result.ok&&result.value){
+        setMessage('Import removed: '+result.value.sessions+' workouts and '+
+          result.value.custom+' custom exercises. Records recalculated.');
+        await load();
+      }else setMessage('Could not undo that import. Your history is unchanged.');
+    }finally{setBusy(false);}
   }
   async function deleteAll() {
     if(busy||!canDeleteEverything(confirmation))return;
@@ -57,10 +75,15 @@ export default function DataAndStorage() {
         <ListRow title="Saved profiles" detail={String(counts.profiles)} />
         <ListRow title="Database size" detail={formatLocalDatabaseSize(counts.databaseBytes)} />
       </> : <Typography tone="secondary">Reading local counts…</Typography>}
-      <Typography tone="secondary" size="small">These are actual stored row counts. Workout and meal logging arrive in later phases.</Typography>
+      <Typography tone="secondary" size="small">These are actual stored row counts. Imported workouts count with your completed workouts.</Typography>
     </Card>
     <Card title="Bring in your history">
-      <Typography tone="secondary">Importing workouts from other apps is planned for a future phase. Nothing is imported automatically.</Typography>
+      <ListRow title="Import workouts from another app"
+       detail="Hevy, Strong, FitNotes or CSV · nothing leaves this phone"
+       onPress={()=>router.push('/import')}/>
+      {imported&&<ListRow title="Undo import"
+       detail={'Removes '+imported.count+' workouts from '+imported.source+'. Available until your next import.'}
+       onPress={()=>setUndoVisible(true)}/>}
     </Card>
     <Card title="Cache and backup">
       <Typography tone="secondary">Clear health cache removes only cached Health Connect readings. It does not remove data from Health Connect, Samsung Health, your profile or your API key.</Typography>
@@ -77,6 +100,13 @@ export default function DataAndStorage() {
     {message && <View accessibilityRole="alert" style={{paddingVertical:theme.space[2]}}>
       <Typography tone="secondary">ⓘ {message}</Typography>
     </View>}
+    <Sheet visible={undoVisible} title={'Remove '+(imported?.count??0)+' imported workouts?'}
+      destructive description="Removes this batch's workouts and sets, including any edits. Custom exercises this import created are deleted only if no other workout or template uses them. Your own workouts, plans, templates and library exercise matches stay. Records are recalculated. You can import this file again later."
+      onClose={()=>{if(!busy)setUndoVisible(false);}}>
+      <Button label="Keep it" fullWidth disabled={busy} onPress={()=>setUndoVisible(false)}/>
+      <Button label="Remove import" variant="danger" fullWidth disabled={busy}
+        onPress={()=>void removeImport()}/>
+    </Sheet>
     <Sheet visible={open} destructive title="Delete everything from Liftria?"
       description="Deletes: profile, targets, settings, onboarding, health cache, Liftria workouts and meals, and saved Hiku key. Does not delete Health Connect or Samsung Health originals or Anthropic request logs. There is no undo."
       onClose={()=>{if(!busy){setOpen(false);setConfirmation('')}}}>

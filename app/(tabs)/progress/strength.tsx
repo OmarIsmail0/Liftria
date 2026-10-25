@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, SegmentedControl, Typography } from '../../../src/design/primitives';
 import { readRecords } from '../../../src/services/database/gymRepositories';
@@ -57,7 +57,11 @@ export default function Strength(){
         borderWidth:w.logged?0:1,borderStyle:w.logged?'solid':'dashed',
         borderColor:theme.color.border.strong,backgroundColor:w.logged?theme.color.domain.train:theme.color.bg.raised}}/>
       </View>
-      <Typography size="small" tone="tertiary">{w.label}</Typography>
+      <Text numberOfLines={1} adjustsFontSizeToFit
+        accessibilityLabel={'Week of '+w.label}
+        style={{color:theme.color.text.tertiary,fontSize:theme.type.small.size,textAlign:'center'}}>
+        {w.start.toLocaleDateString(undefined,{month:'short'}).slice(0,1)+w.start.getDate()}
+      </Text>
      </View>)}
     </View>
    </Card>
