@@ -26,6 +26,8 @@ export type ExerciseRecord = {
   lowestAssistance: number | null; maxReps: number; maxRepsAtWeight: number;
   bestEstimatedOneRepMax: number | null; bestSessionVolume: number;
   latestAt: string;
+  heaviestSessionId: string | null; lowestAssistanceSessionId: string | null;
+  maxRepsSessionId: string; bestEstimatedOneRepMaxSessionId: string | null;
 };
 /** Pure, rebuildable records: call after every log/edit/delete/import; no mutable record cache. */
 export function calculateRecords(observations: RecordObservation[]): ExerciseRecord[] {
@@ -44,6 +46,13 @@ export function calculateRecords(observations: RecordObservation[]): ExerciseRec
     const targetWeight=isAssisted?Math.min(...weights):Math.max(...weights);
     const repsAt=rows.filter(r=>r.weight===targetWeight).map(r=>r.reps);
     const estimates=rows.map(r=>estimatedOneRepMax(r.type,r)).filter((n):n is number=>n!==null);
+    // On ties, only the first finished session owns the record badge.
+    const chronological=[...rows].sort((a,b)=>
+      a.endedAt.localeCompare(b.endedAt)||a.sessionId.localeCompare(b.sessionId));
+    const winner=(match:(row:RecordObservation)=>boolean):string|null=>
+      chronological.find(match)?.sessionId??null;
+    const maxReps=Math.max(...rows.map(row=>row.reps));
+    const maxEstimate=estimates.length?Math.max(...estimates):null;
     const sessionVolume=new Map<string,number>();
     for (const row of rows) sessionVolume.set(row.sessionId,
       (sessionVolume.get(row.sessionId)??0)+setVolume(row.type,row));
@@ -51,11 +60,16 @@ export function calculateRecords(observations: RecordObservation[]): ExerciseRec
       exerciseId:first.exerciseId,side:first.side,
       heaviest:isAssisted?null:Math.max(...weights),
       lowestAssistance:isAssisted?targetWeight:null,
-      maxReps:Math.max(...rows.map(r=>r.reps)),
+      maxReps,
       maxRepsAtWeight:Math.max(...repsAt),
-      bestEstimatedOneRepMax:estimates.length?Math.max(...estimates):null,
+      bestEstimatedOneRepMax:maxEstimate,
       bestSessionVolume:Math.max(...sessionVolume.values(),0),
       latestAt:rows.reduce((max,row)=>row.endedAt>max?row.endedAt:max,first.endedAt),
+      heaviestSessionId:isAssisted?null:winner(row=>row.weight===targetWeight),
+      lowestAssistanceSessionId:isAssisted?winner(row=>row.weight===targetWeight):null,
+      maxRepsSessionId:winner(row=>row.reps===maxReps)??first.sessionId,
+      bestEstimatedOneRepMaxSessionId:maxEstimate===null?null:
+        winner(row=>estimatedOneRepMax(row.type,row)===maxEstimate),
     });
   }
   return result;

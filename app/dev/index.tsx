@@ -16,6 +16,8 @@ export default function DeveloperHome() {
         onPress={() => router.push('/dev/rest-spike')} />
       <ListRow title="Demo active workout" detail="Two exercises, no logged sets; for screenshots"
         onPress={() => router.push('/dev/demo-workout')} />
+      <ListRow title="Demo history" detail="Three finished Demo sessions, only when requested"
+        onPress={() => router.push('/dev/demo-history')} />
     </Card>
   </Screen>;
 }

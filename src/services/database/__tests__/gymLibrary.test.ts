@@ -91,3 +91,22 @@ test('newGymId works without the Web Crypto global (Hermes on Android)', () => {
     Object.defineProperty(globalThis, 'crypto', { value: original, configurable: true });
   }
 });
+
+test('record owner remains the first session with the absolute weight when later sessions tie',()=>{
+ const rows=[
+ {exerciseId:'press',side:null,kind:'working' as const,weight:60,reps:8,
+  type:'weighted' as const,sessionId:'old',endedAt:'2026-10-20T08:00:00Z'},
+ {exerciseId:'press',side:null,kind:'working' as const,weight:80,reps:8,
+  type:'weighted' as const,sessionId:'winner',endedAt:'2026-10-21T08:00:00Z'},
+ {exerciseId:'press',side:null,kind:'working' as const,weight:80,reps:8,
+  type:'weighted' as const,sessionId:'tie',endedAt:'2026-10-22T08:00:00Z'},
+ ];
+ const record=calculateRecords(rows)[0]!;
+ expect(record.heaviestSessionId).toBe('winner');
+ expect(record.bestEstimatedOneRepMaxSessionId).toBe('winner');
+ expect(calculateRecords(rows.filter(r=>r.sessionId!=='winner'))[0]?.heaviestSessionId).toBe('tie');
+ const assist=calculateRecords(rows.map((r,i)=>({...r,exerciseId:'pull',type:'assisted' as const,
+  weight:[25,15,15][i]!})))[0]!;
+ expect(assist.lowestAssistanceSessionId).toBe('winner');
+ expect(assist.heaviestSessionId).toBeNull();
+});

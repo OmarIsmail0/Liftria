@@ -314,6 +314,10 @@ export default function ActiveWorkoutScreen() {
     </Sheet>
     <Sheet visible={menuOpen} title="Exercise options" description={exercise?.name}
       onClose={()=>setMenuOpen(false)}>
+      <Button label="History" fullWidth variant="secondary" onPress={()=>{
+        setMenuOpen(false);if(exercise)router.push({
+          pathname:'/(tabs)/train/exercise/[id]',params:{id:exercise.exerciseId}});
+      }}/>
       <Button label="Exercise notes" fullWidth variant="secondary"
         onPress={()=>{setMenuOpen(false);setNoteOpen(true);}}/>
       <Button label="Replace exercise" fullWidth variant="secondary" onPress={()=>{
