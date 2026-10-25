@@ -7,6 +7,7 @@ import { getSetting, setSetting, type DbResult } from './index';
  */
 export const settingsSchemas = {
   theme: z.enum(['system', 'dark', 'light']),
+  language: z.enum(['system', 'en', 'ar']),
   style: z.enum(['aurora', 'solid']),
   'units.weight': z.enum(['kg', 'lb']),
   'units.height': z.enum(['cm', 'ftin']),
@@ -26,6 +27,7 @@ export type SettingKey = keyof typeof settingsSchemas;
 export type SettingValue<K extends SettingKey> = z.infer<(typeof settingsSchemas)[K]>;
 export const settingDefaults: { [K in SettingKey]: SettingValue<K> } = {
   theme: 'system',
+  language: 'system',
   style: 'aurora',
   'units.weight': 'kg',
   'units.height': 'cm',
