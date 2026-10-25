@@ -3,37 +3,39 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
+import type { TranslationKey } from '../../src/i18n';
 import { Button, Card, Field, Header, Orb, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
-import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingStepCaption, previousOnboardingStep, skipOnboardingStep,
+import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep, skipOnboardingStep,
   type OnboardingStep } from '../../src/features/onboarding/flow';
-import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING } from '../../src/features/onboarding/targetEstimate';
+import { canEstimateTarget, estimateTarget, profileAge, targetSafety } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
-import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall, healthConnectInstallLabel } from '../../src/features/onboarding/healthPermissionCopy';
+import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall } from '../../src/features/onboarding/healthPermissionCopy';
 import { getKey, saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
 
 const watchOptions = ['Samsung Health', 'Fitbit', 'Garmin Connect', 'Pixel Watch (Fitbit)', 'Other', 'No watch'] as const;
-const titles: Record<OnboardingStep, string> = {
-  welcome: 'Welcome to Liftria', privacy: 'Your data stays with you',
-  profile: 'Tell us about yourself', goal: 'What is your goal?',
-  target: 'Your daily estimate', health: 'Connect Health Connect',
-  watch: 'Sync your watch', hiku: 'Set up Hiku', done: 'You’re ready',
+const titles: Record<OnboardingStep, TranslationKey> = {
+  welcome: 'onboarding.copy.001', privacy: 'onboarding.copy.002',
+  profile: 'onboarding.copy.003', goal: 'onboarding.copy.004',
+  target: 'onboarding.copy.005', health: 'onboarding.copy.006',
+  watch: 'onboarding.copy.007', hiku: 'onboarding.copy.008', done: 'onboarding.copy.009',
 };
-const descriptions: Record<OnboardingStep, string> = {
-  welcome: 'A quieter home for training, nutrition and the activity you actually measured.',
-  privacy: 'Liftria keeps your profile and progress on this device. It reads Health Connect only after you approve it. Hiku sends data to Anthropic only when you explicitly ask.',
-  profile: 'All fields are optional. You can fill them in later. Liftria stores metric values.',
-  goal: 'Tell Liftria about your routine and what you want to work toward.',
-  target: 'An estimate, not a prescription. Your daily target is yours to adjust.',
-  health: 'Liftria requests read-only access. It never writes to Health Connect.',
-  watch: 'Choose the app that syncs your watch. This does not change its settings.',
-  hiku: 'Add an Anthropic API key for Hiku. It stays in encrypted Android storage, not the database.',
-  done: 'Start with an empty diary. You can set up anything you skipped later.',
+const descriptions: Record<OnboardingStep, TranslationKey> = {
+  welcome: 'onboarding.copy.010',
+  privacy: 'onboarding.copy.011',
+  profile: 'onboarding.copy.012',
+  goal: 'onboarding.copy.013',
+  target: 'onboarding.copy.014',
+  health: 'onboarding.copy.015',
+  watch: 'onboarding.copy.016',
+  hiku: 'onboarding.copy.017',
+  done: 'onboarding.copy.018',
 };
 
 function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
@@ -73,27 +75,29 @@ function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, prima
   primary: string; onPrimary: () => void; busy: boolean; primaryDisabled?: boolean; footer?: ReactNode;
 }) {
   const { theme } = useTheme();
-  const caption = onboardingStepCaption(step);
+  const { t } = useLanguage();
+  const caption = step === 'done' ? null : t('onboarding.copy.021', { number: onboardingSteps.indexOf(step) + 1 });
   return <Screen scroll={false}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <Header title={titles[step]} onBack={onBack} right={onSkip
-        ? <Button label="Skip" size="sm" variant="ghost" onPress={onSkip} /> : undefined} />
+      <Header title={t(titles[step])} onBack={onBack} right={onSkip
+        ? <Button label={t('onboarding.copy.019')} size="sm" variant="ghost" onPress={onSkip} /> : undefined} />
       {caption && <Typography size="small" tone="secondary">{caption}</Typography>}
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{
         paddingVertical: theme.space[4], gap: theme.space[4], flexGrow: 1,
       }}>
-        <Typography tone="secondary">{descriptions[step]}</Typography>
+        <Typography tone="secondary">{t(descriptions[step])}</Typography>
         {children}
       </ScrollView>
       {footer}
       <View style={{ paddingVertical: theme.space[3], gap: theme.space[2] }}>
-        <Button label={busy ? 'Saving…' : primary} fullWidth disabled={busy || primaryDisabled} onPress={onPrimary} />
+        <Button label={busy ? t('onboarding.copy.020') : primary} fullWidth disabled={busy || primaryDisabled} onPress={onPrimary} />
       </View>
     </KeyboardAvoidingView>
   </Screen>;
 }
 
 export default function OnboardingStepScreen() {
+  const { t, language } = useLanguage();
   const query = useLocalSearchParams<{ step: string }>();
   const step: OnboardingStep = isOnboardingStep(query.step) ? query.step : 'welcome';
   const [draft, setDraft] = useState<OnboardingDraft>(emptyDraft);
@@ -104,7 +108,7 @@ export default function OnboardingStepScreen() {
   const [floorOpen, setFloorOpen] = useState(false);
   const [editManual, setEditManual] = useState(false);
   const [manualWarning, setManualWarning] = useState(false);
-  const [healthStatus, setHealthStatus] = useState('Not connected');
+  const [healthStatus, setHealthStatus] = useState(t('onboarding.copy.092'));
   const [healthAvailability, setHealthAvailability] = useState<'available' | 'not-installed' | 'needs-update' | 'unsupported' | null>(null);
   const [healthMissing, setHealthMissing] = useState<string[]>([]);
   const [keyInput, setKeyInput] = useState('');
@@ -118,7 +122,7 @@ export default function OnboardingStepScreen() {
       setDraft(d);
       setAge(d.birthYear ? String(profileAge(Number(d.birthYear))) : '');
       setLoaded(true);
-    }).catch(() => { if (mounted) { setLoaded(true); setError('Local settings could not be read.'); } });
+    }).catch(() => { if (mounted) { setLoaded(true); setError(t('onboarding.copy.093')); } });
     void healthConnect.getAvailability().then(availability => {
       if (mounted) {
         setHealthAvailability(availability);
@@ -142,16 +146,22 @@ export default function OnboardingStepScreen() {
   const complete = draft.birthYear !== '' && draft.heightCm !== '' && draft.weightKg !== '' &&
     canEstimateTarget(profile);
   const estimate = complete ? estimateTarget(profile) : null;
-  const errors = profileFieldErrors({ name: draft.name, age, heightCm: draft.heightCm, weightKg: draft.weightKg });
+  const rawErrors = profileFieldErrors({ name: draft.name, age, heightCm: draft.heightCm, weightKg: draft.weightKg });
+  const errors = language === 'en' ? rawErrors : {
+    name: rawErrors.name ? 'يجب ألا يتجاوز الاسم 30 حرفًا.' : undefined,
+    age: rawErrors.age ? 'أدخل عمرًا بين 16 و100 عامًا.' : undefined,
+    heightCm: rawErrors.heightCm ? 'يجب أن يكون الطول بين 120 و230 cm.' : undefined,
+    weightKg: rawErrors.weightKg ? 'يجب أن يكون الوزن بين 35 و300 kg.' : undefined,
+  };
 
   async function go(next: OnboardingStep) {
     setBusy(true); setError(null);
     try {
       const okDraft = await writeDraft(draft);
       const okStep = okDraft && await writeStep(next);
-      if (!okStep) { setError('Could not save locally. Try again.'); return; }
+      if (!okStep) { setError(t('onboarding.copy.094')); return; }
       router.replace({ pathname: '/onboarding/[step]', params: { step: next } });
-    } catch { setError('Could not save locally. Try again.'); }
+    } catch { setError(t('onboarding.copy.094')); }
     finally { setBusy(false); }
   }
 
@@ -166,10 +176,10 @@ export default function OnboardingStepScreen() {
     setDraft(nextDraft);
     setBusy(true);
     const saved = await writeDraft(nextDraft) && await persistProfile(nextDraft);
-    if (!saved) { setBusy(false); setError('Could not save profile draft locally.'); return; }
+    if (!saved) { setBusy(false); setError(t('onboarding.copy.095')); return; }
     const moved = await writeStep('goal');
     setBusy(false);
-    if (!moved) { setError('Could not save onboarding progress.'); return; }
+    if (!moved) { setError(t('onboarding.copy.096')); return; }
     router.replace({ pathname: '/onboarding/[step]', params: { step: 'goal' } });
   }
 
@@ -178,7 +188,7 @@ export default function OnboardingStepScreen() {
     setBusy(true); setError(null);
     const saved = await persistTarget(draft, source);
     setBusy(false);
-    if (!saved) { setError('Could not save your target draft locally.'); return; }
+    if (!saved) { setError(t('onboarding.copy.097')); return; }
     await go('health');
   }
 
@@ -193,20 +203,19 @@ export default function OnboardingStepScreen() {
       const history = await requestHistoryReadPermission();
       setHealthMissing(missingHealthPermissions(permissions));
       setHealthStatus(granted === metricTypes.length
-        ? 'All ' + granted + ' data types allowed. History: ' + history
-        : granted + ' of ' + metricTypes.length + ' data types allowed. History: ' + history +
-          '. You can continue without the missing permissions.');
-    } catch { setHealthStatus('Health Connect could not finish. You can continue without it.'); }
+        ? t('onboarding.copy.112', { count: granted, history })
+        : t('onboarding.copy.113', { granted, total: metricTypes.length, history }));
+    } catch { setHealthStatus(t('onboarding.copy.098')); }
     finally { setBusy(false); }
   }
 
   async function saveHikuKey(): Promise<boolean> {
-    if (!isKeyWellFormed(keyInput)) { setError("That doesn't look like an Anthropic API key."); return false; }
+    if (!isKeyWellFormed(keyInput)) { setError(t('onboarding.copy.099')); return false; }
     setBusy(true); setError(null);
     try {
       const result = await saveKey(keyInput);
       if (result.status !== 'ready') {
-        setError('The key could not be stored securely. Try again or skip.');
+        setError(t('onboarding.copy.100'));
         return false;
       }
       setKeySaved(true);
@@ -214,7 +223,7 @@ export default function OnboardingStepScreen() {
       setKeyTestResult(null);
       return true;
     } catch {
-      setError('The key could not be stored securely. Try again or skip.');
+      setError(t('onboarding.copy.100'));
       return false;
     } finally { setBusy(false); }
   }
@@ -224,12 +233,12 @@ export default function OnboardingStepScreen() {
     try {
       const connection = await Network.getNetworkStateAsync();
       if (connection.isConnected === false || connection.isInternetReachable === false) {
-        setKeyTestResult("Saved. We'll check it next time you're online.");
+        setKeyTestResult(t('onboarding.copy.101'));
         return;
       }
       const key = await getKey();
       if (!key || !isKeyWellFormed(key)) {
-        setKeyTestResult('Save your key on this device before testing.');
+        setKeyTestResult(t('onboarding.copy.102'));
         return;
       }
       // Explicit user-initiated check only. No local profile, diary or health
@@ -242,7 +251,7 @@ export default function OnboardingStepScreen() {
         response.status === 401 ? 'Anthropic did not accept this key. Check it in Settings.' :
           'Anthropic could not verify the key right now. Try again when online.');
     } catch {
-      setKeyTestResult('Could not reach Anthropic. Your saved key remains on this device.');
+      setKeyTestResult(t('onboarding.copy.106'));
     } finally { setBusy(false); }
   }
 
@@ -251,10 +260,10 @@ export default function OnboardingStepScreen() {
     setBusy(true); setError(null);
     try {
       const result = await setSetting('onboarding.privacyAcknowledged', JSON.stringify(true));
-      if (!result.ok) { setError('Could not save privacy acknowledgement.'); return; }
+      if (!result.ok) { setError(t('onboarding.copy.107')); return; }
       await go('profile');
     } catch {
-      setError('Could not save privacy acknowledgement.');
+      setError(t('onboarding.copy.107'));
     } finally { setBusy(false); }
   }
 
@@ -262,7 +271,7 @@ export default function OnboardingStepScreen() {
     setBusy(true);
     const completed = await markOnboardingComplete();
     if (completed) router.replace('/(tabs)/today');
-    else { setBusy(false); setError('Could not save completion locally.'); }
+    else { setBusy(false); setError(t('onboarding.copy.108')); }
   }
 
   async function finishLater() {
@@ -270,113 +279,113 @@ export default function OnboardingStepScreen() {
     const saved = await writeDraft(draft) && await markOnboardingDeferred();
     setBusy(false);
     if (saved) router.replace('/(tabs)/today');
-    else setError('Could not save your progress locally.');
+    else setError(t('onboarding.copy.109'));
   }
 
-  if (!loaded) return <Screen scroll={false}><Typography>Loading local setup…</Typography></Screen>;
+  if (!loaded) return <Screen scroll={false}><Typography>{t('onboarding.copy.022')}</Typography></Screen>;
 
-  const primary = step === 'welcome' ? 'Get started' : step === 'privacy' ? 'I understand'
-    : step === 'done' ? 'Open Today' : step === 'profile' ? 'Continue'
-    : step === 'target' ? (estimate ? 'Use this estimate' : 'Continue without a target') : 'Continue';
+  const primary = step === 'welcome' ? t('onboarding.copy.086') : step === 'privacy' ? t('onboarding.copy.087')
+    : step === 'done' ? t('onboarding.copy.088') : step === 'profile' ? t('onboarding.copy.089')
+    : step === 'target' ? (estimate ? t('onboarding.copy.090') : t('onboarding.copy.091')) : t('onboarding.copy.089');
 
   const child = step === 'welcome'
     ? <Card rim="hiku">
-      <Typography size="head">A local-first space for daily progress</Typography>
-      <Typography tone="secondary">Today starts empty. You decide what to connect and when to log.</Typography>
+      <Typography size="head">{t('onboarding.copy.023')}</Typography>
+      <Typography tone="secondary">{t('onboarding.copy.024')}</Typography>
           <InlineError message={error} />
     </Card>
     : step === 'privacy'
-      ? <Card title="Privacy by design">
-        <Typography>Health Connect: read-only, with your permission.</Typography>
-        <Typography>Profile, goals and history: stored on this phone.</Typography>
-        <Typography>Hiku: uses your own Anthropic API key; each request requires your action.</Typography>
-        <Typography tone="secondary" size="small">No backend account. No automatic AI uploads.</Typography>
+      ? <Card title={t('onboarding.copy.025')}>
+        <Typography>{t('onboarding.copy.026')}</Typography>
+        <Typography>{t('onboarding.copy.027')}</Typography>
+        <Typography>{t('onboarding.copy.028')}</Typography>
+        <Typography tone="secondary" size="small">{t('onboarding.copy.029')}</Typography>
           <InlineError message={error} />
       </Card>
       : step === 'profile'
-        ? <Card title="Your profile (optional)">
-          <Field label="Name (optional)" value={draft.name} onChangeText={text => patch('name', text)} placeholder="What should we call you?" error={errors.name} />
-          <Field label="Age (16–100)" value={age} onChangeText={setAge} keyboardType="numeric" placeholder="Years" error={errors.age} />
-          <Field label="Height (cm)" value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" error={errors.heightCm} />
-          <Field label="Weight (kg)" value={draft.weightKg} onChangeText={text => patch('weightKg', text)} keyboardType="decimal-pad" placeholder="35–300" error={errors.weightKg} />
-          <ChoiceGroup label="Sex for formula" selected={draft.sexForFormula}
-            choices={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' },
-              { value: 'unspecified', label: 'Prefer not to say' }]}
+        ? <Card title={t('onboarding.copy.030')}>
+          <Field label={t('onboarding.copy.031')} value={draft.name} onChangeText={text => patch('name', text)} placeholder={t('onboarding.copy.032')} error={errors.name} />
+          <Field label={t('onboarding.copy.033')} value={age} onChangeText={setAge} keyboardType="numeric" placeholder={t('onboarding.copy.034')} error={errors.age} />
+          <Field label={t('onboarding.copy.035')} value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" error={errors.heightCm} />
+          <Field label={t('onboarding.copy.036')} value={draft.weightKg} onChangeText={text => patch('weightKg', text)} keyboardType="decimal-pad" placeholder="35–300" error={errors.weightKg} />
+          <ChoiceGroup label={t('onboarding.copy.037')} selected={draft.sexForFormula}
+            choices={[{ value: 'male', label: t('onboarding.copy.038') }, { value: 'female', label: t('onboarding.copy.039') },
+              { value: 'unspecified', label: t('onboarding.copy.040') }]}
             onChange={v => patch('sexForFormula', v)} />
-          <Typography tone="secondary" size="small">Prefer not to say uses an averaged constant; the estimate is less precise.</Typography>
+          <Typography tone="secondary" size="small">{t('onboarding.copy.041')}</Typography>
           <InlineError message={error} />
         </Card>
         : step === 'goal'
-          ? <Card title="Your plan">
-            <ChoiceGroup label="Activity level" selected={draft.activity}
-              choices={[{ value: 'sitting', label: 'Mostly sitting' },
-                { value: 'some', label: 'On my feet some' },
-                { value: 'active', label: 'Active job or daily training' }]}
+          ? <Card title={t('onboarding.copy.042')}>
+            <ChoiceGroup label={t('onboarding.copy.043')} selected={draft.activity}
+              choices={[{ value: 'sitting', label: t('onboarding.copy.044') },
+                { value: 'some', label: t('onboarding.copy.045') },
+                { value: 'active', label: t('onboarding.copy.046') }]}
               onChange={v => patch('activity', v)} />
-            <ChoiceGroup label="Goal" selected={draft.goal}
-              choices={[{ value: 'lose', label: 'Lose' }, { value: 'maintain', label: 'Maintain' },
-                { value: 'build', label: 'Build' }]} onChange={v => patch('goal', v)} />
+            <ChoiceGroup label={t('onboarding.copy.047')} selected={draft.goal}
+              choices={[{ value: 'lose', label: t('onboarding.copy.048') }, { value: 'maintain', label: t('onboarding.copy.049') },
+                { value: 'build', label: t('onboarding.copy.050') }]} onChange={v => patch('goal', v)} />
           <InlineError message={error} />
           </Card>
           : step === 'target'
-            ? <Card rim="eat" title="Calorie and macro estimate">
+            ? <Card rim="eat" title={t('onboarding.copy.051')}>
               {estimate ? <>
                 <Orb eaten={0} target={estimate.kcal} active={false} />
-                <Typography size="head">{estimate.kcal.toLocaleString()} kcal · Estimate</Typography>
-                <Typography tone="secondary">Protein {estimate.proteinG} g · Fat {estimate.fatG} g · Carbs {estimate.carbsG} g</Typography>
-                <Typography tone="secondary" size="small">Mifflin-St Jeor: age {estimate.inputs.age}, height {estimate.inputs.heightCm} cm and weight {estimate.inputs.weightKg} kg determine resting calories; activity ×{estimate.inputs.activityFactor} and goal {Math.round((estimate.inputs.goalFactor - 1) * 100)}% adjust the estimate.</Typography>
-                <Typography tone="secondary" size="small">This estimate will be saved locally with the inputs used.</Typography>
-                {estimate.lessPrecise && <Typography tone="secondary">Estimate, less precise (sex for formula not specified).</Typography>}
-                {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{FLOOR_WARNING}</Typography>}
-                <Button variant="secondary" label="Set my own numbers" onPress={() => {
+                <Typography size="head">{t('onboarding.copy.116', { count: estimate.kcal })}</Typography>
+                <Typography tone="secondary">{t('onboarding.copy.117', { protein: estimate.proteinG, fat: estimate.fatG, carbs: estimate.carbsG })}</Typography>
+                <Typography tone="secondary" size="small">{t('onboarding.copy.118', { age: estimate.inputs.age, height: estimate.inputs.heightCm, weight: estimate.inputs.weightKg, activity: estimate.inputs.activityFactor, goal: Math.round((estimate.inputs.goalFactor - 1) * 100) })}</Typography>
+                <Typography tone="secondary" size="small">{t('onboarding.copy.052')}</Typography>
+                {estimate.lessPrecise && <Typography tone="secondary">{t('onboarding.copy.053')}</Typography>}
+                {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{t('onboarding.copy.077')}</Typography>}
+                <Button variant="secondary" label={t('onboarding.copy.054')} onPress={() => {
                   setDraft(current => ({ ...current, manualKcal: String(estimate.kcal), manualProtein: String(estimate.proteinG), manualFat: String(estimate.fatG), manualCarbs: String(estimate.carbsG) })); setEditManual(true);
                 }} />
-              </> : <Typography tone="secondary">No estimate without complete age, height and weight. You can set your own numbers, or skip for now.</Typography>}
-              {!estimate && <Button variant="secondary" label="Set my own numbers" onPress={() => setEditManual(true)} />}
+              </> : <Typography tone="secondary">{t('onboarding.copy.055')}</Typography>}
+              {!estimate && <Button variant="secondary" label={t('onboarding.copy.054')} onPress={() => setEditManual(true)} />}
           <InlineError message={error} />
             </Card>
             : step === 'health'
-              ? <Card rim="health" title="Connect on-device health data">
-                <Typography>Read steps, heart rate, movement, exercise, sleep and body measurements only when allowed.</Typography>
-                <Typography tone="secondary">Data may start from the day you connect. Phone and watch records stay separate.</Typography>
-                <Button label="Open Health Connect permissions" onPress={() => void requestHealth()} />
+              ? <Card rim="health" title={t('onboarding.copy.056')}>
+                <Typography>{t('onboarding.copy.057')}</Typography>
+                <Typography tone="secondary">{t('onboarding.copy.058')}</Typography>
+                <Button label={t('onboarding.copy.059')} onPress={() => void requestHealth()} />
                 <Typography tone="secondary">{healthStatus}</Typography>
                 {healthMissing.map(note => <Typography key={note} tone="secondary" size="small">ⓘ {note}</Typography>)}
           <InlineError message={error} />
                 {offerHealthConnectInstall(healthAvailability) &&
-                  <Button variant="ghost" label={healthConnectInstallLabel(healthAvailability) ?? 'Get Health Connect'} onPress={() =>
+                  <Button variant="ghost" label={t('onboarding.copy.060')} onPress={() =>
                     void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
               </Card>
               : step === 'watch'
-                ? <Card title="Watch data guidance">
-                  <ChoiceGroup label="Which app does your watch use?" selected={draft.selectedWatch}
-                    choices={watchOptions.map(v => ({ value: v, label: v }))}
+                ? <Card title={t('onboarding.copy.061')}>
+                  <ChoiceGroup label={t('onboarding.copy.062')} selected={draft.selectedWatch}
+                    choices={watchOptions.map(v => ({ value: v, label: v === 'Other' ? t('onboarding.copy.063') : v === 'No watch' ? t('onboarding.copy.064') : v }))}
                     onChange={v => patch('selectedWatch', v)} />
                   {draft.selectedWatch !== 'No watch' && <>
-                    <Typography>1. Open {draft.selectedWatch} and let it sync to Health Connect.</Typography>
-                    <Typography>2. In Health Connect, grant this app permission to share new readings.</Typography>
-                    <Typography tone="secondary">Sync starts today. Some brands are not yet verified; Liftria never assumes readings are from your watch.</Typography>
+                    <Typography>{t('onboarding.copy.114', { app: draft.selectedWatch })}</Typography>
+                    <Typography>{t('onboarding.copy.115')}</Typography>
+                    <Typography tone="secondary">{t('onboarding.copy.065')}</Typography>
                   </>}
                   <InlineError message={error} />
                 </Card>
                 : step === 'hiku'
-                  ? <Card rim="hiku" title="Your private API key">
-                    <Field label="Anthropic API key" value={keyInput} onChangeText={value => {
+                  ? <Card rim="hiku" title={t('onboarding.copy.066')}>
+                    <Field label={t('onboarding.copy.067')} value={keyInput} onChangeText={value => {
                       setKeyInput(value); setKeySaved(false); setKeyTestResult(null);
                     }}
                       secure placeholder="sk-ant-…" />
-                    <Typography tone="secondary" size="small">Long-press in the key field and choose Paste. You pay Anthropic directly; set a spending limit in Anthropic Console.</Typography>
-                    <Button label="Save key on this phone" onPress={() => void saveHikuKey()} disabled={keySaved || !keyInput.trim()} />
+                    <Typography tone="secondary" size="small">{t('onboarding.copy.068')}</Typography>
+                    <Button label={t('onboarding.copy.069')} onPress={() => void saveHikuKey()} disabled={keySaved || !keyInput.trim()} />
                     {keySaved && <>
-                      <Typography tone="secondary">Key saved securely. Only the masked ending will appear in Settings.</Typography>
-                      <Button label="Test key (optional)" variant="secondary" onPress={() => void testSavedKey()} disabled={busy} />
+                      <Typography tone="secondary">{t('onboarding.copy.070')}</Typography>
+                      <Button label={t('onboarding.copy.071')} variant="secondary" onPress={() => void testSavedKey()} disabled={busy} />
                     </>}
                     {keyTestResult && <Typography tone="secondary" size="small">{keyTestResult}</Typography>}
           <InlineError message={error} />
                   </Card>
-                  : <Card title="Your own pace">
-                    <Typography>Everything you entered stays on this device. Return to Settings to change it later.</Typography>
-                    <Typography tone="secondary">No meals or workouts were invented during setup.</Typography>
+                  : <Card title={t('onboarding.copy.072')}>
+                    <Typography>{t('onboarding.copy.073')}</Typography>
+                    <Typography tone="secondary">{t('onboarding.copy.074')}</Typography>
           <InlineError message={error} />
                   </Card>;
 
@@ -396,38 +405,38 @@ export default function OnboardingStepScreen() {
         setBusy(true);
         const saved = await persistProfile(draft);
         setBusy(false);
-        if (saved) await go('target'); else setError('Could not save your profile and goal locally.');
+        if (saved) await go('target'); else setError(t('onboarding.copy.110'));
       })(); return; }
       if (step === 'target' && estimate) {
         const safety = targetSafety(estimate.kcal, null);
-        if (safety.blocked) { setError('A target below 1,000 kcal cannot be saved.'); return; }
+        if (safety.blocked) { setError(t('onboarding.copy.078')); return; }
         setManualWarning(false);
         setFloorOpen(safety.warning);
         if (!safety.warning) void chooseTarget('estimate');
         return;
       }
       void go(nextOnboardingStep(step));
-    }} footer={optionalStep(step) ? <Button label="Finish later" variant="ghost" size="sm"
+    }} footer={optionalStep(step) ? <Button label={t('onboarding.copy.075')} variant="ghost" size="sm"
       onPress={() => void finishLater()} /> : undefined}>
     {child}
-    <Sheet visible={floorOpen} title="Check your calorie target" description={FLOOR_WARNING}
+    <Sheet visible={floorOpen} title={t('onboarding.copy.076')} description={t('onboarding.copy.077')}
       onClose={() => setFloorOpen(false)}>
       <Button label={manualWarning ? 'Use my target anyway' : 'Use this estimate anyway'} fullWidth
         onPress={() => { setFloorOpen(false); void chooseTarget(manualWarning ? 'manual' : 'estimate'); }} />
     </Sheet>
-    <Sheet visible={editManual} title="Set my own numbers" description="A target below 1,000 kcal cannot be saved."
+    <Sheet visible={editManual} title={t('onboarding.copy.054')} description={t('onboarding.copy.078')}
       onClose={() => setEditManual(false)}>
-      <Field label="Daily kcal" value={draft.manualKcal} keyboardType="numeric" onChangeText={s => patch('manualKcal', s)} />
-      <Field label="Protein (g)" value={draft.manualProtein} keyboardType="numeric" onChangeText={s => patch('manualProtein', s)} />
-      <Field label="Fat (g)" value={draft.manualFat} keyboardType="numeric" onChangeText={s => patch('manualFat', s)} />
-      <Field label="Carbs (g)" value={draft.manualCarbs} keyboardType="numeric" onChangeText={s => patch('manualCarbs', s)} />
-      <Button label="Save my target" fullWidth onPress={() => {
+      <Field label={t('onboarding.copy.081')} value={draft.manualKcal} keyboardType="numeric" onChangeText={s => patch('manualKcal', s)} />
+      <Field label={t('onboarding.copy.082')} value={draft.manualProtein} keyboardType="numeric" onChangeText={s => patch('manualProtein', s)} />
+      <Field label={t('onboarding.copy.083')} value={draft.manualFat} keyboardType="numeric" onChangeText={s => patch('manualFat', s)} />
+      <Field label={t('onboarding.copy.084')} value={draft.manualCarbs} keyboardType="numeric" onChangeText={s => patch('manualCarbs', s)} />
+      <Button label={t('onboarding.copy.085')} fullWidth onPress={() => {
         const amount = Number(draft.manualKcal);
         const safety = targetSafety(amount, estimate?.kcal ?? null);
         const macros = [draft.manualProtein, draft.manualFat, draft.manualCarbs];
-        if (safety.blocked) { setError('A target below 1,000 kcal cannot be saved.'); setEditManual(false); return; }
+        if (safety.blocked) { setError(t('onboarding.copy.078')); setEditManual(false); return; }
         if (macros.some(value => !value.trim() || !Number.isFinite(Number(value)) || Number(value) < 0)) {
-          setError('Enter non-negative protein, fat and carbohydrate amounts.'); setEditManual(false); return;
+          setError(t('onboarding.copy.111')); setEditManual(false); return;
         }
         setEditManual(false);
         setManualWarning(true);
