@@ -85,11 +85,15 @@ export async function saveFinishedWorkout(id:string,title:string,notes:string|nu
   return dbOperation(async db=>{
     let updated=false;
     await db.withExclusiveTransactionAsync(async tx=>{
-      const session=await tx.getFirstAsync<{id:string}>(
-        "SELECT id FROM sessions WHERE id=? AND state='finished'",[id]);
+      const session=await tx.getFirstAsync<{id:string;ended_at:string|null;started_at:string}>(
+        "SELECT id,ended_at,started_at FROM sessions WHERE id=? AND state='finished'",[id]);
       if(!session)return;
       const rows=await tx.getAllAsync<{id:string}>('SELECT id FROM session_exercises WHERE session_id=?',[id]);
       const allowed=new Set(rows.map(x=>x.id));
+      const earlier=await tx.getAllAsync<{id:string;logged_at:string}>(
+        'SELECT st.id,st.logged_at FROM sets st JOIN session_exercises se '+
+        'ON se.id=st.session_exercise_id WHERE se.session_id=?',[id]);
+      const when=new Map(earlier.map(s=>[s.id,s.logged_at]));
       if(edits.some(e=>!allowed.has(e.sessionExerciseId)))throw new Error('Set from another workout');
       // A completed set must be explicitly present in edits; omitted rows are removed.
       await tx.runAsync('DELETE FROM sets WHERE session_exercise_id IN '+
@@ -98,7 +102,8 @@ export async function saveFinishedWorkout(id:string,title:string,notes:string|nu
         'INSERT INTO sets(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline) '+
         'VALUES(?,?,?,?,?,?,?,?,NULL)',[
           e.id??newGymId(),e.sessionExerciseId,e.position,e.kind,e.side,e.weight,e.reps,
-          new Date().toISOString(),
+          e.id?when.get(e.id)??session.ended_at??session.started_at:
+            session.ended_at??session.started_at,
         ]);
       await tx.runAsync('UPDATE sessions SET title=?,notes=?,edited_at=? WHERE id=?',
         [title.trim(),notes,new Date().toISOString(),id]);
