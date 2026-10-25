@@ -26,10 +26,15 @@ export default function WorkoutPreview() {
         const exercises=await Promise.all(found.exercises.map(e=>getExercise(e.exerciseId)));
         const sessions=await Promise.all(found.exercises.map(e=>exerciseSessions(e.exerciseId,1)));
         if(!live)return;
-        setLookup(Object.fromEntries(found.exercises.flatMap((e,i)=>
-          exercises[i]?.ok&&exercises[i].value?[[e.exerciseId,exercises[i].value]]:[])));
-        setLast(Object.fromEntries(found.exercises.flatMap((e,i)=>
-          sessions[i]?.ok&&sessions[i].value[0]?[[e.exerciseId,sessions[i].value[0].startedAt]]:[])));
+        setLookup(Object.fromEntries(found.exercises.flatMap((e,i)=>{
+          const foundExercise=exercises[i];
+          return foundExercise?.ok&&foundExercise.value?[[e.exerciseId,foundExercise.value]]:[];
+        })));
+        setLast(Object.fromEntries(found.exercises.flatMap((e,i)=>{
+          const foundSessions=sessions[i];
+          return foundSessions?.ok&&foundSessions.value[0]?
+            [[e.exerciseId,foundSessions.value[0].startedAt]]:[];
+        })));
       }
     })();
     return()=>{live=false;};

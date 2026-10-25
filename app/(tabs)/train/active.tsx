@@ -144,7 +144,7 @@ export default function ActiveWorkoutScreen() {
         <Button label={rest.status==='running'?displayRest(deadline,now):rest.status==='over'?'Rest over':'Rest timer'}
           variant="secondary" onPress={()=>setRestVisible(true)}/>
         <Button label="Add exercise" variant="ghost"
-          onPress={()=>router.push('/(tabs)/train/library')}/>
+          onPress={()=>router.push({pathname:'/(tabs)/train/pick',params:{id:view.id}})}/>
       </View>
     </View>
     <ScrollView contentContainerStyle={{padding:theme.layout.gutter,gap:theme.layout.cardGap,paddingBottom:theme.space[3]}}>

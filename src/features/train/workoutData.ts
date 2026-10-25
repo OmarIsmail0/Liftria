@@ -186,9 +186,17 @@ export async function discardInProgressWorkout(id:string):Promise<DbResult<boole
 }
 export function workoutNumbers(view:ActiveWorkout):{sets:number;volume:number;pending:number} {
   const working=view.sets.filter(s=>s.kind==='working'&&s.reps>0);
-  const keys=new Set(working.map(s=>s.sessionExerciseId+':'+s.position));
-  const volume=view.exercises.reduce((sum,e)=>sum+working.filter(s=>s.sessionExerciseId===e.id)
-    .reduce((v,s)=>v+setVolume(e.type,s),0),0);
-  const planned=view.exercises.reduce((n,e)=>n+e.targetSets,0);
-  return {sets:keys.size,volume,pending:Math.max(0,planned-keys.size)};
+  let completed=0,volume=0,planned=0;
+  for(const e of view.exercises){
+    planned+=e.targetSets;
+    const logged=working.filter(s=>s.sessionExerciseId===e.id);
+    for(const set of logged)volume+=setVolume(e.type,set)*
+      (e.unilateral&&e.type==='dumbbell'?0.5:1);
+    for(let position=0;position<e.targetSets;position++){
+      const at=logged.filter(s=>s.position===position);
+      if(e.unilateral?at.some(s=>s.side==='L')&&at.some(s=>s.side==='R'):
+        at.some(s=>s.side===null))completed++;
+    }
+  }
+  return {sets:completed,volume,pending:Math.max(0,planned-completed)};
 }
