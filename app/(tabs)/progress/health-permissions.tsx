@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { Linking, ScrollView } from 'react-native';
@@ -7,23 +8,27 @@ import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, requestHistoryReadPermission } from '../../../src/services/health';
 import { metricTypes, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
-import { healthAvailabilityText, canInstallHealthConnect, historyPermissionMessage } from '../../../src/features/health/presentation';
-
-const names: Partial<Record<MetricType,string>> = {
-  steps:'Steps', 'heart-rate':'Heart rate', 'exercise-session':'Exercise sessions',
-  'sleep-session':'Sleep', weight:'Weight', 'body-fat':'Body fat', 'active-calories':'Active energy',
-};
-const consequences: Partial<Record<MetricType,string>> = {
-  steps:'Daily step totals stay hidden',
-  'heart-rate':'Heart rate will not appear',
-  'exercise-session':'Exercise sessions will not appear',
-  'sleep-session':'Sleep tracking will not appear',
-  weight:'Weight readings will not appear',
-  'body-fat':'Body fat readings will not appear',
-  'active-calories':'No measured energy is available yet in Phase 2',
-};
+import { canInstallHealthConnect } from '../../../src/features/health/presentation';
 
 export default function HealthPermissions() {
+  const {t}=useLanguage();
+  const names: Partial<Record<MetricType,string>> = {
+    steps:t('healthPerm.steps'), 'heart-rate':t('healthPerm.heart'),
+    'exercise-session':t('healthPerm.sessions'),'sleep-session':t('healthPerm.sleep'),
+    weight:t('healthPerm.weight'),'body-fat':t('healthPerm.bodyFat'),
+    'active-calories':t('healthPerm.energy'),
+  };
+  const consequences: Partial<Record<MetricType,string>> = {
+    steps:t('healthPerm.hiddenSteps'),'heart-rate':t('healthPerm.hiddenHeart'),
+    'exercise-session':t('healthPerm.hiddenSessions'),'sleep-session':t('healthPerm.hiddenSleep'),
+    weight:t('healthPerm.hiddenWeight'),'body-fat':t('healthPerm.hiddenBodyFat'),
+    'active-calories':t('healthPerm.hiddenEnergy'),
+  };
+  const availabilityText=(status:string):string => status==='available'?t('healthPerm.available')
+    :status==='unavailable'?t('healthPerm.unavailable')
+    :canInstallHealthConnect(status as Parameters<typeof canInstallHealthConnect>[0])?t('healthPerm.install')
+    :t('healthPerm.other');
+
   const { theme } = useTheme();
   const { snapshot, refresh, refreshing } = useHealthSnapshot(overviewMetrics);
   const [working,setWorking] = useState(false);
@@ -37,45 +42,45 @@ export default function HealthPermissions() {
       const updated = await healthConnect.requestPermissions([...metricTypes]);
       const history = await requestHistoryReadPermission();
       const allowed = Object.values(updated).filter(v => v === 'granted').length;
-      setMessage(`${allowed} of ${metricTypes.length} read types allowed. ${historyPermissionMessage(history)}.`);
+      setMessage(t('healthPerm.success',{allowed,total:metricTypes.length,history:history==='granted'?t('healthPerm.historyGranted'):history==='denied'?t('healthPerm.historyDenied'):history==='unavailable'?t('healthPerm.historyUnavailable'):t('healthPerm.historyUnknown')}));
       await refresh(true);
-    } catch { setMessage('Could not open the Android permission screen. Try Health Connect settings.'); }
+    } catch { setMessage(t('healthPerm.error')); }
     finally { setWorking(false); }
   }
 
   if (!snapshot.loaded) return <Screen embedded>
-    <Header title="Health permissions" subtitle="Checking Health Connect…" />
-    <Typography tone="secondary">Loading Android permission status…</Typography>
+    <Header title={t('healthPerm.loadingTitle')} subtitle={t('healthPerm.loading')} />
+    <Typography tone="secondary">{t('healthPerm.loadingDetails')}</Typography>
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title="Health permissions" subtitle="Android permissions · read only"
+    <Header title="Health permissions" subtitle={t('healthPerm.subtitle')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title="Health Connect status" rim="health">
-      <Typography>{healthAvailabilityText(snapshot.availability)}</Typography>
+    <Card title={t('healthPerm.status')} rim="health">
+      <Typography>{availabilityText(snapshot.availability)}</Typography>
       <Typography tone="secondary">{available
-        ? `${count} of ${overviewMetrics.length} displayed types allowed`
-        : 'Your health readings are hidden, not zero.'}</Typography>
-      {available && count === 0 && <Typography tone="secondary">Everything else in Liftria still works.</Typography>}
-      <Typography tone="secondary">Liftria only reads. It never writes or deletes health data.</Typography>
+        ? t('healthPerm.allowedCount',{count,total:overviewMetrics.length})
+        : t('healthPerm.hidden')}</Typography>
+      {available && count === 0 && <Typography tone="secondary">{t('healthPerm.works')}</Typography>}
+      <Typography tone="secondary">{t('healthPerm.readOnly')}</Typography>
     </Card>
-    <Card title="Read permissions">
+    <Card title={t('healthPerm.list')}>
       {overviewMetrics.map(type => {
         const state = snapshot.permissions[type] ?? 'unknown';
-        const value = state === 'granted' ? 'Allowed' : state === 'denied' ? 'Not allowed' : 'Not confirmed';
+        const value = state === 'granted' ? t('healthPerm.allowed') : state === 'denied' ? t('healthPerm.denied') : t('healthPerm.unverified');
         return <ListRow key={type} title={names[type] ?? type}
-          accessibilityLabel={`${names[type] ?? type}. ${value}. Opens Android permissions.`}
-          detail={state === 'granted' ? 'Read only · managed by Android' : consequences[type] ?? 'Hidden until you allow it'}
+          accessibilityLabel={t('healthPerm.openHint',{name:names[type]??type,state:value})}
+          detail={state === 'granted' ? t('healthPerm.androidManaged') : consequences[type] ?? t('healthPerm.hiddenUntil')}
           suffix={<Chip kind="off" label={value} />}
           onPress={available ? () => void openPermissions() : undefined} />;
       })}
     </Card>
-    {available ? <Button label={working ? 'Opening…' : 'Open Health Connect permissions'}
+    {available ? <Button label={working ? t('healthPerm.opening') : t('healthPerm.openPermissions')}
       disabled={working || refreshing} fullWidth onPress={() => void openPermissions()} />
       : canInstallHealthConnect(snapshot.availability) ?
-        <Button label="Get Health Connect" fullWidth onPress={() =>
+        <Button label={t('healthPerm.get')} fullWidth onPress={() =>
           void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />
-        : <Typography tone="secondary">Liftria works without Health Connect.</Typography>}
-    {message && <Banner title="Permission update" message={message} />}
+        : <Typography tone="secondary">{t('healthPerm.without')}</Typography>}
+    {message && <Banner title={t('healthPerm.permissionUpdate')} message={message} />}
   </ScrollView></Screen>;
 }
