@@ -1,0 +1,62 @@
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
+import { parseImportCsv, ImportParseError, type Importer } from '../../src/features/import/importCsv';
+import { setImportDraft } from '../../src/features/import/importDraft';
+
+const sources:{id:Importer;name:string;guide:string}[]=[
+ {id:'hevy',name:'Hevy',guide:'Profile → Settings → Export & Import Data'},
+ {id:'strong',name:'Strong',guide:'Settings → Export Data → CSV'},
+ {id:'fitnotes',name:'FitNotes',guide:'Settings → Backup & Export → CSV'},
+ {id:'csv',name:'Another app (CSV)',guide:'Export a CSV with date, exercise, weight and reps'},
+];
+export default function ImportStart(){
+ const [source,setSource]=useState<Importer>('hevy');
+ const [reading,setReading]=useState(false);
+ const [error,setError]=useState<string|null>(null);
+ const pick=async()=>{
+  if(reading)return;setReading(true);setError(null);
+  try{
+   const result=await DocumentPicker.getDocumentAsync({copyToCacheDirectory:true,multiple:false,type:'*/*'});
+   if(result.canceled||!result.assets[0])return;
+   const asset=result.assets[0],file=new File(asset.uri);
+   let text='';
+   try{text=await file.text();}
+   finally{try{file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
+   try{
+    const parsed=parseImportCsv(source,asset.name,text);
+    setImportDraft({parsed,error:null,source,fileName:asset.name});
+   }catch(reason){
+    if(reason instanceof ImportParseError)
+     setImportDraft({parsed:null,error:reason,source,fileName:asset.name});
+    else throw reason;
+   }
+   router.push('/import/preview');
+  }catch{
+   setError("Liftria couldn't read that file. Choose a different CSV.");
+  }finally{setReading(false);}
+ };
+ return <Screen>
+  <Header title="Import history" subtitle="From another app" onBack={()=>router.back()}/>
+  <Card title="Where are you coming from?">
+   {sources.map(s=><ListRow key={s.id} title={(source===s.id?'✓ ':'')+s.name}
+    detail={s.guide} accessibilityLabel={s.name+(source===s.id?', selected':'')+'. '+s.guide}
+    onPress={()=>setSource(s.id)}/>)}
+  </Card>
+  <Card rim="train" title="Your data stays yours">
+   <Typography>The file stays on this phone. Liftria reads it and saves your workouts locally. Nothing is uploaded.</Typography>
+   <Typography tone="secondary" size="small">Importing history doesn't change your plans or templates. The file is not kept after reading.</Typography>
+  </Card>
+  <Card title="Not in this version">
+   <Typography tone="secondary">Hevy account/API import, Apple Health weight import, and exporting from Liftria.</Typography>
+  </Card>
+  <View style={{gap:12}}>
+   {error&&<Typography>{error}</Typography>}
+   <Button label={reading?'Reading file…':'Choose a file'} disabled={reading}
+    size="xl" variant="train" fullWidth onPress={()=>void pick()}/>
+  </View>
+ </Screen>;
+}
