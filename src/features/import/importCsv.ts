@@ -104,7 +104,7 @@ function whenFrom(value:string):{iso:string;day:string;dateOnly:boolean}{
  // Reject them: otherwise a malformed export changes the day and duplicate check.
  const isoDay=/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/.exec(v);
  const usDay=/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})(?:\s|$)/.exec(v);
- if(isoDay&&v.length===10 || usDay){
+ if(isoDay||usDay){
   const year=isoDay?Number(isoDay[1]):Number(usDay![3]);
   const month=isoDay?Number(isoDay[2]):Number(usDay![1]);
   const day=isoDay?Number(isoDay[3]):Number(usDay![2]);

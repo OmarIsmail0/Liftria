@@ -56,7 +56,7 @@ test('recognizes an explicitly unit-tagged weight (kg) column without guessing',
 });
 test('does not shift impossible date-only days silently or mask date parsing failures',()=>{
  const header='date,exercise,weight_kg,reps\n';
- for(const bad of ['2026-02-31','2026-13-01','2026-00-01','02/31/2026']){
+ for(const bad of ['2026-02-31','2026-02-31T09:00:00Z','2026-13-01','2026-00-01','02/31/2026']){
   expect(()=>parseImportCsv('csv','invalid.csv',header+bad+',Bench Press,60,8'))
    .toThrow(ImportParseError);
  }
