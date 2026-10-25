@@ -132,8 +132,9 @@ jobs:
             echo
             echo "Release APK on an Android 11 emulator (Pixel 6 size). The real phone stays the final check."
             echo
-            for mode in dark light; do
-              echo "### ${mode^}"
+            for mode in dark light ar-dark; do
+              ls shots/$mode-*.png >/dev/null 2>&1 || continue
+              if [ "$mode" = ar-dark ]; then echo "### Arabic (RTL), dark"; else echo "### ${mode^}"; fi
               echo
               echo "| | | |"; echo "|---|---|---|"
               row=""; n=0

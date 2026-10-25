@@ -6,6 +6,8 @@ APK="$1"; OUT="$2"
 # App screens as "<shot name>=<route>"; routes that don't exist yet just show Expo Router's
 # not-found page, so this list can run ahead of the build.
 SCREENS="app-today=today app-train=train app-eat=eat app-progress=progress app-health=progress/health app-hiku=hiku app-settings=settings app-appearance=settings/appearance on-1-welcome=onboarding/welcome on-2-privacy=onboarding/privacy on-3-profile=onboarding/profile on-4-goal=onboarding/goal on-5-target=onboarding/target on-6-health=onboarding/health on-7-watch=onboarding/watch on-8-hiku=onboarding/hiku on-9-done=onboarding/done he-steps=progress/health-detail?metric=steps he-heart=progress/health-detail?metric=heart-rate he-permissions=progress/health-permissions he-sync=progress/health-sync he-troubleshoot=progress/health-troubleshoot st-profile=settings/profile st-preferences=settings/preferences st-hiku-key=settings/hiku-key st-notifications=settings/notifications st-data=settings/data st-about=settings/about tr-library=train/library tr-muscles=train/muscles tr-exercise=train/exercise/Barbell_Bench_Press_-_Medium_Grip tr-plans=train/plans tr-template=train/template tr-preview=train/preview tr-spike=dev/rest-spike tr-demo=dev/demo-workout?auto=1 tr-active=train/active tr-home-active=train tr-demo-history=dev/demo-history?auto=1 tr-history=train/history tr-records=train/records tr-recovery=train/recovery pr-strength=progress/strength im-demo=dev/demo-import?auto=1"
+# Arabic pass (Phase 4): these screens again, dark only, with the emulator in Arabic (Egypt).
+AR_SCREENS="app-today app-train app-progress app-health app-settings st-preferences st-profile on-1-welcome on-3-profile on-5-target tr-library tr-muscles tr-exercise tr-active tr-history tr-recovery pr-strength im-demo"
 STORIES="screen header card button chip banner snackbar sheet stepper toggle field list-row empty-state skeleton orb capsule-nav"
 mkdir -p "$OUT"
 adb wait-for-device
@@ -29,6 +31,22 @@ for mode in dark light; do
   shot "$mode" index "liftria://dev/primitives"
   for id in $STORIES; do shot "$mode" "$id" "liftria://dev/primitives/$id"; done
 done
+# Arabic, right to left: the app's language defaults to System, so it follows the device locale.
+if adb root >/dev/null 2>&1 && sleep 3 && adb wait-for-device; then
+  adb shell setprop persist.sys.locale ar-EG
+  adb shell setprop ctl.restart zygote
+  sleep 5; adb wait-for-device
+  until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; do sleep 2; done
+  sleep 10
+  adb shell cmd uimode night yes; sleep 2
+  for name in $AR_SCREENS; do
+    for entry in $SCREENS; do
+      [ "${entry%%=*}" = "$name" ] && shot ar-dark "$name" "liftria://${entry#*=}"
+    done
+  done
+else
+  echo "::warning::adb root unavailable; Arabic screenshots skipped"
+fi
 # Crash diagnostics: the app's fatal errors, if any, for the PR author and reviewer.
 adb logcat -d -b crash > "$OUT/logcat-crash.txt" 2>/dev/null || true
 adb logcat -d '*:E' | tail -n 400 > "$OUT/logcat-errors.txt" || true
