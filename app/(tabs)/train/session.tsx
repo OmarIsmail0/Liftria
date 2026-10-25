@@ -1,16 +1,19 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
+import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { getTypedSetting } from '../../../src/services/database/settings';
 import { GymStepper } from '../../../src/features/train/GymStepper';
 import { displayWeight, fromKg, toKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { readHistoryDetail, historyNumbers, recordsChangedIfDeleted,
  saveFinishedWorkout, deleteFinishedWorkout, type HistoryDetail, type SetEdit } from '../../../src/services/database/historyRepository';
 import { storeUndo } from '../../../src/features/train/historyUndo';
+import { readRecords } from '../../../src/services/database/gymRepositories';
+import type { ExerciseRecord } from '../../../src/services/database/gymMath';
 export default function SessionDetail(){
  const {id}=useLocalSearchParams<{id:string}>();
  const [data,setData]=useState<HistoryDetail|null>(null);
+ const [records,setRecords]=useState<ExerciseRecord[]>([]);
  const [draft,setDraft]=useState<SetEdit[]>([]);
  const [title,setTitle]=useState('');
  const [notes,setNotes]=useState('');
@@ -29,6 +32,8 @@ export default function SessionDetail(){
     weight:s.weight,reps:s.reps,
    }))));
   }else setError('Could not load this finished workout.');
+  const latest=await readRecords();
+  if(latest.ok)setRecords(latest.value);
  },[id]);
  useFocusEffect(useCallback(()=>{void refresh();
   void getTypedSetting('units.weight').then(x=>{if(x.ok)setUnit(x.value);});
@@ -84,8 +89,15 @@ export default function SessionDetail(){
      <GymStepper label="Reps" value={s.reps} onChange={v=>change(i,{reps:v})}/>
      <Button label="Remove set" variant="secondary" onPress={()=>setDraft(rows=>rows.filter((_,n)=>n!==i))}/>
     </View>;
-   }):e.sets.map(s=><ListRow key={s.id} title={s.kind==='warm-up'?'W':'Set '+(s.position+1)}
-    detail={displayWeight(s.weight,e.type,unit)+' × '+s.reps+(s.side?' · '+s.side:'')}/>)}
+   }):e.sets.map(s=>{
+    const r=records.find(x=>x.exerciseId===e.exerciseId&&x.side===s.side);
+    const pr=s.kind==='working'&&s.reps>0&&
+      (r?.heaviest===s.weight&&r.heaviest!==null||
+       r?.lowestAssistance===s.weight&&r.lowestAssistance!==null);
+    return <ListRow key={s.id} title={s.kind==='warm-up'?'W':'Set '+(s.position+1)}
+      detail={displayWeight(s.weight,e.type,unit)+' × '+s.reps+(s.side?' · '+s.side:'')}
+      suffix={pr?<Chip kind="measured" label="PR"/>:undefined}/>;
+   })}
    {editing&&<Button label="Add working set" variant="secondary" onPress={()=>{
     const used=draft.filter(s=>s.sessionExerciseId===e.id);
     const next=Math.max(-1,...used.filter(s=>s.kind==='working').map(s=>s.position))+1;
