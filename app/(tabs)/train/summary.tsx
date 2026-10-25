@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { formatNumber, type TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
@@ -9,6 +11,7 @@ import { readRecords } from '../../../src/services/database/gymRepositories';
 import { estimatedOneRepMax } from '../../../src/services/database/gymMath';
 
 export default function WorkoutSummaryScreen() {
+  const {t,language}=useLanguage();
   const {id}=useLocalSearchParams<{id:string}>();
   const [workout,setWorkout]=useState<ActiveWorkout|null>(null);
   const [notes,setNotes]=useState('');
@@ -44,58 +47,57 @@ export default function WorkoutSummaryScreen() {
     if(!workout||busy)return;setBusy(true);
     const result=await completeWorkout(workout.id,notes.trim()||null);
     if(result.ok&&result.value)router.replace('/(tabs)/train');
-    else {setError('Could not save the workout. It is still in progress.');setBusy(false);}
+    else {setError(t('summary.saveError'));setBusy(false);}
   };
   const discardNow=async()=>{
     if(!workout||busy)return;setBusy(true);
     const result=await discardInProgressWorkout(workout.id);
     if(result.ok&&result.value)router.replace('/(tabs)/train');
-    else{setError('Could not discard workout.');setBusy(false);}
+    else{setError(t('summary.discardError'));setBusy(false);}
   };
   if(!workout)return <Screen embedded>
-    <Header title="Finish workout" onBack={()=>router.back()}/>
-    <Typography>Loading saved sets…</Typography>
+    <Header title={t('summary.finish')} onBack={()=>router.back()}/>
+    <Typography>{t('summary.loading')}</Typography>
   </Screen>;
   const stats=workoutNumbers(workout);
   const change=previousVolume&&previousVolume>0?
     (stats.volume-previousVolume)/previousVolume*100:null;
-  const comparison=change===null||Math.abs(change)<1?'About the same':
-    (change>0?'+':'')+Math.round(change)+'% vs last session';
+  const comparison=change===null||Math.abs(change)<1?t('summary.same'):
+    (change>0?'+':'')+t('summary.comparison',{pct:formatNumber(language,Math.round(change))});
   return <Screen embedded>
-    <Header title="Workout summary" subtitle={workout.title} onBack={()=>router.back()}/>
-    <Card rim="train" title="✓ Workout complete">
-      <ListRow title="Duration" detail={elapsedLabel(workout.startedAt)}/>
-      <ListRow title="Working sets" detail={String(stats.sets)}/>
-      <ListRow title="Volume" detail={Math.round(stats.volume)+' kg · training load, not a score'}/>
-      <Typography tone="secondary">{'Training volume · '+comparison}</Typography>
-      <Typography tone="secondary">{stats.pending?stats.pending+
-        ' planned sets were untouched and will not be saved.':'Every planned working set was logged.'}</Typography>
+    <Header title={t('summary.title')} subtitle={workout.title} onBack={()=>router.back()}/>
+    <Card rim="train" title={t('summary.complete')}>
+      <ListRow title={t('summary.duration')} detail={elapsedLabel(workout.startedAt)}/>
+      <ListRow title={t('summary.workingSets')} detail={formatNumber(language,stats.sets)}/>
+      <ListRow title={t('summary.volume')} detail={t('summary.volumeValue',{amount:formatNumber(language,Math.round(stats.volume))})}/>
+      <Typography tone="secondary">{t('summary.trainingVolume',{comparison})}</Typography>
+      <Typography tone="secondary">{stats.pending?t('summary.pending',{count:stats.pending}):t('summary.allLogged')}</Typography>
     </Card>
-    <Card title="Records">
-      {newRecords>0?<Typography bold>{newRecords} potential new record{newRecords===1?'':'s'} from logged working sets</Typography>:
-        <Typography tone="secondary">No new records today. Consistent sessions are what move them.</Typography>}
-      <Typography tone="secondary" size="small">Confirmed records are recalculated when you save. Estimates are a trend, not a test.</Typography>
+    <Card title={t('summary.records')}>
+      {newRecords>0?<Typography bold>{t((`summary.records.${new Intl.PluralRules(language==='ar'?'ar-EG':'en-US').select(newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
+        <Typography tone="secondary">{t('summary.noRecords')}</Typography>}
+      <Typography tone="secondary" size="small">{t('summary.recordNote')}</Typography>
     </Card>
-    <Card title="Wearable measurements">
-      <ListRow title="Heart rate" suffix={<Chip kind="pending" label="Pending"/>}
-        detail="No verified watch workout source yet"/>
-      <ListRow title="Calories" suffix={<Chip kind="pending" label="Pending"/>}
-        detail="Not estimated from sets"/>
+    <Card title={t('summary.wearables')}>
+      <ListRow title={t('summary.heart')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
+        detail={t('summary.noWatch')}/>
+      <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label="Pending"/>}
+        detail={t('summary.noCalories')}/>
     </Card>
-    <Card title="Workout notes">
-      <Field label="Notes (optional)" value={notes} onChangeText={setNotes} multiline/>
+    <Card title={t('summary.notes')}>
+      <Field label={t('summary.notesOptional')} value={notes} onChangeText={setNotes} multiline/>
     </Card>
     {error&&<Typography>{error}</Typography>}
-    <Button label={busy?'Saving…':'Save workout'} size="xl" variant="train"
+    <Button label={busy?t('summary.saving'):t('summary.save')} size="xl" variant="train"
       fullWidth disabled={busy} onPress={()=>void save()}/>
-    <Button label="Back to workout" variant="secondary" fullWidth
+    <Button label={t('summary.back')} variant="secondary" fullWidth
       disabled={busy} onPress={()=>router.back()}/>
-    <Button label="Discard workout" variant="danger" disabled={busy}
+    <Button label={t('summary.discard')} variant="danger" disabled={busy}
       onPress={()=>setDiscard(true)}/>
-    <Sheet visible={discard} destructive title="Discard this workout?"
-      description={stats.sets+' logged working sets will be deleted. This cannot be undone.'}
+    <Sheet visible={discard} destructive title={t('summary.discardTitle')}
+      description={t('summary.discardDescription',{count:stats.sets})}
       onClose={()=>setDiscard(false)}>
-      <Button label="Keep training" fullWidth onPress={()=>setDiscard(false)}/>
+      <Button label={t('summary.keep')} fullWidth onPress={()=>setDiscard(false)}/>
       <Button label="Discard workout" variant="danger" fullWidth disabled={busy}
         onPress={()=>void discardNow()}/>
     </Sheet>
