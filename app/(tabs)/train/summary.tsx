@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber, type TranslationKey } from '../../../src/i18n';
+import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
@@ -74,7 +74,7 @@ export default function WorkoutSummaryScreen() {
       <Typography tone="secondary">{stats.pending?t('summary.pending',{count:stats.pending}):t('summary.allLogged')}</Typography>
     </Card>
     <Card title={t('summary.records')}>
-      {newRecords>0?<Typography bold>{t((`summary.records.${new Intl.PluralRules(language==='ar'?'ar-EG':'en-US').select(newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
+      {newRecords>0?<Typography bold>{t((`summary.records.${pluralForm(language,newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
         <Typography tone="secondary">{t('summary.noRecords')}</Typography>}
       <Typography tone="secondary" size="small">{t('summary.recordNote')}</Typography>
     </Card>

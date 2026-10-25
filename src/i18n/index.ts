@@ -25,9 +25,26 @@ export function translate(language: AppLanguage, key: TranslationKey, params?: T
   });
 }
 
-/** Intl.PluralRules handles Arabic zero/one/two/few/many/other (not an English -s suffix). */
+export type PluralForm = 'zero' | 'one' | 'two' | 'few' | 'many' | 'other';
+
+/**
+ * CLDR plural category for whole counts. Hand-written because Hermes on Android has no
+ * Intl.PluralRules (`new Intl.PluralRules` crashed History on the release APK).
+ * Arabic: 0 zero, 1 one, 2 two, n%100 3-10 few, n%100 11-99 many, else other.
+ */
+export function pluralForm(language: AppLanguage, count: number): PluralForm {
+  const n = Math.abs(Math.trunc(count));
+  if (language === 'en') return n === 1 ? 'one' : 'other';
+  const r = n % 100;
+  if (n === 0) return 'zero';
+  if (n === 1) return 'one';
+  if (n === 2) return 'two';
+  if (r >= 3 && r <= 10) return 'few';
+  if (r >= 11) return 'many';
+  return 'other';
+}
+
 export function translateWorkoutCount(language: AppLanguage, count: number): string {
-  const form = new Intl.PluralRules(language === 'ar' ? 'ar-EG' : 'en-US').select(count);
-  return translate(language, (`count.workouts.${form}`) as TranslationKey, { count });
+  return translate(language, (`count.workouts.${pluralForm(language, count)}`) as TranslationKey, { count });
 }
 export type { TranslationKey } from './en';
