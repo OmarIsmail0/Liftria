@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -9,6 +10,7 @@ import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { Exercise, Muscle } from '../../../src/services/database/gymTypes';
 
 export default function WorkoutPreview() {
+  const {t,language}=useLanguage();
   const {templateId}=useLocalSearchParams<{templateId?:string}>();
   const [template,setTemplate]=useState<Template|null>(null);
   const [lookup,setLookup]=useState<Record<string,Exercise>>({});
@@ -42,14 +44,14 @@ export default function WorkoutPreview() {
   },[templateId]));
   const create=async()=>{
     setBusy(true);
-    const started=await startManualWorkout(template?.name??'Empty workout',templateId??null);
+    const started=await startManualWorkout(template?.name??t('preview.emptyWorkout'),templateId??null);
     if(started.ok)router.replace({pathname:'/(tabs)/train/active',params:{id:started.value}});
-    else {setError('Could not start workout. Try again.');setBusy(false);}
+    else {setError(t('preview.startError'));setBusy(false);}
   };
   const begin=async()=>{
     if(busy)return;
     const session=await readInProgressWorkout();
-    if(!session.ok){setError('Could not check the active workout. Retry.');return;}
+    if(!session.ok){setError(t('preview.checkError'));return;}
     if(session.value){setExisting(session.value);return;}
     await create();
   };
@@ -57,38 +59,38 @@ export default function WorkoutPreview() {
     if(!existing)return;
     setBusy(true);
     const removed=await discardInProgressWorkout(existing.id);
-    if(!removed.ok||!removed.value){setError('Could not discard the previous workout.');setBusy(false);return;}
+    if(!removed.ok||!removed.value){setError(t('preview.discardError'));setBusy(false);return;}
     setExisting(null);
     await create();
   };
   const muscles=[...new Set((template?.exercises??[]).flatMap(e=>lookup[e.exerciseId]?.primaryMuscles??[]))] as Muscle[];
   return <Screen embedded>
-    <Header title={template?.name??'Empty workout'} subtitle="Review before starting" onBack={()=>router.back()}/>
+    <Header title={template?.name??t('preview.emptyWorkout')} subtitle={t('preview.subtitle')} onBack={()=>router.back()}/>
     <Card rim="train">
       {muscles.length>0&&<BodyMap primary={muscles}/>}
-      <Typography tone="secondary">{template?template.exercises.length+' exercises · '+template.restSec+' sec default rest':
-        'No exercises yet. You can add them after starting.'}</Typography>
+      <Typography tone="secondary">{template?t('preview.details',{count:template.exercises.length,seconds:template.restSec}):
+        t('preview.noneYet')}</Typography>
     </Card>
-    <Card title="Up next">
+    <Card title={t('preview.upNext')}>
       {template?template.exercises.map((e,i)=><ListRow key={i}
-        title={lookup[e.exerciseId]?.name??'Exercise'}
-        detail={e.targetSets+' sets · '+e.repMin+'–'+e.repMax+' reps'+
-          (last[e.exerciseId]?' · last '+new Date(last[e.exerciseId] ?? '').toLocaleDateString():' · no previous workout')}/>):
-        <Typography tone="secondary">Start empty, then add exercises from the library.</Typography>}
+        title={lookup[e.exerciseId]?.name??t('preview.exercise')}
+        detail={t('preview.sets',{count:e.targetSets,min:e.repMin,max:e.repMax})+
+          (last[e.exerciseId]?t('preview.last',{date:new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}):t('preview.noLast'))}/>):
+        <Typography tone="secondary">{t('preview.startEmptyHint')}</Typography>}
     </Card>
     {error&&<Typography>{error}</Typography>}
     <View style={{gap:8}}>
-      <Button label={busy?'Starting…':'Start workout'} size="xl" variant="train"
+      <Button label={busy?t('preview.starting'):t('preview.start')} size="xl" variant="train"
         fullWidth disabled={busy} onPress={()=>void begin()}/>
-      <Typography tone="secondary" size="small">Nothing is logged until you tap Log set.</Typography>
+      <Typography tone="secondary" size="small">{t('preview.notLogged')}</Typography>
     </View>
-    <Sheet visible={existing!==null} title="Workout already in progress"
-      description={'You have '+(existing?.title??'a workout')+' in progress. Resume it, or discard it and start '+(template?.name??'Empty workout')+'?'}
+    <Sheet visible={existing!==null} title={t('preview.alreadyActive')}
+      description={t('preview.conflict',{current:existing?.title??t('preview.workout'),next:template?.name??t('preview.emptyWorkout')})}
       onClose={()=>setExisting(null)}>
-      <Button label={'Resume '+(existing?.title??'workout')} variant="train" fullWidth
+      <Button label={t('preview.resume',{name:existing?.title??t('preview.workout')})} variant="train" fullWidth
         onPress={()=>{if(existing)router.replace({pathname:'/(tabs)/train/active',params:{id:existing.id}});}}/>
-      <Button label="Keep current workout" variant="secondary" fullWidth onPress={()=>setExisting(null)}/>
-      <Button label={'Discard and start '+(template?.name??'empty workout')} variant="danger" fullWidth
+      <Button label={t('preview.keep')} variant="secondary" fullWidth onPress={()=>setExisting(null)}/>
+      <Button label={t('preview.replace',{name:template?.name??t('preview.emptyWorkout')})} variant="danger" fullWidth
         disabled={busy} onPress={()=>void replaceExisting()}/>
     </Sheet>
   </Screen>;
