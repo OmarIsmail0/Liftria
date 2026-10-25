@@ -6,14 +6,17 @@ import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { parseImportCsv, csvFileTypeError, ImportParseError, MAX_CSV_BYTES, type Importer } from '../../src/features/import/importCsv';
 import { setImportDraft } from '../../src/features/import/importDraft';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 
-const sources:{id:Importer;name:string;guide:string}[]=[
- {id:'hevy',name:'Hevy',guide:'Profile → Settings → Export & Import Data'},
- {id:'strong',name:'Strong',guide:'Settings → Export Data → CSV'},
- {id:'fitnotes',name:'FitNotes',guide:'Settings → Backup & Export → CSV'},
- {id:'csv',name:'Another app (CSV)',guide:'Export a CSV with date, exercise, weight and reps'},
+const makeSources=(t: ReturnType<typeof useLanguage>['t']): {id:Importer;name:string;guide:string}[]=>[
+ {id:'hevy',name:'Hevy',guide:t('im1.hevyGuide')},
+ {id:'strong',name:'Strong',guide:t('im1.strongGuide')},
+ {id:'fitnotes',name:'FitNotes',guide:t('im1.fitnotesGuide')},
+ {id:'csv',name:t('im1.generic'),guide:t('im1.csvGuide')},
 ];
 export default function ImportStart(){
+ const {t}=useLanguage();
+ const sources=makeSources(t);
  const [source,setSource]=useState<Importer>('hevy');
  const [reading,setReading]=useState(false);
  const [error,setError]=useState<string|null>(null);
@@ -26,7 +29,7 @@ export default function ImportStart(){
    const wrongType=csvFileTypeError(asset.name,source);
    if(wrongType){
     try{await file.delete();}catch{/* Picker cache cleanup is best effort. */}
-    setError(wrongType);return;
+    setError(t(source==='hevy'?'im1.wrongFileHevy':'im1.wrongFile'));return;
    }
    let text='',tooLarge=false;
    try{
@@ -34,7 +37,7 @@ export default function ImportStart(){
     if(!tooLarge)text=await file.text();
    }finally{try{await file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
    try{
-    if(tooLarge)throw new ImportParseError('too-large','This file is too large to import.');
+    if(tooLarge)throw new ImportParseError('too-large',t('im1.tooLarge'));
     const parsed=parseImportCsv(source,asset.name,text);
     setImportDraft({parsed,error:null,source,fileName:asset.name});
    }catch(reason){
@@ -44,26 +47,26 @@ export default function ImportStart(){
    }
    router.push('/import/preview');
   }catch{
-   setError("Liftria couldn't read that file. Choose a different CSV.");
+   setError(t('im1.readFailed'));
   }finally{setReading(false);}
  };
  return <Screen>
-  <Header title="Import history" subtitle="From another app" onBack={()=>router.back()}/>
-  <Card title="Where are you coming from?">
+  <Header title={t('im1.title')} subtitle={t('im1.subtitle')} onBack={()=>router.back()}/>
+  <Card title={t('im1.sourceTitle')}>
    {sources.map(s=><ListRow key={s.id} title={(source===s.id?'✓ ':'')+s.name}
-    detail={s.guide} accessibilityLabel={s.name+(source===s.id?', selected':'')+'. '+s.guide}
+    detail={s.guide} accessibilityLabel={s.name+(source===s.id?', '+t('im1.selected'):'')+'. '+s.guide}
     onPress={()=>setSource(s.id)}/>)}
   </Card>
-  <Card rim="train" title="Your data stays yours">
-   <Typography>The file stays on this phone. Liftria reads it and saves your workouts locally. Nothing is uploaded.</Typography>
-   <Typography tone="secondary" size="small">Importing history does not change your plans or templates. The file is not kept after reading.</Typography>
+  <Card rim="train" title={t('im1.privacy')}>
+   <Typography>{t('im1.privacyDesc')}</Typography>
+   <Typography tone="secondary" size="small">{t('im1.privacyDetail')}</Typography>
   </Card>
-  <Card title="Not in this version">
-   <Typography tone="secondary">Hevy account/API import, Apple Health weight import, and exporting from Liftria.</Typography>
+  <Card title={t('im1.unavailable')}>
+   <Typography tone="secondary">{t('im1.unavailableDesc')}</Typography>
   </Card>
   <View style={{gap:12}}>
    {error&&<Typography>{error}</Typography>}
-   <Button label={reading?'Reading file…':'Choose a file'} disabled={reading}
+   <Button label={reading?t('im1.reading'):t('im1.choose')} disabled={reading}
     size="xl" variant="train" fullWidth onPress={()=>void pick()}/>
   </View>
  </Screen>;
