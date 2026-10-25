@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
+import { useLanguage } from '../../i18n/LanguageProvider';
 import { listPlans, listSessions, listTemplates, saveTemplate, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
 import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
@@ -14,6 +15,7 @@ import { calculateMuscleRecovery, type MuscleRecovery } from './recoveryMath';
 
 export default function TrainHome() {
   const {theme}=useTheme();
+  const { t, language } = useLanguage();
   const [active,setActive]=useState<ActiveWorkout|null>(null);
   const [templates,setTemplates]=useState<Template[]>([]);
   const [plans,setPlans]=useState<Plan[]>([]);
@@ -37,8 +39,8 @@ export default function TrainHome() {
           repMin:6,repMax:10,restSec:null,notes:null}))});
       if(saved.ok){await refresh();router.push({pathname:'/(tabs)/train/preview',
         params:{templateId:saved.value}});}
-      else setStarterMessage('Could not save starter template.');
-    }else setStarterMessage('The offline exercise library is unavailable.');
+      else setStarterMessage(t('train.starterError'));
+    }else setStarterMessage(t('train.libraryError'));
     setStarterBusy(false);
   };
   const refresh=useCallback(async()=>{
@@ -67,95 +69,95 @@ export default function TrainHome() {
   };
   const stats=active?workoutNumbers(active):null;
   return <Screen embedded>
-    <Header title="Train" subtitle="Your workouts, on this phone" right={
-      <Button label="Search" variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>}/>
-    {loading?<Typography tone="secondary">Loading your workouts…</Typography>:
-      error?<Card><Typography>Could not load your workouts. Your saved data stays on this phone.</Typography>
-        <Button label="Retry" onPress={()=>void refresh()}/></Card>:
-      <Card rim="train" title={active?'Workout in progress':planned?'Up next · '+planned.name:'Start training'}>
+    <Header title={t('nav.train')} subtitle={t('train.subtitle')} right={
+      <Button label={t('train.search')} variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>}/>
+    {loading?<Typography tone="secondary">{t('train.loading')}</Typography>:
+      error?<Card><Typography>{t('train.loadError')}</Typography>
+        <Button label={t('train.retry')} onPress={()=>void refresh()}/></Card>:
+      <Card rim="train" title={active?t('train.inProgress'):planned?t('train.upNext', { name: planned.name }):t('train.start')}>
         {active?<View style={{gap:theme.space[2]}}>
-          <Typography>{active.title} · {elapsedLabel(active.startedAt)} · {stats?.sets??0} sets logged</Typography>
-          <Button label="Resume workout" size="xl" variant="train" fullWidth onPress={resume}/>
-          <Button label="Discard workout" variant="danger" onPress={()=>setDiscard(true)}/>
+          <Typography>{active.title} · {elapsedLabel(active.startedAt)} · {t('train.setsLogged', { count: stats?.sets ?? 0 })}</Typography>
+          <Button label={t('train.resume')} size="xl" variant="train" fullWidth onPress={resume}/>
+          <Button label={t('train.discard')} variant="danger" onPress={()=>setDiscard(true)}/>
         </View>:planned?<View style={{gap:theme.space[2]}}>
-          <Typography tone="secondary">Your active plan suggests {planned.name}. You can train on any day.</Typography>
-          <Button label="Preview workout" variant="train" fullWidth
+          <Typography tone="secondary">{t('train.planned', { name: planned.name })}</Typography>
+          <Button label={t('train.preview')} variant="train" fullWidth
             onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:planned.id}})}/>
-          <Button label="Edit template" variant="secondary"
+          <Button label={t('train.editTemplate')} variant="secondary"
             onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:planned.id}})}/>
         </View>:<View style={{gap:theme.space[2]}}>
-          <Typography tone="secondary">Start without a plan, or build a repeatable template.</Typography>
-          <Button label="Start empty workout" variant="train" fullWidth
+          <Typography tone="secondary">{t('train.startWithoutPlan')}</Typography>
+          <Button label={t('train.startEmpty')} variant="train" fullWidth
             onPress={()=>router.push('/(tabs)/train/preview')}/>
-          <Button label="Build a template" variant="secondary" fullWidth
+          <Button label={t('train.buildTemplate')} variant="secondary" fullWidth
             onPress={()=>router.push('/(tabs)/train/template')}/>
           {templates.length===0&&<View style={{gap:theme.space[2]}}>
-            <Typography tone="secondary" size="small">Starter templates · saved only if you choose one</Typography>
-            <Button label="Create Upper A starter" variant="secondary" disabled={starterBusy}
+            <Typography tone="secondary" size="small">{t('train.starterHint')}</Typography>
+            <Button label={t('train.starterUpper')} variant="secondary" disabled={starterBusy}
               fullWidth onPress={()=>void starter('Upper A')}/>
-            <Button label="Create Lower B starter" variant="secondary" disabled={starterBusy}
+            <Button label={t('train.starterLower')} variant="secondary" disabled={starterBusy}
               fullWidth onPress={()=>void starter('Lower B')}/>
             {starterMessage&&<Typography>{starterMessage}</Typography>}
           </View>}
         </View>}
       </Card>}
-    {logged.length===0&&<Card title="Switching from another app?">
-      <Typography tone="secondary">Import your history from Hevy, Strong, FitNotes or CSV. All on this phone.</Typography>
-      <Button label="Import your history" variant="secondary" onPress={()=>router.push('/import')}/>
+    {logged.length===0&&<Card title={t('train.importTitle')}>
+      <Typography tone="secondary">{t('train.importDescription')}</Typography>
+      <Button label={t('train.import')} variant="secondary" onPress={()=>router.push('/import')}/>
     </Card>}
-    <Card title="Explore">
+    <Card title={t('train.explore')}>
       <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
-        <Button label="Templates & plans" variant="secondary" onPress={()=>router.push('/(tabs)/train/plans')}/>
-        <Button label="Exercises" variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>
-        <Button label="Muscles" variant="secondary" onPress={()=>router.push('/(tabs)/train/muscles')}/>
+        <Button label={t('train.templatesPlans')} variant="secondary" onPress={()=>router.push('/(tabs)/train/plans')}/>
+        <Button label={t('train.exercises')} variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>
+        <Button label={t('train.muscles')} variant="secondary" onPress={()=>router.push('/(tabs)/train/muscles')}/>
       </View>
     </Card>
-    <Card title="Muscles" rim="train">
+    <Card title={t('train.muscles')} rim="train">
       {muscles.every(m=>m.lastCredit===null)?
-        <Typography tone="secondary">Finish a workout to see your recently trained muscles.</Typography>:
-        <Typography tone="secondary">{muscles.filter(m=>m.band==='higher').sort((a,b)=>b.score-a.score)
-          .slice(0,3).map(m=>m.muscle).join(', ')||'Your recent sessions'} · trained recently.
-          {muscles.some(m=>m.band==='ready')?' Other regions are ready.':''}</Typography>}
-      <Typography tone="tertiary" size="small">Estimate from logged working sets only. It does not measure recovery.</Typography>
-      <Button label="Open muscle map" variant="secondary" onPress={()=>router.push('/(tabs)/train/recovery')}/>
+        <Typography tone="secondary">{t('train.noMuscles')}</Typography>:
+        <Typography tone="secondary">{t('train.trainedRecently', { names: muscles.filter(m=>m.band==='higher').sort((a,b)=>b.score-a.score)
+          .slice(0,3).map(m=>m.muscle).join(', ') || t('train.recentSessions') })}
+          {muscles.some(m=>m.band==='ready')?' '+t('train.otherReady'):''}</Typography>}
+      <Typography tone="tertiary" size="small">{t('train.recoveryEstimate')}</Typography>
+      <Button label={t('train.openMuscles')} variant="secondary" onPress={()=>router.push('/(tabs)/train/recovery')}/>
     </Card>
-    <Card title="This week">
+    <Card title={t('train.week')}>
       <View style={{flexDirection:'row',justifyContent:'space-between',flexWrap:'wrap',gap:theme.space[1]}}>
         {weekDays(today).map(day=>{
           const done=logged.some(s=>isLocalDate(s.startedAt,day.date));
           const next=scheduledTemplate(plan,templates,day.date);
-          const label=done?'Done':next?.name??'Rest';
+          const label=done?t('train.done'):next?.name??t('train.rest');
           return <View key={day.label} accessible accessibilityLabel={day.label+', '+label+
-            (day.today?', today':'')} style={{minWidth:40,minHeight:60,alignItems:'center',
+            (day.today?', '+t('train.todayA11y'):'')} style={{minWidth:40,minHeight:60,alignItems:'center',
             justifyContent:'center',padding:theme.space[1],borderRadius:theme.radius.md,
             borderColor:day.today?theme.color.domain.train:theme.color.border.subtle,
             borderWidth:day.today?2:1}}>
-            <Typography size="small">{day.label}</Typography>
-            <Typography tone="secondary" size="small">{done?'✓':day.today?'Today':next?'●':'—'}</Typography>
+            <Typography size="small">{new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US', { weekday: 'short' }).format(day.date)}</Typography>
+            <Typography tone="secondary" size="small">{done?'✓':day.today?t('nav.today'):next?'●':'—'}</Typography>
           </View>;
         })}
       </View>
-      <Typography tone="secondary" size="small">Check marks mean completed workouts. Planned days are suggestions, not requirements.</Typography>
+      <Typography tone="secondary" size="small">{t('train.weekNote')}</Typography>
     </Card>
-    <Card title="Training history">
+    <Card title={t('train.historyTitle')}>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-        <Button label="History" variant="secondary" onPress={()=>router.push('/(tabs)/train/history')}/>
-        <Button label="Records" variant="secondary" onPress={()=>router.push('/(tabs)/train/records')}/>
-        <Button label="Strength trends" variant="secondary" onPress={()=>router.push('/(tabs)/progress/strength')}/>
+        <Button label={t('train.history')} variant="secondary" onPress={()=>router.push('/(tabs)/train/history')}/>
+        <Button label={t('train.records')} variant="secondary" onPress={()=>router.push('/(tabs)/train/records')}/>
+        <Button label={t('progress.strengthTrends')} variant="secondary" onPress={()=>router.push('/(tabs)/progress/strength')}/>
       </View>
     </Card>
-    <Card title="Recent workouts">
-      {logged.length===0?<Typography tone="secondary">No completed workouts yet.</Typography>:
+    <Card title={t('train.recent')}>
+      {logged.length===0?<Typography tone="secondary">{t('train.noCompleted')}</Typography>:
         logged.slice(0,4).map(s=><ListRow key={s.id} title={s.title}
-          detail={new Date(s.startedAt).toLocaleDateString()}
+          detail={new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US').format(new Date(s.startedAt))}
           onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}/>)}
     </Card>
-    <Typography tone="tertiary" size="small">Training works offline and does not need a watch.</Typography>
-    <Sheet visible={discard} title="Discard the active workout?" destructive
-      description={(stats?.sets??0)+' logged working sets will be removed. No undo.'
+    <Typography tone="tertiary" size="small">{t('train.offline')}</Typography>
+    <Sheet visible={discard} title={t('train.discardTitle')} destructive
+      description={t('train.discardDescription', { count: stats?.sets ?? 0 })
       } onClose={()=>setDiscard(false)}>
-      <Button label="Keep training" fullWidth onPress={()=>setDiscard(false)}/>
-      <Button label="Discard workout" variant="danger" fullWidth onPress={()=>void deleteActive()}/>
+      <Button label={t('train.keep')} fullWidth onPress={()=>setDiscard(false)}/>
+      <Button label={t('train.discard')} variant="danger" fullWidth onPress={()=>void deleteActive()}/>
     </Sheet>
   </Screen>;
 }
