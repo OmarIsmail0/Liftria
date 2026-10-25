@@ -19,7 +19,7 @@ export default function ImportPreview(){
   if(result.ok)setContext(result.value);
   else setError('Could not read existing workouts; nothing was imported.');
  },[]);
- useEffect(()=>{if(draft?.parsed)void load();},[load,draft?.parsed]);
+ useEffect(()=>{if(draft?.parsed)void Promise.resolve().then(()=>load());},[load,draft?.parsed]);
  const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions):null;
  const mappings=plan?.mappings.filter(m=>m.status==='suggested'||m.status==='custom')??[];
  const start=()=>{
@@ -36,7 +36,7 @@ export default function ImportPreview(){
    onBack={()=>router.back()}/>
   {parseError?<Card title={parseError.code==='empty'?'No workouts found in this file':
     parseError.code==='too-large'?'This file is too large to import':
-     "This doesn't look like a "+draft.source+' export'}>
+     "This does not look like a "+draft.source+' export'}>
    <Typography tone="secondary">{parseError.message} Nothing was imported.</Typography>
    <Typography tone="secondary" size="small">Expected: {(parseError.expected.length?parseError.expected:
     expectedColumns(draft.source as 'hevy'|'strong'|'fitnotes'|'csv')).join(', ')}</Typography>

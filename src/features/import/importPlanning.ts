@@ -1,5 +1,5 @@
 import { bundledExercises, normalizedName, searchExercises } from '../../services/database/exerciseLibrary';
-import { calculateRecords, type ExerciseRecord, type RecordObservation } from '../../services/database/gymMath';
+import { calculateRecords, type RecordObservation } from '../../services/database/gymMath';
 import type { Exercise } from '../../services/database/gymTypes';
 import { fromImportWeight, type ParsedImport, type ParsedWorkout, type WeightUnit } from './importCsv';
 

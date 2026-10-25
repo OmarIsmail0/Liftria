@@ -30,7 +30,7 @@ export default function Importing(){
    <Typography>{count} workouts committed</Typography>
    <View accessibilityRole="progressbar"
     accessibilityValue={{min:0,max:100,now:count?100:0}} style={{height:10}}/>
-   <Typography tone="secondary">It can't be cancelled halfway. Either all the workouts are saved, or none are.</Typography>
+   <Typography tone="secondary">It cannot be cancelled halfway. Either all the workouts are saved, or none are.</Typography>
   </Card>
  </Screen>;
 }

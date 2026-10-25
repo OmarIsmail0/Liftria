@@ -48,7 +48,7 @@ export default function ImportStart(){
   </Card>
   <Card rim="train" title="Your data stays yours">
    <Typography>The file stays on this phone. Liftria reads it and saves your workouts locally. Nothing is uploaded.</Typography>
-   <Typography tone="secondary" size="small">Importing history doesn't change your plans or templates. The file is not kept after reading.</Typography>
+   <Typography tone="secondary" size="small">Importing history does not change your plans or templates. The file is not kept after reading.</Typography>
   </Card>
   <Card title="Not in this version">
    <Typography tone="secondary">Hevy account/API import, Apple Health weight import, and exporting from Liftria.</Typography>
