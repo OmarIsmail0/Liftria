@@ -18,7 +18,7 @@ export default function TrainHome() {
       </View>
     </Card>
     <Card title="Workouts">
-      <Typography tone="secondary">Plans, active workouts and workout history are being added in the next build stage. No workout data is shown or invented yet.</Typography>
+      <Typography tone="secondary">Your workout plans and sessions will appear here once workout tracking is available.</Typography>
     </Card>
     <Typography tone="tertiary" size="small">Exercise library works entirely offline. No watch connection is required.</Typography>
   </Screen>;

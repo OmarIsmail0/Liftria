@@ -1,5 +1,5 @@
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -9,7 +9,10 @@ import { ensureExercisePack, listExercises, searchExercises } from '../../../src
 
 export default function MuscleBrowser(){
   const {theme}=useTheme();
-  const [selected,setSelected]=useState<Muscle>('chest');
+  const {muscle}=useLocalSearchParams<{muscle?:string}>();
+  const requested=MUSCLES.find(m=>m===muscle)??'chest';
+  const [selected,setSelected]=useState<Muscle>(requested);
+  useEffect(()=>setSelected(requested),[requested]);
   const [all,setAll]=useState<Exercise[]>([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
@@ -28,7 +31,7 @@ export default function MuscleBrowser(){
   const rows=useMemo(()=>searchExercises(all,'',selected),[all,selected]);
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
-      <Header title="Muscles" subtitle="TR-5 · Tap a region or a named chip" onBack={()=>router.back()}/>
+      <Header title="Muscles" subtitle="Tap a region or a muscle name" onBack={()=>router.back()}/>
       <Card rim="train">
         <BodyMap selected={selected} primary={[selected]} onSelect={setSelected}/>
       </Card>

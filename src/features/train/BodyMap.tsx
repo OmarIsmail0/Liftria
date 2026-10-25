@@ -48,7 +48,7 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
   const { theme }=useTheme();
   const backOnly=mini && !primary.some(m=>F.some(part=>part.muscle===m));
   const front=mini ? (backOnly?B:F) : F;
-  const size=mini?{width:82,height:150}:{width:300,height:270};
+  const size=mini?{width:40,height:72}:{width:300,height:270};
   const textColor=theme.color.text.secondary;
   const mapText=bodyMapDescription(primary,secondary);
   const renderFigure=(parts:Shape[],offset:number,side:string)=><G key={side} transform={'translate('+offset+',0)'}>
@@ -89,7 +89,9 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
       </View>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[3],alignItems:'center'}}>
         <View style={{width:14,height:14,borderRadius:4,borderWidth:1,
-          borderStyle:'dashed',borderColor:theme.color.domain.train,backgroundColor:theme.color.tint.train}}/>
+          borderStyle:'dashed',borderColor:theme.color.domain.train}}>
+          <View style={{flex:1,opacity:0.30,backgroundColor:theme.color.domain.train,borderRadius:3}}/>
+        </View>
         <Text style={{color:textColor,flexShrink:1}}>Secondary (30%): {secondary.filter(m=>!primary.includes(m)).map(titleMuscle).join(', ')||'None'}</Text>
       </View>
     </View>}

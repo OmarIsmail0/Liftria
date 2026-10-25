@@ -47,12 +47,12 @@ export default function ExerciseLibrary() {
     .filter((e):e is Exercise=>Boolean(e)),[all,recent]);
   const row=(e:Exercise)=><ListRow key={e.id} title={e.name}
     detail={(e.equipment??'Equipment not specified')+' · '+e.primaryMuscles.join(', ')+(e.source==='custom'?' · My exercise':'')}
-    suffix={<View style={{width:85,height:150,justifyContent:'center'}}>
+    suffix={<View style={{width:42,height:76,justifyContent:'center'}}>
       <BodyMap mini primary={e.primaryMuscles} secondary={e.secondaryMuscles}/></View>}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>;
   return <Screen embedded scroll={false}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.space[3]}}>
-      <Header title="Exercises" subtitle="TR-4 · Stored on your phone" onBack={()=>router.back()}
+      <Header title="Exercises" subtitle="Stored on your phone" onBack={()=>router.back()}
         right={<Button label="New" variant="secondary" onPress={()=>router.push('/(tabs)/train/create')}/>}/>
       <TextInput value={query} onChangeText={setQuery} accessibilityLabel="Search exercises and aliases"
         placeholder="Search exercises · try OHP" placeholderTextColor={theme.color.text.tertiary}
