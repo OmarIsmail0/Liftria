@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts, type LocalStorageCounts } from '../../src/services/database';
@@ -10,6 +11,7 @@ import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, 
 
 export default function DataAndStorage() {
   const { theme, resetLocalPreferences } = useTheme();
+  const { resetLanguage } = useLanguage();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
   const [imported,setImported]=useState<ImportBatch|null>(null);
   const [undoVisible,setUndoVisible]=useState(false);
@@ -57,6 +59,7 @@ export default function DataAndStorage() {
       // All app-owned Phase 2 data and the saved key are gone. Return to fresh onboarding.
       setOpen(false);setConfirmation('');
       resetLocalPreferences();
+      resetLanguage();
       // Remove the Settings and (tabs) back stacks before routing to fresh onboarding.
       router.dismissAll();
       router.replace({pathname:'/onboarding/[step]',params:{step:'welcome'}});

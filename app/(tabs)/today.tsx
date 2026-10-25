@@ -3,6 +3,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
+import { formatNumber } from '../../src/i18n';
 import { Banner, Button, Card, Chip, Header, ListRow, Orb, Screen, Skeleton, Typography } from '../../src/design/primitives';
 import { getProfile, type Profile } from '../../src/services/database/profile';
 import { getCurrentTarget, type Target } from '../../src/services/database/targets';
@@ -25,6 +27,7 @@ const emptyToday: LocalToday = {
 
 export default function TodayTab() {
   const { theme } = useTheme();
+  const { t, language } = useLanguage();
   const [local, setLocal] = useState<LocalToday>(emptyToday);
   const { snapshot, refreshing, refresh } = useHealthSnapshot(overviewMetrics);
   const [localLoading, setLocalLoading] = useState(true);
@@ -39,9 +42,9 @@ export default function TodayTab() {
       isLocalDate(s.startedAt,today)):undefined;
     const plan=plans.ok?plans.value.find(p=>p.active)??null:null;
     const next=scheduledTemplate(plan,templates.ok?templates.value:[],today);
-    setTraining(finished?{title:finished.title,detail:'Done · completed today'}:
-      next?{title:next.name,detail:'Planned for today · not logged'}:null);
-  },[]);
+    setTraining(finished?{title:finished.title,detail:t('today.trainingDone')}:
+      next?{title:next.name,detail:t('today.trainingPlanned')}:null);
+  },[t]);
   const loadLocal = useCallback(async () => {
     const [profile, target, hide, completed, saved, key, net] = await Promise.all([
       getProfile(), getCurrentTarget(), getTypedSetting('hideNumbers'),
@@ -70,9 +73,9 @@ export default function TodayTab() {
     void loadLocal().catch(() => setLocalLoading(false));
     void loadTraining();
   }, [loadLocal,loadTraining]));
-  const date = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+  const date = new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date());
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? t('today.morning') : hour < 17 ? t('today.afternoon') : t('today.evening');
   const steps = snapshot.readings.steps;
   const hr = snapshot.readings['heart-rate'];
   const hasTarget = local.target !== null;
@@ -83,7 +86,7 @@ export default function TodayTab() {
   const justUpdated = snapshot.fresh;
   const now = new Date();
   if (localLoading || !snapshot.loaded) return <Screen embedded>
-    <Header title="Today" subtitle="Loading your local data…" />
+    <Header title={t('nav.today')} subtitle={t('today.loading')} />
     <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
       <Skeleton height={theme.size.touch.workout} />
       <Skeleton height={theme.size.touch.workout * 3} />
@@ -96,72 +99,72 @@ export default function TodayTab() {
       onRefresh={() => { void Promise.allSettled([refresh(true), loadLocal(), loadTraining()]); }}
       colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}
       contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}>
-      <Header title={local.profile?.name ? `${greeting}, ${local.profile.name}` : 'Welcome to Liftria'}
-        subtitle={date} right={<Pressable accessibilityRole="button" accessibilityLabel="Open Settings"
+      <Header title={local.profile?.name ? `${greeting}, ${local.profile.name}` : t('today.welcome')}
+        subtitle={date} right={<Pressable accessibilityRole="button" accessibilityLabel={t('today.openSettings')}
           onPress={() => router.push('/settings')}
           style={{ minHeight: theme.size.touch.min, minWidth: theme.size.touch.min,
             borderRadius: theme.radius.pill, borderWidth: theme.size.border.thin,
             borderColor: theme.controlOutline, alignItems: 'center', justifyContent: 'center' }}>
           <Typography size="head">L</Typography>
         </Pressable>} />
-      {local.offline && <Banner variant="offline" title="Offline"
-        message="Your local data still works. Hiku needs internet." />}
+      {local.offline && <Banner variant="offline" title={t('today.offline')}
+        message={t('today.offlineDescription')} />}
       <Orb eaten={0} target={local.target?.kcal ?? null} hidden={local.hideNumbers}
         active onPress={() => router.push('/(tabs)/eat')} />
       <View style={{ gap: theme.space[2], alignItems: 'center' }}>
         {hasTarget ? <>
           {local.target?.source === 'estimate'
-            ? <Chip kind="estimate" label="Estimate" />
-            : <Typography tone="secondary" size="small">Your target · manually set</Typography>}
-          <Typography tone="secondary">{local.hideNumbers ? 'Your calorie target is saved' :
-            `${local.target?.kcal.toLocaleString()} kcal target · Meals not yet logged`}</Typography>
-          <Typography tone="secondary" size="small">{local.hideNumbers ? 'Macros are hidden' :
-            `Protein ${local.target?.proteinG} g · Fat ${local.target?.fatG} g · Carbs ${local.target?.carbsG} g`}</Typography>
+            ? <Chip kind="estimate" />
+            : <Typography tone="secondary" size="small">{t('today.manualTarget')}</Typography>}
+          <Typography tone="secondary">{local.hideNumbers ? t('today.targetSaved') :
+            t('today.targetNotLogged', { calories: local.target?.kcal ?? 0 })}</Typography>
+          <Typography tone="secondary" size="small">{local.hideNumbers ? t('today.macrosHidden') :
+            t('today.macros', { protein: local.target?.proteinG ?? 0, fat: local.target?.fatG ?? 0, carbs: local.target?.carbsG ?? 0 })}</Typography>
         </> : <>
-          <Typography tone="secondary">Your first meal lights it up.</Typography>
-          <Typography tone="secondary" size="small">No target yet · Set a target whenever you’re ready.</Typography>
+          <Typography tone="secondary">{t('today.firstMeal')}</Typography>
+          <Typography tone="secondary" size="small">{t('today.noTarget')}</Typography>
           <Typography tone="secondary" size="small">{local.hideNumbers
-            ? 'Macros hidden' : 'Protein 0 g · Fat 0 g · Carbs 0 g · nothing logged'}</Typography>
-          <Button label="Set a target" variant="secondary" onPress={() =>
+            ? t('today.macrosHidden') : t('today.macrosNotLogged')}</Typography>
+          <Button label={t('today.setTarget')} variant="secondary" onPress={() =>
             router.push({ pathname: '/onboarding/[step]', params: { step: 'target' } })} />
         </>}
       </View>
-      <Card title="Quick actions" rim="eat">
-        <Button label="Log a meal" variant="secondary" fullWidth
+      <Card title={t('today.actions')} rim="eat">
+        <Button label={t('today.logMeal')} variant="secondary" fullWidth
           onPress={() => router.push('/(tabs)/eat')} />
-        <Typography tone="secondary" size="small">Food logging and meal photos arrive in Phase 4. No meal entries are invented.</Typography>
+        <Typography tone="secondary" size="small">{t('today.mealComing')}</Typography>
       </Card>
-      {(!local.onboardingFinished || !hasTarget) && <Card title="Getting started">
-        <Typography tone="secondary">Add what matters to you. Every integration is optional.</Typography>
-        <ListRow title="Continue setup" detail="Profile, target, health and Hiku"
+      {(!local.onboardingFinished || !hasTarget) && <Card title={t('today.gettingStarted')}>
+        <Typography tone="secondary">{t('today.setupDetails')}</Typography>
+        <ListRow title={t('today.continueSetup')} detail={t('today.setupOptions')}
           onPress={() => router.push({ pathname: '/onboarding/[step]',
             params: { step: setupSteps[local.savedStep] ?? 'welcome' } })} />
       </Card>}
-      <Card rim="train" title="Training">
+      <Card rim="train" title={t('today.training')}>
         {training?<ListRow title={training.title} detail={training.detail}
           onPress={()=>router.push('/(tabs)/train')}/>:
-          <Typography tone="secondary">No workout planned or finished today.</Typography>}
-        <Typography tone="tertiary" size="small">Read-only from your saved workouts and active plan.</Typography>
+          <Typography tone="secondary">{t('today.trainingEmpty')}</Typography>}
+        <Typography tone="tertiary" size="small">{t('today.trainingNote')}</Typography>
       </Card>
-      {promptHealth && <Card title="Health Connect permissions" rim="health">
-        <Typography tone="secondary">Steps and heart rate are hidden, not zero, until you allow a source.</Typography>
+      {promptHealth && <Card title={t('today.healthPermissions')} rim="health">
+        <Typography tone="secondary">{t('today.hiddenUntilPermission')}</Typography>
         <View style={{ flexDirection: 'row', flexWrap:'wrap',gap:theme.space[2] }}>
-          <Button label="Turn on" variant="secondary" onPress={() =>
+          <Button label={t('today.turnOn')} variant="secondary" onPress={() =>
             router.push('/(tabs)/progress/health-permissions')} />
-          <Button label="Not now" variant="ghost" onPress={() => setConnectDismissed(true)} />
+          <Button label={t('today.notNow')} variant="ghost" onPress={() => setConnectDismissed(true)} />
         </View>
       </Card>}
-      <Card rim="health" title="Activity today">
-        {snapshot.availability !== 'available' && snapshot.availability !== null && <Button label="Connect Health Connect" variant="secondary"
+      <Card rim="health" title={t('today.activity')}>
+        {snapshot.availability !== 'available' && snapshot.availability !== null && <Button label={t('today.connectHealth')} variant="secondary"
           onPress={() => router.push('/(tabs)/progress/health-permissions')} />}
-        {justUpdated && <Typography tone="secondary" size="small">Updated just now</Typography>}
+        {justUpdated && <Typography tone="secondary" size="small">{t('today.justUpdated')}</Typography>}
         {steps?.state === 'value' ? steps.sources.map(source =>
           <ListRow key={source.origin} title={`${source.label} steps`}
-            detail={source.stale ? `Stale · ${ageLabel(source.latestAt)}` : 'Health Connect · read only'}
+            detail={source.stale ? `Stale · ${ageLabel(source.latestAt)}` : t('today.readOnly')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
-              <Typography>{source.value.toLocaleString()}</Typography>
+              <Typography>{formatNumber(language, source.value)}</Typography>
               <Chip kind={source.label === 'Phone' ? 'phone' : 'pending'}
-                label={source.label === 'Phone' ? 'Phone' : 'Unverified device'} />
+                label={source.label === 'Phone' ? t('chips.phone') : t('today.unverified')} />
               {source.stale && <Chip kind="stale" label={ageLabel(source.latestAt)} />}
             </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
@@ -170,10 +173,10 @@ export default function TodayTab() {
           <ListRow key={source.origin} title={`Heart rate · ${source.label}`}
             detail={heartRateTodayStatus(source.latestAt, now).stale
               ? `Stale · ${heartRateTodayStatus(source.latestAt, now).age} · unverified device`
-              : 'Unverified device · from today, not confirmed from a watch'}
+              : t('today.deviceNotVerified')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
               <Typography>{source.value} bpm</Typography>
-              <Chip kind="pending" label="Unverified device" />
+              <Chip kind="pending" label={t('today.unverified')} />
               {heartRateTodayStatus(source.latestAt, now).stale &&
                 <Chip kind="stale" label={heartRateTodayStatus(source.latestAt, now).age} />}
             </View>}
@@ -183,21 +186,21 @@ export default function TodayTab() {
           snapshot.permissions['active-calories'] ?? 'unknown', snapshot.availability === 'available'
         )}</Typography>
         {steps?.sources.length !== 1 && (steps?.sources.length ?? 0) > 1 &&
-          <Typography tone="secondary" size="small">Each source is shown separately. Steps are never added across devices.</Typography>}
-        <Button label="Health details and permissions" variant="ghost" fullWidth
+          <Typography tone="secondary" size="small">{t('today.sourceNote')}</Typography>}
+        <Button label={t('today.healthDetails')} variant="ghost" fullWidth
           onPress={() => router.push('/(tabs)/progress/health')} />
       </Card>
       <Card rim="hiku" title="Hiku">
-        <Typography tone="secondary">{local.offline ? 'Hiku needs internet.' :
-          local.key === 'ready' ? 'API key ready. AI only runs when you request it.' :
-          local.key === 'missing' ? 'Add your Anthropic key when you want to use Hiku.' :
-          'Your saved key needs attention in Settings.'}</Typography>
-        {local.key !== 'ready' && <Button label="Add API key" variant="secondary"
+        <Typography tone="secondary">{local.offline ? t('today.hikuNeedsInternet') :
+          local.key === 'ready' ? t('today.keyReady') :
+          local.key === 'missing' ? t('today.keyMissing') :
+          t('today.keyAttention')}</Typography>
+        {local.key !== 'ready' && <Button label={t('today.addKey')} variant="secondary"
           onPress={() => router.push({ pathname:'/onboarding/[step]',params:{step:'hiku'} })} />}
-        <Button label="Open Hiku" variant="ghost" onPress={() => router.push('/(tabs)/hiku')} />
+        <Button label={t('today.openHiku')} variant="ghost" onPress={() => router.push('/(tabs)/hiku')} />
       </Card>
-      <Card rim="eat" title="Meals today">
-        <Typography tone="secondary">Nothing logged yet. Nutrition diary arrives in Phase 4.</Typography>
+      <Card rim="eat" title={t('today.meals')}>
+        <Typography tone="secondary">{t('today.mealsEmpty')}</Typography>
       </Card>
     </ScrollView>
   </Screen>;

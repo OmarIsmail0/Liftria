@@ -12,8 +12,9 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   eaten: number; target: number | null; hidden?: boolean; active?: boolean; onPress?: () => void;
 }) {
   const { theme, reduceMotion } = useTheme();
+  const { language } = useLanguage();
   const [scale] = useState(() => new Animated.Value(1));
-  const summary = useMemo(() => orbSummary(eaten, target, hidden), [eaten, target, hidden]);
+  const summary = useMemo(() => orbSummary(eaten, target, hidden, language), [eaten, target, hidden, language]);
   useEffect(() => {
     scale.stopAnimation();
     if (!active || reduceMotion) { scale.setValue(1); return; }
@@ -50,7 +51,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
             letterSpacing: theme.type.label.letterSpacingEm * theme.type.label.size,
             textAlign: 'center' }}>{(parts[2] ?? '').toUpperCase()}</Text>
         </> : <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2}
-          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight),
+          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight, language === 'ar'),
             fontSize: theme.type.head.size, lineHeight: theme.type.head.line,
             textAlign: 'center' }}>{summary.label}</Text>}
       </View>
