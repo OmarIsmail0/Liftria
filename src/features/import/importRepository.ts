@@ -1,6 +1,6 @@
 /** Atomic import persistence; never retains source CSV bytes or a file copy. */
 import { dbOperation, type DbResult } from '../database';
-import { newGymId, listExercises } from '../database/exerciseLibrary';
+import { newGymId, listExercises, bundledExercises } from '../database/exerciseLibrary';
 import { readStrengthObservations } from '../database/historyRepository';
 import type { RecordObservation } from '../database/gymMath';
 import { fromImportWeight, localDayFromIso, type Importer } from './importCsv';
@@ -55,11 +55,29 @@ export async function commitImport(plan:ImportPlan):Promise<DbResult<ImportOutco
    const present=await tx.getAllAsync<{started_at:string}>('SELECT started_at FROM sessions');
    const days=new Set(present.map(x=>localDayFromIso(x.started_at)));
    if(plan.workouts.some(w=>days.has(w.localDay)))throw new Error('Workouts changed since preview; refresh the import.');
+   // The parent batch must exist before exercises can reference it (SQLite immediate FK).
+   await tx.runAsync('INSERT INTO import_batches(id,file_hash,importer,file_name,session_count,'+
+    'set_count,skipped_count,created_exercises,created_at) VALUES(?,?,?,?,?,?,?,?,?)',[
+     id,plan.parsed.fileHash,plan.parsed.source,plan.parsed.fileName,
+     plan.workouts.length,plan.setCount,plan.skippedDays.length,'[]',when,
+    ]);
    const linked=new Map<string,string>();
    for(const mapping of plan.mappings){
     if(mapping.resolvedId){
      const found=await tx.getFirstAsync<{id:string}>('SELECT id FROM exercises WHERE id=?',[mapping.resolvedId]);
-     if(!found)throw new Error('Selected exercise no longer exists');
+     if(!found){
+      // The offline bundled pack may not have been installed before opening Import.
+      // Seed only the specifically matched pack row *inside* this import transaction.
+      const pack=bundledExercises().find(e=>e.id===mapping.resolvedId);
+      if(!pack)throw new Error('Selected exercise no longer exists');
+      await tx.runAsync('INSERT INTO exercises(id,name,aliases,equipment,type,unilateral,'+
+       'primary_muscles,secondary_muscles,instructions,source,retired,pack_category) '+
+       'VALUES(?,?,?,?,?,?,?,?,?,?,0,?)',[
+        pack.id,pack.name,JSON.stringify(pack.aliases),pack.equipment,pack.type,
+        pack.unilateral?1:0,JSON.stringify(pack.primaryMuscles),JSON.stringify(pack.secondaryMuscles),
+        JSON.stringify(pack.instructions),'pack',pack.packCategory,
+       ]);
+     }
      linked.set(mapping.name,mapping.resolvedId);
     }else{
      const exerciseId=newGymId();
@@ -69,11 +87,8 @@ export async function commitImport(plan:ImportPlan):Promise<DbResult<ImportOutco
      linked.set(mapping.name,exerciseId);made.push(exerciseId);
     }
    }
-   await tx.runAsync('INSERT INTO import_batches(id,file_hash,importer,file_name,session_count,'+
-    'set_count,skipped_count,created_exercises,created_at) VALUES(?,?,?,?,?,?,?,?,?)',[
-     id,plan.parsed.fileHash,plan.parsed.source,plan.parsed.fileName,
-     plan.workouts.length,plan.setCount,plan.skippedDays.length,JSON.stringify(made),when,
-    ]);
+   await tx.runAsync('UPDATE import_batches SET created_exercises=? WHERE id=?',
+    [JSON.stringify(made),id]);
    for(const workout of plan.workouts){
     const sessionId=newGymId();
     await tx.runAsync('INSERT INTO sessions(id,title,source,importer,import_batch_id,started_at,ended_at,notes,state) '+
