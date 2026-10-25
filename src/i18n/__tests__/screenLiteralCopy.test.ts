@@ -1,5 +1,12 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+type Entry={name:string;isDirectory:()=>boolean;isFile:()=>boolean};
+const {readdirSync,readFileSync}=jest.requireActual('fs') as {
+  readdirSync:(dir:string,options:{withFileTypes:true})=>Entry[];
+  readFileSync:(file:string,encoding:'utf8')=>string;
+};
+const {join,relative}=jest.requireActual('path') as {
+  join:(...parts:string[])=>string;
+  relative:(from:string,to:string)=>string;
+};
 
 /** Source guard: runtime and dynamic expression translations still need visual checks. */
 const appDir=join(process.cwd(),'app');
