@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Installs a Liftria APK on the running emulator and screenshots the app's screens and every
-# hidden primitive story in dark and light mode. Usage: visual-check.sh <apk> <out-dir>
+# hidden primitive story in dark and light mode. Usage: visual-check.sh <apk> <out-dir> [en|ar]
+# "ar" switches the emulator to Arabic (Egypt) first and shoots AR_SCREENS in dark only. It runs
+# on its own emulator: switching locale after the English passes hung the emulator (PR #17).
 set -uo pipefail
-APK="$1"; OUT="$2"
+APK="$1"; OUT="$2"; LANG_PASS="${3:-en}"
 # App screens as "<shot name>=<route>"; routes that don't exist yet just show Expo Router's
 # not-found page, so this list can run ahead of the build.
 SCREENS="app-today=today app-train=train app-eat=eat app-progress=progress app-health=progress/health app-hiku=hiku app-settings=settings app-appearance=settings/appearance on-1-welcome=onboarding/welcome on-2-privacy=onboarding/privacy on-3-profile=onboarding/profile on-4-goal=onboarding/goal on-5-target=onboarding/target on-6-health=onboarding/health on-7-watch=onboarding/watch on-8-hiku=onboarding/hiku on-9-done=onboarding/done he-steps=progress/health-detail?metric=steps he-heart=progress/health-detail?metric=heart-rate he-permissions=progress/health-permissions he-sync=progress/health-sync he-troubleshoot=progress/health-troubleshoot st-profile=settings/profile st-preferences=settings/preferences st-hiku-key=settings/hiku-key st-notifications=settings/notifications st-data=settings/data st-about=settings/about tr-library=train/library tr-muscles=train/muscles tr-exercise=train/exercise/Barbell_Bench_Press_-_Medium_Grip tr-plans=train/plans tr-template=train/template tr-preview=train/preview tr-spike=dev/rest-spike tr-demo=dev/demo-workout?auto=1 tr-active=train/active tr-home-active=train tr-demo-history=dev/demo-history?auto=1 tr-history=train/history tr-records=train/records tr-recovery=train/recovery pr-strength=progress/strength im-demo=dev/demo-import?auto=1"
@@ -11,6 +13,15 @@ AR_SCREENS="app-today app-train app-progress app-health app-settings st-preferen
 STORIES="screen header card button chip banner snackbar sheet stepper toggle field list-row empty-state skeleton orb capsule-nav"
 mkdir -p "$OUT"
 adb wait-for-device
+if [ "$LANG_PASS" = ar ]; then
+  # The app's language defaults to System, so it follows the device locale.
+  adb root >/dev/null 2>&1 && sleep 3 && adb wait-for-device || { echo "::error::adb root unavailable; no Arabic screenshots"; exit 1; }
+  adb shell setprop persist.sys.locale ar-EG
+  adb shell setprop ctl.restart zygote
+  sleep 5; adb wait-for-device
+  until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; do sleep 2; done
+  sleep 10
+fi
 adb install -r -g "$APK" || { echo "::error::APK install failed"; exit 1; }
 # The app id changes in TASK-4 (com.liftria.diagnostics -> com.liftria.app); find whichever is installed.
 PKG=$(adb shell pm list packages | tr -d '\r' | sed -n 's/^package:\(com\.liftria\..*\)$/\1/p' | head -n1)
@@ -24,20 +35,7 @@ shot() { # mode name deep-link
   sleep 6
   adb exec-out screencap -p > "$OUT/$1-$2.png" || echo "::warning::screenshot $1-$2 failed"
 }
-for mode in dark light; do
-  if [ "$mode" = dark ]; then adb shell cmd uimode night yes; else adb shell cmd uimode night no; fi
-  sleep 2
-  for entry in $SCREENS; do shot "$mode" "${entry%%=*}" "liftria://${entry#*=}"; done
-  shot "$mode" index "liftria://dev/primitives"
-  for id in $STORIES; do shot "$mode" "$id" "liftria://dev/primitives/$id"; done
-done
-# Arabic, right to left: the app's language defaults to System, so it follows the device locale.
-if adb root >/dev/null 2>&1 && sleep 3 && adb wait-for-device; then
-  adb shell setprop persist.sys.locale ar-EG
-  adb shell setprop ctl.restart zygote
-  sleep 5; adb wait-for-device
-  until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; do sleep 2; done
-  sleep 10
+if [ "$LANG_PASS" = ar ]; then
   adb shell cmd uimode night yes; sleep 2
   for name in $AR_SCREENS; do
     for entry in $SCREENS; do
@@ -45,10 +43,16 @@ if adb root >/dev/null 2>&1 && sleep 3 && adb wait-for-device; then
     done
   done
 else
-  echo "::warning::adb root unavailable; Arabic screenshots skipped"
+  for mode in dark light; do
+    if [ "$mode" = dark ]; then adb shell cmd uimode night yes; else adb shell cmd uimode night no; fi
+    sleep 2
+    for entry in $SCREENS; do shot "$mode" "${entry%%=*}" "liftria://${entry#*=}"; done
+    shot "$mode" index "liftria://dev/primitives"
+    for id in $STORIES; do shot "$mode" "$id" "liftria://dev/primitives/$id"; done
+  done
 fi
 # Crash diagnostics: the app's fatal errors, if any, for the PR author and reviewer.
-adb logcat -d -b crash > "$OUT/logcat-crash.txt" 2>/dev/null || true
-adb logcat -d '*:E' | tail -n 400 > "$OUT/logcat-errors.txt" || true
-if grep -q "FATAL EXCEPTION\|Fatal signal" "$OUT/logcat-crash.txt" "$OUT/logcat-errors.txt" 2>/dev/null; then echo "::warning::The app crashed on the emulator; see logcat-crash.txt"; fi
+adb logcat -d -b crash > "$OUT/logcat-crash-$LANG_PASS.txt" 2>/dev/null || true
+adb logcat -d '*:E' | tail -n 400 > "$OUT/logcat-errors-$LANG_PASS.txt" || true
+if grep -q "FATAL EXCEPTION\|Fatal signal" "$OUT/logcat-crash-$LANG_PASS.txt" "$OUT/logcat-errors-$LANG_PASS.txt" 2>/dev/null; then echo "::warning::The app crashed on the emulator; see logcat-crash.txt"; fi
 ls -la "$OUT"

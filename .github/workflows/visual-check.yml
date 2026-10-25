@@ -47,14 +47,18 @@ jobs:
           echo "apk=$([ "${n:-0}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           [ "${n:-0}" -gt 0 ] || echo "No APK in run $RUN_ID (draft PR build skipped); no emulator check."
 
+  # English (dark + light) and Arabic (dark) run on separate emulators in parallel: switching
+  # locale on the emulator that already ran the English passes hung it (PR #17).
   screenshots:
     needs: has-apk
     if: needs.has-apk.outputs.apk == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: [en, ar]
     permissions:
-      contents: write        # only to push screenshots to the visual-checks branch
-      pull-requests: write   # to comment on the PR
       actions: read          # to download the build's APK artifact
     env:
       PR: ${{ inputs.pr || github.event.workflow_run.pull_requests[0].number }}
@@ -95,15 +99,38 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash .github/scripts/visual-check.sh "${{ steps.apk.outputs.path }}" shots
+          script: bash .github/scripts/visual-check.sh "${{ steps.apk.outputs.path }}" shots ${{ matrix.lang }}
 
       - name: Keep the screenshots as an artifact
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: visual-check-pr${{ env.PR }}-${{ env.SHA }}
+          name: visual-check-pr${{ env.PR }}-${{ env.SHA }}-${{ matrix.lang }}
           path: shots
           retention-days: 14
+
+  # Posts whatever the emulators captured, even if one of them failed.
+  publish:
+    needs: screenshots
+    if: always() && needs.screenshots.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # only to push screenshots to the visual-checks branch
+      pull-requests: write   # to comment on the PR
+    env:
+      PR: ${{ inputs.pr || github.event.workflow_run.pull_requests[0].number }}
+      SHA: ${{ github.event.workflow_run.head_sha || inputs.run_id }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Collect both emulators' screenshots
+        uses: actions/download-artifact@v4
+        with:
+          pattern: visual-check-pr${{ env.PR }}-${{ env.SHA }}-*
+          merge-multiple: true
+          path: shots
 
       - name: Publish screenshots to the visual-checks branch
         id: publish
@@ -148,10 +175,13 @@ jobs:
               [ -n "$row" ] && echo "$row|"
               echo
             done
-            if grep -qs "FATAL EXCEPTION\\|Fatal signal" shots/logcat-crash.txt shots/logcat-errors.txt; then
-              echo "> ⚠️ **The app crashed on the emulator.** Crash log: [logcat-crash.txt](https://github.com/${{ github.repository }}/blob/visual-checks/$DIR/logcat-crash.txt)"
-              echo
-            fi
+            for lang in en ar; do
+              if grep -qs "FATAL EXCEPTION\\|Fatal signal" shots/logcat-crash-$lang.txt shots/logcat-errors-$lang.txt; then
+                echo "> ⚠️ **The app crashed on the emulator ($lang).** Crash log: [logcat-crash-$lang.txt](https://github.com/${{ github.repository }}/blob/visual-checks/$DIR/logcat-crash-$lang.txt)"
+                echo
+              fi
+            done
+            [ "${{ needs.screenshots.result }}" = success ] || { echo "> ⚠️ One emulator job failed; its screenshots may be missing."; echo; }
             echo "Compare with \`docs/phase1/reference/\`."
           } > comment.md
           gh pr comment "$PR" --repo "${{ github.repository }}" --body-file comment.md
