@@ -97,11 +97,19 @@ test('TR-14 recent/volume credit and secondary-only helper wording',()=>{
  ],NOW);
  const glutes=results.find(m=>m.muscle==='glutes')!;
  expect(glutes.recentCredit).toBe(5.5);
- expect(recoveryRowText(glutes,'recent',NOW)).toBe('5.5 sets · trained today · Higher load');
- expect(recoveryRowText(glutes,'volume',NOW)).toBe('5.5 sets this week · trained today');
+ expect(recoveryRowText(glutes,'recent',NOW)).toBe('5.5 sets · trained yesterday · Higher load');
+ expect(recoveryRowText(glutes,'volume',NOW)).toBe('5.5 sets this week · trained yesterday');
  const helper=calculateMuscleRecovery([row(15,['glutes'],['lower back'])],NOW)
    .find(m=>m.muscle==='lower back')!;
- expect(recoveryRowText(helper,'untrained',NOW)).toBe('No direct sets yet · helper today');
+ expect(recoveryRowText(helper,'untrained',NOW)).toBe('No direct sets yet · helper yesterday');
  expect(recoveryRowText(results.find(m=>m.muscle==='neck')!,'untrained',NOW))
   .toBe('Not trained yet');
+});
+
+test('TR-14 uses local calendar days rather than elapsed 24-hour labels',()=>{
+  const recent=calculateMuscleRecovery([row(1,['glutes'],['lower back'])],NOW);
+  expect(recoveryRowText(recent.find(r=>r.muscle==='glutes')!,'recent',NOW))
+    .toBe('1 sets · trained today · Some load');
+  expect(recoveryRowText(recent.find(r=>r.muscle==='lower back')!,'untrained',NOW))
+    .toBe('No direct sets yet · helper today');
 });
