@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -12,7 +13,8 @@ import { getTypedSetting } from '../../../src/services/database/settings';
 
 type Range='4w'|'3m'|'1y';
 export default function Strength(){
- const {theme}=useTheme();
+  const { t: tr } = useLanguage();
+  const {theme}=useTheme();
  const [rows,setRows]=useState<StrengthObservation[]>([]);
  const [records,setRecords]=useState<ExerciseRecord[]>([]);
  const [range,setRange]=useState<Range>('4w');
@@ -35,19 +37,19 @@ export default function Strength(){
   .sort((a,b)=>(b.bestEstimatedOneRepMax??0)-(a.bestEstimatedOneRepMax??0)).slice(0,4);
  const names=new Map(rows.map(r=>[r.exerciseId,r.name]));
  return <Screen embedded>
-  <Header title="Strength" subtitle="From your workouts in Liftria" onBack={()=>router.back()}/>
-  <SegmentedControl label="Range" value={range} onChange={setRange}
+  <Header title={tr('p4.strength.0')} subtitle={tr('p4.strength.1')} onBack={()=>router.back()}/>
+  <SegmentedControl label={tr('p4.strength.2')} value={range} onChange={setRange}
    options={[{value:'4w',label:'4 W'},{value:'3m',label:'3 M'},{value:'1y',label:'1 Y'}]}/>
-  {error&&<Button label="Retry" onPress={()=>void refresh()}/>}
-  {rows.length===0?<Card rim="train" title="Strength over time">
-   <Typography tone="secondary">Finish a workout to see strength trends.</Typography>
-   <Button label="Start a workout" variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
+  {error&&<Button label={tr('p4.strength.3')} onPress={()=>void refresh()}/>}
+  {rows.length===0?<Card rim="train" title={tr('p4.strength.4')}>
+   <Typography tone="secondary">{tr('p4.strength.14')}</Typography>
+   <Button label={tr('p4.strength.5')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
   </Card>:<>
-   <Card rim="train" title="Weekly volume">
+   <Card rim="train" title={tr('p4.strength.6')}>
     <Typography size="metric-m">{Math.round(fromKg(summary.total,unit)).toLocaleString()} {unit}</Typography>
-    <Typography tone="secondary" size="small">{summary.changePct===null?'No previous period to compare':
-      (summary.changePct>=0?'+':'')+Math.round(summary.changePct)+'% vs the previous period'}</Typography>
-    <Typography tone="tertiary" size="small">From your workouts in Liftria · logged working sets only</Typography>
+    <Typography tone="secondary" size="small">{summary.changePct===null?tr('p4.strength.18'):
+      (summary.changePct>=0?'+':'')+Math.round(summary.changePct)+'% '+tr('p4.strength.19')}</Typography>
+    <Typography tone="tertiary" size="small">{tr('p4.strength.15')}</Typography>
     <View style={{flexDirection:'row',alignItems:'flex-end',gap:theme.space[1],height:170}}>
      {bars.map(w=><View key={w.label} style={{flex:1,minWidth:20,alignItems:'center',gap:theme.space[1]}}>
       <Typography size="small">{w.logged?Math.round(fromKg(w.volume,unit)/1000)+'k':'—'}</Typography>
@@ -58,25 +60,25 @@ export default function Strength(){
         borderColor:theme.color.border.strong,backgroundColor:w.logged?theme.color.domain.train:theme.color.bg.raised}}/>
       </View>
       <Text numberOfLines={1} adjustsFontSizeToFit
-        accessibilityLabel={'Week of '+w.label}
+        accessibilityLabel={tr('p4.strength.21')+' '+w.label}
         style={{color:theme.color.text.tertiary,fontSize:theme.type.small.size,textAlign:'center'}}>
         {w.start.toLocaleDateString(undefined,{month:'numeric',day:'numeric'})}
       </Text>
      </View>)}
     </View>
    </Card>
-   <Card title="Top lifts">
-    {top.length===0?<Typography tone="secondary">Log a weighted set to see an estimated 1RM.</Typography>:
+   <Card title={tr('p4.strength.7')}>
+    {top.length===0?<Typography tone="secondary">{tr('p4.strength.16')}</Typography>:
      top.map(r=><ListRow key={r.exerciseId+':'+r.side} title={names.get(r.exerciseId)??r.exerciseId}
-      detail={Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit))+' '+unit+' est. 1RM · '+new Date(r.latestAt).toLocaleDateString()}
-      suffix={<Chip kind="estimate" label="Estimate"/>}
+      detail={Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit))+' '+unit+' '+tr('p4.strength.20')+' · '+new Date(r.latestAt).toLocaleDateString()}
+      suffix={<Chip kind="estimate" label={tr('p4.strength.8')}/>}
       onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:r.exerciseId}})}/>)}
-    <Typography tone="secondary" size="small">Estimated 1RM is a trend, not a test (Epley, 1–12 reps).</Typography>
+    <Typography tone="secondary" size="small">{tr('p4.strength.17')}</Typography>
    </Card>
-   <Card title="Records and muscles">
-    <ListRow title="All strength records" detail="Recalculated from finished working sets"
+   <Card title={tr('p4.strength.9')}>
+    <ListRow title={tr('p4.strength.10')} detail={tr('p4.strength.11')}
      onPress={()=>router.push('/(tabs)/train/records')}/>
-    <ListRow title="Muscle map" detail="Last 72 hours · estimate"
+    <ListRow title={tr('p4.strength.12')} detail={tr('p4.strength.13')}
      onPress={()=>router.push('/(tabs)/train/recovery')}/>
    </Card>
   </>}

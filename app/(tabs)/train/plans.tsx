@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, Typography } from '../../../src/design/primitives';
@@ -7,11 +8,12 @@ import { listPlans, listTemplates, savePlan, type Plan, type Template } from '..
 import { DAYS, scheduledTemplate } from '../../../src/features/train/weekPlan';
 
 export default function PlansScreen() {
+  const { t: tr } = useLanguage();
   const {theme}=useTheme();
   const [templates,setTemplates]=useState<Template[]>([]);
   const [plans,setPlans]=useState<Plan[]>([]);
   const [type,setType]=useState<'weekly'|'rotation'>('weekly');
-  const [name,setName]=useState('My training plan');
+  const [name,setName]=useState(tr('p4.plans.15'));
   const [weekday,setWeekday]=useState<Record<string,string|null>>({});
   const [rotation,setRotation]=useState<string[]>([]);
   const [busy,setBusy]=useState(false);
@@ -46,42 +48,42 @@ export default function PlansScreen() {
     const saved=await savePlan({name:name.trim(),type,schedule:selected,
       nextIndex:unchangedRotation?active.nextIndex:0,active:true},
       active?.id);
-    if(saved.ok){setNotice('Plan saved on your phone.');
+    if(saved.ok){setNotice(tr('p4.plans.13'));
       const result=await listPlans();if(result.ok)setPlans(result.value);
-    }else setNotice('Could not save plan. Try again.');
+    }else setNotice(tr('p4.plans.14'));
     setBusy(false);
   };
   return <Screen embedded>
-    <Header title="Plans and templates" subtitle="Stored on this phone" onBack={()=>router.back()}/>
-    <Card title="Templates">
-      {templates.length===0?<Typography tone="secondary">Build your first template to plan a week.</Typography>:
+    <Header title={tr('p4.plans.0')} subtitle={tr('p4.plans.1')} onBack={()=>router.back()}/>
+    <Card title={tr('p4.plans.2')}>
+      {templates.length===0?<Typography tone="secondary">{tr('p4.plans.10')}</Typography>:
         templates.map(t=><ListRow key={t.id} title={t.name}
           detail={t.exercises.length+' exercises'}
           onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:t.id}})}
-          suffix={<Button label="Edit" variant="ghost"
+          suffix={<Button label={tr('p4.plans.3')} variant="ghost"
             onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:t.id}})}/>}/>)}
-      <Button label="New template" variant="train" onPress={()=>router.push('/(tabs)/train/template')}/>
+      <Button label={tr('p4.plans.4')} variant="train" onPress={()=>router.push('/(tabs)/train/template')}/>
     </Card>
-    <Card title="Active plan">
-      <Field label="Plan name" value={name} onChangeText={setName}/>
-      <SegmentedControl label="Plan type" options={[{value:'weekly',label:'Weekly'},{value:'rotation',label:'Rotation'}]}
+    <Card title={tr('p4.plans.5')}>
+      <Field label={tr('p4.plans.6')} value={name} onChangeText={setName}/>
+      <SegmentedControl label={tr('p4.plans.7')} options={[{value:'weekly',label:tr('p4.plans.16')},{value:'rotation',label:tr('p4.plans.17')}]}
         value={type} onChange={setType}/>
       {type==='weekly'?DAYS.map(day=><ListRow key={day} title={day}
-        detail={templates.find(t=>t.id===weekday[day])?.name??'Rest / unplanned'}
-        onPress={()=>cycle(day)} suffix={<Typography tone="secondary">Change</Typography>}/>):
+        detail={templates.find(t=>t.id===weekday[day])?.name??tr('p4.plans.18')}
+        onPress={()=>cycle(day)} suffix={<Typography tone="secondary">{tr('p4.plans.11')}</Typography>}/>):
         <View style={{gap:theme.space[2]}}>
-          <Typography tone="secondary" size="small">Tap templates to include them in this rotation. It advances after a completed session.</Typography>
+          <Typography tone="secondary" size="small">{tr('p4.plans.12')}</Typography>
           {templates.map(t=><ListRow key={t.id} title={t.name}
-            detail={rotation.includes(t.id)?'In rotation':'Not in rotation'}
+            detail={rotation.includes(t.id)?tr('p4.plans.19'):tr('p4.plans.20')}
             onPress={()=>setRotation(old=>old.includes(t.id)?old.filter(id=>id!==t.id):[...old,t.id])}/>)}
         </View>}
-      <Button label="Save active plan" variant="train" fullWidth disabled={busy||!name.trim()||
+      <Button label={tr('p4.plans.8')} variant="train" fullWidth disabled={busy||!name.trim()||
         templates.length===0||(type==='rotation'&&rotation.length===0)}
         onPress={()=>void doSave()}/>
       {notice&&<Typography>{notice}</Typography>}
     </Card>
-    {active&&<Card title="Next scheduled session">
-      <Typography>{scheduledTemplate(active,templates,new Date())?.name??'Rest day or no template scheduled'}</Typography>
+    {active&&<Card title={tr('p4.plans.9')}>
+      <Typography>{scheduledTemplate(active,templates,new Date())?.name??tr('p4.plans.21')}</Typography>
     </Card>}
   </Screen>;
 }
