@@ -1,0 +1,25 @@
+import { router } from 'expo-router';
+import { View } from 'react-native';
+import { Button, Card, Header, Screen, Typography } from '../../design/primitives';
+import { useTheme } from '../../design/ThemeProvider';
+
+/** Preserved PR D library-first Train home; the tab now renders PR E's TrainHome. */
+export default function LibraryLanding() {
+  const { theme } = useTheme();
+  return <Screen embedded>
+    <Header title="Train" subtitle="Your offline workout library" right={
+      <Button label="Search" variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>} />
+    <Card rim="train" title="Exercise library">
+      <Typography tone="secondary">Explore 876 bundled exercises, muscles and instructions. Add your own exercises, all stored on your phone.</Typography>
+      <View style={{gap:theme.space[2]}}>
+        <Button label="Browse exercises" variant="train" fullWidth onPress={()=>router.push('/(tabs)/train/library')}/>
+        <Button label="Browse muscles" variant="secondary" fullWidth onPress={()=>router.push('/(tabs)/train/muscles')}/>
+        <Button label="Create custom exercise" variant="secondary" fullWidth onPress={()=>router.push('/(tabs)/train/create')}/>
+      </View>
+    </Card>
+    <Card title="Workouts">
+      <Typography tone="secondary">Your workout plans and sessions will appear here once workout tracking is available.</Typography>
+    </Card>
+    <Typography tone="tertiary" size="small">Exercise library works entirely offline. No watch connection is required.</Typography>
+  </Screen>;
+}

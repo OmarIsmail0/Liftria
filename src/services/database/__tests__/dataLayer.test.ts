@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { DB_NAME, DB_MIGRATIONS, DB_SCHEMA_VERSION, initializeDatabase, migrateDatabase,
-  clearLocalHealthCache, getSetting, listCachedHealth } from '../index';
+  clearLocalHealthCache, getSetting, listCachedHealth, localStorageCounts } from '../index';
 import { getProfile, profileSchema, saveProfile } from '../profile';
 import { decodeStoredSetting, getTypedSetting, setTypedSetting, settingDefaults } from '../settings';
 import { addTarget, decodeTargetInputs, getCurrentTarget, listTargetHistory, targetSchema } from '../targets';
@@ -14,10 +14,10 @@ type Row = Record<string, unknown>;
 const state: {
   schema: number; settings: Map<string, string>; health: Map<string, Row>;
   aggregates: Map<string, Row>; profile: Row | null; targets: Row[];
-  nextTargetId: number; migrations: number[];
+  nextTargetId: number; migrations: number[]; gymSessions: Row[];
 } = {
   schema: 0, settings: new Map(), health: new Map(), aggregates: new Map(),
-  profile: null, targets: [], nextTargetId: 1, migrations: [],
+  profile: null, targets: [], nextTargetId: 1, migrations: [], gymSessions: [],
 };
 
 const mockDb = {
@@ -37,8 +37,9 @@ const mockDb = {
         : table === 'targets' ? state.targets.length
         : table === 'app_settings' ? state.settings.size
         : table === 'health_samples' ? state.health.size
-        : table === 'health_aggregates' ? state.aggregates.size : 0;
-      return { total };
+        : table === 'health_aggregates' ? state.aggregates.size
+        : table === 'sessions' ? state.gymSessions.filter(row => row.state === 'finished').length : 0;
+      return { total, count: total };
     }
     if (sql.includes('FROM app_settings')) {
       const v = state.settings.get(args[0] as string);
@@ -101,25 +102,25 @@ const asDb = mockDb as unknown as SQLite.SQLiteDatabase;
 const currentYear = new Date().getUTCFullYear();
 
 describe('monotonic, separate and additive migrations', () => {
-  test('fresh install runs v1 and v2 in distinct transactions, then caches the connection', async () => {
+  test('fresh install runs v1, v2 and v3 in distinct transactions, then caches the connection', async () => {
     expect(DB_NAME).toBe('liftria.db');
-    expect(DB_SCHEMA_VERSION).toBe(2);
-    expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2]);
+    expect(DB_SCHEMA_VERSION).toBe(3);
+    expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3]);
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_samples');
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_aggregates');
     expect(DB_MIGRATIONS[1].sql).toContain('CREATE TABLE IF NOT EXISTS targets');
     expect(DB_MIGRATIONS[1].sql).not.toContain('CREATE TABLE app_settings');
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await initializeDatabase();
-    expect(state.schema).toBe(2);
-    expect(state.migrations).toEqual([1, 2]);
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
+    expect(state.schema).toBe(3);
+    expect(state.migrations).toEqual([1, 2, 3]);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(3);
     expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('liftria.db');
     await initializeDatabase();
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(3);
   });
 
-  test('v1 existing settings and both health caches remain after v2; re-run is no-op', async () => {
+  test('v1 existing settings and both health caches remain after v3; re-run is no-op', async () => {
     state.schema = 1;
     state.migrations = [];
     state.settings.set('persisted', 'value');
@@ -127,21 +128,21 @@ describe('monotonic, separate and additive migrations', () => {
     state.aggregates.set('health-connect:energy', { payload_json: '{}' });
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await migrateDatabase(asDb);
-    expect(state.schema).toBe(2);
-    expect(state.migrations).toEqual([2]);
+    expect(state.schema).toBe(3);
+    expect(state.migrations).toEqual([2, 3]);
     expect(state.settings.get('persisted')).toBe('value');
     expect(state.health.size).toBe(1);
     expect(state.aggregates.size).toBe(1);
     await migrateDatabase(asDb);
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(1);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(2);
   });
 
   test('newer-than-app schema is rejected without running SQL', async () => {
-    state.schema = 3;
+    state.schema = 4;
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await expect(migrateDatabase(asDb)).rejects.toThrow('Database schema is newer than app');
     expect(mockDb.withExclusiveTransactionAsync.mock.calls.length).toBe(before);
-    state.schema = 2;
+    state.schema = 3;
   });
 });
 
@@ -233,7 +234,7 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
       expect(all.value[1]?.inputs).toBeNull();
     }
     expect((await getDataLayerCounts())).toMatchObject({ ok: true,
-      value: { schema: 2, profile: 1, targets: 2 } });
+      value: { schema: 3, profile: 1, targets: 2 } });
   });
   test('a corrupted inputs_json keeps the target row readable (current and history)', async () => {
     state.targets = [];
@@ -272,6 +273,8 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   await setTypedSetting('onboarding.completedAt','2026-10-24T20:00:00Z');
   state.settings.set('onboarding.deferred','true');
   state.health.set('health-1',{payload_json:'{}'});
+  state.gymSessions = [{state:'finished'}, {state:'finished'}, {state:'in-progress'}];
+  expect(await localStorageCounts()).toMatchObject({ok:true,value:{workouts:2}});
   state.aggregates.set('aggregate-1',{payload_json:'{}'});
   expect((await getProfile()).ok).toBe(true);
   expect((await getCurrentTarget()).ok).toBe(true);
@@ -289,7 +292,7 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   deleteMock.mockImplementationOnce(async () => {
     state.schema=0;
     state.settings.clear();state.profile=null;state.targets=[];state.health.clear();state.aggregates.clear();
-    state.nextTargetId=1;state.migrations=[];
+    state.nextTargetId=1;state.migrations=[];state.gymSessions=[];
   });
   expect(await deleteEverythingOnPhone('DELETE')).toEqual({ok:true});
   expect(deleteMock).toHaveBeenCalledWith(DB_NAME);
@@ -304,4 +307,5 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   expect(await listCachedHealth()).toEqual({ok:true,value:[]});
   expect(await onboardingDestination()).toEqual({pathname:'/onboarding/[step]',params:{step:'welcome'}});
   expect(await keyState()).toEqual({status:'missing'});
+  expect(await localStorageCounts()).toMatchObject({ok:true,value:{workouts:0}});
 });

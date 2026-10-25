@@ -50,7 +50,7 @@ export default function DataAndStorage() {
       onBack={()=>backOrReplace(router,'/settings')} />
     <Card title="Local counts">
       {counts ? <>
-        <ListRow title="Workouts" detail={`${counts.workouts} local Phase 0 test sessions`} />
+        <ListRow title="Workouts" detail={String(counts.workouts)} />
         <ListRow title="Meals" detail={`${counts.meals} local Phase 0 test entries`} />
         <ListRow title="Cached health records" detail={String(counts.healthSamples+counts.healthAggregates)} />
         <ListRow title="Calorie target versions" detail={String(counts.targetVersions)} />
