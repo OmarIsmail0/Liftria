@@ -1362,4 +1362,5 @@ export const ar: Record<TranslationKey, string> = {
   "today.energyStatus": "الطاقة: {status}",
   "today.staleAt": "قديمة · {time}",
   "today.staleUnverified": "قديمة · {time} · جهاز غير متحقق منه",
+  "p4.about.versionBuild": "الإصدار {version} · إصدار Android {build}",
 };

@@ -1361,5 +1361,6 @@ export const en = {
   "today.energyStatus": "Energy: {status}",
   "today.staleAt": "Stale · {time}",
   "today.staleUnverified": "Stale · {time} · unverified device",
+  "p4.about.versionBuild": "Version {version} · Android build {build}",
 } as const;
 export type TranslationKey = keyof typeof en;

@@ -10,7 +10,7 @@ export default function AboutHelp() {
     <Header title={tr('p4.about.0')} subtitle={tr('p4.about.1')}
       onBack={()=>backOrReplace(router,'/settings')} />
     <Card title={tr('p4.about.2')}>
-      <Typography>Version {releaseVersion.name} · Android build {releaseVersion.androidCode}</Typography>
+      <Typography>{tr('p4.about.versionBuild',{version:releaseVersion.name,build:releaseVersion.androidCode})}</Typography>
       <Typography tone="secondary">{tr('p4.about.17')}</Typography>
     </Card>
     <Card title={tr('p4.about.3')}>
