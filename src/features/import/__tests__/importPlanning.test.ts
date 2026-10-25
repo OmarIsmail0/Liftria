@@ -52,3 +52,25 @@ test('Hevy equipment suffix becomes a suggestion only, with no silent mapping',(
   expect.objectContaining({name:'Barbell Bench Press (Machine)',status:'custom',resolvedId:null})
  ]);
 });
+
+test('verified Hevy equipment suffixes match bundled Leg Press and Glute Kickback exactly',()=>{
+ const hevy=parseImportCsv('hevy','sanitized.csv',
+  'title,start_time,exercise_title,weight_kg,reps\n'+
+  'Legs,"22 Oct 2026, 15:50",Leg Press (Machine),100,8\n'+
+  'Legs,"22 Oct 2026, 15:50",Glute Kickback (Machine),30,8\n'+
+  'Legs,"22 Oct 2026, 15:50",Squat (Machine),40,8');
+ const mapped=resolveImportMappings(hevy,empty);
+ expect(mapped.find(m=>m.name==='Leg Press (Machine)')).toMatchObject({
+  status:'exact',resolvedId:'Leg_Press',suggestedId:null,
+ });
+ expect(mapped.find(m=>m.name==='Glute Kickback (Machine)')).toMatchObject({
+  status:'exact',resolvedId:'Glute_Kickback',suggestedId:null,
+ });
+ // No exact Squat in the bundled pack; a poor suggestion is not applied.
+ expect(mapped.find(m=>m.name==='Squat (Machine)')?.resolvedId).toBeNull();
+ // The owner can override even an exact suffix match with a custom exercise.
+ expect(resolveImportMappings(hevy,empty,{'Leg Press (Machine)':'custom'})
+  .find(m=>m.name==='Leg Press (Machine)')).toMatchObject({
+   status:'custom',resolvedId:null,
+  });
+});

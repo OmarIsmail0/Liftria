@@ -28,8 +28,15 @@ export function resolveImportMappings(parsed:ParsedImport,context:ImportContext,
   unique.set(set.exercise,(unique.get(set.exercise)??0)+1);
  }
  return [...unique].map(([name,count])=>{
-  const exact=all.find(e=>normalizedName(e.name)===normalizedName(name)||
-   e.aliases.some(a=>normalizedName(a)===normalizedName(name)));
+  // The owner's verified Hevy names append equipment in parentheses. For a
+  // library name like "Leg Press", "Leg Press (Machine)" is an exact name match,
+  // not a fuzzy suggestion. Full-name matches still take precedence.
+  const withoutEquipment=name.replace(
+   /\s*\((?:cable|machine|dumbbells?|barbell|pec deck|smith machine|ez bar)\)\s*$/i,'').trim();
+  const matches=(exercise:Exercise,query:string)=>normalizedName(exercise.name)===normalizedName(query)||
+   exercise.aliases.some(a=>normalizedName(a)===normalizedName(query));
+  const exact=all.find(e=>matches(e,name))||
+   (withoutEquipment!==name?all.find(e=>matches(e,withoutEquipment)):undefined);
   const explicit=decisions[name];
   const remembered=context.remembered[mappingKey(parsed.source,name)];
   const chosen=explicit??(exact?exact.id:remembered);
@@ -39,9 +46,8 @@ export function resolveImportMappings(parsed:ParsedImport,context:ImportContext,
   if(chosen==='custom')return {name,count,status:'custom',
     resolvedId:null,suggestedId:null,suggestedName:null};
   // Verified Hevy exports commonly append equipment in parentheses.
-  // Strip ONLY recognizable equipment suffixes for a better *suggestion*;
-  // the original name still determines exact/remembered matching.
-  const withoutEquipment=name.replace(/\s*\((?:cable|machine|dumbbells?|barbell|pec deck|smith machine|ez bar)\)\s*$/i,'').trim();
+  // Strip recognizable equipment suffixes for fuzzy candidates as well;
+  // these remain Suggested and are never automatically applied.
   const candidate=searchExercises([...all],withoutEquipment)[0] ??
    (withoutEquipment!==name?searchExercises([...all],name)[0]:undefined);
   return {name,count,status:candidate?'suggested':'custom',resolvedId:null,
