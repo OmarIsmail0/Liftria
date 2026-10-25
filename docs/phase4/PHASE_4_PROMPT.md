@@ -48,7 +48,11 @@ Phase 4 makes Liftria a full daily app for its **first market, Egypt**:
   - `assets/data/foods/egypt-foods.json`: Egyptian dishes and staples, each with an **Arabic and an English name** and search aliases (e.g. كشري / koshari / koshary).
     - Values come from recipes of USDA ingredients, so they are an **Estimate**. They always carry the `estimate` chip and the line "Recipe estimate from USDA ingredients".
     - Portions are in grams (e.g. 1 baladi loaf, 1 plate, 1 ta'meya piece).
-  - Until the packs land on `main`, code against the shape in their `SOURCE.md` and use a 3-food test fixture.
+  - **Both packs are on `main` now** (8,171 USDA foods; 29 Egyptian dishes). The shapes:
+    - USDA rows: `{id, name, category, source, kcal, protein, carbs, fat, fiber|null, portions: [[label_en, grams]]}`.
+    - Egypt rows add `name_ar`, `aliases`, `estimate: true` and `recipe`, and their `portions` are `[[label_en, label_ar, grams]]`.
+    - USDA names and portion labels stay English in Phase 4. Show them as they are in Arabic too.
+    - Don't test against the full packs. Use small fixtures, plus one test that loads both packs and checks the ids are unique and the values finite.
 - **No network** except Hiku (§6). Search, the diary, targets and trends work offline.
 
 ## 3. Arabic and RTL (PR H)

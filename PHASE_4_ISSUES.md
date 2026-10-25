@@ -17,7 +17,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    - List the Arabic chip and safety wording in the PR description for the owner to confirm.
 3. **PR I: `Phase 4 / Diary, search and targets`.**
    - Starts when PR H's `verify` is green; branch from PR H.
-   - It uses `assets/data/foods/` (USDA + Egypt packs, from Claude). If they aren't on `main` yet, code against their `SOURCE.md` shape with a tiny fixture.
+   - It uses `assets/data/foods/`: the USDA pack (8,171 foods) and the Egypt pack (29 dishes, Arabic and English). Both are on `main`; see `SOURCE.md` there and PHASE_4_PROMPT §2.
 4. **PR J: `Phase 4 / Trends and body`.** Starts when PR I's `verify` is green.
 5. **PR K: `Phase 4 / Hiku meal estimates`.**
    - Starts when PR J's `verify` is green.
