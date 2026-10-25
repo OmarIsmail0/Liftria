@@ -228,13 +228,17 @@ export async function readRecords(): Promise<DbResult<ExerciseRecord[]>> {
 export async function recentExerciseIds(limit=8): Promise<DbResult<string[]>> {
   return dbOperation(async db=>(await db.getAllAsync<{exercise_id:string}>(
     'SELECT se.exercise_id FROM session_exercises se JOIN sessions s ON s.id=se.session_id ' +
+      "WHERE s.state='finished' AND EXISTS (SELECT 1 FROM sets st " +
+      "WHERE st.session_exercise_id=se.id AND st.kind='working' AND st.reps>0) " +
       'GROUP BY se.exercise_id ORDER BY MAX(s.started_at) DESC LIMIT ?',
     [limit])).map(row=>row.exercise_id));
 }
 export async function exerciseSessions(exerciseId:string,limit=15): Promise<DbResult<Session[]>> {
   return dbOperation(async db=>(await db.getAllAsync<SessionRow>(
     'SELECT DISTINCT s.* FROM sessions s JOIN session_exercises se ON se.session_id=s.id '+
-    'WHERE se.exercise_id=? ORDER BY s.started_at DESC LIMIT ?',
+    "WHERE se.exercise_id=? AND s.state='finished' " +
+    "AND EXISTS (SELECT 1 FROM sets st WHERE st.session_exercise_id=se.id " +
+    "AND st.kind='working' AND st.reps>0) ORDER BY s.started_at DESC LIMIT ?
     [exerciseId,limit])).map(asSession));
 }
 

@@ -36,13 +36,15 @@ export function fromExerciseRow(row: StoredExercise): Exercise {
 }
 export function packExercise(item: PackExercise): Exercise {
   const equipment = item.equipment;
-  const type: ExerciseType = equipment === 'body only' || equipment == null
-    ? 'bodyweight' : equipment === 'dumbbell' ? 'dumbbell'
-      : /assisted/i.test(item.name) ? 'assisted' : 'weighted';
+  const oneArm = /\bone[\s-]+arm\b/i.test(item.name);
+  const unilateral = /\b(?:one|single)[\s-]+(?:arm|leg|hand)\b|\balternat(?:e|ing)\b/i.test(item.name);
+  const type: ExerciseType = /\bassisted\b/i.test(item.name) ? 'assisted'
+    : equipment === 'dumbbell' || (equipment === 'kettlebells' && oneArm) ? 'dumbbell'
+      : equipment === 'body only' || equipment == null ? 'bodyweight' : 'weighted';
   const aliases = /\b(overhead|military) press\b/i.test(item.name) ? ['OHP'] : [];
   return {
     id: item.id, name: item.name, aliases, equipment,
-    type, unilateral: false,
+    type, unilateral,
     primaryMuscles: item.primaryMuscles as Muscle[],
     secondaryMuscles: item.secondaryMuscles as Muscle[],
     instructions: item.instructions, source: 'pack', retired: false,
@@ -130,11 +132,7 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
     .sort((a,b)=>a.rank-b.rank || a.e.name.localeCompare(b.e.name)).map(x=>x.e);
 }
 export function newGymId(): string {
-  // Stable RFC4122 v4-shaped local ID; not a security token.
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, marker => {
-    const random = Math.floor(Math.random()*16);
-    return (marker==='x' ? random : (random & 3)|8).toString(16);
-  });
+  return crypto.randomUUID();
 }
 export async function createCustomExercise(input: CustomExerciseInput): Promise<DbResult<Exercise>> {
   const validated = customExerciseSchema.parse(input);
