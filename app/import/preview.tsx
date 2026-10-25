@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
+import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { getImportDraft, setPendingImport } from '../../src/features/import/importDraft';
 import { readImportContext } from '../../src/features/import/importRepository';
 import { canImportPlan, createImportPlan, resolveImportMappings, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';

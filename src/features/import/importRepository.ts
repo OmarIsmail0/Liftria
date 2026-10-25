@@ -46,7 +46,7 @@ export async function commitImport(plan:ImportPlan,
   onProgress?:(completed:number,total:number)=>void):Promise<DbResult<ImportOutcome>>{
  if(!canImportPlan(plan))return {ok:false,error:{code:'db-error',message:'Import needs a nonempty valid plan and explicit units.'}};
  return dbOperation(async db=>{
-  const id=newGymId(),made:string[]=[],when=new Date().toISOString();
+  const id=newGymId(),made:string[]=[],seededPack:string[]=[],when=new Date().toISOString();
   const map=new Map(plan.mappings.map(m=>[m.name,m]));
   let result:ImportOutcome|null=null;
   await db.withExclusiveTransactionAsync(async tx=>{
@@ -72,12 +72,13 @@ export async function commitImport(plan:ImportPlan,
       const pack=bundledExercises().find(e=>e.id===mapping.resolvedId);
       if(!pack)throw new Error('Selected exercise no longer exists');
       await tx.runAsync('INSERT INTO exercises(id,name,aliases,equipment,type,unilateral,'+
-       'primary_muscles,secondary_muscles,instructions,source,retired,pack_category) '+
-       'VALUES(?,?,?,?,?,?,?,?,?,?,0,?)',[
+       'primary_muscles,secondary_muscles,instructions,source,retired,pack_category,import_batch_id) '+
+       'VALUES(?,?,?,?,?,?,?,?,?,?,0,?,?)',[
         pack.id,pack.name,JSON.stringify(pack.aliases),pack.equipment,pack.type,
         pack.unilateral?1:0,JSON.stringify(pack.primaryMuscles),JSON.stringify(pack.secondaryMuscles),
-        JSON.stringify(pack.instructions),'pack',pack.packCategory,
+        JSON.stringify(pack.instructions),'pack',pack.packCategory,id,
        ]);
+      seededPack.push(pack.id);
      }
      linked.set(mapping.name,mapping.resolvedId);
     }else{
@@ -89,7 +90,7 @@ export async function commitImport(plan:ImportPlan,
     }
    }
    await tx.runAsync('UPDATE import_batches SET created_exercises=? WHERE id=?',
-    [JSON.stringify(made),id]);
+    [JSON.stringify([...made,...seededPack]),id]);
    let processed=0;
    for(const workout of plan.workouts){
     const sessionId=newGymId();
@@ -159,10 +160,14 @@ export async function undoLastImport():Promise<DbResult<UndoOutcome|null>>{
     const used=await tx.getFirstAsync<{id:string}>(
      'SELECT id FROM session_exercises WHERE exercise_id=? UNION '+
      'SELECT id FROM template_exercises WHERE exercise_id=? LIMIT 1',[id,id]);
-    if(used){keptCustom++;
+    const exercise=await tx.getFirstAsync<{source:string}>('SELECT source FROM exercises WHERE id=?',[id]);
+    if(used){
+     if(exercise?.source==='import')keptCustom++;
      await tx.runAsync('UPDATE exercises SET import_batch_id=NULL WHERE id=?',[id]);
-    }else{await tx.runAsync("DELETE FROM exercises WHERE id=? AND source='import' AND import_batch_id=?",[id,batch.id]);
-     deletedCustom++;}
+    }else{
+     await tx.runAsync('DELETE FROM exercises WHERE id=? AND import_batch_id=?',[id,batch.id]);
+     if(exercise?.source==='import')deletedCustom++;
+    }
    }
    await tx.runAsync('DELETE FROM import_batches WHERE id=?',[batch.id]);
    await tx.runAsync('DELETE FROM app_settings WHERE key=?',[LAST_IMPORT]);

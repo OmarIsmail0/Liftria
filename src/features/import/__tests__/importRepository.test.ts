@@ -17,7 +17,7 @@ const mockRun=jest.fn(async(sql:string,args:unknown[]=[])=>{
   mockState.batches.find(x=>x.id===args[1])!.created_exercises=args[0];
  }else if(sql.startsWith('INSERT INTO exercises')){
   if(matches("'import'"))mockState.exercises.push({id:args[0],name:args[1],source:'import',import_batch_id:args[3]});
-  else mockState.exercises.push({id:args[0],name:args[1],source:'pack',import_batch_id:null});
+  else mockState.exercises.push({id:args[0],name:args[1],source:'pack',import_batch_id:args[11]??null});
  }else if(sql.startsWith('INSERT INTO sessions')){
   mockState.sessions.push({id:args[0],title:args[1],source:'imported-file',importer:args[2],
    import_batch_id:args[3],started_at:args[4],ended_at:args[5],notes:args[6],state:'finished'});
