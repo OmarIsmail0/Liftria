@@ -253,8 +253,8 @@ export default function OnboardingStepScreen() {
         headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
       });
       setKeyTestResult(response.ok ? t('onboarding.keyVerifiedWithAnthropic') :
-        response.status === 401 ? t('onboarding.anthropicDidNotAcceptThisKey') :
-          t('onboarding.anthropicCouldNotVerifyTheKeyRight'));
+        response.status === 401 ? t('onboarding.anthropicDidNotAcceptThis') :
+          t('onboarding.anthropicCouldNotVerifyThe'));
     } catch {
       setKeyTestResult(t('onboarding.couldNotReachAnthropicYour'));
     } finally { setBusy(false); }
