@@ -1,5 +1,5 @@
 import { bandForScore, calculateMuscleRecovery, decayByHours,
-  strengthWeeks, volumeBand, RECOVERY } from '../recoveryMath';
+  strengthWeeks, volumeBand, RECOVERY, recoveryRowText } from '../recoveryMath';
 import type { StrengthObservation } from '../../../services/database/historyRepository';
 const NOW=new Date('2026-10-21T09:41:00.000Z');
 let i=0;
@@ -88,4 +88,20 @@ test('weekly unilateral volume equals active/session totals, including different
     side:'L' as const,weight:900,reps:8};
   const weeks=strengthWeeks([l,right,dbL,dbR,partial],NOW);
   expect(weeks.at(-1)?.volume).toBe(30*8+40*8+2*20*8);
+});
+
+test('TR-14 recent/volume credit and secondary-only helper wording',()=>{
+ const results=calculateMuscleRecovery([
+  ...Array.from({length:4},()=>row(15,['glutes'])),
+  ...Array.from({length:3},()=>row(15,['quadriceps'],['glutes'])),
+ ],NOW);
+ const glutes=results.find(m=>m.muscle==='glutes')!;
+ expect(glutes.recentCredit).toBe(5.5);
+ expect(recoveryRowText(glutes,'recent',NOW)).toBe('5.5 sets · trained today · Higher load');
+ expect(recoveryRowText(glutes,'volume',NOW)).toBe('5.5 sets this week · trained today');
+ const helper=calculateMuscleRecovery([row(15,['glutes'],['lower back'])],NOW)
+   .find(m=>m.muscle==='lower back')!;
+ expect(recoveryRowText(helper,'untrained',NOW)).toBe('No direct sets yet · helper today');
+ expect(recoveryRowText(results.find(m=>m.muscle==='neck')!,'untrained',NOW))
+  .toBe('Not trained yet');
 });

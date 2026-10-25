@@ -10,7 +10,7 @@ export const RECOVERY={
 } as const;
 export type RecoveryBand='higher'|'some'|'ready';
 export type MuscleRecovery={
-  muscle:Muscle;score:number;weeklyCredit:number;lastCredit:string|null;
+  muscle:Muscle;score:number;weeklyCredit:number;recentCredit:number;lastCredit:string|null;
   lastPrimary:string|null;band:RecoveryBand;untrained:boolean;
 };
 export function decayByHours(age:number):number{
@@ -47,7 +47,7 @@ export function completedLogicalSets(rows:StrengthObservation[]):StrengthObserva
 }
 export function calculateMuscleRecovery(rows:StrengthObservation[],now:Date):MuscleRecovery[]{
   const data=new Map<Muscle,MuscleRecovery>(MUSCLES.map(m=>[m,{
-    muscle:m,score:0,weeklyCredit:0,lastCredit:null,lastPrimary:null,band:'ready',untrained:true,
+    muscle:m,score:0,weeklyCredit:0,recentCredit:0,lastCredit:null,lastPrimary:null,band:'ready',untrained:true,
   }]));
   for(const row of completedLogicalSets(rows)){
     const at=Date.parse(row.loggedAt);
@@ -60,6 +60,7 @@ export function calculateMuscleRecovery(rows:StrengthObservation[],now:Date):Mus
       if(!target.lastCredit||target.lastCredit<iso)target.lastCredit=iso;
       if(primary&&(!target.lastPrimary||target.lastPrimary<iso))target.lastPrimary=iso;
       target.score+=credit*decayByHours(age);
+      if(age<RECOVERY.thresholdsHours[2])target.recentCredit+=credit;
       if(age<RECOVERY.volumeWindowHours)target.weeklyCredit+=credit;
     };
     for(const muscle of row.primary)add(muscle,RECOVERY.primaryCredit,true);
@@ -105,4 +106,20 @@ export function relativeTrainingDay(iso:string|null,now:Date):string{
   const trained=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const diff=Math.round((today.valueOf()-trained.valueOf())/86400000);
   return diff<=0?'Trained today':diff===1?'Trained yesterday':'Last trained '+diff+' days ago';
+}
+
+/** Row copy describes logged set credit, not physiological recovery. */
+export function recoveryRowText(row:MuscleRecovery,mode:'recent'|'volume'|'untrained',now:Date):string {
+  const counted=(value:number)=>Number(value.toFixed(1)).toString()+' sets';
+  if(mode==='recent'){
+    const level=row.band==='higher'?'Higher load':row.band==='some'?'Some load':'Ready';
+    return counted(row.recentCredit)+' · '+relativeTrainingDay(row.lastCredit,now).toLowerCase()+' · '+level;
+  }
+  if(mode==='volume')return counted(row.weeklyCredit)+' this week · '+
+    relativeTrainingDay(row.lastCredit,now).toLowerCase();
+  if(!row.lastPrimary)return row.lastCredit?
+    'No direct sets yet · helper '+relativeTrainingDay(row.lastCredit,now).toLowerCase()
+      .replace(/^trained /,'').replace(/^last trained /,''):
+    'Not trained yet';
+  return relativeTrainingDay(row.lastPrimary,now);
 }
