@@ -158,6 +158,9 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
  const setType=extra(['set_type','set type','set order type','type']);
  const setIndex=extra(['set_index','set order','set number']);
  const notes=extra(['exercise_notes','notes']);
+ // Hevy can mark cardio as 'normal' despite having distance/time instead of reps.
+ const distance=extra(['distance_km','distance_m','distance_miles','distance']);
+ const duration=extra(['duration_seconds','duration_sec','duration_minutes','duration']);
  const sessions=new Map<string,ParsedWorkout>();
  let ignored=0,nonStrengthRows=0,marked=false,needsUnit=false;
  for(let index=0;index<rows.length;index++){
@@ -166,6 +169,10 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
   if(!v(dt)&&!v(ex)&&!v(re)&&!v(selectedWeight)){ignored++;continue;}
   if(!v(dt)||!v(ex))throw new ImportParseError('invalid','Row '+(index+2)+' has no date or exercise.',expectedColumns(source),columns);
   const reps=v(re);
+  if(!reps&&(v(distance)||v(duration))){
+   // Distance/timed cardio is not a strength set, even if set_type is "normal".
+   ignored++;nonStrengthRows++;continue;
+  }
   const orderMarker=v(setIndex);
   const setMarker=v(setType)||(/^[WDF]$/i.test(orderMarker)?orderMarker:'');
   if(!reps&&!setMarker){
