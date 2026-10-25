@@ -64,3 +64,26 @@ test('does not shift impossible date-only days silently or mask date parsing fai
  expect(ok.workouts).toHaveLength(1);
  expect(ok.workouts[0]?.localDay).toBe('2028-02-29');
 });
+
+test('Hevy day named-month timestamp, comma and time are parsed as local wall time',()=>{
+ const p=parseImportCsv('hevy','real-shape.csv',
+  'title,start_time,end_time,exercise_title,weight_kg,reps\n'+
+  'Upper,"26 Jan 2024, 07:34","26 Jan 2024, 08:35",Bench,60,8');
+ expect(p.workouts[0]?.localDay).toBe('2024-01-26');
+ expect(new Date(p.workouts[0]!.startedAt).getHours()).toBe(7);
+ expect(new Date(p.workouts[0]!.startedAt).getMinutes()).toBe(34);
+ expect(new Date(p.workouts[0]!.endedAt).getHours()).toBe(8);
+});
+test('ambiguous numeric calendar days are blocked, unambiguous D/M and M/D remain valid',()=>{
+ const header='date,exercise,weight_kg,reps\n';
+ for(const ambiguous of ['05/10/2026','10.05.2026'])
+  expect(()=>parseImportCsv('csv','ambiguous.csv',header+ambiguous+',Bench,60,8'))
+   .toThrow('Ambiguous workout date');
+ const dmy=parseImportCsv('csv','dmy.csv',header+'25/10/2026,Bench,60,8');
+ const mdy=parseImportCsv('csv','mdy.csv',header+'10/25/2026,Bench,60,8');
+ expect(dmy.workouts[0]?.localDay).toBe('2026-10-25');
+ expect(mdy.workouts[0]?.localDay).toBe('2026-10-25');
+ expect(()=>parseImportCsv('hevy','bad.csv',
+  'title,start_time,exercise_title,weight_kg,reps\nUpper,"31 Feb 2026, 07:34",Bench,60,8'))
+  .toThrow('Invalid workout date');
+});

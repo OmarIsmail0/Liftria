@@ -116,15 +116,49 @@ test('Undo removes exactly imported tables byte for byte and preserves manual pr
  const undo=await undoLastImport();
  expect(undo).toMatchObject({ok:true,value:{sessions:2,sets:2,custom:1}});
  const compare=(state:typeof mockState)=>({batches:state.batches,exercises:state.exercises,
-  sessions:state.sessions,sessionExercises:state.sessionExercises,sets:state.sets});
+  sessions:state.sessions,sessionExercises:state.sessionExercises,sets:state.sets,
+  settings:state.settings});
  expect(compare(mockState)).toEqual(compare(before));
  expect((await lastImportBatch())).toEqual({ok:true,value:null});
- // Remembered mappings intentionally stay; these are specified to survive Undo.
- expect(mockState.settings.some(x=>String(x.key).startsWith('import.match.'))).toBe(true);
+ // The undo restores settings too, including mappings created by this batch.
+ expect(mockState.settings).toEqual(before.settings);
 });
 test('a write failure rolls all six tables back instead of partially importing',async()=>{
  mockFailSet=true;
  const before=mockClone(),plan=createImportPlan(parseImportCsv('csv','demo.csv',csv),context,null);
  expect((await commitImport(plan)).ok).toBe(false);
  expect(mockState).toEqual(before);
+});
+
+test('remembered custom points at created ID, reimport with new file reuses it',async()=>{
+ const first=createImportPlan(parseImportCsv('csv','first.csv',csv),context,null);
+ expect((await commitImport(first)).ok).toBe(true);
+ const prior=mockState.exercises.find(x=>x.name==='Demo Lift');
+ expect(prior).toBeDefined();
+ const saved=mockState.settings.find(x=>x.key==='import.match.csv.demolift');
+ expect(saved?.value).toBe(prior?.id);
+ const nextContext:ImportContext={...context,days:[],importedHashes:[],
+  exercises:[{id:String(prior?.id),name:'Demo Lift',aliases:[],equipment:null,
+   type:'weighted',unilateral:false,primaryMuscles:[],secondaryMuscles:[],
+   instructions:[],source:'import',retired:false,packCategory:null} as ImportContext['exercises'][number]],
+  remembered:{'import.match.csv.demolift':String(saved?.value)}};
+ const second=createImportPlan(parseImportCsv('csv','new-file.csv',
+  'date,exercise,weight_kg,reps\n2026-10-23,Demo Lift,65,10'),nextContext,null);
+ expect(second.customCount).toBe(0);
+ expect(second.mappings[0]?.resolvedId).toBe(prior?.id);
+ expect((await commitImport(second)).ok).toBe(true);
+ expect(mockState.exercises.filter(e=>e.name==='Demo Lift')).toHaveLength(1);
+});
+test('Undo restores overwritten mapping values and the previous batch pointer byte for byte',async()=>{
+ mockState.settings.push({key:'import.match.csv.demolift',value:'old-exercise-id'});
+ const first=createImportPlan(parseImportCsv('csv','one.csv',csv),context,null);
+ expect((await commitImport(first)).ok).toBe(true);
+ const afterFirst=mockClone();
+ const second=createImportPlan(parseImportCsv('csv','second.csv',
+  'date,exercise,weight_kg,reps\n2026-10-23,Demo Lift,70,8'),context,null);
+ expect((await commitImport(second)).ok).toBe(true);
+ expect((await undoLastImport()).ok).toBe(true);
+ expect(mockState).toEqual(afterFirst);
+ expect((await undoLastImport()).ok).toBe(true);
+ expect(mockState.settings).toEqual([{key:'import.match.csv.demolift',value:'old-exercise-id'}]);
 });

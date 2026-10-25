@@ -6,6 +6,23 @@ import type { RecordObservation } from '../../services/database/gymMath';
 import { fromImportWeight, localDayFromIso, type Importer } from './importCsv';
 import { canImportPlan, mappingKey, type ImportContext, type ImportPlan } from './importPlanning';
 const LAST_IMPORT='import.lastBatch';
+/** Backward compatible: older batches stored a bare list of created IDs. */
+type BatchUndoMetadata={ids:string[];settingsBefore:Record<string,string|null>};
+function decodeBatchMetadata(raw:string):BatchUndoMetadata{
+ const value:unknown=JSON.parse(raw);
+ if(Array.isArray(value))return {ids:value as string[],settingsBefore:{}};
+ const data=value as BatchUndoMetadata;
+ return {ids:data.ids,settingsBefore:data.settingsBefore??{}};
+}
+async function restoreSettings(
+ tx:{runAsync:(sql:string,params:unknown[])=>Promise<unknown>},
+ previous:Record<string,string|null>
+):Promise<void>{
+ for(const [key,value] of Object.entries(previous)){
+  if(value===null)await tx.runAsync('DELETE FROM app_settings WHERE key=?',[key]);
+  else await tx.runAsync('INSERT INTO app_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',[key,value]);
+ }
+}
 export type ImportBatch={id:string;source:Importer;fileName:string|null;count:number;
  sets:number;skipped:number;createdExercises:string[];createdAt:string};
 export type ImportOutcome={batchId:string;workouts:number;sets:number;skipped:number;custom:number};
@@ -38,7 +55,7 @@ export async function lastImportBatch():Promise<DbResult<ImportBatch|null>>{
    'SELECT * FROM import_batches WHERE id=?',[current.value]);
   if(!b)return null;
   return {id:b.id,source:b.importer,fileName:b.file_name,count:b.session_count,sets:b.set_count,
-   skipped:b.skipped_count,createdExercises:JSON.parse(b.created_exercises) as string[],createdAt:b.created_at};
+   skipped:b.skipped_count,createdExercises:decodeBatchMetadata(b.created_exercises).ids,createdAt:b.created_at};
  });
 }
 /** Records, muscle map and history are derived live from the rows this transaction inserts. */
@@ -89,8 +106,16 @@ export async function commitImport(plan:ImportPlan,
      linked.set(mapping.name,exerciseId);made.push(exerciseId);
     }
    }
+   const settingsBefore:Record<string,string|null>={};
+   for(const key of [...new Set([...plan.mappings.map(m=>
+     mappingKey(plan.parsed.source,m.name)),LAST_IMPORT])]){
+    const existing=await tx.getFirstAsync<{value:string}>('SELECT value FROM app_settings WHERE key=?',[key]);
+    settingsBefore[key]=existing?.value??null;
+   }
+   // Reuse the batch's JSON metadata column; no schema or migration change.
+   // It records prior settings so Undo can restore exactly the pre-import state.
    await tx.runAsync('UPDATE import_batches SET created_exercises=? WHERE id=?',
-    [JSON.stringify([...made,...seededPack]),id]);
+    [JSON.stringify({ids:[...made,...seededPack],settingsBefore}),id]);
    let processed=0;
    for(const workout of plan.workouts){
     const sessionId=newGymId();
@@ -124,7 +149,7 @@ export async function commitImport(plan:ImportPlan,
    for(const mapping of plan.mappings){
     // Only explicit choices are remembered; suggestions were never applied.
     await tx.runAsync('INSERT INTO app_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
-     [mappingKey(plan.parsed.source,mapping.name),mapping.resolvedId??'custom']);
+     [mappingKey(plan.parsed.source,mapping.name),linked.get(mapping.name)!]);
    }
    await tx.runAsync('INSERT INTO app_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
     [LAST_IMPORT,id]);
@@ -156,7 +181,8 @@ export async function undoLastImport():Promise<DbResult<UndoOutcome|null>>{
     '(SELECT id FROM sessions WHERE import_batch_id=?)',[batch.id]);
    await tx.runAsync('DELETE FROM sessions WHERE import_batch_id=?',[batch.id]);
    let deletedCustom=0,keptCustom=0;
-   for(const id of JSON.parse(batch.created_exercises) as string[]){
+   const metadata=decodeBatchMetadata(batch.created_exercises);
+   for(const id of metadata.ids){
     const used=await tx.getFirstAsync<{id:string}>(
      'SELECT id FROM session_exercises WHERE exercise_id=? UNION '+
      'SELECT id FROM template_exercises WHERE exercise_id=? LIMIT 1',[id,id]);
@@ -170,7 +196,9 @@ export async function undoLastImport():Promise<DbResult<UndoOutcome|null>>{
     }
    }
    await tx.runAsync('DELETE FROM import_batches WHERE id=?',[batch.id]);
-   await tx.runAsync('DELETE FROM app_settings WHERE key=?',[LAST_IMPORT]);
+   await restoreSettings(tx,metadata.settingsBefore);
+   if(!(LAST_IMPORT in metadata.settingsBefore))
+    await tx.runAsync('DELETE FROM app_settings WHERE key=?',[LAST_IMPORT]);
    removed={sessions:rows.length,sets:counter?.total??0,custom:deletedCustom,keptCustom};
   });
   return removed;

@@ -87,33 +87,56 @@ const fields:Record<Importer,{date:string[];exercise:string[];weight:string[];re
 };
 export function expectedColumns(importer:Importer):string[]{const f=fields[importer];
  return [...f.date.slice(0,1),...f.exercise.slice(0,1),...f.weight.slice(0,1),...f.reps.slice(0,1)];}
+/** Parse dates without guessing between day/month and month/day. */
 function whenFrom(value:string):{iso:string;day:string;dateOnly:boolean}{
  const v=value.trim();if(!v)throw new Error('Missing workout date');
- let date:Date;const dateOnly=/^\d{4}-\d{2}-\d{2}$/.test(v);
- if(dateOnly){const [y,m,d]=v.split('-').map(Number);date=new Date(y!,m!-1,d!,12);}
- else if(/^\d{1,2}[\/.]\d{1,2}[\/.]\d{4}/.test(v)){
-  const match=/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})(?:\s+(\d{1,2}):(\d{2}))?/.exec(v)!;
-  // Only explicit ISO or locale-style US MDY; no invisible month/day guessing.
-  date=new Date(Number(match[3]),Number(match[1])-1,Number(match[2]),
-   match[4]?Number(match[4]):12,match[5]?Number(match[5]):0);
+ const slash=/^(\d{1,2})[\\/.](\d{1,2})[\\/.](\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(v);
+ const named=/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),?\s+(\d{1,2}):(\d{2})$/.exec(v);
+ const iso=/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/.exec(v);
+ const dateOnly=/^\d{4}-\d{2}-\d{2}$/.test(v)||
+  (slash!==null&&slash[4]===undefined);
+ let date:Date;let expected:{year:number;month:number;day:number}|null=null;
+ if(slash){
+  const first=Number(slash[1]),second=Number(slash[2]),year=Number(slash[3]);
+  if(first<=12&&second<=12)
+   throw new Error('Ambiguous workout date '+v+': use YYYY-MM-DD (not guessed).');
+  const month=first>12?second:first,day=first>12?first:second;
+  expected={year,month,day};
+  date=new Date(year,month-1,day,slash[4]?Number(slash[4]):12,
+   slash[5]?Number(slash[5]):0);
+ }else if(named){
+  const months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const month=months.indexOf(named[2]!.toLowerCase())+1;
+  if(!month)throw new Error('Invalid workout date: '+v);
+  const year=Number(named[3]),day=Number(named[1]);
+  expected={year,month,day};
+  date=new Date(year,month-1,day,Number(named[4]),Number(named[5]));
+ }else if(dateOnly){
+  const [year,month,day]=v.split('-').map(Number);
+  expected={year:year!,month:month!,day:day!};
+  date=new Date(year!,month!-1,day!,12);
  }else{
-  date=new Date(v.replace(' ', 'T'));
+  // Timestamped ISO dates may contain an offset: validate the input day
+  // separately because Date accepts some nonexistent calendar days.
+  date=new Date(v.replace(' ','T'));
  }
  if(!Number.isFinite(date.valueOf()))throw new Error('Invalid workout date: '+v);
- // Date(y,m,d) normalizes nonexistent days (e.g. Feb 31) into another month.
- // Reject them: otherwise a malformed export changes the day and duplicate check.
- const isoDay=/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/.exec(v);
- const usDay=/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})(?:\s|$)/.exec(v);
- if(isoDay||usDay){
-  const year=isoDay?Number(isoDay[1]):Number(usDay![3]);
-  const month=isoDay?Number(isoDay[2]):Number(usDay![1]);
-  const day=isoDay?Number(isoDay[3]):Number(usDay![2]);
+ if(iso){
+  const year=Number(iso[1]),month=Number(iso[2]),day=Number(iso[3]);
   const check=new Date(year,month-1,day);
   if(check.getFullYear()!==year||check.getMonth()+1!==month||check.getDate()!==day)
    throw new Error('Invalid workout date: '+v);
  }
+ if(expected){
+  const {year,month,day}=expected;
+  if(date.getFullYear()!==year||date.getMonth()+1!==month||date.getDate()!==day||
+   (slash&&slash[4]&&date.getHours()!==Number(slash[4]))||
+   (slash&&slash[5]&&date.getMinutes()!==Number(slash[5]))||
+   (named&&(date.getHours()!==Number(named[4])||date.getMinutes()!==Number(named[5]))))
+   throw new Error('Invalid workout date: '+v);
+ }
  return {iso:date.toISOString(),day:[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),
-   String(date.getDate()).padStart(2,'0')].join('-'),dateOnly};
+  String(date.getDate()).padStart(2,'0')].join('-'),dateOnly};
 }
 export function localDayFromIso(iso:string):string{
  const d=new Date(iso);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),
