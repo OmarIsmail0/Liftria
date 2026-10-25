@@ -13,16 +13,8 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 2. ~~PR D: Library and data~~ DONE in PR #13 (merged 2026-10-25; verify + Android build green, emulator screenshots approved by Claude).
 3. ~~PR E: Train and active workout~~ DONE in PR #14 (merged 2026-10-25; verify + Android build green, emulator screenshots checked by Claude). Claude fixed on the way: Hermes-safe `newGymId()` (never call `crypto.*`), the blocked legacy storage permissions, and the TR-8 dock's bottom safe-area inset.
 4. ~~PR F: History, records and progress~~ DONE in PR #15 (merged 2026-10-25; verify + Android build green, emulator screenshots checked by Claude).
-5. **PR G: `Phase 3 / Import from other apps`. Start now.**
-   - Branch from `main` (PR F is merged), named `phase3/import`. If you already branched from `phase3/history-records`, merge `main` in (merge commit, never rebase). Open a draft PR against `main`.
-   - **Small layout fixes from the PR F screenshots (fold into this PR):** PR-2 week labels wrap and clip ("Sep\n13"): use a shorter label or a single line with `numberOfLines={1}`; TR-8 / TR-12 stepper values wrap ("0\nkg"): keep value and unit on one line or show the unit under the label only.
-   - Scope: IM-1…IM-4, flow 11, the ST-6 rows and the TR-1 and TR-11 links. PHASE_3_PROMPT §4.4 and the handoff's 8 import acceptance criteria are the rules: units never guessed; exact → remembered → *Suggested* (never auto-applied) → custom, and no set is ever dropped; re-import adds nothing (file hash, and days that already have a workout are skipped); the preview saves nothing; the import is one transaction; Undo import removes exactly that batch (byte-for-byte table test).
-   - Add `expo-document-picker` and `expo-file-system` (approved) and ask Claude to regenerate the lockfile. No storage permission: the CI gate rejects it.
-   - IDs only through `newGymId()`. Never call `crypto.*`.
-   - Parser fixtures must match each app's real export columns (Hevy, Strong, FitNotes, generic CSV). Mark column sets "unverified" in the PR until the owner supplies real exports.
-   - Delete all must also remove anything the import keeps (e.g. a cache file), with a test.
-   - For screenshots, add `dev/demo-import?auto=1` that loads a bundled fixture into the IM-2 preview (nothing saved). List the routes in the PR description.
-6. **Phase end:** Claude runs the Android build on `main` and the owner does the S22 checks in PHASE_3_PROMPT §5.
+5. ~~PR G: Import from other apps~~ DONE in PR #16 (merged 2026-10-25; verify + Android build green, emulator screenshots checked; the owner's real Hevy export (76 workouts) verified locally by Claude, not committed). Strong and FitNotes columns are still unverified.
+6. **Phase end (now):** Claude runs the Android build on `main` and the owner does the S22 checks in PHASE_3_PROMPT §5.
 
 **Rules (same as Phase 2):**
 - **Builds:**

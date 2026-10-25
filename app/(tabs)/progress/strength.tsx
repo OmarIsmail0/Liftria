@@ -60,7 +60,7 @@ export default function Strength(){
       <Text numberOfLines={1} adjustsFontSizeToFit
         accessibilityLabel={'Week of '+w.label}
         style={{color:theme.color.text.tertiary,fontSize:theme.type.small.size,textAlign:'center'}}>
-        {w.start.toLocaleDateString(undefined,{month:'short'}).slice(0,1)+w.start.getDate()}
+        {w.start.toLocaleDateString(undefined,{month:'numeric',day:'numeric'})}
       </Text>
      </View>)}
     </View>

@@ -8,6 +8,7 @@ import { canImportPlan, createImportPlan, resolveImportMappings, keepAllAsOwn, t
 import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { getTypedSetting } from '../../src/services/database/settings';
+const sourceName=(s:string)=>({hevy:'Hevy',strong:'Strong',fitnotes:'FitNotes',csv:'CSV'} as Record<string,string>)[s]??s;
 export default function ImportPreview(){
  const {theme}=useTheme();
  const draft=getImportDraft();
@@ -38,11 +39,11 @@ export default function ImportPreview(){
  const parseError=draft.error;
  const nothing=plan&&(plan.hashDuplicate||plan.workouts.length===0);
  return <Screen>
-  <Header title="Review import" subtitle={draft.fileName+' · from '+draft.source}
+  <Header title="Review import" subtitle={draft.fileName+' · from '+sourceName(draft.source)}
    onBack={()=>router.back()}/>
   {parseError?<Card title={parseError.code==='empty'?'No workouts found in this file':
     parseError.code==='too-large'?'This file is too large to import':
-     "This does not look like a "+draft.source+' export'}>
+     "This does not look like a "+sourceName(draft.source)+' export'}>
    <Typography tone="secondary">{parseError.message} Nothing was imported.</Typography>
    <Typography tone="secondary" size="small">Expected: {(parseError.expected.length?parseError.expected:
     expectedColumns(draft.source as 'hevy'|'strong'|'fitnotes'|'csv')).join(', ')}</Typography>
@@ -56,7 +57,7 @@ export default function ImportPreview(){
    <Button label="Choose another file" variant="secondary" onPress={()=>router.replace('/import')}/>
   </Card>:<>
    <Card rim="train" title={plan.workouts.length+' workouts · '+plan.setCount+' sets'}>
-    <Typography tone="secondary" size="small">{'From '+draft.source}</Typography>
+    <Typography tone="secondary" size="small">{'From '+sourceName(draft.source)}</Typography>
     <Typography tone="secondary">{new Date(plan.workouts[0]!.startedAt).toLocaleDateString()+
      ' – '+new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString()}</Typography>
     <ListRow title="Warm-up sets marked" detail={String(plan.warmupCount)}/>
@@ -87,7 +88,7 @@ export default function ImportPreview(){
      onPress={()=>setDecisions({})}/>}
     {mappings.length===0&&<Typography tone="secondary" size="small">All exercise names matched your library.</Typography>}
     {mappings.map(m=><View key={m.name} style={{gap:theme.space[2],paddingVertical:theme.space[2]}}>
-     <Typography bold>{m.name} · {m.count} sets</Typography>
+     <Typography bold>{m.name} · {m.count} {m.count===1?'set':'sets'}</Typography>
      <Typography tone="secondary">Current choice: {m.resolvedId?
       'Use existing library exercise':'Keep as my own exercise'}</Typography>
      {suggestions.find(s=>s.name===m.name)?.status==='exact'&&
