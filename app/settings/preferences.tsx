@@ -9,10 +9,10 @@ import type { WeightUnit, HeightUnit } from '../../src/features/settings/units';
 
 type Prefs = {
   weight: WeightUnit; height: HeightUnit; hideNumbers: boolean;
-  keepScreenOn: boolean; haptics: boolean;
+  keepScreenOn: boolean; haptics: boolean; smallPlates: boolean;
 };
 const defaults: Prefs = { weight: 'kg', height: 'cm', hideNumbers: false,
-  keepScreenOn: false, haptics: true };
+  keepScreenOn: true, haptics: true, smallPlates: false };
 
 export default function UnitsAndAppearance() {
   const { theme } = useTheme();
@@ -24,14 +24,15 @@ export default function UnitsAndAppearance() {
     void Promise.all([
       getTypedSetting('units.weight'), getTypedSetting('units.height'),
       getTypedSetting('hideNumbers'), getTypedSetting('keepScreenOn'),
-      getTypedSetting('haptics'),
-    ]).then(([weight, height, hide, screen, haptics]) => {
+      getTypedSetting('haptics'), getTypedSetting('units.smallPlates'),
+    ]).then(([weight, height, hide, screen, haptics, plates]) => {
       if (!mounted) return;
       setValues({
         weight: weight.ok ? weight.value : 'kg', height: height.ok ? height.value : 'cm',
         hideNumbers: hide.ok ? hide.value : false,
-        keepScreenOn: screen.ok ? screen.value : false,
+        keepScreenOn: screen.ok ? screen.value : true,
         haptics: haptics.ok ? haptics.value : true,
+        smallPlates: plates.ok ? plates.value : false,
       });
     }).catch(() => { if (mounted) setError('Unable to read saved settings. Defaults are displayed.'); })
       .finally(() => { if (mounted) setReady(true); });
@@ -46,7 +47,8 @@ export default function UnitsAndAppearance() {
       name === 'height' ? await setTypedSetting('units.height', value as HeightUnit) :
         name === 'hideNumbers' ? await setTypedSetting('hideNumbers', value as boolean) :
           name === 'keepScreenOn' ? await setTypedSetting('keepScreenOn', value as boolean) :
-            await setTypedSetting('haptics', value as boolean);
+            name === 'smallPlates' ? await setTypedSetting('units.smallPlates', value as boolean) :
+             await setTypedSetting('haptics', value as boolean);
     if (!saved.ok) {
       setValues(previous => ({ ...previous, [name]: old }));
       setError('Could not save this setting on your phone. Try again.');
@@ -62,6 +64,8 @@ export default function UnitsAndAppearance() {
         value={values.weight} onChange={v => void change('weight', v)} />
       <SegmentedControl label="Height" options={[{ value:'cm', label:'cm' }, { value:'ftin', label:'ft / in' }]}
         value={values.height} onChange={v => void change('height', v)} />
+      <Toggle label="Small plates" detail="1.25 kg increments for your workout weight stepper."
+        value={values.smallPlates} onChange={v => void change('smallPlates', v)} />
       <Typography tone="secondary">Energy: kcal</Typography>
       <Typography tone="secondary" size="small">kJ is planned for a future release.</Typography>
     </Card>

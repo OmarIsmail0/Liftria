@@ -55,6 +55,11 @@ export async function cancelSessionRestAlerts(sessionId:string):Promise<void> {
       ids.add(entry.identifier);
   }
   for(const scheduledId of ids)await Notifications.cancelScheduledNotificationAsync(scheduledId);
+  const shown=await Notifications.getPresentedNotificationsAsync();
+  for(const entry of shown){
+    if(isSessionRestNotification(entry.request.content.data as Record<string,unknown>|undefined,sessionId))
+      await Notifications.dismissNotificationAsync(entry.request.identifier);
+  }
   if(references.length){
     const removed=await dbOperation(async db=>{
       for(const reference of references)await db.runAsync(

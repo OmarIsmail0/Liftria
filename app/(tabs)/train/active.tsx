@@ -187,11 +187,12 @@ export default function ActiveWorkoutScreen() {
     <View style={{paddingHorizontal:theme.layout.gutter,paddingTop:theme.space[2],gap:theme.space[2]}}>
       <Header title={view.title} subtitle={elapsedLabel(view.startedAt,now)+' elapsed · '+(stats?.sets??0)+' sets logged'}
         onBack={()=>router.replace('/(tabs)/train')} right={<Button label="Finish" variant="secondary"
-          onPress={()=>setFinishVisible(true)}/>}/>
+          onPress={()=>stats?.pending?setFinishVisible(true):
+            router.push({pathname:'/(tabs)/train/summary',params:{id:view.id}})}/>}/>
       <View style={{height:theme.space[1],backgroundColor:theme.color.track,
         borderRadius:theme.radius.pill,overflow:'hidden'}}>
         <View style={{height:'100%',width:(stats&&view.exercises.reduce((n,e)=>n+e.targetSets,0)>0?
-          Math.min(100,100*stats.sets/view.exercises.reduce((n,e)=>n+e.targetSets,0)):0)+'%',
+          Math.min(100,100*stats.sets/view.exercises.reduce((n,e)=>n+e.targetSets,0)):0)+'%' as `${number}%`,
           backgroundColor:theme.color.domain.train}}/>
       </View>
       <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
