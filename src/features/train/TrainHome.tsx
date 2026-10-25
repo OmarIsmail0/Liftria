@@ -10,7 +10,7 @@ import { weekDays, scheduledTemplate, isLocalDate } from './weekPlan';
 import { elapsedLabel } from './restClock';
 import { ensureExercisePack } from '../../services/database/exerciseLibrary';
 import { readStrengthObservations } from '../../services/database/historyRepository';
-import { calculateMuscleRecovery, relativeTrainingDay, type MuscleRecovery } from './recoveryMath';
+import { calculateMuscleRecovery, type MuscleRecovery } from './recoveryMath';
 
 export default function TrainHome() {
   const {theme}=useTheme();

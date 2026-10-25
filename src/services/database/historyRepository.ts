@@ -2,7 +2,7 @@
 import { dbOperation, type DbResult } from './index';
 import type { SQLiteBindValue } from 'expo-sqlite';
 import { newGymId } from './exerciseLibrary';
-import { calculateRecords, setVolume, type ExerciseRecord, type RecordObservation } from './gymMath';
+import { calculateRecords, setVolume, type RecordObservation } from './gymMath';
 import type { ExerciseType, Muscle } from './gymTypes';
 
 export type HistorySession={id:string;title:string;startedAt:string;endedAt:string;notes:string|null;

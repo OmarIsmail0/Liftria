@@ -82,11 +82,12 @@ export function strengthWeeks(rows:StrengthObservation[],now:Date,count=8):Stren
     const selected=rows.filter(r=>{const when=Date.parse(r.loggedAt);
       return when>=start.valueOf()&&when<end.valueOf();});
     const grouped=completedLogicalSets(selected);
-    const volume=grouped.reduce((sum,set)=>{
-      const factor=set.unilateral&&set.type==='dumbbell'?1:1;
-      // Complete pairs retain one logical set; dumbbells already multiply per-hand by two.
-      return sum+setVolume(set.type,set)*factor;
-    },0);
+    const completedKeys=new Set(grouped.map(s=>s.sessionExerciseId+':'+s.position));
+    // Volume uses every side of a complete unilateral pair exactly as TR-8 does.
+    // Dumbbell pair sides are each half of the per-hand ×2 contribution.
+    const volume=selected.filter(s=>completedKeys.has(s.sessionExerciseId+':'+s.position))
+      .reduce((sum,s)=>sum+setVolume(s.type,s)*
+        (s.unilateral&&s.type==='dumbbell'?0.5:1),0);
     return {label:start.toLocaleDateString(undefined,{month:'short',day:'numeric'}),
       start,end,volume,logged:grouped.length>0};
   });

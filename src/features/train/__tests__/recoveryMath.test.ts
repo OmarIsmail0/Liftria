@@ -76,3 +76,16 @@ test('weekly chart uses actual sets, not missing-day zero observations',()=>{
   expect(weeks.filter(x=>x.logged)).toHaveLength(1);
   expect(weeks.filter(x=>!x.logged)).toHaveLength(7);
 });
+
+test('weekly unilateral volume equals active/session totals, including different L and R weights',()=>{
+  const l={...row(1,['shoulders']),sessionExerciseId:'pair',type:'weighted' as const,
+    unilateral:true,side:'L' as const,weight:30,reps:8};
+  const right={...l,side:'R' as const,weight:40};
+  const dbL={...row(1,['shoulders']),sessionExerciseId:'dumbbellPair',type:'dumbbell' as const,
+    unilateral:true,side:'L' as const,weight:20,reps:8};
+  const dbR={...dbL,side:'R' as const};
+  const partial={...row(1,['shoulders']),sessionExerciseId:'incomplete',unilateral:true,
+    side:'L' as const,weight:900,reps:8};
+  const weeks=strengthWeeks([l,right,dbL,dbR,partial],NOW);
+  expect(weeks.at(-1)?.volume).toBe(30*8+40*8+2*20*8);
+});
