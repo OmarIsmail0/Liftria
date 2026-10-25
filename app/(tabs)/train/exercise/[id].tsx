@@ -2,11 +2,13 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { BodyMap } from '../../../../src/features/train/BodyMap';
-import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Typography } from '../../../../src/design/primitives';
+import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Sheet, Typography } from '../../../../src/design/primitives';
 import { useTheme } from '../../../../src/design/ThemeProvider';
 import { type Exercise } from '../../../../src/services/database/gymTypes';
 import { ensureExercisePack, getExercise } from '../../../../src/services/database/exerciseLibrary';
-import { exerciseSessions, readRecords } from '../../../../src/services/database/gymRepositories';
+import { appendExerciseToActiveSession, exerciseSessions, listTemplates, readRecords, saveTemplate,
+  type Template } from '../../../../src/services/database/gymRepositories';
+import { readInProgressWorkout } from '../../../../src/features/train/workoutData';
 import type { ExerciseRecord } from '../../../../src/services/database/gymMath';
 
 export default function ExerciseDetail(){
@@ -16,6 +18,35 @@ export default function ExerciseDetail(){
   const [records,setRecords]=useState<ExerciseRecord[]>([]);
   const [sessions,setSessions]=useState<{id:string;title:string;startedAt:string}[]>([]);
   const [loading,setLoading]=useState(true);
+  const [choosing,setChoosing]=useState(false);
+  const [templates,setTemplates]=useState<Template[]>([]);
+  const [adding,setAdding]=useState(false);
+  const [message,setMessage]=useState<string|null>(null);
+  const add=async()=>{
+    if(adding)return;
+    setAdding(true);
+    const active=await readInProgressWorkout();
+    if(active.ok&&active.value){
+      const result=await appendExerciseToActiveSession(id);
+      setAdding(false);
+      if(result.ok&&result.value)router.push({pathname:'/(tabs)/train/active',params:{id:active.value.id}});
+      else setMessage('Could not add exercise. Try again.');
+      return;
+    }
+    if(!active.ok){setMessage('Could not check your workout. Try again.');setAdding(false);return;}
+    const saved=await listTemplates();
+    setAdding(false);
+    if(saved.ok){setTemplates(saved.value);setChoosing(true);}
+    else setMessage('Could not load your templates.');
+  };
+  const toTemplate=async(template:Template)=>{
+    if(adding)return;setAdding(true);
+    const saved=await saveTemplate({name:template.name,notes:template.notes,restSec:template.restSec,
+      exercises:[...template.exercises,{exerciseId:id,targetSets:3,repMin:8,repMax:12,restSec:null,notes:null}]},template.id);
+    setAdding(false);
+    if(saved.ok){setChoosing(false);setMessage('Added to '+template.name+'.');}
+    else setMessage('Could not update the template.');
+  };
   useFocusEffect(useCallback(()=>{
     let live=true;
     void (async()=>{
@@ -45,11 +76,13 @@ export default function ExerciseDetail(){
         onBack={()=>router.back()}/>
       <Card rim="train">
         <BodyMap primary={exercise.primaryMuscles} secondary={exercise.secondaryMuscles}/>
-        <Typography tone="secondary">{exercise.type==='dumbbell'?'Weight per hand':exercise.type==='assisted'?'Weight is assistance':exercise.type==='bodyweight'?'Body weight (or added weight)':'Total working weight'}{exercise.unilateral?' · Separate left/right sets':''}</Typography>
+        {exercise.type!=='weighted'||exercise.unilateral?
+          <Typography tone="secondary">{exercise.type==='dumbbell'?'Weight per hand':exercise.type==='assisted'?'Assistance weight':exercise.type==='bodyweight'?'Body weight or added weight':''}{exercise.unilateral?' · Separate left/right sets':''}</Typography>:null}
       </Card>
       <Card title="Add to a workout">
-        <Button label="Add to a workout" variant="train" disabled onPress={()=>{}}/>
-        <Typography tone="secondary" size="small">Start a workout first. Adding exercises will be available when workout tracking is ready.</Typography>
+        <Button label={adding?'Adding…':'Add to a workout'} variant="train" disabled={adding}
+          onPress={()=>void add()}/>
+        {message&&<Typography tone="secondary" size="small">{message}</Typography>}
       </Card>
       <Card title="Your progress">
         {sessions.length===0?<EmptyState title="No workouts logged yet"
@@ -79,5 +112,15 @@ export default function ExerciseDetail(){
       </Card>
       {exercise.source==='pack'&&<Typography tone="tertiary" size="small">Instructions from free-exercise-db (Unlicense). No third-party images.</Typography>}
     </ScrollView>
+    <Sheet visible={choosing} title="Add exercise to a template"
+      description="There is no active workout. Choose where to add this exercise."
+      onClose={()=>setChoosing(false)}>
+      {templates.map(t=><Button key={t.id} label={t.name} variant="secondary" fullWidth
+        disabled={adding} onPress={()=>void toTemplate(t)}/>)}
+      <Button label="Create a template" variant="train" fullWidth onPress={()=>{
+        setChoosing(false);router.push({pathname:'/(tabs)/train/template',params:{exerciseId:id}});
+      }}/>
+      <Button label="Cancel" variant="secondary" fullWidth onPress={()=>setChoosing(false)}/>
+    </Sheet>
   </Screen>;
 }

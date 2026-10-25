@@ -28,15 +28,22 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: 'com.liftria.app',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
-    permissions: [...healthReadPermissions, 'android.permission.INTERNET'],
+    permissions: [...healthReadPermissions, 'android.permission.INTERNET', 'android.permission.POST_NOTIFICATIONS'],
     allowBackup: false,
     blockedPermissions: [
       'android.permission.RECORD_AUDIO',
       'android.permission.SYSTEM_ALERT_WINDOW',
+      'android.permission.SCHEDULE_EXACT_ALARM',
+      'android.permission.USE_EXACT_ALARM',
+      'android.permission.RECEIVE_BOOT_COMPLETED',
+      // expo-image-picker adds these for Android 12 and older; the system picker needs no storage permission.
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
     ],
   },
   plugins: [
     'expo-router',
+    'expo-notifications',
     'expo-splash-screen',
     ['expo-image-picker', { cameraPermission: false, microphonePermission: false }],
     ['expo-sqlite', { useSQLCipher: false }],

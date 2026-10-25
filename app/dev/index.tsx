@@ -12,6 +12,10 @@ export default function DeveloperHome() {
         onPress={() => router.push('/dev/primitives')} />
       <ListRow title="Phase 0 diagnostics" detail="Health, SQLite and API test tools"
         onPress={() => router.push('/dev/diagnostics')} />
+      <ListRow title="Rest alert S22 matrix" detail="Developer-only notification timing spike"
+        onPress={() => router.push('/dev/rest-spike')} />
+      <ListRow title="Demo active workout" detail="Two exercises, no logged sets; for screenshots"
+        onPress={() => router.push('/dev/demo-workout')} />
     </Card>
   </Screen>;
 }

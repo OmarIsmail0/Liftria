@@ -2,15 +2,15 @@ import { router } from 'expo-router';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 
-/** Phase 2 cannot request POST_NOTIFICATIONS; the rest timer and reminders are Phase 3/4. */
+/** TR-9 can request notification permission during the first rest. Timing remains pending device proof. */
 export default function Notifications() {
   return <Screen>
-    <Header title="Notifications" subtitle="Not scheduled in this release"
+    <Header title="Notifications" subtitle="Rest alerts are being tested"
       onBack={()=>backOrReplace(router,'/settings')} />
     <Card title="Rest timer alerts">
-      <Chip kind="pending" label="Future · Phase 3" />
-      <Typography tone="secondary">Workout rest alerts and Android lock-screen notifications will be tested with the workout timer. Liftria does not request notification permission yet.</Typography>
-      <ListRow title="Rest timer notifications" detail="Off · no alerts are scheduled" />
+      <Chip kind="pending" label="Pending S22 device test" />
+      <Typography tone="secondary">Liftria asks about rest alerts in context during your first rest. Lock-screen delivery can be delayed by Android; the in-app deadline timer remains the reliable source.</Typography>
+      <ListRow title="Rest timer notifications" detail="Permission is optional · turn on from the active workout" />
     </Card>
     <Card title="Meal reminders">
       <Chip kind="pending" label="Future · Phase 4" />
