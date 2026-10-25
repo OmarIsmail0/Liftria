@@ -22,9 +22,9 @@ export default function Strength(){
  },[]);
  useFocusEffect(useCallback(()=>{void refresh();},[refresh]));
  const periods=range==='4w'?4:range==='3m'?13:52;
- const weeks=strengthWeeks(rows,new Date(),periods*2);
+ const weeks=strengthWeeks(rows,new Date(),Math.max(8,periods*2));
  const summary=strengthWindowSummary(weeks,periods);
- const bars=weeks.slice(-Math.min(periods,8));
+ const bars=weeks.slice(-8);
  const peak=Math.max(1,...bars.map(w=>w.volume));
  const top=records.filter(r=>r.bestEstimatedOneRepMax!==null)
   .sort((a,b)=>(b.bestEstimatedOneRepMax??0)-(a.bestEstimatedOneRepMax??0)).slice(0,4);

@@ -8,6 +8,7 @@ import { readStrengthObservations } from '../../../src/services/database/history
 import { calculateMuscleRecovery, relativeTrainingDay, volumeBand,
   type MuscleRecovery } from '../../../src/features/train/recoveryMath';
 import { titleMuscle, type Muscle } from '../../../src/services/database/gymTypes';
+import type { MuscleShade } from '../../../src/features/train/BodyMap';
 
 type Mode='recent'|'volume'|'untrained';
 export default function Recovery(){
@@ -29,6 +30,14 @@ export default function Recovery(){
    mode==='volume'?volumeBand(x.weeklyCredit)==='high':false).map(x=>x.muscle);
  const some:Muscle[]=rows.filter(x=>mode==='recent'?x.band==='some':
    mode==='volume'?['medium','low'].includes(volumeBand(x.weeklyCredit)):x.untrained).map(x=>x.muscle);
+ const shades=Object.fromEntries(rows.flatMap(x=>{
+  const shade:MuscleShade|undefined=mode==='recent'?(x.band==='higher'?'higher':x.band==='some'?'some':undefined):
+   mode==='volume'?(volumeBand(x.weeklyCredit)==='high'?'higher':
+    volumeBand(x.weeklyCredit)==='medium'?'some':
+    volumeBand(x.weeklyCredit)==='low'?'low':undefined):
+    (x.untrained?'untrained':undefined);
+  return shade?[[x.muscle,shade]]:[];
+ })) as Partial<Record<Muscle,MuscleShade>>;
  const browse=(m:Muscle)=>router.push({pathname:'/(tabs)/train/muscles',params:{muscle:m}});
  const description=mode==='recent'?'Higher load, mostly the last 24 hours · Some load, 24–72 hours · Ready, little or none':
   mode==='volume'?'Sets this week: none · 1–5 · 6–11 · 12+':'No direct sets in 10+ days · Trained recently';
@@ -42,7 +51,7 @@ export default function Recovery(){
   <Card rim="train">
    <Chip kind="estimate" label="Estimate"/>
    <Typography tone="secondary" size="small">Counted from the sets you log in Liftria. It does not know your sleep, soreness or food.</Typography>
-   <BodyMap primary={high} secondary={some} onSelect={browse}/>
+   <BodyMap shading={shades} primary={high} secondary={some} onSelect={browse}/>
    <Typography tone="secondary" size="small">{description}</Typography>
   </Card>
   <Card title="All 17 regions">

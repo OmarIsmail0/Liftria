@@ -1,5 +1,6 @@
 /** Phase 3 PR F: completed workout history, transactional editing and Undo data. */
 import { dbOperation, type DbResult } from './index';
+import type { SQLiteBindValue } from 'expo-sqlite';
 import { newGymId } from './exerciseLibrary';
 import { calculateRecords, setVolume, type ExerciseRecord, type RecordObservation } from './gymMath';
 import type { ExerciseType, Muscle } from './gymTypes';
@@ -134,11 +135,11 @@ export async function deleteFinishedWorkout(id:string):Promise<DbResult<DeletedW
     return deleted;
   });
 }
-async function insertObject(tx:{runAsync:(sql:string,args:unknown[])=>Promise<unknown>},
+async function insertObject(tx:{runAsync:(sql:string,args:SQLiteBindValue[])=>Promise<unknown>},
   table:'sessions'|'session_exercises'|'sets',row:Record<string,unknown>):Promise<void>{
   const keys=Object.keys(row);
   await tx.runAsync('INSERT INTO '+table+' ('+keys.join(',')+') VALUES ('+
-    keys.map(()=>'?').join(',')+')',keys.map(k=>row[k]??null));
+    keys.map(()=>'?').join(',')+')',keys.map(k=>(row[k]??null) as SQLiteBindValue));
 }
 export async function undoFinishedWorkout(deleted:DeletedWorkout):Promise<DbResult<boolean>>{
   return dbOperation(async db=>{

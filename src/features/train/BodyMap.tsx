@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import Svg, { Circle, Ellipse, G, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, Ellipse, G, Pattern, Rect } from 'react-native-svg';
 import { useTheme } from '../../design/ThemeProvider';
 import { MUSCLES, regionKey, titleMuscle, type Muscle } from '../../services/database/gymTypes';
 
@@ -41,28 +41,36 @@ export function bodyMapDescription(primary: readonly Muscle[], secondary: readon
 }
 
 /** Original Liftria prototype geometry, no external imagery. Region taps have 48dp chip equivalents. */
-export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, selected }: {
+export type MuscleShade='higher'|'some'|'low'|'untrained';
+export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, selected, shading }: {
   primary?: readonly Muscle[]; secondary?: readonly Muscle[]; mini?: boolean;
   selected?: Muscle | null; onSelect?: (muscle: Muscle)=>void;
+  shading?: Partial<Record<Muscle,MuscleShade>>;
 }) {
   const { theme }=useTheme();
   const backOnly=mini && !primary.some(m=>F.some(part=>part.muscle===m));
   const front=mini ? (backOnly?B:F) : F;
   const size=mini?{width:40,height:72}:{width:300,height:270};
   const textColor=theme.color.text.secondary;
-  const mapText=bodyMapDescription(primary,secondary);
+  const mapText=shading?
+    'Estimated recent working-set training load, by muscle. The full accessible list follows.':
+    bodyMapDescription(primary,secondary);
   const renderFigure=(parts:Shape[],offset:number,side:string)=><G key={side} transform={'translate('+offset+',0)'}>
     <Circle cx={50} cy={12} r={10} fill={theme.color.track}
       stroke={theme.color.border.control} strokeWidth={0.9}/>
     {parts.map((shape,i)=>{
       const state=primary.includes(shape.muscle) || selected===shape.muscle ? 'primary'
         : secondary.includes(shape.muscle)?'secondary':'none';
+      const shade=shading?.[shape.muscle];
       const fg=state==='none'?theme.color.track:theme.color.domain.train;
       const props={
-        fill:fg,fillOpacity:state==='secondary'?0.30:1,
-        stroke:state==='none'?theme.color.border.control:theme.color.domain.train,
-        strokeWidth:state==='none'?0.9:1.2,
-        strokeDasharray:state==='secondary'?'3 2':undefined,
+        fill:shade==='some'?'url(#liftriaRecoveryDots)':shade?theme.color.domain.train:fg,
+        fillOpacity:shade?(shade==='low'||shade==='untrained'?0.25:1):
+          state==='secondary'?0.30:1,
+        stroke:shade?theme.color.domain.train:
+          state==='none'?theme.color.border.control:theme.color.domain.train,
+        strokeWidth:shade?1.2:state==='none'?0.9:1.2,
+        strokeDasharray:shade==='untrained'?'3 2':!shade&&state==='secondary'?'3 2':undefined,
         onPress: onSelect ? ()=>onSelect(shape.muscle) : undefined,
       };
       return shape.shape==='e'
@@ -75,6 +83,12 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
     <View accessible accessibilityRole="image" accessibilityLabel={mapText}>
       <Svg width={size.width} height={size.height}
         viewBox={mini?'6 0 88 196':'0 0 210 196'}>
+        <Defs>
+          <Pattern id="liftriaRecoveryDots" patternUnits="userSpaceOnUse" width={7} height={7}>
+            <Rect width={7} height={7} fill={theme.color.domain.train} fillOpacity={0.55}/>
+            <Circle cx={2} cy={2} r={1} fill={theme.color.bg.base}/>
+          </Pattern>
+        </Defs>
         {renderFigure(front,0,'front')}
         {!mini&&renderFigure(B,110,'back')}
       </Svg>
@@ -82,7 +96,7 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
     {!mini && <View style={{width:'100%',flexDirection:'row',justifyContent:'space-around'}}>
       <Text style={{color:textColor}}>Front</Text><Text style={{color:textColor}}>Back</Text>
     </View>}
-    {!mini && <View style={{gap:theme.space[2],alignSelf:'stretch'}}>
+    {!mini && !shading && <View style={{gap:theme.space[2],alignSelf:'stretch'}}>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[3],alignItems:'center'}}>
         <View style={{width:14,height:14,borderRadius:4,backgroundColor:theme.color.domain.train}}/>
         <Text style={{color:textColor,flexShrink:1}}>Primary: {primary.map(titleMuscle).join(', ')||'None'}</Text>

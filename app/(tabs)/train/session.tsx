@@ -60,7 +60,7 @@ export default function SessionDetail(){
  return <Screen embedded>
   <Header title={editing?'Editing':data.session.title}
    subtitle={new Date(data.session.startedAt).toLocaleString()}
-   onBack={()=>editing?setEditing(false):router.back()}
+   onBack={()=>{if(editing){setEditing(false);void refresh();}else router.back();}}
    right={<Button label={editing?'Cancel':'Edit'} variant="secondary"
      onPress={()=>{if(editing)void refresh();setEditing(v=>!v);}}/>}/>
   {editing&&<Card rim="train"><Typography bold>Editing · changes are not saved yet.</Typography>
