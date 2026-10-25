@@ -307,7 +307,7 @@ export default function ActiveWorkoutScreen() {
         onPress={()=>void undo(lastLogged)}/>}
       <Button label={t('active.backToWorkout')} variant="train" fullWidth onPress={()=>setRestVisible(false)}/>
     </Sheet>
-    <Sheet visible={menuOpen} title="Exercise options" description={exercise?.name}
+    <Sheet visible={menuOpen} title={t('active.exerciseOptions')} description={exercise?.name}
       onClose={()=>setMenuOpen(false)}>
       <Button label={t('active.history')} fullWidth variant="secondary" onPress={()=>{
         setMenuOpen(false);if(exercise)router.push({
