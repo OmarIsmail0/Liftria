@@ -67,7 +67,7 @@ export default function ImportPreview(){
         ' and '+(plan.skippedDays.length-3)+' more':''}</Typography>}
     <ListRow title="Rows ignored" detail={String(plan.parsed.ignored)}/>
     {plan.parsed.nonStrengthRows>0&&<Typography tone="secondary" size="small">
-     {plan.parsed.nonStrengthRows} cardio/timed rows without reps aren't imported yet.
+     {plan.parsed.nonStrengthRows} cardio/timed rows without reps are not imported yet.
      No distance or duration is converted into strength sets.</Typography>}
     <ListRow title="Your own exercises to create" detail={String(plan.customCount)}/>
    </Card>
