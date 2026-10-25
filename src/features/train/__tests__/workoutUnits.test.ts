@@ -6,6 +6,7 @@ test('unit conversion preserves kg storage; lb edits round-trip',()=>{
   expect(workoutWeightStep('weighted','kg',true)).toBe(1.25);
   expect(workoutWeightStep('dumbbell','kg',false)).toBe(2);
   expect(fromKg(workoutWeightStep('weighted','lb',false),'lb')).toBeCloseTo(5,1);
+  expect(fromKg(workoutWeightStep('weighted','lb',true),'lb')).toBeCloseTo(2.5,2);
 });
 test('assisted and bodyweight weight text matches actual semantics',()=>{
   expect(displayWeight(25,'assisted','kg')).toBe('−25 kg');

@@ -136,7 +136,8 @@ export default function ActiveWorkoutScreen() {
     setLastLogged(saved.value);
     setRestSet(saved.value);
     if(kind==='working')setReps(0);
-    void AccessibilityInfo.announceForAccessibility('Set '+(position+1)+' logged. Rest '+exercise.restSec+' seconds.');
+    void AccessibilityInfo.announceForAccessibility((kind==='warm-up'?'Warm-up set':'Set '+(position+1))+
+      ' logged. Rest '+exercise.restSec+' seconds.');
     await refresh();
     if(saved.value.restDeadline){
       const asked=await getSetting('rest.permissionPromptSeen');
@@ -228,7 +229,8 @@ export default function ActiveWorkoutScreen() {
             <View style={{flex:1,gap:theme.space[1]}}>
               <Typography bold>{label}{active?' · current':''}</Typography>
               {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={label+', '+
-                slot.logged.weight+' kilograms, '+slot.logged.reps+' reps, logged. Edit set'}
+                Number(fromKg(slot.logged.weight,weightUnit).toFixed(2))+
+                (weightUnit==='lb'?' pounds, ':' kilograms, ')+slot.logged.reps+' reps, logged. Edit set'}
                 onPress={()=>selectEdit(slot.logged!)}>
                 <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit)} × {slot.logged.reps} · Edit</Typography>
               </Pressable>:
@@ -263,7 +265,8 @@ export default function ActiveWorkoutScreen() {
         {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit)} × {suggestion.reps} reps · not logged
       </Text>}
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-        <GymStepper label={exercise?.type==='assisted'?'Assistance kg':exercise?.type==='dumbbell'?'kg each':'Weight kg'}
+        <GymStepper label={exercise?.type==='assisted'?'Assistance '+weightUnit:
+          exercise?.type==='dumbbell'?weightUnit+' each':'Weight '+weightUnit}
           value={fromKg(kg,weightUnit)} onChange={v=>setKg(toKg(v,weightUnit))}
           step={fromKg(step,weightUnit)} unit={weightUnit}/>
         <GymStepper label="Reps" value={reps} onChange={setReps} step={1} max={500}/>
@@ -294,7 +297,8 @@ export default function ActiveWorkoutScreen() {
       <Chip kind="pending" label="Device test pending"/>
       <Typography tone="secondary" size="small">Next set: {exercise?.name??'Your next exercise'} · {current?'Set '+(current.position+1):'Choose your next exercise'}</Typography>
       <Typography tone="secondary">{lastLogged?
-        'Set '+(lastLogged.position+1)+' logged · '+lastLogged.weight+' kg × '+lastLogged.reps:
+        (lastLogged.kind==='warm-up'?'Warm-up set':'Set '+(lastLogged.position+1))+' logged · '+
+        displayWeight(lastLogged.weight,exercise?.type??'weighted',weightUnit)+' × '+lastLogged.reps:
         'Timer continues if you close this sheet.'}</Typography>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
         <Button label="−15 s" variant="secondary" onPress={()=>void adjust(-15)}/>

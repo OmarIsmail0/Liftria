@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Card, Header, Screen, Typography } from '../../src/design/primitives';
 import { ensureExercisePack } from '../../src/services/database/exerciseLibrary';
 import { addSessionExercise } from '../../src/services/database/gymRepositories';
@@ -7,6 +7,8 @@ import { readInProgressWorkout, startManualWorkout } from '../../src/features/tr
 
 /** Hidden developer route. Writes a real empty session and zero logged sets. */
 export default function DemoWorkoutScreen(){
+  const {auto}=useLocalSearchParams<{auto?:string}>();
+  const started=useRef(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState<string|null>(null);
   const create=async()=>{
@@ -24,6 +26,12 @@ export default function DemoWorkoutScreen(){
     }
     router.replace({pathname:'/(tabs)/train/active',params:{id:session.value}});
   };
+  // liftria://dev/demo-workout?auto=1 opens TR-8 without a tap, for the emulator visual check.
+  useEffect(()=>{
+    if(auto!=='1'||started.current)return;
+    started.current=true;
+    void Promise.resolve().then(create);
+  },[auto]);
   return <Screen>
     <Header title="Demo workout" onBack={()=>router.back()}/>
     <Card rim="train" title="Screenshot setup">

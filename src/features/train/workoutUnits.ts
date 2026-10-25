@@ -6,7 +6,7 @@ export const fromKg=(kg:number,unit:WeightUnit):number=>
 export const toKg=(value:number,unit:WeightUnit):number=>
   unit==='kg'?value:Math.round(value/LB_PER_KG*100000)/100000;
 export function workoutWeightStep(type:ExerciseType,unit:WeightUnit,smallPlates:boolean):number {
-  if(smallPlates)return 1.25;
+  if(smallPlates)return unit==='lb'?toKg(2.5,'lb'):1.25;
   if(unit==='lb')return toKg(5,'lb');
   return type==='dumbbell'?2:2.5;
 }
