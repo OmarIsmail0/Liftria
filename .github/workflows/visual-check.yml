@@ -17,9 +17,11 @@ on:
         description: "PR number to comment on"
         required: true
 
+# Queue, never cancel: a later run for the same branch that has no APK (verify-only) would
+# otherwise cancel a screenshot run that is halfway through.
 concurrency:
   group: visual-check-${{ github.event.workflow_run.head_branch || inputs.pr }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # Draft PR runs skip android-build, so there may be no APK: skip the emulator quietly then.
