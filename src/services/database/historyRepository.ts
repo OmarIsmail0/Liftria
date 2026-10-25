@@ -68,10 +68,11 @@ export function historyNumbers(detail:HistoryDetail):{sets:number;volume:number}
     const byPosition=new Map<number,HistorySet[]>();
     for(const set of working)byPosition.set(set.position,[...(byPosition.get(set.position)??[]),set]);
     for(const pair of byPosition.values()){
-      if(e.unilateral && !(pair.some(s=>s.side==='L')&&pair.some(s=>s.side==='R')))continue;
+      if(e.unilateral && !(pair.some(s=>s.side==='L')&&pair.some(s=>s.side==='R'))&&
+        !pair.some(s=>s.side===null))continue;
       sets++;
       for(const set of pair)volume+=setVolume(e.type,set)*
-        (e.unilateral&&e.type==='dumbbell'?0.5:1);
+        (e.unilateral&&set.side!==null&&e.type==='dumbbell'?0.5:1);
     }
   }
   return {sets,volume};
