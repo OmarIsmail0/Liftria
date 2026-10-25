@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import { Button, Card, Header, ListRow, Screen, SegmentedControl, Typography } from '../../src/design/primitives';
 import { askRestPermission, scheduleRestOver } from '../../src/features/train/restAlerts';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { getSetting, setSetting } from '../../src/services/database';
 
 type MatrixRun={id:string;scenario:string;minutes:number;scheduledAt:string;dueAt:string;
   receivedAt:string|null;delayMs:number|null;error:string|null};
@@ -14,13 +15,35 @@ export default function RestSpikeScreen() {
   const [permission,setPermission]=useState<'unknown'|'allowed'|'denied'>('unknown');
   const [runs,setRuns]=useState<MatrixRun[]>([]);
   const [busy,setBusy]=useState(false);
+  const KEY='rest.spike.runs';
+  useEffect(()=>{
+    void getSetting(KEY).then(result=>{
+      if(result.ok&&result.value){
+        try{const stored=JSON.parse(result.value) as MatrixRun[];
+          if(Array.isArray(stored))setRuns(stored);
+        }catch{}
+      }
+    });
+  },[]);
+  const persist=async(mutator:(rows:MatrixRun[])=>MatrixRun[])=>{
+    const stored=await getSetting(KEY);
+    let previous:MatrixRun[]=[];
+    if(stored.ok&&stored.value){
+      try{const data=JSON.parse(stored.value) as MatrixRun[];
+        if(Array.isArray(data))previous=data;
+      }catch{}
+    }
+    const next=mutator(previous);
+    const saved=await setSetting(KEY,JSON.stringify(next));
+    if(saved.ok)setRuns(next);
+  };
   useEffect(()=>{
     const subscription=Notifications.addNotificationReceivedListener(notification=>{
       const data=notification.request.content.data;
       const kind=data?.kind;
       if(kind!=='liftria-rest')return;
       const receivedAt=new Date().toISOString();
-      setRuns(prior=>prior.map(run=>{
+      void persist(prior=>prior.map(run=>{
         if(run.id!==data?.sessionId)return run;
         const delayMs=Date.parse(receivedAt)-Date.parse(run.dueAt);
         return {...run,receivedAt,delayMs};
@@ -43,7 +66,7 @@ export default function RestSpikeScreen() {
       const scheduled=await scheduleRestOver(dueAt,id,'your test set');
       if(!scheduled)error='Not scheduled. Check notification permission.';
     }catch(e){error=e instanceof Error?e.message:'Android could not schedule alert';}
-    setRuns(prior=>[{id,scenario,minutes,scheduledAt,dueAt,receivedAt:null,delayMs:null,error},...prior]);
+    await persist(prior=>[{id,scenario,minutes,scheduledAt,dueAt,receivedAt:null,delayMs:null,error},...prior]);
     setBusy(false);
   };
   return <Screen embedded scroll={false}>
@@ -66,14 +89,14 @@ export default function RestSpikeScreen() {
             variant="train" disabled={busy} onPress={()=>void test(minutes)}/>)}
         </View>
       </Card>
-      <Card title="Observed callbacks (this app process only)">
+      <Card title="Saved S22 spike runs (SQLite)">
         {runs.length===0?<Typography tone="secondary">No tests started. No results have been recorded.</Typography>:
           runs.map(run=><ListRow key={run.id}
             title={run.minutes+' min · '+run.scenario}
             detail={run.error??(run.receivedAt?'Callback delay '+run.delayMs+' ms':'No callback observed')}
             suffix={<Typography size="small" tone="secondary">
               {new Date(run.scheduledAt).toLocaleTimeString()}</Typography>}/>)}
-        <Typography tone="secondary" size="small">Delays are measured when the JS listener receives the notification, not a guaranteed Android display timestamp. Missing callbacks are not proof of delivery failure. Record lock-screen visual/sound/vibration observations separately on the S22.</Typography>
+        <Typography tone="secondary" size="small">Delays are measured when the JS listener receives the notification, not a guaranteed Android display timestamp. The run list survives a process kill because it is stored in SQLite. Missing callbacks are not proof of delivery failure. Record lock-screen visual/sound/vibration observations separately on the S22.</Typography>
       </Card>
       <Typography tone="tertiary" size="small">Matrix: allowed/denied × locked/unlocked × Doze × app killed × 1/3/5 minutes. TR-9 stays pending until device evidence is reviewed.</Typography>
     </ScrollView>

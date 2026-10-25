@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Linking, Pressable, ScrollView, Vibration, View } from 'react-native';
+import { AccessibilityInfo, Linking, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
 import { Button, Card, Chip, Field, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -239,7 +239,9 @@ export default function ActiveWorkoutScreen() {
               <Typography tone="tertiary">—</Typography>}
           </View>;
         })}
-        <Typography tone="tertiary" italic size="small">Suggested values come from your last session and remain unsaved until Log set.</Typography>
+        <Text style={{fontStyle:'italic',color:theme.color.text.tertiary,fontSize:theme.type.small.size}}>
+          Suggested values come from your last session and remain unsaved until Log set.
+        </Text>
       </Card>:<Card title="No exercises">
         <Typography tone="secondary">Add an exercise from the library to begin logging.</Typography>
         <Button label="Browse exercises" variant="train"
@@ -255,10 +257,10 @@ export default function ActiveWorkoutScreen() {
     <View style={{paddingHorizontal:theme.layout.gutter,paddingVertical:theme.space[3],
       backgroundColor:theme.color.bg.raised,gap:theme.space[2]}}>
       {edit&&<Typography bold>Editing logged set {edit.kind==='warm-up'?'warm-up':edit.position+1}</Typography>}
-      {!edit&&suggestion&&<Typography tone="tertiary" size="small" italic>
+      {!edit&&suggestion&&<Text style={{fontStyle:'italic',color:theme.color.text.tertiary,fontSize:theme.type.small.size}}>
         {suggestion.progressed?'Suggested +'+fromKg(step,weightUnit).toFixed(2).replace(/\.?0+$/,'')+' '+weightUnit+' · ':'Suggested · '}
         {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit)} × {suggestion.reps} reps · not logged
-      </Typography>}
+      </Text>}
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
         <GymStepper label={exercise?.type==='assisted'?'Assistance kg':exercise?.type==='dumbbell'?'kg each':'Weight kg'}
           value={fromKg(kg,weightUnit)} onChange={v=>setKg(toKg(v,weightUnit))}

@@ -55,9 +55,13 @@ export async function cancelSessionRestAlerts(sessionId:string):Promise<void> {
       ids.add(entry.identifier);
   }
   for(const scheduledId of ids)await Notifications.cancelScheduledNotificationAsync(scheduledId);
-  if(references.length)await dbOperation(async db=>{
-    for(const reference of references)await db.runAsync('DELETE FROM app_settings WHERE key=?',[reference.key]);
-  });
+  if(references.length){
+    const removed=await dbOperation(async db=>{
+      for(const reference of references)await db.runAsync(
+        'DELETE FROM app_settings WHERE key=?',[reference.key]);
+    });
+    if(!removed.ok)throw new Error('Failed clearing canceled rest alert IDs');
+  }
 }
 export async function cancelRestOver(id:string|null):Promise<void> {
   if(id)await Notifications.cancelScheduledNotificationAsync(id);
