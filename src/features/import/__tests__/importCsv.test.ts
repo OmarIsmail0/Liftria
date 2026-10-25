@@ -39,3 +39,11 @@ test('file with only headers is explicitly empty',()=>{
  expect(()=>parseImportCsv('fitnotes','empty.csv','Date,Exercise,Weight (kgs),Reps\n'))
   .toThrow('No workouts');
 });
+
+test('when an export has both kg and lb columns, take the populated one with its explicit unit',()=>{
+ const r=parseImportCsv('hevy','both.csv','title,start_time,exercise_title,weight_kg,weight_lbs,reps\n'+
+  'Push,2026-10-20,Bench,,135,8\nPush,2026-10-20,Bench,60,,8');
+ expect(r.needsUnit).toBe(false);
+ expect(r.workouts[0]?.sets.map(x=>x.unit)).toEqual(['lb','kg']);
+ expect(r.workouts[0]?.sets.map(x=>x.weight)).toEqual([135,60]);
+});

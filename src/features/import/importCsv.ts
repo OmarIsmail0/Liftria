@@ -113,6 +113,7 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
  const indexes=new Map(columns.map((name,i)=>[normalized(name),i]));
  const f=fields[source],col=(names:string[])=>names.map(x=>indexes.get(normalized(x))).find(x=>x!==undefined);
  const dt=col(f.date),ex=col(f.exercise),wt=col(f.weight),re=col(f.reps),title=col(f.title);
+ const weightColumns=f.weight.map(name=>indexes.get(normalized(name))).filter((x):x is number=>x!==undefined);
  if([dt,ex,wt,re].some(x=>x===undefined)||(f.title.length>0&&title===undefined)){
   throw new ImportParseError('invalid','This does not look like a '+source+' export.',
    expectedColumns(source),columns);
@@ -126,13 +127,14 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
  let ignored=0,marked=false,needsUnit=false;
  for(let index=0;index<rows.length;index++){
   const row=rows[index]!;const v=(i:number|undefined)=>(i===undefined?'':row[i]??'').trim();
-  if(!v(dt)&&!v(ex)&&!v(re)&&!v(wt)){ignored++;continue;}
+  const selectedWeight=weightColumns.find(column=>v(column)!=='')??wt;
+  if(!v(dt)&&!v(ex)&&!v(re)&&!v(selectedWeight)){ignored++;continue;}
   if(!v(dt)||!v(ex))throw new ImportParseError('invalid','Row '+(index+2)+' has no date or exercise.',expectedColumns(source),columns);
   const reps=v(re);
-  if(!reps){if(!v(wt)&&!v(setType)){ignored++;continue;}
+  if(!reps){if(!v(selectedWeight)&&!v(setType)){ignored++;continue;}
     if(!v(setType)){ignored++;continue;}
   }
-  const repCount=reps?Number(reps):0,weightString=v(wt).replace(/\s/g,'');
+  const repCount=reps?Number(reps):0,weightString=v(selectedWeight).replace(/\s/g,'');
   const weight=weightString===''?0:Number(weightString.replace(',','.'));
   if(!Number.isInteger(repCount)||repCount<0||repCount>500||
     !Number.isFinite(weight)||weight<0)throw new ImportParseError('invalid','Invalid set on row '+(index+2)+'.',expectedColumns(source),columns);
@@ -144,13 +146,16 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
   if(v(end)){
    try{workout.endedAt=whenFrom(v(end)).iso;}catch{throw new ImportParseError('invalid','Invalid end time on row '+(index+2));}
   }
-  const header=columns[wt!]!.toLowerCase();
+  const header=columns[selectedWeight!]!.toLowerCase();
   const explicit=header.includes('lbs')||header.includes('pounds')?'lb':
     header.includes('kgs')||header.includes('_kg')||header.includes('kilogram')?'kg':null;
   const unitValue=v(unitCol).toLowerCase();
-  const unit:WeightUnit|null=explicit||(/^(kg|kgs|kilograms)$/.test(unitValue)?'kg':
-    /^(lb|lbs|pounds)$/.test(unitValue)?'lb':null);
-  if(unitValue&&!unit)throw new ImportParseError('invalid','Unknown weight unit on row '+(index+2));
+  const declared:WeightUnit|null=/^(kg|kgs|kilograms)$/.test(unitValue)?'kg':
+    /^(lb|lbs|pounds)$/.test(unitValue)?'lb':null;
+  if(unitValue&&!declared)throw new ImportParseError('invalid','Unknown weight unit on row '+(index+2));
+  if(explicit&&declared&&explicit!==declared)
+    throw new ImportParseError('invalid','Conflicting weight units on row '+(index+2));
+  const unit:WeightUnit|null=explicit??declared;
   if(!unit)needsUnit=true;
   const kind= /warm.?up|^w$|warmup/i.test(v(setType))?'warm-up':'working';
   if(setType!==undefined)marked=true;
