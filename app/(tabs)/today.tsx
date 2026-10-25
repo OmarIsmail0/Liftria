@@ -10,7 +10,10 @@ import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState, type KeyState } from '../../src/services/secure-storage';
 import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/useHealthSnapshot';
 import { ageLabel, heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/health/presentation';
+import { listPlans, listSessions, listTemplates } from '../../src/services/database/gymRepositories';
+import { scheduledTemplate, isLocalDate } from '../../src/features/train/weekPlan';
 
+type TrainingToday = { title: string; detail: string } | null;
 type LocalToday = {
   profile: Profile | null; target: Target | null; hideNumbers: boolean;
   key: KeyState['status']; offline: boolean; onboardingFinished: boolean; savedStep: number;
@@ -26,6 +29,19 @@ export default function TodayTab() {
   const { snapshot, refreshing, refresh } = useHealthSnapshot(overviewMetrics);
   const [localLoading, setLocalLoading] = useState(true);
   const [connectDismissed,setConnectDismissed] = useState(false);
+  const [training,setTraining] = useState<TrainingToday>(null);
+  const loadTraining=useCallback(async()=>{
+    const [sessions,plans,templates]=await Promise.all([
+      listSessions(100),listPlans(),listTemplates(),
+    ]);
+    const today=new Date();
+    const finished=sessions.ok?sessions.value.find(s=>s.state==='finished'&&
+      isLocalDate(s.startedAt,today)):undefined;
+    const plan=plans.ok?plans.value.find(p=>p.active)??null:null;
+    const next=scheduledTemplate(plan,templates.ok?templates.value:[],today);
+    setTraining(finished?{title:finished.title,detail:'Done · completed today'}:
+      next?{title:next.name,detail:'Planned for today · not logged'}:null);
+  },[]);
   const loadLocal = useCallback(async () => {
     const [profile, target, hide, completed, saved, key, net] = await Promise.all([
       getProfile(), getCurrentTarget(), getTypedSetting('hideNumbers'),
@@ -52,7 +68,8 @@ export default function TodayTab() {
   }, []);
   useFocusEffect(useCallback(() => {
     void loadLocal().catch(() => setLocalLoading(false));
-  }, [loadLocal]));
+    void loadTraining();
+  }, [loadLocal,loadTraining]));
   const date = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -76,7 +93,7 @@ export default function TodayTab() {
   </Screen>;
   return <Screen embedded scroll={false}>
     <ScrollView refreshControl={<RefreshControl refreshing={refreshing}
-      onRefresh={() => { void Promise.allSettled([refresh(true), loadLocal()]); }}
+      onRefresh={() => { void Promise.allSettled([refresh(true), loadLocal(), loadTraining()]); }}
       colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}
       contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}>
       <Header title={local.profile?.name ? `${greeting}, ${local.profile.name}` : 'Welcome to Liftria'}
@@ -121,7 +138,10 @@ export default function TodayTab() {
             params: { step: setupSteps[local.savedStep] ?? 'welcome' } })} />
       </Card>}
       <Card rim="train" title="Training">
-        <Typography tone="secondary">Coming in Phase 3: workouts and your training plan.</Typography>
+        {training?<ListRow title={training.title} detail={training.detail}
+          onPress={()=>router.push('/(tabs)/train')}/>:
+          <Typography tone="secondary">No workout planned or finished today.</Typography>}
+        <Typography tone="tertiary" size="small">Read-only from your saved workouts and active plan.</Typography>
       </Card>
       {promptHealth && <Card title="Health Connect permissions" rim="health">
         <Typography tone="secondary">Steps and heart rate are hidden, not zero, until you allow a source.</Typography>
