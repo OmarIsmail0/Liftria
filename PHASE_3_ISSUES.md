@@ -10,14 +10,11 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 
 **Order:**
 1. ~~Phase 2~~ DONE: PR #12 merged 2026-10-25. **Follow-up in PR D:** the ST-6 "Workouts" count must read the real `sessions` table (it counts the Phase 0 test table today).
-2. **PR D: `Phase 3 / Library and data`. Start now** (owner's go, 2026-10-24), as a new draft PR branched from `main`. PR #12 also touches `src/services/database/index.ts` (deleteLocalDatabase), so merge the latest `main` into PR D with a merge commit and keep both changes.
-   - Schema v3 and repositories.
-   - Exercise pack loader (from `assets/data/exercises/free-exercise-db.json`) and the 17-region test.
-   - `BodyMap`.
-   - TR-4, TR-5, TR-6 and custom exercises.
-3. **PR E: `Phase 3 / Train and active workout`.**
+2. ~~PR D: Library and data~~ DONE in PR #13 (merged 2026-10-25; verify + Android build green, emulator screenshots approved by Claude).
+3. **PR E: `Phase 3 / Train and active workout`. Start now** (new draft PR from `main`).
    - TR-1, TR-2, TR-3, TR-7, TR-8, TR-10, the Today Training card, and the TR-9 spike.
-   - Start it when PR D's `verify` is green.
+   - Add `expo-keep-awake` and `expo-notifications` (approved). Ask Claude to regenerate the lockfile and to allow `POST_NOTIFICATIONS` in the CI manifest check.
+   - TR-6 follow-ups from PR #13: enable "Add to a workout" (add it to the in-progress workout, otherwise ask which template), and drop the stray "Total working weight" line under the legend.
 4. **PR F: `Phase 3 / History, records and progress`.**
    - TR-11, TR-12, TR-13, PR-2, TR-14 and the TR-1 Muscles card.
    - Start it when PR E's `verify` is green.
