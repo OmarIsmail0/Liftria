@@ -81,7 +81,7 @@ export default function WorkoutSummaryScreen() {
     <Card title={t('summary.wearables')}>
       <ListRow title={t('summary.heart')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
         detail={t('summary.noWatch')}/>
-      <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label="Pending"/>}
+      <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label={t("chips.pending")}/>}
         detail={t('summary.noCalories')}/>
     </Card>
     <Card title={t('summary.notes')}>
@@ -98,7 +98,7 @@ export default function WorkoutSummaryScreen() {
       description={t('summary.discardDescription',{count:stats.sets})}
       onClose={()=>setDiscard(false)}>
       <Button label={t('summary.keep')} fullWidth onPress={()=>setDiscard(false)}/>
-      <Button label="Discard workout" variant="danger" fullWidth disabled={busy}
+      <Button label={t('summary.discard')} variant="danger" fullWidth disabled={busy}
         onPress={()=>void discardNow()}/>
     </Sheet>
   </Screen>;

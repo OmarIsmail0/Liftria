@@ -11,7 +11,7 @@ import { getCurrentTarget, type Target } from '../../src/services/database/targe
 import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState, type KeyState } from '../../src/services/secure-storage';
 import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/useHealthSnapshot';
-import { ageLabel, heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/health/presentation';
+import { heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/health/presentation';
 import { listPlans, listSessions, listTemplates } from '../../src/services/database/gymRepositories';
 import { scheduledTemplate, isLocalDate } from '../../src/features/train/weekPlan';
 
@@ -85,6 +85,28 @@ export default function TodayTab() {
       (snapshot.permissions.steps !== 'granted' && snapshot.permissions['heart-rate'] !== 'granted'));
   const justUpdated = snapshot.fresh;
   const now = new Date();
+  const sourceLabel=(label:string)=>label==='Phone'?t('chips.phone'):
+    label==='Unknown source'?t('healthOverview.unknownSource'):label;
+  const age=(iso:string)=>{
+    const time=Date.parse(iso);
+    if(!Number.isFinite(time))return t('healthOverview.timeUnknown');
+    const minutes=Math.max(0,Math.floor((now.getTime()-time)/60000));
+    if(minutes<60)return t('healthOverview.minutesAgo',{count:minutes});
+    const hours=Math.floor(minutes/60);
+    return hours<24?t('healthOverview.hoursAgo',{count:hours}):
+      t('healthOverview.daysAgo',{count:Math.floor(hours/24)});
+  };
+  const note=(message:string):string=>message==='No data'?t('healthOverview.noData'):
+    message==='Not allowed'?t('healthOverview.notAllowed'):
+    message==='Not available'?t('healthOverview.notAvailable'):
+    message==='Permission not confirmed'?t('healthOverview.unknownPermission'):
+    message==='No measured source'?t('healthOverview.noMeasure'):
+    message==='Unverified device. The data origin does not prove this came from a watch.'?t('healthOverview.noteUnverified'):
+    message==='Separate sources; no combined total.'?t('healthOverview.noteSeparate'):
+    language==='en'?message:t('healthOverview.checking');
+  const energyNote=note(phase2EnergyMessage(
+    snapshot.permissions['active-calories']??'unknown',snapshot.availability==='available'));
+
   if (localLoading || !snapshot.loaded) return <Screen embedded>
     <Header title={t('nav.today')} subtitle={t('today.loading')} />
     <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
@@ -159,32 +181,30 @@ export default function TodayTab() {
           onPress={() => router.push('/(tabs)/progress/health-permissions')} />}
         {justUpdated && <Typography tone="secondary" size="small">{t('today.justUpdated')}</Typography>}
         {steps?.state === 'value' ? steps.sources.map(source =>
-          <ListRow key={source.origin} title={`${source.label} steps`}
-            detail={source.stale ? `Stale · ${ageLabel(source.latestAt)}` : t('today.readOnly')}
+          <ListRow key={source.origin} title={t('today.sourceSteps',{source:sourceLabel(source.label)})}
+            detail={source.stale?t('today.staleAt',{time:age(source.latestAt)}):t('today.readOnly')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
               <Typography>{formatNumber(language, source.value)}</Typography>
               <Chip kind={source.label === 'Phone' ? 'phone' : 'pending'}
                 label={source.label === 'Phone' ? t('chips.phone') : t('today.unverified')} />
-              {source.stale && <Chip kind="stale" label={ageLabel(source.latestAt)} />}
+              {source.stale && <Chip kind="stale" label={age(source.latestAt)} />}
             </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
-          : <Typography tone="secondary">Steps: {steps?.note ?? 'Checking Health Connect…'}</Typography>}
+          : <Typography tone="secondary">{t('today.stepsStatus',{status:note(steps?.note??'Checking Health Connect…')})}</Typography>}
         {hr?.state === 'value' ? hr.sources.map(source =>
-          <ListRow key={source.origin} title={`Heart rate · ${source.label}`}
+          <ListRow key={source.origin} title={t('today.sourceHeart',{source:sourceLabel(source.label)})}
             detail={heartRateTodayStatus(source.latestAt, now).stale
-              ? `Stale · ${heartRateTodayStatus(source.latestAt, now).age} · unverified device`
+              ? t('today.staleUnverified',{time:age(source.latestAt)})
               : t('today.deviceNotVerified')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
-              <Typography>{source.value} bpm</Typography>
+              <Typography>{formatNumber(language,source.value)} bpm</Typography>
               <Chip kind="pending" label={t('today.unverified')} />
               {heartRateTodayStatus(source.latestAt, now).stale &&
-                <Chip kind="stale" label={heartRateTodayStatus(source.latestAt, now).age} />}
+                <Chip kind="stale" label={age(source.latestAt)} />}
             </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
-          : <Typography tone="secondary">Heart rate: {hr?.note ?? 'Checking Health Connect…'}</Typography>}
-        <Typography tone="secondary">Energy: {phase2EnergyMessage(
-          snapshot.permissions['active-calories'] ?? 'unknown', snapshot.availability === 'available'
-        )}</Typography>
+          : <Typography tone="secondary">{t('today.heartStatus',{status:note(hr?.note??'Checking Health Connect…')})}</Typography>}
+        <Typography tone="secondary">{t('today.energyStatus',{status:energyNote})}</Typography>
         {steps?.sources.length !== 1 && (steps?.sources.length ?? 0) > 1 &&
           <Typography tone="secondary" size="small">{t('today.sourceNote')}</Typography>}
         <Button label={t('today.healthDetails')} variant="ghost" fullWidth

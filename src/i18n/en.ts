@@ -1354,5 +1354,12 @@ export const en = {
   "healthMetric.readError": "Could not read health data.",
   "healthMetric.weekError": "Could not load this week from Health Connect.",
   "healthMetric.weekReadError": "Could not read this week.",
+  "today.sourceSteps": "{source} · steps",
+  "today.sourceHeart": "Heart rate · {source}",
+  "today.stepsStatus": "Steps: {status}",
+  "today.heartStatus": "Heart rate: {status}",
+  "today.energyStatus": "Energy: {status}",
+  "today.staleAt": "Stale · {time}",
+  "today.staleUnverified": "Stale · {time} · unverified device",
 } as const;
 export type TranslationKey = keyof typeof en;

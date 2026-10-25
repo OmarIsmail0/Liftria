@@ -1355,4 +1355,11 @@ export const ar: Record<TranslationKey, string> = {
   "healthMetric.readError": "تعذّرت قراءة البيانات الصحية.",
   "healthMetric.weekError": "تعذّر تحميل بيانات هذا الأسبوع من هيلث كونيكت.",
   "healthMetric.weekReadError": "تعذّرت قراءة هذا الأسبوع.",
+  "today.sourceSteps": "{source} · الخطوات",
+  "today.sourceHeart": "النبض · {source}",
+  "today.stepsStatus": "الخطوات: {status}",
+  "today.heartStatus": "معدل النبض: {status}",
+  "today.energyStatus": "الطاقة: {status}",
+  "today.staleAt": "قديمة · {time}",
+  "today.staleUnverified": "قديمة · {time} · جهاز غير متحقق منه",
 };
