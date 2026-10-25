@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import {
-  Modal, Pressable, ScrollView, Text, TextInput, View, type KeyboardTypeOptions,
+  Modal, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
@@ -45,9 +45,11 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   value: T; onChange: (next: T) => void;
 }) {
   const { theme } = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const stack = fontScale >= 1.6 && options.length > 2;
   return <View accessibilityRole="radiogroup" accessibilityLabel={label}
     style={{
-      flexDirection: 'row', alignItems: 'stretch',
+      flexDirection: stack ? 'column' : 'row', alignItems: 'stretch',
       borderColor: theme.controlOutline, borderWidth: theme.size.border.thin,
       borderRadius: theme.radius.pill, overflow: 'hidden',
       backgroundColor: theme.color.bg.raised,
@@ -62,7 +64,8 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
           flex: 1, alignItems: 'center', justifyContent: 'center',
           paddingVertical: theme.space[2], paddingHorizontal: theme.space[2],
           backgroundColor: selected ? theme.color.action.primary.bg : theme.color.bg.raised,
-          borderStartWidth: index === 0 ? 0 : theme.size.border.thin,
+          borderStartWidth: stack ? 0 : index === 0 ? 0 : theme.size.border.thin,
+          borderTopWidth: stack && index > 0 ? theme.size.border.thin : 0,
           borderColor: theme.controlOutline, opacity: pressed ? 0.8 : 1,
         })}>
         <Text allowFontScaling style={{

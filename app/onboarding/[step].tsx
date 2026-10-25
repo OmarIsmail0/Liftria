@@ -11,7 +11,7 @@ import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingStepCapti
 import { canEstimateTarget, estimateTarget, profileAge, targetSafety, FLOOR_WARNING } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
-import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall } from '../../src/features/onboarding/healthPermissionCopy';
+import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall, healthConnectInstallLabel } from '../../src/features/onboarding/healthPermissionCopy';
 import { getKey, saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
@@ -120,7 +120,10 @@ export default function OnboardingStepScreen() {
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError('Local settings could not be read.'); } });
     void healthConnect.getAvailability().then(availability => {
-      if (mounted) setHealthAvailability(availability);
+      if (mounted) {
+        setHealthAvailability(availability);
+        if (availability !== 'available') setHealthStatus(availabilityMessage(availability));
+      }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
     return () => { mounted = false; };
   }, []);
@@ -341,7 +344,7 @@ export default function OnboardingStepScreen() {
                 {healthMissing.map(note => <Typography key={note} tone="secondary" size="small">ⓘ {note}</Typography>)}
           <InlineError message={error} />
                 {offerHealthConnectInstall(healthAvailability) &&
-                  <Button variant="ghost" label={healthAvailability === 'not-installed' ? 'Get Health Connect' : 'Update Health Connect'} onPress={() =>
+                  <Button variant="ghost" label={healthConnectInstallLabel(healthAvailability) ?? 'Get Health Connect'} onPress={() =>
                     void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
               </Card>
               : step === 'watch'

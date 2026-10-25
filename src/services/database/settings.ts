@@ -14,6 +14,9 @@ export const settingsSchemas = {
   hideNumbers: z.boolean(),
   keepScreenOn: z.boolean(),
   haptics: z.boolean(),
+  'hiku.shareToday': z.boolean(),
+  'hiku.shareTraining': z.boolean(),
+  'hiku.keepPhotos': z.boolean(),
   'onboarding.step': z.number().int().min(0),
   'onboarding.completedAt': z.string().datetime({ offset: true }).nullable(),
 } as const;
@@ -29,6 +32,9 @@ export const settingDefaults: { [K in SettingKey]: SettingValue<K> } = {
   hideNumbers: false,
   keepScreenOn: false,
   haptics: true,
+  'hiku.shareToday': false,
+  'hiku.shareTraining': false,
+  'hiku.keepPhotos': false,
   'onboarding.step': 0,
   'onboarding.completedAt': null,
 };

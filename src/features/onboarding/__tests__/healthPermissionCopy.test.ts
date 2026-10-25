@@ -1,4 +1,4 @@
-import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall } from '../healthPermissionCopy';
+import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall, healthConnectInstallLabel } from '../healthPermissionCopy';
 import { metricTypes, type MetricType, type PermissionState } from '../../../services/health/types';
 
 test('ON-6 partial permissions name each missing metric and impact, not just a count', () => {
@@ -24,4 +24,13 @@ test('Health Connect install link is absent on unsupported devices', () => {
   expect(offerHealthConnectInstall('unsupported')).toBe(false);
   expect(offerHealthConnectInstall('not-installed')).toBe(true);
   expect(offerHealthConnectInstall('needs-update')).toBe(true);
+});
+
+test('ON-6 shows Get Health Connect on a phone without the provider, including Android provider-update-required', () => {
+  expect(healthConnectInstallLabel('not-installed')).toBe('Get Health Connect');
+  expect(healthConnectInstallLabel('needs-update')).toBe('Get Health Connect');
+  expect(healthConnectInstallLabel('available')).toBeNull();
+  expect(healthConnectInstallLabel('unsupported')).toBeNull();
+  expect(availabilityMessage('needs-update')).toMatch(/not be installed/);
+  expect(availabilityMessage('needs-update')).toMatch(/continue without syncing/);
 });

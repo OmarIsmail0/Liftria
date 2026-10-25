@@ -308,3 +308,63 @@ export async function listCachedHealth(limit = 100): Promise<DbResult<HealthValu
     return [...samples.map(row => JSON.parse(row.payload_json) as HealthValue), ...valid.slice(0, safeLimit)];
   });
 }
+
+
+/** ST-6 storage counts reflect actual rows, not Phase 1 illustrative fixtures. */
+export type LocalStorageCounts = {
+  workouts: number; meals: number; healthSamples: number;
+  healthAggregates: number; targetVersions: number; profiles: number;
+  databaseBytes: number;
+};
+export async function localStorageCounts(): Promise<DbResult<LocalStorageCounts>> {
+  return dbOperation(async db => {
+    async function count(table: 'test_workout_sessions' | 'test_nutrition_entries' |
+      'health_samples' | 'health_aggregates' | 'targets' | 'profile'): Promise<number> {
+      return (await db.getFirstAsync<{ count: number }>(
+        `SELECT COUNT(*) AS count FROM ${table}`))?.count ?? 0;
+    }
+    const [workouts, meals, healthSamples, healthAggregates, targetVersions, profiles] =
+      await Promise.all([count('test_workout_sessions'),count('test_nutrition_entries'),
+        count('health_samples'),count('health_aggregates'),count('targets'),count('profile')]);
+    const pages = await db.getFirstAsync<{ page_count: number }>('PRAGMA page_count');
+    const size = await db.getFirstAsync<{ page_size: number }>('PRAGMA page_size');
+    const databaseBytes = Math.max(0, (pages?.page_count ?? 0) * (size?.page_size ?? 0));
+    return { workouts, meals, healthSamples, healthAggregates, targetVersions, profiles, databaseBytes };
+  });
+}
+
+/** Clear only the two Health Connect caches; never touch profiles, targets, logs or the key. */
+export async function clearLocalHealthCache(): Promise<DbResult<void>> {
+  return dbOperation(async db => {
+    await db.withExclusiveTransactionAsync(async tx => {
+      await tx.runAsync('DELETE FROM health_samples');
+      await tx.runAsync('DELETE FROM health_aggregates');
+    });
+  });
+}
+
+/** Destructive reset after exact typed confirmation; future app-managed files are not present in Phase 2. */
+export async function deleteLocalDatabase(): Promise<DbResult<void>> {
+  try {
+    const pending = dbPromise;
+    if (pending) {
+      const db = await pending;
+      await db.closeAsync();
+    }
+    dbPromise = null;
+    await SQLite.deleteDatabaseAsync(DB_NAME);
+    return { ok: true, value: undefined };
+  } catch (error: unknown) {
+    dbPromise = null;
+    // Retrying after DB deletion and a later SecureStore failure is required.
+    // Only an explicit missing-file error counts as already deleted, not arbitrary SQLite errors.
+    if (isMissingDatabaseError(error)) return { ok: true, value: undefined };
+    return { ok: false, error: { code:'db-error', message:'Could not remove Liftria local database.' } };
+  }
+}
+
+// Idempotent deletion: a missing file is already gone; permission/I/O errors remain failures.
+export function isMissingDatabaseError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /ENOENT|no such file|does not exist|not found|could not find/i.test(message);
+}
