@@ -126,7 +126,7 @@ export default function OnboardingStepScreen() {
     void healthConnect.getAvailability().then(availability => {
       if (mounted) {
         setHealthAvailability(availability);
-        if (availability !== 'available') setHealthStatus(availabilityMessage(availability));
+        if (availability !== 'available') setHealthStatus(availabilityMessage(availability, language));
       }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
     return () => { mounted = false; };
@@ -197,11 +197,11 @@ export default function OnboardingStepScreen() {
     try {
       const availability = await healthConnect.getAvailability();
       setHealthAvailability(availability);
-      if (availability !== 'available') { setHealthStatus(availabilityMessage(availability)); return; }
+      if (availability !== 'available') { setHealthStatus(availabilityMessage(availability, language)); return; }
       const permissions = await healthConnect.requestPermissions([...metricTypes]);
       const granted = Object.values(permissions).filter(p => p === 'granted').length;
       const history = await requestHistoryReadPermission();
-      setHealthMissing(missingHealthPermissions(permissions));
+      setHealthMissing(missingHealthPermissions(permissions, language));
       setHealthStatus(granted === metricTypes.length
         ? t('onboarding.copy.112', { count: granted, history })
         : t('onboarding.copy.113', { granted, total: metricTypes.length, history }));
@@ -421,7 +421,7 @@ export default function OnboardingStepScreen() {
     {child}
     <Sheet visible={floorOpen} title={t('onboarding.copy.076')} description={t('onboarding.copy.077')}
       onClose={() => setFloorOpen(false)}>
-      <Button label={manualWarning ? 'Use my target anyway' : 'Use this estimate anyway'} fullWidth
+      <Button label={manualWarning ? t('onboarding.copy.079') : t('onboarding.copy.080')} fullWidth
         onPress={() => { setFloorOpen(false); void chooseTarget(manualWarning ? 'manual' : 'estimate'); }} />
     </Sheet>
     <Sheet visible={editManual} title={t('onboarding.copy.054')} description={t('onboarding.copy.078')}
