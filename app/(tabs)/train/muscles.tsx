@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -12,7 +12,6 @@ export default function MuscleBrowser(){
   const {muscle}=useLocalSearchParams<{muscle?:string}>();
   const requested=MUSCLES.find(m=>m===muscle)??'chest';
   const [selected,setSelected]=useState<Muscle>(requested);
-  useEffect(()=>setSelected(requested),[requested]);
   const [all,setAll]=useState<Exercise[]>([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
