@@ -100,6 +100,18 @@ function whenFrom(value:string):{iso:string;day:string;dateOnly:boolean}{
   date=new Date(v.replace(' ', 'T'));
  }
  if(!Number.isFinite(date.valueOf()))throw new Error('Invalid workout date: '+v);
+ // Date(y,m,d) normalizes nonexistent days (e.g. Feb 31) into another month.
+ // Reject them: otherwise a malformed export changes the day and duplicate check.
+ const isoDay=/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/.exec(v);
+ const usDay=/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})(?:\s|$)/.exec(v);
+ if(isoDay&&v.length===10 || usDay){
+  const year=isoDay?Number(isoDay[1]):Number(usDay![3]);
+  const month=isoDay?Number(isoDay[2]):Number(usDay![1]);
+  const day=isoDay?Number(isoDay[3]):Number(usDay![2]);
+  const check=new Date(year,month-1,day);
+  if(check.getFullYear()!==year||check.getMonth()+1!==month||check.getDate()!==day)
+   throw new Error('Invalid workout date: '+v);
+ }
  return {iso:date.toISOString(),day:[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),
    String(date.getDate()).padStart(2,'0')].join('-'),dateOnly};
 }
@@ -138,7 +150,12 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
   const weight=weightString===''?0:Number(weightString.replace(',','.'));
   if(!Number.isInteger(repCount)||repCount<0||repCount>500||
     !Number.isFinite(weight)||weight<0)throw new ImportParseError('invalid','Invalid set on row '+(index+2)+'.',expectedColumns(source),columns);
-  const date=whenFrom(v(dt)),sessionTitle=v(title)||'Imported workout';
+  let date:ReturnType<typeof whenFrom>;
+  try{date=whenFrom(v(dt));}catch{
+   throw new ImportParseError('invalid','Invalid workout date on row '+(index+2)+'.',
+    expectedColumns(source),columns);
+  }
+  const sessionTitle=v(title)||'Imported workout';
   const key=date.iso+'|'+sessionTitle;
   let workout=sessions.get(key);
   if(!workout){workout={key,title:sessionTitle,startedAt:date.iso,endedAt:date.iso,
@@ -147,8 +164,9 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
    try{workout.endedAt=whenFrom(v(end)).iso;}catch{throw new ImportParseError('invalid','Invalid end time on row '+(index+2));}
   }
   const header=columns[selectedWeight!]!.toLowerCase();
-  const explicit=header.includes('lbs')||header.includes('pounds')?'lb':
-    header.includes('kgs')||header.includes('_kg')||header.includes('kilogram')?'kg':null;
+  const normalizedHeader=normalized(header);
+  const explicit:WeightUnit|null=/(?:lbs?|pounds?)$/.test(normalizedHeader)?'lb':
+    /(?:kgs?|kilograms?)$/.test(normalizedHeader)?'kg':null;
   const unitValue=v(unitCol).toLowerCase();
   const declared:WeightUnit|null=/^(kg|kgs|kilograms)$/.test(unitValue)?'kg':
     /^(lb|lbs|pounds)$/.test(unitValue)?'lb':null;

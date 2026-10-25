@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
-import { parseImportCsv, ImportParseError, type Importer } from '../../src/features/import/importCsv';
+import { parseImportCsv, ImportParseError, MAX_CSV_BYTES, type Importer } from '../../src/features/import/importCsv';
 import { setImportDraft } from '../../src/features/import/importDraft';
 
 const sources:{id:Importer;name:string;guide:string}[]=[
@@ -23,10 +23,13 @@ export default function ImportStart(){
    const result=await DocumentPicker.getDocumentAsync({copyToCacheDirectory:true,multiple:false,type:'*/*'});
    if(result.canceled||!result.assets[0])return;
    const asset=result.assets[0],file=new File(asset.uri);
-   let text='';
-   try{text=await file.text();}
-   finally{try{await file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
+   let text='',tooLarge=false;
    try{
+    tooLarge=(asset.size??file.size??0)>MAX_CSV_BYTES;
+    if(!tooLarge)text=await file.text();
+   }finally{try{await file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
+   try{
+    if(tooLarge)throw new ImportParseError('too-large','This file is too large to import.');
     const parsed=parseImportCsv(source,asset.name,text);
     setImportDraft({parsed,error:null,source,fileName:asset.name});
    }catch(reason){

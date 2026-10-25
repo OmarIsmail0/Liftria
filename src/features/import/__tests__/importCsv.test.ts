@@ -47,3 +47,20 @@ test('when an export has both kg and lb columns, take the populated one with its
  expect(r.workouts[0]?.sets.map(x=>x.unit)).toEqual(['lb','kg']);
  expect(r.workouts[0]?.sets.map(x=>x.weight)).toEqual([135,60]);
 });
+
+test('recognizes an explicitly unit-tagged weight (kg) column without guessing',()=>{
+ const csv='date,exercise,weight (kg),reps\n2026-10-20,Bench Press,60,8';
+ const parsed=parseImportCsv('csv','units.csv',csv);
+ expect(parsed.needsUnit).toBe(false);
+ expect(parsed.workouts[0]?.sets[0]?.unit).toBe('kg');
+});
+test('does not shift impossible date-only days silently or mask date parsing failures',()=>{
+ const header='date,exercise,weight_kg,reps\n';
+ for(const bad of ['2026-02-31','2026-13-01','2026-00-01','02/31/2026']){
+  expect(()=>parseImportCsv('csv','invalid.csv',header+bad+',Bench Press,60,8'))
+   .toThrow(ImportParseError);
+ }
+ const ok=parseImportCsv('csv','valid.csv',header+'2028-02-29,Bench Press,60,8');
+ expect(ok.workouts).toHaveLength(1);
+ expect(ok.workouts[0]?.localDay).toBe('2028-02-29');
+});
