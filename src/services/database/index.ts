@@ -20,7 +20,7 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 // New application id com.liftria.app gets a fresh on-device database. Do not rename
 // databases after shipping to friends without an explicit migration/copy strategy.
 export const DB_NAME = 'liftria.db';
-export const DB_SCHEMA_VERSION = 2;
+export const DB_SCHEMA_VERSION = 3;
 
 /** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
 export const DB_MIGRATIONS = [
@@ -77,9 +77,80 @@ export const DB_MIGRATIONS = [
       CHECK ((source = 'manual' AND inputs_json IS NULL) OR (source = 'estimate' AND inputs_json IS NOT NULL))
     );
   ` },
+  { version: 3, sql: `
+    CREATE TABLE IF NOT EXISTS exercises (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      aliases TEXT NOT NULL DEFAULT '[]',
+      equipment TEXT,
+      type TEXT NOT NULL CHECK(type IN ('weighted','dumbbell','assisted','bodyweight')),
+      unilateral INTEGER NOT NULL DEFAULT 0 CHECK(unilateral IN (0,1)),
+      primary_muscles TEXT NOT NULL DEFAULT '[]',
+      secondary_muscles TEXT NOT NULL DEFAULT '[]',
+      instructions TEXT NOT NULL DEFAULT '[]',
+      source TEXT NOT NULL CHECK(source IN ('pack','custom','import')),
+      retired INTEGER NOT NULL DEFAULT 0 CHECK(retired IN (0,1)),
+      pack_category TEXT,
+      import_batch_id TEXT REFERENCES import_batches(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_exercises_name ON exercises(name COLLATE NOCASE);
+    CREATE INDEX IF NOT EXISTS idx_exercises_source ON exercises(source,retired);
+    CREATE TABLE IF NOT EXISTS templates (
+      id TEXT PRIMARY KEY, name TEXT NOT NULL, rest_sec INTEGER NOT NULL DEFAULT 90,
+      notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS template_exercises (
+      id TEXT PRIMARY KEY, template_id TEXT NOT NULL REFERENCES templates(id),
+      exercise_id TEXT NOT NULL REFERENCES exercises(id), position INTEGER NOT NULL,
+      target_sets INTEGER NOT NULL DEFAULT 3, rep_min INTEGER NOT NULL DEFAULT 8,
+      rep_max INTEGER NOT NULL DEFAULT 12, rest_sec INTEGER,
+      notes TEXT, UNIQUE(template_id,position)
+    );
+    CREATE INDEX IF NOT EXISTS idx_template_exercises_template ON template_exercises(template_id,position);
+    CREATE TABLE IF NOT EXISTS plans (
+      id TEXT PRIMARY KEY, name TEXT NOT NULL,
+      type TEXT NOT NULL CHECK(type IN ('weekly','rotation')),
+      schedule_json TEXT NOT NULL, next_index INTEGER NOT NULL DEFAULT 0,
+      active INTEGER NOT NULL DEFAULT 0 CHECK(active IN (0,1))
+    );
+    CREATE TABLE IF NOT EXISTS import_batches (
+      id TEXT PRIMARY KEY, file_hash TEXT NOT NULL UNIQUE, importer TEXT NOT NULL,
+      file_name TEXT,
+      session_count INTEGER NOT NULL DEFAULT 0, set_count INTEGER NOT NULL DEFAULT 0,
+      skipped_count INTEGER NOT NULL DEFAULT 0,
+      created_exercises TEXT NOT NULL DEFAULT '[]', created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY, title TEXT NOT NULL, template_id TEXT REFERENCES templates(id),
+      source TEXT NOT NULL CHECK(source IN ('manual','imported-file')),
+      importer TEXT, import_batch_id TEXT REFERENCES import_batches(id),
+      started_at TEXT NOT NULL, ended_at TEXT, edited_at TEXT, notes TEXT,
+      state TEXT NOT NULL DEFAULT 'in-progress' CHECK(state IN ('in-progress','finished')),
+      CHECK(source = 'manual' OR (importer IS NOT NULL AND import_batch_id IS NOT NULL))
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at);
+    CREATE INDEX IF NOT EXISTS idx_sessions_batch ON sessions(import_batch_id);
+    CREATE TABLE IF NOT EXISTS session_exercises (
+      id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES sessions(id),
+      exercise_id TEXT NOT NULL REFERENCES exercises(id), position INTEGER NOT NULL,
+      UNIQUE(session_id,position)
+    );
+    CREATE INDEX IF NOT EXISTS idx_session_exercises_session ON session_exercises(session_id,position);
+    CREATE TABLE IF NOT EXISTS sets (
+      id TEXT PRIMARY KEY,
+      session_exercise_id TEXT NOT NULL REFERENCES session_exercises(id),
+      position INTEGER NOT NULL,
+      kind TEXT NOT NULL DEFAULT 'working' CHECK(kind IN ('working','warm-up')),
+      side TEXT CHECK(side IN ('L','R') OR side IS NULL),
+      weight REAL NOT NULL CHECK(weight >= 0),
+      reps INTEGER NOT NULL CHECK(reps >= 0),
+      logged_at TEXT NOT NULL, rest_deadline TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets(session_exercise_id,position);
+  ` },
 ] as const;
 
-/** Fresh install runs v1 then v2; existing v1 runs only v2. One exclusive transaction per version. */
+/** Fresh install runs v1, v2, then v3; older installations run only missing migrations. One exclusive transaction per version. */
 export async function migrateDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA foreign_keys = ON;');
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
@@ -249,13 +320,14 @@ export type LocalStorageCounts = {
 };
 export async function localStorageCounts(): Promise<DbResult<LocalStorageCounts>> {
   return dbOperation(async db => {
-    async function count(table: 'test_workout_sessions' | 'test_nutrition_entries' |
+    async function count(table: 'sessions' | 'test_nutrition_entries' |
       'health_samples' | 'health_aggregates' | 'targets' | 'profile'): Promise<number> {
+      const where = table === 'sessions' ? " WHERE state='finished'" : '';
       return (await db.getFirstAsync<{ count: number }>(
-        `SELECT COUNT(*) AS count FROM ${table}`))?.count ?? 0;
+        `SELECT COUNT(*) AS count FROM ${table}${where}`))?.count ?? 0;
     }
     const [workouts, meals, healthSamples, healthAggregates, targetVersions, profiles] =
-      await Promise.all([count('test_workout_sessions'),count('test_nutrition_entries'),
+      await Promise.all([count('sessions'),count('test_nutrition_entries'),
         count('health_samples'),count('health_aggregates'),count('targets'),count('profile')]);
     const pages = await db.getFirstAsync<{ page_count: number }>('PRAGMA page_count');
     const size = await db.getFirstAsync<{ page_size: number }>('PRAGMA page_size');
