@@ -5,3 +5,5 @@
 - License texts: the upstream Google Fonts `google/fonts` repository, `ofl/archivo/OFL.txt` and `ofl/figtree/OFL.txt`, reproduced unmodified in `licenses/`.
 
 Google Fonts currently publishes **variable** TTFs for both families in those OFL folders; the static upstream builds are used deliberately because SDK 57 / RN 0.86 cannot reliably select Archivo's `wdth` axis on Android. Each weight is registered as a separate `expo-font` family. Files are packaged locally; no runtime font requests.
+
+- **IBM Plex Sans Arabic** Regular / SemiBold / Bold (Phase 4, Arabic UI): static TTFs from `google/fonts`, directory `ofl/ibmplexsansarabic/` (fetched 2026-10-25). License: `licenses/IBMPlexSansArabic-OFL.txt`, unmodified. Used for Arabic text and the Arabic UI; Latin text keeps Figtree and Archivo.
