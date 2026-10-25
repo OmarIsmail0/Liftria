@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { formatNumber } from '../../../src/i18n';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -9,14 +11,17 @@ import { sourceName } from '../../../src/features/health/presentation';
 function recordAt(value: HealthRecord): string {
   return value.kind === 'instant' || value.kind === 'rate' ? value.time : value.end;
 }
-function measuredValue(value: HealthRecord): string {
-  if (value.kind === 'interval') return `${value.value.toLocaleString()} ${value.unit}`;
-  if (value.kind === 'series') return `${value.points.length} heart-rate samples`;
-  if (value.kind === 'instant' || value.kind === 'rate') return `${value.value} ${value.unit}`;
-  if (value.kind === 'session') return `${Math.round(value.durationSec/60)} min of exercise`;
-  return 'Sleep session';
-}
 export default function HealthRecordDetail() {
+  const {t,language}=useLanguage();
+  const dateLocale=language==='ar'?'ar-EG-u-nu-latn':'en-US';
+  const measuredValue=(value: HealthRecord):string=>{
+   if(value.kind==='interval')return formatNumber(language,value.value)+' '+value.unit;
+   if(value.kind==='series')return t('healthRecord.samples',{count:value.points.length});
+   if(value.kind==='instant'||value.kind==='rate')return formatNumber(language,value.value)+' '+value.unit;
+   if(value.kind==='session')return t('healthRecord.exercise',{minutes:Math.round(value.durationSec/60)});
+   return t('healthRecord.sleep');
+  };
+
   const query = useLocalSearchParams<{ metric: string; recordId: string; origin: string; adapter: string; readAt?: string }>();
   const metric = metricTypes.includes(query.metric as MetricType) ? query.metric as MetricType : 'steps';
   const [record,setRecord] = useState<HealthRecord|null>(null);
@@ -40,33 +45,31 @@ export default function HealthRecordDetail() {
   }, [metric,query.recordId,query.origin,query.adapter]);
 
   return <Screen embedded>
-    <Header title="Record detail" subtitle="Health Connect · read only"
+    <Header title={t('healthRecord.title')} subtitle={t('healthRecord.readOnly')}
       onBack={() => { if (router.canGoBack()) router.back(); else router.replace({ pathname: '/(tabs)/progress/health-detail', params: { metric } }); }} />
-    {loading ? <Typography tone="secondary">Checking permission and local cache…</Typography> :
-      permission !== 'granted' ? <Card title="Not allowed">
-        <Typography>This record is hidden until the Health Connect permission is allowed again.</Typography>
-      </Card> : !record ? <Card title="Record not available">
-        <Typography>No cached record matches this source and ID. Pull to refresh in Health.</Typography>
+    {loading ? <Typography tone="secondary">{t('healthRecord.loading')}</Typography> :
+      permission !== 'granted' ? <Card title={t('healthRecord.notAllowed')}>
+        <Typography>{t('healthRecord.hidden')}</Typography>
+      </Card> : !record ? <Card title={t('healthRecord.notAvailable')}>
+        <Typography>{t('healthRecord.notFound')}</Typography>
       </Card> : <>
-        <Card rim="health" title="Recorded measurement">
+        <Card rim="health" title={t('healthRecord.recorded')}>
           <Chip kind={record.kind === 'interval' && record.metric === 'steps' &&
             sourceName(record.dataOrigin) === 'Phone' ? 'phone' : 'pending'}
             label={sourceName(record.dataOrigin)} />
-          <Chip kind="pending" label="Device not verified" />
-          <ListRow title="Value" detail={measuredValue(record)} />
-          <ListRow title="Time" detail={new Date(recordAt(record)).toLocaleString()} />
-          <ListRow title="Data origin" detail={`${sourceName(record.dataOrigin)} · ${record.dataOrigin}`} />
-          <ListRow title="Device" detail={record.device?.model
+          <Chip kind="pending" label={t('healthRecord.unverified')} />
+          <ListRow title={t('healthRecord.value')} detail={measuredValue(record)} />
+          <ListRow title={t('healthRecord.time')} detail={new Date(recordAt(record)).toLocaleString(dateLocale)} />
+          <ListRow title={t('healthRecord.origin')} detail={`${sourceName(record.dataOrigin)} · ${record.dataOrigin}`} />
+          <ListRow title={t('healthRecord.device')} detail={record.device?.model
             ? `${record.device.manufacturer ?? ''} ${record.device.model}`
-            : 'Not recorded by the source'} />
-          <ListRow title="Recorded and read" detail={`Recorded ${new Date(recordAt(record)).toLocaleTimeString()} · ${query.readAt ?
-            'Last checked by Liftria ' + new Date(query.readAt).toLocaleTimeString() :
-            'Liftria read time not recorded'}`} />
-          <ListRow title="Permission" detail="Allowed · Health Connect read only" />
+            : t('healthRecord.noDevice')} />
+          <ListRow title={t('healthRecord.recordedRead')} detail={t('healthRecord.recordedAt',{time:new Date(recordAt(record)).toLocaleTimeString(dateLocale)})+' · '+(query.readAt?t('healthRecord.checked',{time:new Date(query.readAt).toLocaleTimeString(dateLocale)}):t('healthRecord.noReadTime'))} />
+          <ListRow title={t('healthRecord.permission')} detail={t('healthRecord.allowed')} />
         </Card>
-        <Card title="About these fields">
-          <Typography tone="secondary">Data origin names the app that supplied the record. Device identifies the hardware only when the source recorded it. The same app may collect from a phone or watch.</Typography>
-          <Typography tone="secondary">Liftria does not write, edit or delete this Health Connect record.</Typography>
+        <Card title={t('healthRecord.aboutFields')}>
+          <Typography tone="secondary">{t('healthRecord.originNote')}</Typography>
+          <Typography tone="secondary">{t('healthRecord.noWrite')}</Typography>
         </Card>
       </>}
   </Screen>;
