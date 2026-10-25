@@ -818,4 +818,5 @@ export const ar: Record<TranslationKey, string> = {
   "profileSettings.belowFloor": "لا يمكن حفظ هدف أقل من 1,000 kcal.",
   "profileSettings.invalidProfile": "راجع بياناتك. تأكد من صحة سنة الميلاد والطول والوزن.",
   "profileSettings.invalidTarget": "راجع قيم السعرات والمغذيات قبل الحفظ.",
+
 };

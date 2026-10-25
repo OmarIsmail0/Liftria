@@ -817,5 +817,6 @@ export const en = {
   "profileSettings.belowFloor": "A calorie target below 1,000 kcal cannot be saved.",
   "profileSettings.invalidProfile": "Check your profile details. Birth year, height and weight should be within the indicated ranges.",
   "profileSettings.invalidTarget": "Check your calorie and macro values before saving.",
+
 } as const;
 export type TranslationKey = keyof typeof en;
