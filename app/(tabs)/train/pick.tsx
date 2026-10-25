@@ -3,10 +3,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { Button, Card, Field, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
 import { appendExerciseToActiveSession } from '../../../src/services/database/gymRepositories';
+import { replaceActiveExercise } from '../../../src/features/train/workoutData';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 
 export default function AddWorkoutExercise() {
-  const {id}=useLocalSearchParams<{id:string}>();
+  const {id,replaceId}=useLocalSearchParams<{id:string;replaceId?:string}>();
   const [query,setQuery]=useState('');
   const [all,setAll]=useState<Exercise[]>([]);
   const [error,setError]=useState<string|null>(null);
@@ -26,12 +27,13 @@ export default function AddWorkoutExercise() {
   const add=async(exerciseId:string)=>{
     if(busy)return;
     setBusy(true);
-    const saved=await appendExerciseToActiveSession(exerciseId);
+    const saved=replaceId?await replaceActiveExercise(id,replaceId,exerciseId):
+      await appendExerciseToActiveSession(exerciseId);
     if(saved.ok&&saved.value)router.replace({pathname:'/(tabs)/train/active',params:{id}});
     else{setError('Could not add this exercise.');setBusy(false);}
   };
   return <Screen embedded>
-    <Header title="Add exercise" onBack={()=>router.back()}/>
+    <Header title={replaceId?'Replace exercise':'Add exercise'} onBack={()=>router.back()}/>
     <Card title="Your offline library">
       <Field label="Search exercises" value={query} onChangeText={setQuery}/>
       {matches.map(e=><ListRow key={e.id} title={e.name}

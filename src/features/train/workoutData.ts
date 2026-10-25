@@ -211,3 +211,68 @@ export function workoutNumbers(view:ActiveWorkout):{sets:number;volume:number;pe
   }
   return {sets:completed,volume,pending:Math.max(0,planned-completed)};
 }
+
+/** Read only completed working sets, never templates, drafts, warm-ups or current sets. */
+export type PreviousSet={position:number;side:'L'|'R'|null;weight:number;reps:number};
+export function suggestionForSlot(
+  history:PreviousSet[], position:number,side:'L'|'R'|null,
+  repMax:number,expectedRows:number,weightStep:number,
+): {weight:number;reps:number;progressed:boolean}|null {
+  if(!history.length)return null;
+  const match=history.find(s=>s.position===position&&s.side===side);
+  if(!match)return null;
+  const progressed=history.length>=expectedRows && history.every(s=>s.reps>=repMax);
+  return {weight:Math.round((match.weight+(progressed?weightStep:0))*100)/100,
+    reps:match.reps,progressed};
+}
+export async function previousWorkingSets(exerciseId:string):Promise<DbResult<PreviousSet[]>> {
+  return dbOperation(async db=>{
+    const last=await db.getFirstAsync<{id:string}>(
+      "SELECT s.id FROM sessions s JOIN session_exercises se ON se.session_id=s.id "+
+      "JOIN sets st ON st.session_exercise_id=se.id "+
+      "WHERE se.exercise_id=? AND s.state='finished' AND st.kind='working' AND st.reps>0 "+
+      "ORDER BY s.started_at DESC LIMIT 1",[exerciseId]);
+    if(!last)return [];
+    return db.getAllAsync<PreviousSet>(
+      "SELECT st.position,st.side,st.weight,st.reps FROM sets st "+
+      "JOIN session_exercises se ON se.id=st.session_exercise_id "+
+      "WHERE se.session_id=? AND se.exercise_id=? AND st.kind='working' AND st.reps>0 "+
+      "ORDER BY st.position,st.side",[last.id,exerciseId]);
+  });
+}
+export async function replaceActiveExercise(sessionId:string,sessionExerciseId:string,exerciseId:string)
+  :Promise<DbResult<boolean>>{
+  return dbOperation(async db=>(await db.runAsync(
+    "UPDATE session_exercises SET exercise_id=? WHERE id=? AND session_id=? AND NOT EXISTS "+
+    "(SELECT 1 FROM sets WHERE session_exercise_id=?) AND EXISTS "+
+    "(SELECT 1 FROM sessions WHERE id=? AND state='in-progress')",
+    [exerciseId,sessionExerciseId,sessionId,sessionExerciseId,sessionId])).changes>0);
+}
+export async function reorderActiveExercise(sessionId:string,exerciseId:string,direction:-1|1)
+  :Promise<DbResult<boolean>>{
+  return dbOperation(async db=>{
+    let changed=false;
+    await db.withExclusiveTransactionAsync(async tx=>{
+      const rows=await tx.getAllAsync<{id:string;position:number}>(
+        'SELECT id,position FROM session_exercises WHERE session_id=? ORDER BY position',[sessionId]);
+      const i=rows.findIndex(x=>x.id===exerciseId),current=rows[i],other=rows[i+direction];
+      const active=await tx.getFirstAsync<{id:string}>(
+        "SELECT id FROM sessions WHERE id=? AND state='in-progress'",[sessionId]);
+      if(!current||!other||!active)return;
+      await tx.runAsync('UPDATE session_exercises SET position=-1 WHERE id=?',[current.id]);
+      await tx.runAsync('UPDATE session_exercises SET position=? WHERE id=?',[current.position,other.id]);
+      await tx.runAsync('UPDATE session_exercises SET position=? WHERE id=?',[other.position,current.id]);
+      changed=true;
+    });
+    return changed;
+  });
+}
+export async function saveWorkoutExerciseNote(sessionExerciseId:string,note:string):Promise<DbResult<void>>{
+  return dbOperation(async db=>{await db.runAsync(
+    'INSERT INTO app_settings(key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+    ['train.note.'+sessionExerciseId,note]);});
+}
+export async function readWorkoutExerciseNote(sessionExerciseId:string):Promise<DbResult<string>>{
+  return dbOperation(async db=>(await db.getFirstAsync<{value:string}>(
+    'SELECT value FROM app_settings WHERE key=?',['train.note.'+sessionExerciseId]))?.value??'');
+}
