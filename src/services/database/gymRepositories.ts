@@ -217,7 +217,7 @@ export async function readRecords(): Promise<DbResult<ExerciseRecord[]>> {
       'st.kind,st.side,st.weight,st.reps FROM sets st '+
       'JOIN session_exercises se ON se.id=st.session_exercise_id '+
       'JOIN sessions s ON s.id=se.session_id JOIN exercises e ON e.id=se.exercise_id '+
-      'WHERE st.reps>0 AND s.state='finished');
+      "WHERE st.reps>0 AND s.state='finished'");
     return calculateRecords(rows.map(row=>({
       exerciseId:row.exercise_id,type:row.type,sessionId:row.session_id,
       endedAt:row.ended_at,kind:row.kind,side:row.side,
