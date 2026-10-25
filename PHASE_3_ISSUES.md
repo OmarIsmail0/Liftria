@@ -9,8 +9,8 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 # Next up (2026-10-24)
 
 **Order:**
-1. **Phase 2:** PR #12 (Settings and polish) is approved and about to merge. Make no more changes to it.
-2. **PR D: `Phase 3 / Library and data`. Start now** (owner's go, 2026-10-24), as a new draft PR branched from `main`. PR #12 also touches `src/services/database/index.ts` (deleteLocalDatabase), so when PR #12 merges, merge `main` into PR D with a merge commit and keep both changes.
+1. ~~Phase 2~~ DONE: PR #12 merged 2026-10-25. **Follow-up in PR D:** the ST-6 "Workouts" count must read the real `sessions` table (it counts the Phase 0 test table today).
+2. **PR D: `Phase 3 / Library and data`. Start now** (owner's go, 2026-10-24), as a new draft PR branched from `main`. PR #12 also touches `src/services/database/index.ts` (deleteLocalDatabase), so merge the latest `main` into PR D with a merge commit and keep both changes.
    - Schema v3 and repositories.
    - Exercise pack loader (from `assets/data/exercises/free-exercise-db.json`) and the 17-region test.
    - `BodyMap`.

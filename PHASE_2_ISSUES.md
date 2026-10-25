@@ -13,7 +13,7 @@ The remaining Phase 2 work uses **three PRs**. Start the next PR when the previo
 2. ~~Step 4 + TASK-13~~ DONE in PR #9, merged 2026-10-24 with green CI and Claude-approved emulator screenshots (owner device check remains).
 3. ~~PR A: Look and onboarding~~ DONE in PR #10 (merged 2026-10-24; verify + Android build green, emulator screenshots approved by Claude). Follow-up for PR C: ON-6 must say "Get Health Connect" when Health Connect is not installed.
 4. ~~PR B: Today and Health~~ DONE in PR #11 (merged 2026-10-24; verify + Android build green, emulator screenshots approved by Claude).
-5. **PR C: Settings and polish — draft PR #12. Resume now:** merge `main` into it (a merge commit), finish Step 8 (ST-1…ST-7) and Step 9 (accessibility pass), plus a test that ON-6 shows "Get Health Connect" for `not-installed`. When it merges, Phase 2 is done and Claude starts the phase-end Android build.
+5. ~~PR C: Settings and polish~~ DONE in PR #12 (merged 2026-10-25). **Phase 2 is complete.**
 6. **Phase 3 is planned:** after PR #12 merges, continue in `PHASE_3_ISSUES.md` (build plan: `docs/phase3/PHASE_3_PROMPT.md`).
 
 **Merging (owner's decision, 2026-10-24):** Claude merges a PR itself once `verify` is green and Claude's code review is clean (plus the emulator screenshots, when Claude asked for a `build`-labeled run). The owner tests the phase-end APK on the phone and reports problems, which become fix tasks.
