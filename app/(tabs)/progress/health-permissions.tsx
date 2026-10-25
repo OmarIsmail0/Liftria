@@ -24,7 +24,7 @@ export default function HealthPermissions() {
     weight:t('healthPerm.hiddenWeight'),'body-fat':t('healthPerm.hiddenBodyFat'),
     'active-calories':t('healthPerm.hiddenEnergy'),
   };
-  const availabilityText=(status:string):string => status==='available'?t('healthPerm.available')
+  const availabilityText=(status:string|null):string => status==='available'?t('healthPerm.available')
     :status==='unavailable'?t('healthPerm.unavailable')
     :canInstallHealthConnect(status as Parameters<typeof canInstallHealthConnect>[0])?t('healthPerm.install')
     :t('healthPerm.other');
@@ -54,7 +54,7 @@ export default function HealthPermissions() {
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title="Health permissions" subtitle={t('healthPerm.subtitle')}
+    <Header title={t('healthPerm.loadingTitle')} subtitle={t('healthPerm.subtitle')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
     <Card title={t('healthPerm.status')} rim="health">
       <Typography>{availabilityText(snapshot.availability)}</Typography>
