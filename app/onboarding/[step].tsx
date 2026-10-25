@@ -205,7 +205,7 @@ export default function OnboardingStepScreen() {
       const historyStatus = await requestHistoryReadPermission();
       const history = historyStatus === 'granted' ? t('onboarding.health.historyGranted') :
         historyStatus === 'denied' ? t('onboarding.health.historyDenied') :
-          historyStatus === 'unknown' ? t('onboarding.health.historyUnknown') : historyStatus;
+          historyStatus === 'unverified' ? t('onboarding.health.historyUnknown') : t('onboarding.health.historyUnavailable');
       setHealthMissing(missingHealthPermissions(permissions, language));
       setHealthStatus(granted === metricTypes.length
         ? t('onboarding.allDataTypesAllowedHistory', { count: granted, history })

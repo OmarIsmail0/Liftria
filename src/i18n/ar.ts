@@ -369,6 +369,7 @@ export const ar: Record<TranslationKey, string> = {
   "onboarding.health.historyGranted": "مسموح",
   "onboarding.health.historyDenied": "مرفوض",
   "onboarding.health.historyUnknown": "غير مؤكد",
+  "onboarding.health.historyUnavailable": "غير متاح",
   "muscle.abdominals": "البطن",
   "muscle.abductors": "العضلات المبعدة",
   "muscle.adductors": "العضلات المقربة",

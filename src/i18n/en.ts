@@ -368,6 +368,7 @@ export const en = {
   "onboarding.health.historyGranted": "granted",
   "onboarding.health.historyDenied": "denied",
   "onboarding.health.historyUnknown": "not confirmed",
+  "onboarding.health.historyUnavailable": "unavailable",
   "muscle.abdominals": "Abdominals",
   "muscle.abductors": "Abductors",
   "muscle.adductors": "Adductors",
