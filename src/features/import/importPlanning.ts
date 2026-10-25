@@ -2,6 +2,7 @@ import { bundledExercises, normalizedName, searchExercises } from '../../service
 import { calculateRecords, type RecordObservation } from '../../services/database/gymMath';
 import type { Exercise } from '../../services/database/gymTypes';
 import { fromImportWeight, type ParsedImport, type ParsedWorkout, type WeightUnit } from './importCsv';
+import { fromKg } from '../train/workoutUnits';
 
 export type ImportChoice=string|'custom';
 export type ImportContext={
@@ -43,7 +44,8 @@ export function resolveImportMappings(parsed:ParsedImport,context:ImportContext,
  });
 }
 export function createImportPlan(parsed:ParsedImport,context:ImportContext,
- unit:WeightUnit|null,decisions:Record<string,ImportChoice>={}):ImportPlan{
+ unit:WeightUnit|null,decisions:Record<string,ImportChoice>={},
+ displayUnit:WeightUnit='kg'):ImportPlan{
  const hashes=new Set(context.importedHashes);
  const hashDuplicate=hashes.has(parsed.fileHash);
  const skipSet=new Set(context.days);
@@ -77,8 +79,9 @@ export function createImportPlan(parsed:ParsedImport,context:ImportContext,
   const to=next.heaviest??next.lowestAssistance;
   const exerciseName=mappings.find(m=>(m.resolvedId??'import-custom:'+normalizedName(m.name))===next.exerciseId)?.name
    ??next.exerciseId;
-  return {exerciseName,before:from===null||from===undefined?'First record':from.toFixed(1)+' kg',
-   after:to===null?'Repetitions record':to.toFixed(1)+' kg'};
+  return {exerciseName,before:from===null||from===undefined?'First record':
+   fromKg(from,displayUnit).toFixed(1)+' '+displayUnit,
+   after:to===null?'Repetitions record':fromKg(to,displayUnit).toFixed(1)+' '+displayUnit};
  });
  return {parsed,workouts,skippedDays,hashDuplicate,missingUnit,unit,mappings,
   customCount:mappings.filter(m=>m.resolvedId===null).length,setCount,warmupCount,changes};

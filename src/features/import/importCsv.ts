@@ -6,7 +6,7 @@ export type ParsedSet={exercise:string;position:number;kind:'working'|'warm-up';
 export type ParsedWorkout={key:string;title:string;startedAt:string;endedAt:string;
  localDay:string;dateOnly:boolean;sets:ParsedSet[]};
 export type ParsedImport={source:Importer;fileName:string;fileHash:string;columns:string[];
- workouts:ParsedWorkout[];ignored:number;warmupMarked:boolean;needsUnit:boolean};
+ workouts:ParsedWorkout[];ignored:number;nonStrengthRows:number;warmupMarked:boolean;needsUnit:boolean};
 export class ImportParseError extends Error{
  constructor(public readonly code:'invalid'|'empty'|'too-large',message:string,
   public readonly expected:string[]=[],public readonly found:string[]=[]){
@@ -159,15 +159,19 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
  const setIndex=extra(['set_index','set order','set number']);
  const notes=extra(['exercise_notes','notes']);
  const sessions=new Map<string,ParsedWorkout>();
- let ignored=0,marked=false,needsUnit=false;
+ let ignored=0,nonStrengthRows=0,marked=false,needsUnit=false;
  for(let index=0;index<rows.length;index++){
   const row=rows[index]!;const v=(i:number|undefined)=>(i===undefined?'':row[i]??'').trim();
   const selectedWeight=weightColumns.find(column=>v(column)!=='')??wt;
   if(!v(dt)&&!v(ex)&&!v(re)&&!v(selectedWeight)){ignored++;continue;}
   if(!v(dt)||!v(ex))throw new ImportParseError('invalid','Row '+(index+2)+' has no date or exercise.',expectedColumns(source),columns);
   const reps=v(re);
-  if(!reps){if(!v(selectedWeight)&&!v(setType)){ignored++;continue;}
-    if(!v(setType)){ignored++;continue;}
+  const orderMarker=v(setIndex);
+  const setMarker=v(setType)||(/^[WDF]$/i.test(orderMarker)?orderMarker:'');
+  if(!reps&&!setMarker){
+   // Cardio/distance/timed rows have no reps; report these explicitly.
+   // They are not silently converted into invented strength sets.
+   ignored++;nonStrengthRows++;continue;
   }
   const repCount=reps?Number(reps):0,weightString=v(selectedWeight).replace(/\s/g,'');
   const weight=weightString===''?0:Number(weightString.replace(',','.'));
@@ -198,8 +202,8 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
     throw new ImportParseError('invalid','Conflicting weight units on row '+(index+2));
   const unit:WeightUnit|null=explicit??declared;
   if(!unit)needsUnit=true;
-  const kind= /warm.?up|^w$|warmup/i.test(v(setType))?'warm-up':'working';
-  if(setType!==undefined)marked=true;
+  const kind= /warm.?up|^w$|warmup/i.test(setMarker)?'warm-up':'working';
+  if(setType!==undefined||/^[WDF]$/i.test(orderMarker))marked=true;
   const positionValue=v(setIndex);
   const position=positionValue&&Number.isInteger(Number(positionValue))&&Number(positionValue)>=0?
     Number(positionValue):workout.sets.filter(s=>s.exercise===v(ex)).length;
@@ -207,9 +211,11 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
     unit,notes:v(notes)||null,loggedAt:date.iso});
  }
  const workouts=[...sessions.values()].sort((a,b)=>a.startedAt.localeCompare(b.startedAt));
- if(!workouts.length)throw new ImportParseError('empty','No workouts found in this file.',expectedColumns(source),columns);
+ if(!workouts.length)throw new ImportParseError('empty',
+  nonStrengthRows?'No strength workouts found. '+nonStrengthRows+' cardio/timed rows without reps cannot be imported yet.':'No workouts found in this file.',
+  expectedColumns(source),columns);
  return {source,fileName,fileHash:sha256(raw.replace(/^\uFEFF/,'')),columns,workouts,ignored,
-  warmupMarked:marked,needsUnit};
+  nonStrengthRows,warmupMarked:marked,needsUnit};
 }
 export function fromImportWeight(value:number,unit:WeightUnit):number{
  return unit==='kg'?value:value/2.2046226218;

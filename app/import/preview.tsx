@@ -7,12 +7,14 @@ import { readImportContext } from '../../src/features/import/importRepository';
 import { canImportPlan, createImportPlan, resolveImportMappings, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
 import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { getTypedSetting } from '../../src/services/database/settings';
 export default function ImportPreview(){
  const {theme}=useTheme();
  const draft=getImportDraft();
  const [context,setContext]=useState<ImportContext|null>(null);
  const [error,setError]=useState<string|null>(null);
  const [unit,setUnit]=useState<WeightUnit|null>(null);
+ const [displayUnit,setDisplayUnit]=useState<WeightUnit>('kg');
  const [decisions,setDecisions]=useState<Record<string,ImportChoice>>({});
  const load=useCallback(async()=>{
   const result=await readImportContext();
@@ -20,7 +22,8 @@ export default function ImportPreview(){
   else setError('Could not read existing workouts; nothing was imported.');
  },[]);
  useEffect(()=>{if(draft?.parsed)void Promise.resolve().then(()=>load());},[load,draft?.parsed]);
- const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions):null;
+ useEffect(()=>{void getTypedSetting('units.weight').then(r=>{if(r.ok)setDisplayUnit(r.value);});},[]);
+ const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions,displayUnit):null;
  const suggestions=draft?.parsed&&context?
   resolveImportMappings(draft.parsed,{...context,remembered:{}},{}) : [];
  const unmatchedNames=new Set(suggestions.filter(x=>x.status!=='exact').map(x=>x.name));
@@ -62,7 +65,10 @@ export default function ImportPreview(){
     {plan.skippedDays.length>0&&<Typography size="small" tone="secondary">
       {plan.skippedDays.slice(0,3).join(', ')}{plan.skippedDays.length>3?
         ' and '+(plan.skippedDays.length-3)+' more':''}</Typography>}
-    <ListRow title="Rows without usable set data" detail={String(plan.parsed.ignored)}/>
+    <ListRow title="Rows ignored" detail={String(plan.parsed.ignored)}/>
+    {plan.parsed.nonStrengthRows>0&&<Typography tone="secondary" size="small">
+     {plan.parsed.nonStrengthRows} cardio/timed rows without reps aren't imported yet.
+     No distance or duration is converted into strength sets.</Typography>}
     <ListRow title="Your own exercises to create" detail={String(plan.customCount)}/>
    </Card>
    {plan.parsed.needsUnit&&<Card title="Were these weights in kg or lb?">

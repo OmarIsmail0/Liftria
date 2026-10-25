@@ -87,3 +87,23 @@ test('ambiguous numeric calendar days are blocked, unambiguous D/M and M/D remai
   'title,start_time,exercise_title,weight_kg,reps\nUpper,"31 Feb 2026, 07:34",Bench,60,8'))
   .toThrow('Invalid workout date');
 });
+
+test('Strong W in Set Order is a warm-up; D and F remain working sets',()=>{
+ const rows='Date,Workout Name,Exercise Name,Set Order,Weight,Reps\n'+
+  '2026-10-20,Push,Bench,W,20,12\n'+
+  '2026-10-20,Push,Bench,D,60,8\n'+
+  '2026-10-20,Push,Bench,F,50,10';
+ const p=parseImportCsv('strong','strong.csv',rows);
+ expect(p.workouts[0]?.sets.map(s=>s.kind)).toEqual(['warm-up','working','working']);
+ expect(p.warmupMarked).toBe(true);
+});
+test('cardio or timed rows missing reps are counted and explicitly disclosed',()=>{
+ const header='date,exercise,weight_kg,reps\n';
+ const mixed=parseImportCsv('csv','mixed.csv',header+
+  '2026-10-20,Run,0,\n2026-10-20,Bench,50,8\n2026-10-20,Cycle,0,');
+ expect(mixed.nonStrengthRows).toBe(2);
+ expect(mixed.ignored).toBe(2);
+ expect(mixed.workouts[0]?.sets).toHaveLength(1);
+ expect(()=>parseImportCsv('csv','cardio.csv',header+'2026-10-20,Run,0,'))
+  .toThrow('1 cardio/timed rows');
+});
