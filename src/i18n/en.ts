@@ -557,5 +557,6 @@ export const en = {
   "healthSync.noRecord": "No record does not mean no workout happened.",
   "healthSync.permissions": "Open Liftria health permissions",
   "healthSync.recheck": "Check again",
+  "pick.add": "Add exercise",
 } as const;
 export type TranslationKey = keyof typeof en;

@@ -558,4 +558,5 @@ export const ar: Record<TranslationKey, string> = {
   "healthSync.noRecord": "غياب السجل لا يعني أن التمرين لم يحدث.",
   "healthSync.permissions": "افتح أذونات الصحة في ليفتريا",
   "healthSync.recheck": "تحقق مجددًا",
+  "pick.add": "إضافة تمرين",
 };
