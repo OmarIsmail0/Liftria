@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { getImportDraft, setPendingImport } from '../../src/features/import/importDraft';
 import { readImportContext } from '../../src/features/import/importRepository';
-import { canImportPlan, createImportPlan, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
+import { canImportPlan, createImportPlan, resolveImportMappings, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
 import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
 export default function ImportPreview(){
@@ -21,7 +21,10 @@ export default function ImportPreview(){
  },[]);
  useEffect(()=>{if(draft?.parsed)void Promise.resolve().then(()=>load());},[load,draft?.parsed]);
  const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions):null;
- const mappings=plan?.mappings.filter(m=>m.status==='suggested'||m.status==='custom')??[];
+ const suggestions=draft?.parsed&&context?
+  resolveImportMappings(draft.parsed,{...context,remembered:{}},{}) : [];
+ const unmatchedNames=new Set(suggestions.filter(x=>x.status!=='exact').map(x=>x.name));
+ const mappings=plan?.mappings.filter(m=>unmatchedNames.has(m.name))??[];
  const start=()=>{
   if(!plan||!canImportPlan(plan))return;
   setPendingImport(plan);router.push('/import/importing');
@@ -50,11 +53,11 @@ export default function ImportPreview(){
    <Button label="Choose another file" variant="secondary" onPress={()=>router.replace('/import')}/>
   </Card>:<>
    <Card rim="train" title={plan.workouts.length+' workouts · '+plan.setCount+' sets'}>
-    <Chip kind="estimate" label={'From '+draft.source}/>
+    <Typography tone="secondary" size="small">{'From '+draft.source}</Typography>
     <Typography tone="secondary">{new Date(plan.workouts[0]!.startedAt).toLocaleDateString()+
      ' – '+new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString()}</Typography>
     <ListRow title="Warm-up sets marked" detail={String(plan.warmupCount)}/>
-    {!plan.parsed.warmupMarked&&<Typography tone="secondary" size="small">Warm-ups weren't marked in this file. All sets will import as working sets.</Typography>}
+    {!plan.parsed.warmupMarked&&<Typography tone="secondary" size="small">Warm-ups were not marked in this file. All sets will import as working sets.</Typography>}
     <ListRow title="Days already logged (skipped)" detail={String(plan.skippedDays.length)}/>
     {plan.skippedDays.length>0&&<Typography size="small" tone="secondary">
       {plan.skippedDays.slice(0,3).join(', ')}{plan.skippedDays.length>3?
@@ -62,7 +65,7 @@ export default function ImportPreview(){
     <ListRow title="Rows without usable set data" detail={String(plan.parsed.ignored)}/>
     <ListRow title="Your own exercises to create" detail={String(plan.customCount)}/>
    </Card>
-   {plan.missingUnit&&<Card title="Were these weights in kg or lb?">
+   {plan.parsed.needsUnit&&<Card title="Were these weights in kg or lb?">
     <Typography tone="secondary">The file does not say. Liftria never guesses; Import stays off until you choose.</Typography>
     <View style={{flexDirection:'row',gap:theme.space[2]}}>
      <Button label={unit==='kg'?'✓ kg':'kg'} variant="secondary" onPress={()=>setUnit('kg')}/>
@@ -74,9 +77,14 @@ export default function ImportPreview(){
     <Typography tone="secondary">Suggested matches are never applied automatically. If you make no choice, Liftria creates a new exercise with no muscles until you add them.</Typography>
     {mappings.map(m=><View key={m.name} style={{gap:theme.space[2],paddingVertical:theme.space[2]}}>
      <Typography bold>{m.name} · {m.count} sets</Typography>
-     {m.suggestedId&&<Typography tone="secondary">Suggested: {m.suggestedName}</Typography>}
-     {m.suggestedId&&<Button label={'Use '+m.suggestedName} variant="secondary"
-       onPress={()=>setDecisions(old=>({...old,[m.name]:m.suggestedId!}))}/>}
+     <Typography tone="secondary">Current choice: {m.resolvedId?
+      'Use existing library exercise':'Keep as my own exercise'}</Typography>
+     {suggestions.find(s=>s.name===m.name)?.suggestedId&&
+      <Typography tone="secondary">Suggested: {suggestions.find(s=>s.name===m.name)?.suggestedName}</Typography>}
+     {suggestions.find(s=>s.name===m.name)?.suggestedId&&
+      <Button label={'Use '+suggestions.find(s=>s.name===m.name)?.suggestedName}
+       variant="secondary" onPress={()=>setDecisions(old=>({...old,[m.name]:
+        suggestions.find(s=>s.name===m.name)!.suggestedId!}))}/>}
      <Button label="Keep as my own" variant="secondary"
       onPress={()=>setDecisions(old=>({...old,[m.name]:'custom'}))}/>
     </View>)}
