@@ -11,7 +11,7 @@ export default function WorkoutMiniBar() {
   const {theme}=useTheme();
   const path=usePathname();
   const [workout,setWorkout]=useState<ActiveWorkout|null>(null);
-  const [now,setNow]=useState(Date.now());
+  const [now,setNow]=useState(0);
   useEffect(()=>{
     let mounted=true;
     const refresh=()=>{void readInProgressWorkout().then(result=>{

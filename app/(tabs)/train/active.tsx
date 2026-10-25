@@ -45,7 +45,7 @@ export default function ActiveWorkoutScreen() {
   const [haptics,setHaptics]=useState(false);
   const [error,setError]=useState<string|null>(null);
   const [busy,setBusy]=useState(false);
-  const [now,setNow]=useState(Date.now());
+  const [now,setNow]=useState(0);
   const notificationId=useRef<string|null>(null);
   const currentId=id??'';
   const refresh=useCallback(async()=>{
@@ -183,7 +183,7 @@ export default function ActiveWorkoutScreen() {
           onPress={()=>router.push('/(tabs)/train/library')}/>
       </Card>}
       {view.exercises[selected+1]&&<Card title="Up next">
-        <ListRow title={view.exercises[selected+1].name}
+        <ListRow title={view.exercises[selected+1]?.name ?? 'Up next'}
           onPress={()=>choose(selected+1)}/>
       </Card>}
       {denied&&<Typography tone="secondary">Notifications are off. Rest alerts work inside Liftria while it is open.</Typography>}

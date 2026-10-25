@@ -4,7 +4,7 @@ export const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as const;
 export function scheduledTemplate(plan: Plan | null, templates: Template[], day: Date): Template | null {
   if (!plan || !plan.active) return null;
   const schedule = plan.schedule;
-  const key = DAYS[day.getDay()];
+  const key = DAYS[day.getDay()] ?? 'Sun';
   const id = plan.type === 'rotation' && Array.isArray(schedule)
     ? schedule[plan.nextIndex % (schedule.length || 1)]
     : !Array.isArray(schedule) ? (schedule[key] ?? schedule[String(day.getDay())]) : null;

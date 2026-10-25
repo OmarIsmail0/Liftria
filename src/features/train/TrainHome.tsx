@@ -46,7 +46,7 @@ export default function TrainHome() {
     <Header title="Train" subtitle="Your workouts, on this phone" right={
       <Button label="Search" variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>}/>
     {loading?<Typography tone="secondary">Loading your workouts…</Typography>:
-      error?<Card><Typography>Couldn't load your workouts. Your saved data stays on this phone.</Typography>
+      error?<Card><Typography>Could not load your workouts. Your saved data stays on this phone.</Typography>
         <Button label="Retry" onPress={()=>void refresh()}/></Card>:
       <Card rim="train" title={active?'Workout in progress':planned?'Up next · '+planned.name:'Start training'}>
         {active?<View style={{gap:theme.space[2]}}>

@@ -16,11 +16,12 @@ export default function RestSpikeScreen() {
   const [busy,setBusy]=useState(false);
   useEffect(()=>{
     const subscription=Notifications.addNotificationReceivedListener(notification=>{
-      const kind=notification.request.content.data.kind;
+      const data=notification.request.content.data;
+      const kind=data?.kind;
       if(kind!=='liftria-rest')return;
       const receivedAt=new Date().toISOString();
       setRuns(prior=>prior.map(run=>{
-        if(run.id!==notification.request.content.data.sessionId)return run;
+        if(run.id!==data?.sessionId)return run;
         const delayMs=Date.parse(receivedAt)-Date.parse(run.dueAt);
         return {...run,receivedAt,delayMs};
       }));
@@ -34,9 +35,9 @@ export default function RestSpikeScreen() {
   const test=async(minutes:number)=>{
     if(busy)return;
     setBusy(true);
-    const id='spike-'+Date.now().toString()+'-'+minutes;
     const scheduledAt=new Date().toISOString();
-    const dueAt=new Date(Date.now()+minutes*60000).toISOString();
+    const id='spike-'+Date.parse(scheduledAt).toString()+'-'+minutes;
+    const dueAt=new Date(Date.parse(scheduledAt)+minutes*60000).toISOString();
     let error:string|null=null;
     try{
       const scheduled=await scheduleRestOver(dueAt,id,'your test set');

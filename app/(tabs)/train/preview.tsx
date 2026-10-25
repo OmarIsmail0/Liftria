@@ -58,7 +58,7 @@ export default function WorkoutPreview() {
       {template?template.exercises.map((e,i)=><ListRow key={i}
         title={lookup[e.exerciseId]?.name??'Exercise'}
         detail={e.targetSets+' sets · '+e.repMin+'–'+e.repMax+' reps'+
-          (last[e.exerciseId]?' · last '+new Date(last[e.exerciseId]).toLocaleDateString():' · no previous workout')}/>):
+          (last[e.exerciseId]?' · last '+new Date(last[e.exerciseId] ?? '').toLocaleDateString():' · no previous workout')}/>):
         <Typography tone="secondary">Start empty, then add exercises from the library.</Typography>}
     </Card>
     {error&&<Typography>{error}</Typography>}

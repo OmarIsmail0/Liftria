@@ -33,7 +33,7 @@ export async function scheduleRestOver(
       data: { sessionId, kind: 'liftria-rest' },
       sound: 'default',
     },
-    trigger: new Date(deadline),
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(deadline) },
   });
 }
 export async function cancelRestOver(id: string | null): Promise<void> {
