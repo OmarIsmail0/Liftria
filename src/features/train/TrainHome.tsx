@@ -3,11 +3,12 @@ import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
-import { listPlans, listSessions, listTemplates, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
+import { listPlans, listSessions, listTemplates, saveTemplate, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
 import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
 import { weekDays, scheduledTemplate, isLocalDate } from './weekPlan';
 import { elapsedLabel } from './restClock';
+import { ensureExercisePack } from '../../services/database/exerciseLibrary';
 
 export default function TrainHome() {
   const {theme}=useTheme();
@@ -18,6 +19,25 @@ export default function TrainHome() {
   const [discard,setDiscard]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
+  const [starterBusy,setStarterBusy]=useState(false);
+  const [starterMessage,setStarterMessage]=useState<string|null>(null);
+  const starter=async(name:'Upper A'|'Lower B')=>{
+    if(starterBusy)return;
+    setStarterBusy(true);
+    const seeded=await ensureExercisePack();
+    const exerciseIds=name==='Upper A'?
+      ['Barbell_Bench_Press_-_Medium_Grip','Barbell_Shoulder_Press']:
+      ['Barbell_Squat','Barbell_Deadlift'];
+    if(seeded.ok){
+      const saved=await saveTemplate({name,restSec:120,notes:null,
+        exercises:exerciseIds.map(exerciseId=>({exerciseId,targetSets:3,
+          repMin:6,repMax:10,restSec:null,notes:null}))});
+      if(saved.ok){await refresh();router.push({pathname:'/(tabs)/train/preview',
+        params:{templateId:saved.value}});}
+      else setStarterMessage('Could not save starter template.');
+    }else setStarterMessage('The offline exercise library is unavailable.');
+    setStarterBusy(false);
+  };
   const refresh=useCallback(async()=>{
     const [a,ts,ps,ss]=await Promise.all([
       readInProgressWorkout(),listTemplates(),listPlans(),listSessions(40),
@@ -65,6 +85,14 @@ export default function TrainHome() {
             onPress={()=>router.push('/(tabs)/train/preview')}/>
           <Button label="Build a template" variant="secondary" fullWidth
             onPress={()=>router.push('/(tabs)/train/template')}/>
+          {templates.length===0&&<View style={{gap:theme.space[2]}}>
+            <Typography tone="secondary" size="small">Starter templates · saved only if you choose one</Typography>
+            <Button label="Create Upper A starter" variant="secondary" disabled={starterBusy}
+              fullWidth onPress={()=>void starter('Upper A')}/>
+            <Button label="Create Lower B starter" variant="secondary" disabled={starterBusy}
+              fullWidth onPress={()=>void starter('Lower B')}/>
+            {starterMessage&&<Typography>{starterMessage}</Typography>}
+          </View>}
         </View>}
       </Card>}
     <Card title="Explore">

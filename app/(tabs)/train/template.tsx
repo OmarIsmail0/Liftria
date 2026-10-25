@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -9,7 +9,7 @@ import type { Exercise } from '../../../src/services/database/gymTypes';
 
 export default function TemplateEditor() {
   const {theme}=useTheme();
-  const {id}=useLocalSearchParams<{id?:string}>();
+  const {id,exerciseId}=useLocalSearchParams<{id?:string;exerciseId?:string}>();
   const [name,setName]=useState('');
   const [rest,setRest]=useState(120);
   const [notes,setNotes]=useState('');
@@ -21,6 +21,11 @@ export default function TemplateEditor() {
   const [discardSheet,setDiscardSheet]=useState(false);
   const [error,setError]=useState<string|null>(null);
   const [busy,setBusy]=useState(false);
+  const baseline=useRef(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
+  const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline.current;
+  const dirtyRef=useRef(dirty);
+  useEffect(()=>{dirtyRef.current=dirty;},[dirty]);
+  const back=()=>{if(dirty)setDiscardSheet(true);else router.back();};
   useFocusEffect(useCallback(()=>{
     let live=true;
     void (async()=>{
@@ -30,11 +35,20 @@ export default function TemplateEditor() {
       if(all?.ok)setLibrary(all.value);
       const existing=templates.ok?templates.value.find(t=>t.id===id):undefined;
       if(existing){setName(existing.name);setRest(existing.restSec);setNotes(existing.notes??'');
-        setExercises(existing.exercises);}
+        setExercises(existing.exercises);
+        baseline.current=JSON.stringify({name:existing.name,rest:existing.restSec,
+          notes:existing.notes??'',exercises:existing.exercises});}
+      else if(exerciseId){
+        const entry=[{exerciseId,targetSets:3,repMin:8,repMax:12,restSec:null,notes:null}];
+        setExercises(entry);
+      }
     })();
-    const sub=BackHandler.addEventListener('hardwareBackPress',()=>{setDiscardSheet(true);return true;});
+    const sub=BackHandler.addEventListener('hardwareBackPress',()=>{
+      if(dirtyRef.current){setDiscardSheet(true);return true;}
+      return false;
+    });
     return ()=>{live=false;sub.remove();};
-  },[id]));
+  },[id,exerciseId]));
   const filtered=useMemo(()=>searchExercises(library,query).slice(0,8),[library,query]);
   const update=(index:number,patch:Partial<TemplateExerciseInput>)=>
     setExercises(prev=>prev.map((item,i)=>i===index?{...item,...patch}:item));
@@ -56,14 +70,17 @@ export default function TemplateEditor() {
     router.replace('/(tabs)/train/plans');
   };
   return <Screen embedded>
-    <Header title={id?'Edit template':'New template'} onBack={()=>setDiscardSheet(true)}/>
+    <Header title={id?'Edit template':'New template'} onBack={back}/>
     <Card title="Workout details">
       <Field label="Template name" value={name} onChangeText={setName} placeholder="Upper A"/>
       <Field label="Notes (optional)" value={notes} onChangeText={setNotes} multiline/>
       <Stepper label="Default rest" value={rest} onChange={setRest} min={0} max={600} step={15} unit="sec"/>
     </Card>
     <Card title={'Exercises · '+exercises.length}>
-      {exercises.length===0&&<Typography tone="secondary">Add your first exercise to enable Save.</Typography>}
+      {(!name.trim()||exercises.length===0)&&<Typography tone="secondary">
+        {(!name.trim()&&exercises.length===0)?'Add a template name and at least one exercise to save.':
+          !name.trim()?'Add a template name to save.':'Add at least one exercise to save.'}
+      </Typography>}
       {exercises.map((e,i)=>{
         const item=library.find(x=>x.id===e.exerciseId);
         return <View key={i} style={{gap:theme.space[2],paddingVertical:theme.space[3],
