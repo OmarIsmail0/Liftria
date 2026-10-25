@@ -141,7 +141,15 @@ One migration `v4`, the same pattern as v2/v3.
   - **Describe a meal (text) is live.**
   - **Photo** is built end to end, but stays behind the `pending` note "Still being tested on your phone" until the owner's device Test B passes. Claude flips it after the evidence.
 - **Request:**
-  - Use the user's key from SecureStore and the model `claude-haiku-5-5`.
+  - Use the user's key from SecureStore.
+  - **The model is a setting, not hard-coded** (owner, 2026-10-25). In ST-4 "Hiku and API key", add a **Model** choice:
+    - **Fast and low cost:** `claude-haiku-5-5` (the default).
+    - **More accurate:** `claude-sonnet-5-5`.
+    - Keep the list in one place (`src/features/hiku/models.ts`: id, display names in en/ar, and prices), so adding a model later is a one-line change.
+    - Store the choice in `app_settings`.
+    - The HK-2 cost estimate and HK-6 usage follow the chosen model. Each `hiku_requests` row records the model it used.
+  - **"Test key"** sends a minimal request to the chosen model. If the account can't use that model (403/404), show "Your key works, but this model isn't available on your account" and offer the default model. Never switch models silently.
+  - "Hiku" stays the feature name whichever model runs it.
   - Send one JSON schema (meal name, items: name_en, name_ar, grams, kcal, protein, carbs, fat, confidence `sure` / `check`) and validate it with zod.
   - Off-schema, truncated, empty or refused responses go to the HK-5 states. Never fill in missing fields.
   - The prompt asks for Egyptian portion sizes when the meal is Egyptian. Answers come in the UI language.
@@ -152,7 +160,7 @@ One migration `v4`, the same pattern as v2/v3.
   - Each item stores the original estimate JSON beside the edited values, with `source = hiku-estimate`.
 - **Errors (HK-5):** offline, 401, 429 (with retry-after), 5xx, refusal, cut-off, timeout at 45 s and Cancel. The user's input is always kept.
 - **Usage (HK-6):**
-  - Compute cost from response token counts × a bundled price table (`src/features/hiku/prices.ts`, with its source URL and date).
+  - Compute cost from response token counts × a bundled price table (in `src/features/hiku/models.ts`, per model, with its source URL and date).
   - It is always labeled Estimate. Cancelled requests count as "may be billed".
 - **Tests:** schema validation fixtures (valid, truncated, off-schema, refusal), the cost math, and that nothing is written to the diary before Save. Mock the network.
 
