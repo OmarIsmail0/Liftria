@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
-import { parseImportCsv, ImportParseError, MAX_CSV_BYTES, type Importer } from '../../src/features/import/importCsv';
+import { parseImportCsv, csvFileTypeError, ImportParseError, MAX_CSV_BYTES, type Importer } from '../../src/features/import/importCsv';
 import { setImportDraft } from '../../src/features/import/importDraft';
 
 const sources:{id:Importer;name:string;guide:string}[]=[
@@ -23,6 +23,11 @@ export default function ImportStart(){
    const result=await DocumentPicker.getDocumentAsync({copyToCacheDirectory:true,multiple:false,type:'*/*'});
    if(result.canceled||!result.assets[0])return;
    const asset=result.assets[0],file=new File(asset.uri);
+   const wrongType=csvFileTypeError(asset.name,source);
+   if(wrongType){
+    try{await file.delete();}catch{/* Picker cache cleanup is best effort. */}
+    setError(wrongType);return;
+   }
    let text='',tooLarge=false;
    try{
     tooLarge=(asset.size??file.size??0)>MAX_CSV_BYTES;

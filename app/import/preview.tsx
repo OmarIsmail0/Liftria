@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { getImportDraft, setPendingImport } from '../../src/features/import/importDraft';
 import { readImportContext } from '../../src/features/import/importRepository';
-import { canImportPlan, createImportPlan, resolveImportMappings, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
+import { canImportPlan, createImportPlan, resolveImportMappings, keepAllAsOwn, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
 import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { getTypedSetting } from '../../src/services/database/settings';
@@ -27,7 +27,7 @@ export default function ImportPreview(){
  const suggestions=draft?.parsed&&context?
   resolveImportMappings(draft.parsed,{...context,remembered:{}},{}) : [];
  const unmatchedNames=new Set(suggestions.filter(x=>x.status!=='exact').map(x=>x.name));
- const mappings=plan?.mappings.filter(m=>unmatchedNames.has(m.name))??[];
+ const mappings=plan?.mappings.filter(m=>unmatchedNames.has(m.name)||decisions[m.name]==='custom')??[];
  const start=()=>{
   if(!plan||!canImportPlan(plan))return;
   setPendingImport(plan);router.push('/import/importing');
@@ -79,12 +79,21 @@ export default function ImportPreview(){
     </View>
     {unit&&<Typography>Weights will be read as {unit}.</Typography>}
    </Card>}
-   {mappings.length>0&&<Card title={mappings.length+' exercises need a match'}>
-    <Typography tone="secondary">Suggested matches are never applied automatically. If you make no choice, Liftria creates a new exercise with no muscles until you add them.</Typography>
+   {plan.mappings.length>0&&<Card title={'Exercise matching · '+mappings.length+' to review'}>
+    <Typography tone="secondary">Suggested matches are never applied automatically. Unmatched names become your own exercises with no muscles until you add them.</Typography>
+    <Button label="Keep all as my own exercises" variant="secondary"
+     onPress={()=>setDecisions(old=>keepAllAsOwn(plan,old))}/>
+    {Object.keys(decisions).length>0&&<Button label="Restore automatic matches" variant="secondary"
+     onPress={()=>setDecisions({})}/>}
+    {mappings.length===0&&<Typography tone="secondary" size="small">All exercise names matched your library.</Typography>}
     {mappings.map(m=><View key={m.name} style={{gap:theme.space[2],paddingVertical:theme.space[2]}}>
      <Typography bold>{m.name} · {m.count} sets</Typography>
      <Typography tone="secondary">Current choice: {m.resolvedId?
       'Use existing library exercise':'Keep as my own exercise'}</Typography>
+     {suggestions.find(s=>s.name===m.name)?.status==='exact'&&
+      <Button label="Use matching library exercise" variant="secondary"
+       onPress={()=>setDecisions(old=>({...old,[m.name]:
+        suggestions.find(s=>s.name===m.name)!.resolvedId!}))}/>}
      {suggestions.find(s=>s.name===m.name)?.suggestedId&&
       <Typography tone="secondary">Suggested: {suggestions.find(s=>s.name===m.name)?.suggestedName}</Typography>}
      {suggestions.find(s=>s.name===m.name)?.suggestedId&&

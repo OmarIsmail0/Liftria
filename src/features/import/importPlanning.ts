@@ -38,7 +38,12 @@ export function resolveImportMappings(parsed:ParsedImport,context:ImportContext,
    resolvedId:found.id,suggestedId:null,suggestedName:null};
   if(chosen==='custom')return {name,count,status:'custom',
     resolvedId:null,suggestedId:null,suggestedName:null};
-  const candidate=searchExercises([...all],name)[0];
+  // Verified Hevy exports commonly append equipment in parentheses.
+  // Strip ONLY recognizable equipment suffixes for a better *suggestion*;
+  // the original name still determines exact/remembered matching.
+  const withoutEquipment=name.replace(/\s*\((?:cable|machine|dumbbells?|barbell|pec deck|smith machine|ez bar)\)\s*$/i,'').trim();
+  const candidate=searchExercises([...all],withoutEquipment)[0] ??
+   (withoutEquipment!==name?searchExercises([...all],name)[0]:undefined);
   return {name,count,status:candidate?'suggested':'custom',resolvedId:null,
    suggestedId:candidate?.id??null,suggestedName:candidate?.name??null};
  });
@@ -85,6 +90,10 @@ export function createImportPlan(parsed:ParsedImport,context:ImportContext,
  });
  return {parsed,workouts,skippedDays,hashDuplicate,missingUnit,unit,mappings,
   customCount:mappings.filter(m=>m.resolvedId===null).length,setCount,warmupCount,changes};
+}
+/** Bulk review shortcut. Exact matches are optional if user wants separate own entries. */
+export function keepAllAsOwn(plan:ImportPlan,old:Record<string,ImportChoice>):Record<string,ImportChoice>{
+ return {...old,...Object.fromEntries(plan.mappings.map(m=>[m.name,'custom' as ImportChoice]))};
 }
 export function canImportPlan(plan:ImportPlan):boolean{
  return plan.workouts.length>0&&!plan.missingUnit&&!plan.hashDuplicate;

@@ -227,6 +227,13 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
  return {source,fileName,fileHash:sha256(raw.replace(/^\uFEFF/,'')),columns,workouts,ignored,
   nonStrengthRows,warmupMarked:marked,needsUnit};
 }
+/** Reject spreadsheet copies before trying to decode them as CSV. */
+export function csvFileTypeError(fileName:string,source:Importer):string|null{
+ if(/\.csv$/i.test(fileName.trim()))return null;
+ return source==='hevy'
+  ? 'Liftria reads CSV. In Hevy, use Settings → Export data → CSV, and pick that file without opening it in Excel.'
+  : 'Liftria reads CSV files only. Export a CSV from your workout app and choose that original file.';
+}
 export function fromImportWeight(value:number,unit:WeightUnit):number{
  return unit==='kg'?value:value/2.2046226218;
 }

@@ -1,5 +1,5 @@
 import { parseImportCsv } from '../importCsv';
-import { canImportPlan, createImportPlan, resolveImportMappings, mappingKey, type ImportContext } from '../importPlanning';
+import { canImportPlan, createImportPlan, resolveImportMappings, mappingKey, keepAllAsOwn, type ImportContext } from '../importPlanning';
 const csv='date,exercise,weight,reps\n2026-10-21,Bench Press,60,8\n2026-10-22,No Such Exercise ABC,35,7';
 const parsed=parseImportCsv('csv','from.csv',csv);
 const empty:ImportContext={days:[],importedHashes:[],remembered:{},exercises:[],observations:[]};
@@ -36,4 +36,19 @@ test('the preview respects preferred display unit while DB weights remain kg',()
  expect(lb?.after).toContain('lb');
  expect(Number.parseFloat(lb!.after)).toBeCloseTo(35*2.2046226218,1);
  expect(kilograms.workouts).toEqual(pounds.workouts);
+});
+
+test('Hevy equipment suffix becomes a suggestion only, with no silent mapping',()=>{
+ const hevy=parseImportCsv('hevy','h.csv',
+  'title,start_time,exercise_title,weight_kg,reps\nUpper,"22 Oct 2026, 15:50",Barbell Bench Press (Machine),60,8');
+ const automatic=resolveImportMappings(hevy,empty);
+ const match=automatic[0]!;
+ expect(match.status).toBe('suggested');
+ expect(match.resolvedId).toBeNull();
+ expect(match.suggestedId).toBeTruthy();
+ const plan=createImportPlan(hevy,empty,null);
+ const bulk=keepAllAsOwn(plan,{});
+ expect(createImportPlan(hevy,empty,null,bulk).mappings).toEqual([
+  expect.objectContaining({name:'Barbell Bench Press (Machine)',status:'custom',resolvedId:null})
+ ]);
 });
