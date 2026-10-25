@@ -1,5 +1,5 @@
 import { MUSCLES, regionKey } from '../gymTypes';
-import { bundledExercises, normalizedName, packExercise, searchExercises } from '../exerciseLibrary';
+import { bundledExercises, normalizedName, packExercise, newGymId, searchExercises } from '../exerciseLibrary';
 import { calculateRecords, estimatedOneRepMax, setVolume, workingSetCount } from '../gymMath';
 
 test('bundled pack is complete with one-to-one mapping for exactly 17 regions', () => {
@@ -78,4 +78,16 @@ test('records rebuild correctly after edit, delete and import in same calculatio
   expect(calculateRecords(edited)[0]?.heaviest).toBe(80);
   expect(calculateRecords([])).toEqual([]);
   expect(calculateRecords([...original,make('file',90,3)])[0]?.heaviest).toBe(90);
+});
+
+test('newGymId works without the Web Crypto global (Hermes on Android)', () => {
+  const original = globalThis.crypto;
+  Object.defineProperty(globalThis, 'crypto', { value: undefined, configurable: true });
+  try {
+    const ids = new Set(Array.from({ length: 500 }, () => newGymId()));
+    expect(ids.size).toBe(500);
+    for (const id of ids) expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  } finally {
+    Object.defineProperty(globalThis, 'crypto', { value: original, configurable: true });
+  }
 });
