@@ -1,8 +1,8 @@
 /** Atomic import persistence; never retains source CSV bytes or a file copy. */
-import { dbOperation, type DbResult } from '../database';
-import { newGymId, listExercises, bundledExercises } from '../database/exerciseLibrary';
-import { readStrengthObservations } from '../database/historyRepository';
-import type { RecordObservation } from '../database/gymMath';
+import { dbOperation, type DbResult } from '../../services/database';
+import { newGymId, listExercises, bundledExercises } from '../../services/database/exerciseLibrary';
+import { readStrengthObservations } from '../../services/database/historyRepository';
+import type { RecordObservation } from '../../services/database/gymMath';
 import { fromImportWeight, localDayFromIso, type Importer } from './importCsv';
 import { canImportPlan, mappingKey, type ImportContext, type ImportPlan } from './importPlanning';
 const LAST_IMPORT='import.lastBatch';
