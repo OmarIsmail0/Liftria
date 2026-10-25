@@ -9,6 +9,8 @@ import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
 import { weekDays, scheduledTemplate, isLocalDate } from './weekPlan';
 import { elapsedLabel } from './restClock';
 import { ensureExercisePack } from '../../services/database/exerciseLibrary';
+import { readStrengthObservations } from '../../services/database/historyRepository';
+import { calculateMuscleRecovery, relativeTrainingDay, type MuscleRecovery } from './recoveryMath';
 
 export default function TrainHome() {
   const {theme}=useTheme();
@@ -19,6 +21,7 @@ export default function TrainHome() {
   const [discard,setDiscard]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
+  const [muscles,setMuscles]=useState<MuscleRecovery[]>([]);
   const [starterBusy,setStarterBusy]=useState(false);
   const [starterMessage,setStarterMessage]=useState<string|null>(null);
   const starter=async(name:'Upper A'|'Lower B')=>{
@@ -39,9 +42,10 @@ export default function TrainHome() {
     setStarterBusy(false);
   };
   const refresh=useCallback(async()=>{
-    const [a,ts,ps,ss]=await Promise.all([
-      readInProgressWorkout(),listTemplates(),listPlans(),listSessions(40),
+    const [a,ts,ps,ss,ms]=await Promise.all([
+      readInProgressWorkout(),listTemplates(),listPlans(),listSessions(40),readStrengthObservations(),
     ]);
+    if(ms.ok)setMuscles(calculateMuscleRecovery(ms.value,new Date()));
     setError(!a.ok||!ts.ok||!ps.ok||!ss.ok);
     if(a.ok)setActive(a.value);
     if(ts.ok)setTemplates(ts.value);
@@ -102,6 +106,15 @@ export default function TrainHome() {
         <Button label="Muscles" variant="secondary" onPress={()=>router.push('/(tabs)/train/muscles')}/>
       </View>
     </Card>
+    <Card title="Muscles" rim="train">
+      {muscles.every(m=>m.lastCredit===null)?
+        <Typography tone="secondary">Finish a workout to see your recently trained muscles.</Typography>:
+        <Typography tone="secondary">{muscles.filter(m=>m.band==='higher').sort((a,b)=>b.score-a.score)
+          .slice(0,3).map(m=>m.muscle).join(', ')||'Your recent sessions'} · trained recently.
+          {muscles.some(m=>m.band==='ready')?' Other regions are ready.':''}</Typography>}
+      <Typography tone="tertiary" size="small">Estimate from logged working sets only. It does not measure recovery.</Typography>
+      <Button label="Open muscle map" variant="secondary" onPress={()=>router.push('/(tabs)/train/recovery')}/>
+    </Card>
     <Card title="This week">
       <View style={{flexDirection:'row',justifyContent:'space-between',flexWrap:'wrap',gap:theme.space[1]}}>
         {weekDays(today).map(day=>{
@@ -120,10 +133,18 @@ export default function TrainHome() {
       </View>
       <Typography tone="secondary" size="small">Check marks mean completed workouts. Planned days are suggestions, not requirements.</Typography>
     </Card>
+    <Card title="Training history">
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
+        <Button label="History" variant="secondary" onPress={()=>router.push('/(tabs)/train/history')}/>
+        <Button label="Records" variant="secondary" onPress={()=>router.push('/(tabs)/train/records')}/>
+        <Button label="Strength trends" variant="secondary" onPress={()=>router.push('/(tabs)/progress/strength')}/>
+      </View>
+    </Card>
     <Card title="Recent workouts">
       {logged.length===0?<Typography tone="secondary">No completed workouts yet.</Typography>:
         logged.slice(0,4).map(s=><ListRow key={s.id} title={s.title}
-          detail={new Date(s.startedAt).toLocaleDateString()}/>)}
+          detail={new Date(s.startedAt).toLocaleDateString()}
+          onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}/>)}
     </Card>
     <Typography tone="tertiary" size="small">Training works offline and does not need a watch.</Typography>
     <Sheet visible={discard} title="Discard the active workout?" destructive
