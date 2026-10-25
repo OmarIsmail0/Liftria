@@ -14,7 +14,7 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 3. ~~PR E: Train and active workout~~ DONE in PR #14 (merged 2026-10-25; verify + Android build green, emulator screenshots checked by Claude). Claude fixed on the way: Hermes-safe `newGymId()` (never call `crypto.*`), the blocked legacy storage permissions, and the TR-8 dock's bottom safe-area inset.
 4. ~~PR F: History, records and progress~~ DONE in PR #15 (merged 2026-10-25; verify + Android build green, emulator screenshots checked by Claude).
 5. ~~PR G: Import from other apps~~ DONE in PR #16 (merged 2026-10-25; verify + Android build green, emulator screenshots checked; the owner's real Hevy export (76 workouts) verified locally by Claude, not committed). Strong and FitNotes columns are still unverified.
-6. **Phase end:** APK built 2026-10-25 (run 40184295645); the owner is testing it. **Phase 4 has started: see `PHASE_4_ISSUES.md`.** Claude runs the Android build on `main` and the owner does the S22 checks in PHASE_3_PROMPT §5.
+6. **Phase end:** APK built 2026-10-25 (run 40184295645); the owner is testing it. The owner does the S22 checks in PHASE_3_PROMPT §5. **Phase 4 has started: see `PHASE_4_ISSUES.md`.**
 
 **Rules (same as Phase 2):**
 - **Builds:**
