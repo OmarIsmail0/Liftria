@@ -238,7 +238,7 @@ export async function exerciseSessions(exerciseId:string,limit=15): Promise<DbRe
     'SELECT DISTINCT s.* FROM sessions s JOIN session_exercises se ON se.session_id=s.id '+
     "WHERE se.exercise_id=? AND s.state='finished' " +
     "AND EXISTS (SELECT 1 FROM sets st WHERE st.session_exercise_id=se.id " +
-    "AND st.kind='working' AND st.reps>0) ORDER BY s.started_at DESC LIMIT ?
+    "AND st.kind='working' AND st.reps>0) ORDER BY s.started_at DESC LIMIT ?",
     [exerciseId,limit])).map(asSession));
 }
 
