@@ -28,7 +28,9 @@ export default function HealthOverview() {
   const age=(iso:string):string=>{
     const at=Date.parse(iso);
     if(!Number.isFinite(at))return t('healthOverview.timeUnknown');
-    const mins=Math.max(0,Math.floor((Date.now()-at)/60000));
+    const checkedAt=snapshot.readAt?Date.parse(snapshot.readAt):NaN;
+    if(!Number.isFinite(checkedAt))return t('healthOverview.timeUnknown');
+    const mins=Math.max(0,Math.floor((checkedAt-at)/60000));
     if(mins<60)return t('healthOverview.minutesAgo',{count:mins});
     const hours=Math.floor(mins/60);
     return hours<24?t('healthOverview.hoursAgo',{count:hours}):
