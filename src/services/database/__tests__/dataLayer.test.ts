@@ -1,9 +1,13 @@
 import * as SQLite from 'expo-sqlite';
-import { DB_NAME, DB_MIGRATIONS, DB_SCHEMA_VERSION, initializeDatabase, migrateDatabase } from '../index';
+import { DB_NAME, DB_MIGRATIONS, DB_SCHEMA_VERSION, initializeDatabase, migrateDatabase,
+  clearLocalHealthCache, getSetting, listCachedHealth } from '../index';
 import { getProfile, profileSchema, saveProfile } from '../profile';
 import { decodeStoredSetting, getTypedSetting, setTypedSetting, settingDefaults } from '../settings';
 import { addTarget, decodeTargetInputs, getCurrentTarget, listTargetHistory, targetSchema } from '../targets';
 import { getDataLayerCounts } from '../summary';
+import { deleteEverythingOnPhone } from '../../../features/settings/storage';
+import { onboardingDestination } from '../../../features/onboarding/draft';
+import { keyState } from '../../secure-storage';
 
 /* In-memory mock-backed contract tests, not Android SQLite device evidence. */
 type Row = Record<string, unknown>;
@@ -17,6 +21,7 @@ const state: {
 };
 
 const mockDb = {
+  closeAsync: jest.fn(async () => {}),
   execAsync: jest.fn(async (sql: string) => {
     const marker = /PRAGMA user_version = (\d+)/.exec(sql);
     if (marker) {
@@ -60,6 +65,14 @@ const mockDb = {
       state.settings.set(args[0] as string, args[1] as string);
       return { changes: 1, lastInsertRowId: 1 };
     }
+    if (sql.includes('DELETE FROM health_samples')) {
+      state.health.clear();
+      return { changes:1,lastInsertRowId:0 };
+    }
+    if (sql.includes('DELETE FROM health_aggregates')) {
+      state.aggregates.clear();
+      return { changes:1,lastInsertRowId:0 };
+    }
     if (sql.includes('INSERT INTO targets')) {
       const id = state.nextTargetId++;
       state.targets.push({
@@ -75,7 +88,14 @@ const mockDb = {
   }),
 };
 
-jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb) }));
+jest.mock('expo-sqlite', () => ({
+  openDatabaseAsync: jest.fn(async () => mockDb),
+  deleteDatabaseAsync: jest.fn(async () => {}),
+}));
+jest.mock('../../secure-storage', () => ({
+  deleteKey: jest.fn(async () => ({status:'missing'})),
+  keyState: jest.fn(async () => ({status:'missing'})),
+}));
 
 const asDb = mockDb as unknown as SQLite.SQLiteDatabase;
 const currentYear = new Date().getUTCFullYear();
@@ -241,4 +261,47 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
     expect(decodeTargetInputs('null')).toBeNull();
   });
 
+});
+
+test('ST-6 deletion contract: every profile, target, settings, onboarding and health read resets', async () => {
+  await saveProfile({name:'Local',heightCm:175,weightKg:80});
+  await addTarget({kcal:2300,proteinG:120,fatG:60,carbsG:300,source:'manual',inputs:null});
+  await setTypedSetting('theme','dark');
+  await setTypedSetting('style','solid');
+  await setTypedSetting('onboarding.step',6);
+  await setTypedSetting('onboarding.completedAt','2026-10-24T20:00:00Z');
+  state.settings.set('onboarding.deferred','true');
+  state.health.set('health-1',{payload_json:'{}'});
+  state.aggregates.set('aggregate-1',{payload_json:'{}'});
+  expect((await getProfile()).ok).toBe(true);
+  expect((await getCurrentTarget()).ok).toBe(true);
+  expect(await onboardingDestination()).toBe('/(tabs)/today');
+  const oldCounts = await getDataLayerCounts();
+  expect(oldCounts).toMatchObject({ok:true,value:{profile:1}});
+  if (oldCounts.ok) expect(oldCounts.value.targets).toBeGreaterThan(0);
+  expect(await clearLocalHealthCache()).toEqual({ok:true,value:undefined});
+  expect(state.health.size).toBe(0);
+  expect(state.aggregates.size).toBe(0);
+  // Other data remains intact after cache-only clearing.
+  expect(await getTypedSetting('theme')).toEqual({ok:true,value:'dark'});
+  state.health.set('health-2',{payload_json:'{}'});
+  const deleteMock=jest.mocked(SQLite.deleteDatabaseAsync);
+  deleteMock.mockImplementationOnce(async () => {
+    state.schema=0;
+    state.settings.clear();state.profile=null;state.targets=[];state.health.clear();state.aggregates.clear();
+    state.nextTargetId=1;state.migrations=[];
+  });
+  expect(await deleteEverythingOnPhone('DELETE')).toEqual({ok:true});
+  expect(deleteMock).toHaveBeenCalledWith(DB_NAME);
+  expect(mockDb.closeAsync).toHaveBeenCalled();
+  expect(await getTypedSetting('theme')).toEqual({ok:true,value:'system'});
+  expect(await getTypedSetting('style')).toEqual({ok:true,value:'aurora'});
+  expect(await getTypedSetting('onboarding.step')).toEqual({ok:true,value:0});
+  expect(await getTypedSetting('onboarding.completedAt')).toEqual({ok:true,value:null});
+  expect(await getSetting('onboarding.deferred')).toEqual({ok:true,value:null});
+  expect(await getProfile()).toEqual({ok:true,value:null});
+  expect(await getCurrentTarget()).toEqual({ok:true,value:null});
+  expect(await listCachedHealth()).toEqual({ok:true,value:[]});
+  expect(await onboardingDestination()).toEqual({pathname:'/onboarding/[step]',params:{step:'welcome'}});
+  expect(await keyState()).toEqual({status:'missing'});
 });

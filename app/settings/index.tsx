@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
@@ -6,31 +6,45 @@ import { Card, Header, ListRow, Screen, Typography } from '../../src/design/prim
 import { backOrReplace } from '../../src/navigation/back';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
+import { localStorageCounts } from '../../src/services/database';
+import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
 
-const planned = [
-  { heading: 'Profile and goals', detail: 'Profile and calorie targets' },
-  { heading: 'Units and appearance', detail: 'Theme, style and units' },
-  { heading: 'Hiku and API key', detail: 'Private key management' },
-  { heading: 'Notifications', detail: 'Workout and meal reminders' },
-  { heading: 'Health Connect', detail: 'Permissions and data sources' },
-  { heading: 'Data and storage', detail: 'Local data and privacy' },
-] as const;
-
-/** ST-1 shell: Appearance is available now (TASK-13); other settings arrive in Step 8. */
+/** ST-1: grouped local Settings, with Phase 3/4 features explicitly labeled Future. */
 export default function SettingsHome() {
   const { theme } = useTheme();
   const taps = useRef(initialVersionTapState);
+  const [databaseSize, setDatabaseSize] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void localStorageCounts().then(result => {
+      if(alive && result.ok) setDatabaseSize(formatLocalDatabaseSize(result.value.databaseBytes));
+    });
+    return () => { alive = false; };
+  }, []);
   return <Screen>
     <Header title="Settings" onBack={() => backOrReplace(router, '/(tabs)/today')} />
-    <Card>
-      {planned.map(item => <ListRow key={item.heading} title={item.heading}
-        detail={item.heading === 'Units and appearance'
-          ? 'Theme and visual style · Units coming in Phase 2 step 8'
-          : item.detail + ' · Coming in Phase 2 step 8'}
-        onPress={item.heading === 'Units and appearance' ? () => router.push('/settings/appearance') : undefined} />)}
+    <Card title="Your plan">
+      <ListRow title="Profile and goals" detail="Edit your profile and confirm any estimated target change"
+        onPress={() => router.push('/settings/profile')} />
+    </Card>
+    <Card title="Personalization">
+      <ListRow title="Units and appearance" detail="Weight, height, theme, visual style and dashboard controls"
+        onPress={() => router.push('/settings/preferences')} />
+      <ListRow title="Hiku and API key" detail="Test, replace or delete your private Anthropic key"
+        onPress={() => router.push('/settings/hiku-key')} />
+    </Card>
+    <Card title="Notifications and data">
+      <ListRow title="Notifications" detail="Rest timers and meal reminders · future availability"
+        onPress={() => router.push('/settings/notifications')} />
+      <ListRow title="Health Connect" detail="Read-only permissions and sources"
+        onPress={() => router.push('/(tabs)/progress/health')} />
+      <ListRow title="Data and storage" detail="Actual local counts, cache clearing and DELETE confirmation"
+        onPress={() => router.push('/settings/data')} />
     </Card>
     <Card title="About and help">
-      <Typography tone="secondary">Liftria is local-first. Detailed settings arrive later in Phase 2.</Typography>
+      <ListRow title="Help, privacy and licenses" detail="Chips legend, app version, local-first privacy"
+        onPress={() => router.push('/settings/about')} />
+      <Typography tone="secondary">Liftria is local-first. No account or external database is required.</Typography>
       <Pressable accessibilityRole="button" accessibilityLabel="App version"
         onPress={() => {
           const next = advanceVersionTap(taps.current, Date.now());
@@ -42,7 +56,7 @@ export default function SettingsHome() {
       </Pressable>
     </Card>
     <View style={{ alignItems: 'center' }}>
-      <Typography tone="secondary" size="small">Your data stays on this phone.</Typography>
+      <Typography tone="secondary" size="small">Everything is on this phone · {databaseSize ?? 'Calculating storage…'}</Typography>
     </View>
   </Screen>;
 }

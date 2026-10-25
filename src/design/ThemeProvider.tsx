@@ -29,6 +29,8 @@ type ThemeContextValue = {
   setMode: (mode: ThemeMode) => void;
   setStyle: (style: VisualStyle) => void;
   setPreferences: (preferences: ThemePreferences) => void;
+  /** Reset in-memory theme after deleting the DB. Must not re-create app_settings. */
+  resetLocalPreferences: () => void;
   highTextContrast: boolean;
   reduceTransparency: boolean;
   reduceMotion: boolean;
@@ -135,6 +137,7 @@ export function ThemeProvider({
       void setTypedSetting('theme', next.mode);
       void setTypedSetting('style', next.style);
     },
+    resetLocalPreferences: () => setPreferences({ mode: 'system', style: 'aurora' }),
     highTextContrast,
     reduceTransparency,
     reduceMotion,
