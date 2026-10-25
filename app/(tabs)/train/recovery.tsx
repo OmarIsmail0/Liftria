@@ -5,7 +5,7 @@ import { BodyMap } from '../../../src/features/train/BodyMap';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, SegmentedControl, Typography } from '../../../src/design/primitives';
 import { readStrengthObservations } from '../../../src/services/database/historyRepository';
-import { calculateMuscleRecovery, relativeTrainingDay, volumeBand,
+import { calculateMuscleRecovery, recoveryRowText, volumeBand,
   type MuscleRecovery } from '../../../src/features/train/recoveryMath';
 import { titleMuscle, type Muscle } from '../../../src/services/database/gymTypes';
 import type { MuscleShade } from '../../../src/features/train/BodyMap';
@@ -38,7 +38,13 @@ export default function Recovery(){
     (x.untrained?'untrained':undefined);
   return shade?[[x.muscle,shade]]:[];
  })) as Partial<Record<Muscle,MuscleShade>>;
+ const untrainedRows=sorted.filter(row=>row.untrained);
+ const recentlyDirect=sorted.filter(row=>!row.untrained);
  const browse=(m:Muscle)=>router.push({pathname:'/(tabs)/train/muscles',params:{muscle:m}});
+ const renderRow=(row:MuscleRecovery)=><ListRow key={row.muscle}
+  title={titleMuscle(row.muscle)} detail={recoveryRowText(row,mode,new Date())}
+  onPress={()=>browse(row.muscle)} suffix={mode==='untrained'&&row.untrained?
+   <Button label="Find exercises" variant="secondary" onPress={()=>browse(row.muscle)}/>:undefined}/>;
  const description=mode==='recent'?'Higher load, mostly the last 24 hours · Some load, 24–72 hours · Ready, little or none':
   mode==='volume'?'Sets this week: none · 1–5 · 6–11 · 12+':'No direct sets in 10+ days · Trained recently';
  return <Screen embedded>
@@ -59,17 +65,12 @@ export default function Recovery(){
    {empty?<View style={{gap:theme.space[2]}}>
     <Typography tone="secondary">Log a few workouts and your muscle map fills in.</Typography>
     <Button label="Start a workout" variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
-   </View>:sorted.map(row=>{
-    const label=mode==='recent'?(row.band==='higher'?'Higher load':
-      row.band==='some'?'Some load':'Ready'):
-      mode==='volume'?(row.weeklyCredit+' working-set credits this week'):
-       (row.untrained?'No direct sets in 10+ days':'Direct sets recently');
-    const when=relativeTrainingDay(mode==='untrained'?row.lastPrimary:row.lastCredit,new Date());
-    return <ListRow key={row.muscle} title={titleMuscle(row.muscle)} detail={label+' · '+when}
-     onPress={()=>browse(row.muscle)}
-     suffix={mode==='untrained'&&row.untrained?
-      <Button label="Find exercises" variant="secondary" onPress={()=>browse(row.muscle)}/>:undefined}/>;
-   })}
+   </View>:mode==='untrained'?<>
+    <Typography bold>{'No direct sets in 10+ days ('+untrainedRows.length+')'}</Typography>
+    {untrainedRows.map(renderRow)}
+    <Typography bold>{'Trained in the last 10 days ('+recentlyDirect.length+')'}</Typography>
+    {recentlyDirect.map(renderRow)}
+   </>:sorted.map(renderRow)}
   </Card>
   <Typography tone="tertiary" size="small">Warm-ups count 0. Secondary muscles count half a set. Imported sessions count like local workouts. No muscle data means no credit.</Typography>
  </Screen>;

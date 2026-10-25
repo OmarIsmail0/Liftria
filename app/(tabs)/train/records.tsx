@@ -5,12 +5,16 @@ import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../.
 import { readRecords } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { ExerciseRecord } from '../../../src/services/database/gymMath';
+import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
+import { getTypedSetting } from '../../../src/services/database/settings';
 type Named={row:ExerciseRecord;name:string};
 export default function Records(){
  const [rows,setRows]=useState<Named[]>([]);
+ const [unit,setUnit]=useState<WeightUnit>('kg');
  const [error,setError]=useState(false);
  useFocusEffect(useCallback(()=>{
   let live=true;
+  void getTypedSetting('units.weight').then(x=>{if(live&&x.ok)setUnit(x.value);});
   void (async()=>{
    const result=await readRecords();
    if(!live)return;
@@ -32,14 +36,14 @@ export default function Records(){
     <Button label="Start a workout" variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
    </View>:rows.map(({row,name})=><ListRow key={row.exerciseId+':'+row.side}
     title={name+(row.side?' · '+row.side:'')}
-    detail={(row.lowestAssistance!==null?'Least assistance '+row.lowestAssistance+' kg':
-      row.heaviest!==null?'Heaviest '+row.heaviest+' kg':'Most reps '+row.maxReps)+
+    detail={(row.lowestAssistance!==null?'Least assistance '+Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
+      row.heaviest!==null?'Heaviest '+Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:'Most reps '+row.maxReps)+
       ' · '+new Date(row.latestAt).toLocaleDateString()}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:row.exerciseId}})}
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>
        <Chip kind="estimate" label="Estimate"/>
-       <Typography size="small">{Math.round(row.bestEstimatedOneRepMax)} kg est. 1RM</Typography>
+       <Typography size="small">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unit} est. 1RM</Typography>
       </View>:undefined}/>)}
   </Card>
   <Typography size="small" tone="secondary">Estimated 1RM uses Epley for logged 1–12 rep sets. A trend, not a test.</Typography>

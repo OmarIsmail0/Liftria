@@ -1,15 +1,15 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
+import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { getTypedSetting } from '../../../src/services/database/settings';
 import { GymStepper } from '../../../src/features/train/GymStepper';
-import { displayWeight, fromKg, toKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
+import { displayWeight, fromKg, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { readHistoryDetail, historyNumbers, recordsChangedIfDeleted,
  saveFinishedWorkout, deleteFinishedWorkout, type HistoryDetail, type SetEdit } from '../../../src/services/database/historyRepository';
 import { storeUndo } from '../../../src/features/train/historyUndo';
 import { readRecords } from '../../../src/services/database/gymRepositories';
-import type { ExerciseRecord } from '../../../src/services/database/gymMath';
+import { estimatedOneRepMax, type ExerciseRecord } from '../../../src/services/database/gymMath';
 export default function SessionDetail(){
  const {id}=useLocalSearchParams<{id:string}>();
  const [data,setData]=useState<HistoryDetail|null>(null);
@@ -21,6 +21,7 @@ export default function SessionDetail(){
  const [confirm,setConfirm]=useState(false);
  const [changed,setChanged]=useState<string[]>([]);
  const [unit,setUnit]=useState<WeightUnit>('kg');
+ const [smallPlates,setSmallPlates]=useState(false);
  const [error,setError]=useState<string|null>(null);
  const [busy,setBusy]=useState(false);
  const refresh=useCallback(async()=>{
@@ -37,6 +38,7 @@ export default function SessionDetail(){
  },[id]);
  useFocusEffect(useCallback(()=>{void refresh();
   void getTypedSetting('units.weight').then(x=>{if(x.ok)setUnit(x.value);});
+  void getTypedSetting('units.smallPlates').then(x=>{if(x.ok)setSmallPlates(x.value);});
  },[refresh]));
  const change=(i:number,patch:Partial<SetEdit>)=>setDraft(rows=>rows.map((r,n)=>n===i?{...r,...patch}:r));
  const save=async()=>{
@@ -76,7 +78,7 @@ export default function SessionDetail(){
    <ListRow title="Start" detail={new Date(data.session.startedAt).toLocaleTimeString()}/>
    <ListRow title="Duration" detail={Math.round(duration/60000)+' min'}/>
    <ListRow title="Working sets" detail={String(stats.sets)}/>
-   <ListRow title="Volume" detail={Math.round(stats.volume)+' kg'}/>
+   <ListRow title="Volume" detail={Math.round(fromKg(stats.volume,unit)).toLocaleString()+' '+unit}/>
    {data.session.importer&&<Typography tone="secondary">Imported from {data.session.importer}</Typography>}
   </Card>
   {data.exercises.map(e=><Card key={e.id} title={e.name}>
@@ -85,18 +87,22 @@ export default function SessionDetail(){
     return <View key={s.id??e.id+':'+i} style={{gap:8,paddingBottom:12}}>
      <Typography tone="secondary" size="small">{s.kind==='warm-up'?'W':'Set '+(s.position+1)}{s.side?' '+s.side:''}</Typography>
      <GymStepper label="Weight" value={fromKg(s.weight,unit)} unit={unit}
+       step={fromKg(workoutWeightStep(e.type,unit,smallPlates),unit)}
        onChange={v=>change(i,{weight:toKg(v,unit)})}/>
      <GymStepper label="Reps" value={s.reps} onChange={v=>change(i,{reps:v})}/>
      <Button label="Remove set" variant="secondary" onPress={()=>setDraft(rows=>rows.filter((_,n)=>n!==i))}/>
     </View>;
    }):e.sets.map(s=>{
     const r=records.find(x=>x.exerciseId===e.exerciseId&&x.side===s.side);
-    const pr=s.kind==='working'&&s.reps>0&&
-      (r?.heaviest===s.weight&&r.heaviest!==null||
-       r?.lowestAssistance===s.weight&&r.lowestAssistance!==null);
+    const pr=s.kind==='working'&&s.reps>0&&!!r&&(
+      (r.heaviestSessionId===id&&r.heaviest!==null&&s.weight===r.heaviest)||
+      (r.lowestAssistanceSessionId===id&&r.lowestAssistance!==null&&s.weight===r.lowestAssistance)||
+      (r.maxRepsSessionId===id&&s.reps===r.maxReps)||
+      (r.bestEstimatedOneRepMaxSessionId===id&&r.bestEstimatedOneRepMax!==null&&
+        estimatedOneRepMax(e.type,s)===r.bestEstimatedOneRepMax));
     return <ListRow key={s.id} title={s.kind==='warm-up'?'W':'Set '+(s.position+1)}
       detail={displayWeight(s.weight,e.type,unit)+' × '+s.reps+(s.side?' · '+s.side:'')}
-      suffix={pr?<Chip kind="measured" label="PR"/>:undefined}/>;
+      suffix={pr?<Typography bold size="small" tone="secondary">Record</Typography>:undefined}/>;
    })}
    {editing&&<Button label="Add working set" variant="secondary" onPress={()=>{
     const used=draft.filter(s=>s.sessionExerciseId===e.id);

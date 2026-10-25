@@ -7,6 +7,8 @@ import { readRecords } from '../../../src/services/database/gymRepositories';
 import { readStrengthObservations, type StrengthObservation } from '../../../src/services/database/historyRepository';
 import { strengthWeeks, strengthWindowSummary } from '../../../src/features/train/recoveryMath';
 import type { ExerciseRecord } from '../../../src/services/database/gymMath';
+import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
+import { getTypedSetting } from '../../../src/services/database/settings';
 
 type Range='4w'|'3m'|'1y';
 export default function Strength(){
@@ -14,13 +16,16 @@ export default function Strength(){
  const [rows,setRows]=useState<StrengthObservation[]>([]);
  const [records,setRecords]=useState<ExerciseRecord[]>([]);
  const [range,setRange]=useState<Range>('4w');
+ const [unit,setUnit]=useState<WeightUnit>('kg');
  const [error,setError]=useState(false);
  const refresh=useCallback(async()=>{
   const [s,r]=await Promise.all([readStrengthObservations(),readRecords()]);
   if(s.ok)setRows(s.value);else setError(true);
   if(r.ok)setRecords(r.value);else setError(true);
  },[]);
- useFocusEffect(useCallback(()=>{void refresh();},[refresh]));
+ useFocusEffect(useCallback(()=>{void refresh();
+  void getTypedSetting('units.weight').then(result=>{if(result.ok)setUnit(result.value);});
+ },[refresh]));
  const periods=range==='4w'?4:range==='3m'?13:52;
  const weeks=strengthWeeks(rows,new Date(),Math.max(8,periods*2));
  const summary=strengthWindowSummary(weeks,periods);
@@ -39,13 +44,13 @@ export default function Strength(){
    <Button label="Start a workout" variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
   </Card>:<>
    <Card rim="train" title="Weekly volume">
-    <Typography size="metric-m">{Math.round(summary.total).toLocaleString()} kg</Typography>
+    <Typography size="metric-m">{Math.round(fromKg(summary.total,unit)).toLocaleString()} {unit}</Typography>
     <Typography tone="secondary" size="small">{summary.changePct===null?'No previous period to compare':
       (summary.changePct>=0?'+':'')+Math.round(summary.changePct)+'% vs the previous period'}</Typography>
     <Typography tone="tertiary" size="small">From your workouts in Liftria · logged working sets only</Typography>
     <View style={{flexDirection:'row',alignItems:'flex-end',gap:theme.space[1],height:170}}>
      {bars.map(w=><View key={w.label} style={{flex:1,minWidth:20,alignItems:'center',gap:theme.space[1]}}>
-      <Typography size="small">{w.logged?Math.round(w.volume/1000)+'k':'—'}</Typography>
+      <Typography size="small">{w.logged?Math.round(fromKg(w.volume,unit)/1000)+'k':'—'}</Typography>
       <View style={{height:120,width:'90%',justifyContent:'flex-end',borderBottomWidth:1,
        borderBottomColor:theme.color.border.subtle}}>
        <View style={{height:w.logged?Math.max(4,Math.round(115*w.volume/peak)):4,
@@ -59,7 +64,7 @@ export default function Strength(){
    <Card title="Top lifts">
     {top.length===0?<Typography tone="secondary">Log a weighted set to see an estimated 1RM.</Typography>:
      top.map(r=><ListRow key={r.exerciseId+':'+r.side} title={names.get(r.exerciseId)??r.exerciseId}
-      detail={Math.round(r.bestEstimatedOneRepMax??0)+' kg est. 1RM · '+new Date(r.latestAt).toLocaleDateString()}
+      detail={Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit))+' '+unit+' est. 1RM · '+new Date(r.latestAt).toLocaleDateString()}
       suffix={<Chip kind="estimate" label="Estimate"/>}
       onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:r.exerciseId}})}/>)}
     <Typography tone="secondary" size="small">Estimated 1RM is a trend, not a test (Epley, 1–12 reps).</Typography>

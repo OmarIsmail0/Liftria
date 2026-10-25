@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Card, Header, ListRow, Screen, Sheet, Snackbar, Typography } from '../../../src/design/primitives';
 import { getTypedSetting } from '../../../src/services/database/settings';
+import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { listCompletedWorkouts, readHistoryDetail, historyNumbers,
  deleteFinishedWorkout, undoFinishedWorkout, type HistorySession } from '../../../src/services/database/historyRepository';
 import { storeUndo, peekUndo, takeUndo, UNDO_WINDOW_MS } from '../../../src/features/train/historyUndo';
@@ -10,6 +11,7 @@ export default function History(){
  const [sessions,setSessions]=useState<HistorySession[]>([]);
  const [volume,setVolume]=useState(0);
  const [hidden,setHidden]=useState(false);
+ const [unit,setUnit]=useState<WeightUnit>('kg');
  const [selected,setSelected]=useState<HistorySession|null>(null);
  const [undo,setUndo]=useState(false);
  const [error,setError]=useState<string|null>(null);
@@ -27,6 +29,7 @@ export default function History(){
  useFocusEffect(useCallback(()=>{
   void refresh();setUndo(peekUndo()!==null);
   void getTypedSetting('hideNumbers').then(x=>{if(x.ok)setHidden(x.value);});
+  void getTypedSetting('units.weight').then(x=>{if(x.ok)setUnit(x.value);});
  },[refresh]));
  useEffect(()=>{if(!undo)return;const t=setTimeout(()=>setUndo(false),UNDO_WINDOW_MS);
   return()=>clearTimeout(t);},[undo]);
@@ -50,7 +53,7 @@ export default function History(){
   <Header title="History" subtitle="Finished sessions on this phone" onBack={()=>router.back()}/>
   <Card rim="train" title="This month">
    <Typography>{hidden?'Completed workouts':month+' workouts'}</Typography>
-   <Typography tone="secondary">{hidden?'Volume from working sets':Math.round(volume).toLocaleString()+' kg volume'}</Typography>
+   <Typography tone="secondary">{hidden?'Volume from working sets':Math.round(fromKg(volume,unit)).toLocaleString()+' '+unit+' volume'}</Typography>
    <Typography tone="tertiary" size="small">From your logged Liftria workouts.</Typography>
   </Card>
   <Card title="Recent workouts">
