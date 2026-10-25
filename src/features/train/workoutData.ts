@@ -59,14 +59,11 @@ export async function readWorkout(id:string):Promise<DbResult<ActiveWorkout|null
   });
 }
 export async function readInProgressWorkout():Promise<DbResult<ActiveWorkout|null>> {
-  return dbOperation(async db=>{
-    const row=await db.getFirstAsync<{id:string}>(
-      "SELECT id FROM sessions WHERE state='in-progress' ORDER BY started_at DESC LIMIT 1");
-    if(!row)return null;
-    // Avoid unguarded double starts. UI refreshes full session after resolving ID.
-    return (await readWorkout(row.id)).ok
-      ? (await readWorkout(row.id)).value : null;
-  });
+  const row=await dbOperation(async db=>db.getFirstAsync<{id:string}>(
+    "SELECT id FROM sessions WHERE state='in-progress' ORDER BY started_at DESC LIMIT 1"));
+  if(!row.ok)return row;
+  if(!row.value)return {ok:true,value:null};
+  return readWorkout(row.value.id);
 }
 /** Start is transactional; never create a workout on preview render. */
 export async function startManualWorkout(title:string, templateId:string|null=null):Promise<DbResult<string>> {
