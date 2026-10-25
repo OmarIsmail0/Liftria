@@ -36,6 +36,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.SCHEDULE_EXACT_ALARM',
       'android.permission.USE_EXACT_ALARM',
       'android.permission.RECEIVE_BOOT_COMPLETED',
+      // expo-image-picker adds these for Android 12 and older; the system picker needs no storage permission.
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
     ],
   },
   plugins: [

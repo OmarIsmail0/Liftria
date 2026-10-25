@@ -131,8 +131,16 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
   return filtered.map(e=>({e,rank:score(e)})).filter(x=>Number.isFinite(x.rank))
     .sort((a,b)=>a.rank-b.rank || a.e.name.localeCompare(b.e.name)).map(x=>x.e);
 }
+/**
+ * Local row IDs (UUID v4 shape). Hermes on Android has no Web Crypto `crypto` global, so
+ * crypto.randomUUID throws there even though Jest (Node) has it. IDs only need to be
+ * unique on this phone; they are never secrets.
+ */
 export function newGymId(): string {
-  return crypto.randomUUID();
+  const web = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (typeof web?.randomUUID === 'function') return web.randomUUID();
+  const hex = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  return hex(8) + '-' + hex(4) + '-4' + hex(3) + '-' + '89ab'[Math.floor(Math.random() * 4)] + hex(3) + '-' + hex(12);
 }
 export async function createCustomExercise(input: CustomExerciseInput): Promise<DbResult<Exercise>> {
   const validated = customExerciseSchema.parse(input);
