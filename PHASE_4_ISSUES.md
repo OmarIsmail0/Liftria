@@ -57,6 +57,40 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
       - "Phase 0 test entries"
 
       Write plain, friendly lines instead. Keep the honesty rules (pending stays pending), but say it like a product, not a build log.
+   7. **New body map art** (owner approved, 2026-10-25). Replace the drawing inside `BodyMap` with **`react-native-body-highlighter@3.2.0`** (MIT, built on the `react-native-svg` we already use).
+      - **New dependency:** approved. Ask Claude to regenerate the lockfile. Keep the license credit in Settings → About → Licenses.
+      - **Keep `BodyMap`'s own API and the 17 muscles.** Map them to the library's regions:
+
+        | Liftria muscle | Library region |
+        |---|---|
+        | abdominals | `abs` + `obliques` |
+        | adductors | `adductors` |
+        | abductors | `gluteal` (hip abductors sit on the side of the glutes) |
+        | biceps | `biceps` |
+        | calves | `calves` |
+        | chest | `chest` |
+        | forearms | `forearm` |
+        | glutes | `gluteal` |
+        | hamstrings | `hamstring` |
+        | lats | `upper-back` |
+        | middle back | `upper-back` |
+        | lower back | `lower-back` |
+        | neck | `neck` |
+        | quadriceps | `quadriceps` |
+        | shoulders | `deltoids` |
+        | traps | `trapezius` |
+        | triceps | `triceps` |
+
+        Where two muscles share a region, the stronger state wins (primary over secondary, the higher recovery band). The text rows and the accessibility text still name all 17, so no meaning is lost. Unit-test the mapping: every one of the 17 maps to at least one region.
+      - Use our colors, not the library's: the base is the neutral body fill token; primary is the train domain color; secondary and "some load" are the 55% tint. The dashed outline for "untrained" becomes a lighter tint plus the row text.
+      - The library has no `hair`. Hide the head, hands and feet details if they look busy at small sizes.
+      - Use it in TR-5, TR-6, TR-14, TR-7 preview, recovery and everywhere `BodyMap` appears.
+   8. **Mini muscle map thumbnails** (owner choice, instead of photos). Every exercise row (library, pick, template, history, import mapping) gets a small round thumbnail on the start side: the front or back body, whichever shows more of the exercise's primary muscles, with those muscles highlighted.
+      - No images are bundled. It renders from the same component at about 48dp.
+      - Make it cheap for long lists: memoize by exercise id.
+   9. **TR-8 muscles this workout.**
+      - A small two-view body icon in the workout header opens a sheet: a front/back body map of the muscles worked so far, and a list of the 17 muscles with completed working sets (primary = 1, secondary = 0.5, warm-ups 0, the same rules as TR-14).
+      - "Not logged yet" rows show "—", not 0.
    - **For screenshots:** list the routes for Today, Settings, Profile, onboarding profile/goal, and Train home in the PR description.
 4. **PR I: `Phase 4 / Diary, search and targets`.**
    - Starts when PR P's `verify` is green; branch from PR P.
@@ -78,7 +112,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
   - a screen-ID checklist (built / tested / not done)
   - CI evidence
   - "Visual check" routes, including a `dev/demo-*?auto=1` route for any screen that needs data
-- **New dependencies:** only `expo-localization` is approved. Nothing else without asking.
+- **New dependencies:** `expo-localization` (PR H) and `react-native-body-highlighter@3.2.0` (PR P) are approved. Nothing else without asking.
 - **Never:**
   - workflow edits
   - fabricated results
