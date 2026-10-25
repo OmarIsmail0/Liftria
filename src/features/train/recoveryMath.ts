@@ -110,7 +110,7 @@ export function relativeTrainingDay(iso:string|null,now:Date):string{
 
 /** Row copy describes logged set credit, not physiological recovery. */
 export function recoveryRowText(row:MuscleRecovery,mode:'recent'|'volume'|'untrained',now:Date):string {
-  const counted=(value:number)=>Number(value.toFixed(1)).toString()+' sets';
+  const counted=(value:number)=>Number(value.toFixed(1)).toString()+' '+(value===1?'set':'sets');
   if(mode==='recent'){
     const level=row.band==='higher'?'Higher load':row.band==='some'?'Some load':'Ready';
     return counted(row.recentCredit)+' · '+relativeTrainingDay(row.lastCredit,now).toLowerCase()+' · '+level;

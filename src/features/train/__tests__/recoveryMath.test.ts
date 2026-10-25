@@ -109,7 +109,7 @@ test('TR-14 recent/volume credit and secondary-only helper wording',()=>{
 test('TR-14 uses local calendar days rather than elapsed 24-hour labels',()=>{
   const recent=calculateMuscleRecovery([row(1,['glutes'],['lower back'])],NOW);
   expect(recoveryRowText(recent.find(r=>r.muscle==='glutes')!,'recent',NOW))
-    .toBe('1 sets · trained today · Some load');
+    .toBe('1 set · trained today · Some load');
   expect(recoveryRowText(recent.find(r=>r.muscle==='lower back')!,'untrained',NOW))
     .toBe('No direct sets yet · helper today');
 });

@@ -2,6 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Linking, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Field, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { GymStepper } from '../../../src/features/train/GymStepper';
@@ -32,6 +33,7 @@ function slotsFor(exercise:ActiveExercise,sets:ActiveSet[]):Slot[] {
 export default function ActiveWorkoutScreen() {
   const {id}=useLocalSearchParams<{id?:string}>();
   const {theme}=useTheme();
+  const insets=useSafeAreaInsets();
   const [view,setView]=useState<ActiveWorkout|null>(null);
   const [selected,setSelected]=useState(0);
   const [kg,setKg]=useState(0);
@@ -257,8 +259,8 @@ export default function ActiveWorkoutScreen() {
       {denied&&<Typography tone="secondary">Notifications are off. Rest alerts work inside Liftria while it is open.</Typography>}
       {error&&<Typography>{error}</Typography>}
     </ScrollView>
-    <View style={{paddingHorizontal:theme.layout.gutter,paddingVertical:theme.space[3],
-      backgroundColor:theme.color.bg.raised,gap:theme.space[2]}}>
+    <View style={{paddingHorizontal:theme.layout.gutter,paddingTop:theme.space[3],
+      paddingBottom:theme.space[3]+insets.bottom,backgroundColor:theme.color.bg.raised,gap:theme.space[2]}}>
       {edit&&<Typography bold>Editing logged set {edit.kind==='warm-up'?'warm-up':edit.position+1}</Typography>}
       {!edit&&suggestion&&<Text style={{fontStyle:'italic',color:theme.color.text.tertiary,fontSize:theme.type.small.size}}>
         {suggestion.progressed?'Suggested +'+fromKg(step,weightUnit).toFixed(2).replace(/\.?0+$/,'')+' '+weightUnit+' · ':'Suggested · '}

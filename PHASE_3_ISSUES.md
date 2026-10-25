@@ -6,18 +6,18 @@ Build plan and definition of done: `docs/phase3/PHASE_3_PROMPT.md`.
 
 ---
 
-# Next up (2026-10-24)
+# Next up (2026-10-25)
 
 **Order:**
 1. ~~Phase 2~~ DONE: PR #12 merged 2026-10-25. **Follow-up in PR D:** the ST-6 "Workouts" count must read the real `sessions` table (it counts the Phase 0 test table today).
 2. ~~PR D: Library and data~~ DONE in PR #13 (merged 2026-10-25; verify + Android build green, emulator screenshots approved by Claude).
-3. **PR E: `Phase 3 / Train and active workout`. Start now** (new draft PR from `main`).
-   - TR-1, TR-2, TR-3, TR-7, TR-8, TR-10, the Today Training card, and the TR-9 spike.
-   - Add `expo-keep-awake` and `expo-notifications` (approved). Ask Claude to regenerate the lockfile and to allow `POST_NOTIFICATIONS` in the CI manifest check.
-   - TR-6 follow-ups from PR #13: enable "Add to a workout" (add it to the in-progress workout, otherwise ask which template), and drop the stray "Total working weight" line under the legend.
-4. **PR F: `Phase 3 / History, records and progress`.**
-   - TR-11, TR-12, TR-13, PR-2, TR-14 and the TR-1 Muscles card.
-   - Start it when PR E's `verify` is green.
+3. ~~PR E: Train and active workout~~ DONE in PR #14 (merged 2026-10-25; verify + Android build green, emulator screenshots checked by Claude). Claude fixed on the way: Hermes-safe `newGymId()` (never call `crypto.*`), the blocked legacy storage permissions, and the TR-8 dock's bottom safe-area inset.
+4. **PR F: `Phase 3 / History, records and progress`.** In review, PR #15. **Next: merge `main` into your branch (merge commit, never rebase)**, then Claude runs the emulator screenshots.
+   - **Branch from `phase3/train-active-workout`** (PR E isn't merged yet), named `phase3/history-records`. Open a draft PR against `main`. Until PR E merges, its diff includes PR E's commits; that's expected.
+   - After Claude merges PR #14, merge `main` into your branch with a merge commit. Never rebase.
+   - Scope: TR-11, TR-12, TR-13, PR-2, TR-14 and the TR-1 Muscles card. PHASE_3_PROMPT §4.3 has the rules: 8 s Undo on delete, records recalculated after edit and delete, the Estimate chip, and the recovery formula unit-tested on the worked example including the 24/48/72 h and score 1/4 boundaries. No red, and never "fatigued".
+   - Also from PR E: the exercise menu's "History" entry (deferred to PR F).
+   - For screenshots, add a dev-only `dev/demo-history?auto=1` that writes 3 finished demo sessions (clearly titled "Demo"), plus routes for TR-11, TR-12 edit, TR-13, TR-14 and PR-2. List them in the PR description.
 5. **PR G: `Phase 3 / Import from other apps`.**
    - IM-1…IM-4, flow 11, the ST-6 rows and the TR-1 and TR-11 links.
    - Start it when PR F's `verify` is green.
