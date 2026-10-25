@@ -1,0 +1,62 @@
+name: Build USDA food pack
+
+# One-off, run by hand: downloads USDA FoodData Central (public domain, CC0) SR Legacy and
+# Foundation CSVs, builds assets/data/foods/usda-foods.json with the script next to it, and
+# pushes it to the data/food-pack branch for Claude to review. Nothing here runs app code.
+
+on:
+  workflow_dispatch:
+    inputs:
+      foundation_zip:
+        description: "Foundation Foods CSV zip file name on fdc.nal.usda.gov/fdc-datasets/ (blank = latest linked on the download page)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download FoodData Central CSVs
+        env:
+          FOUNDATION: ${{ inputs.foundation_zip }}
+        run: |
+          set -euo pipefail
+          base=https://fdc.nal.usda.gov/fdc-datasets
+          curl -fsSL -o sr.zip "$base/FoodData_Central_sr_legacy_food_csv_2018-04.zip"
+          if [ -z "$FOUNDATION" ]; then
+            FOUNDATION=$(curl -fsSL https://fdc.nal.usda.gov/download-datasets/ \
+              | grep -o 'FoodData_Central_foundation_food_csv_[0-9-]*\.zip' | sort -u | tail -1)
+          fi
+          echo "Foundation: $FOUNDATION"
+          curl -fsSL -o foundation.zip "$base/$FOUNDATION"
+          sha256sum sr.zip foundation.zip | tee checksums.txt
+          echo "FOUNDATION=$FOUNDATION" >> "$GITHUB_ENV"
+      - name: Build the pack
+        run: |
+          mkdir -p assets/data/foods
+          python3 .github/scripts/build-food-pack.py sr.zip foundation.zip assets/data/foods/usda-foods.json
+          ls -la assets/data/foods
+      - name: Push to data/food-pack
+        run: |
+          set -euo pipefail
+          {
+            echo "# Food data source"
+            echo
+            echo "- **Source:** USDA FoodData Central, https://fdc.nal.usda.gov/ (public domain, CC0 1.0)."
+            echo "- **Files:** \`FoodData_Central_sr_legacy_food_csv_2018-04.zip\` and \`$FOUNDATION\`, downloaded $(date -u +%F)."
+            echo "- **SHA-256:**"
+            sed 's/^/  - /' checksums.txt
+            echo "- **Built by:** \`.github/scripts/build-food-pack.py\` (the \`Build USDA food pack\` workflow)."
+            echo "- **Per food:** stable \`id\` (\`usda:<fdcId>\`), name, FDC category, source (sr or foundation), kcal, protein, carbs, fat and fiber per 100 g, and household portions in grams where FDC has them."
+            echo "- **Credit (shown in the app):** \"Food data: USDA FoodData Central (public domain).\""
+          } > assets/data/foods/SOURCE.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B data/food-pack
+          git add assets/data/foods
+          git commit -m "data: USDA FoodData Central food pack (SR Legacy + Foundation)"
+          git push -f origin data/food-pack
