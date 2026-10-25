@@ -90,7 +90,8 @@ export const DB_MIGRATIONS = [
       instructions TEXT NOT NULL DEFAULT '[]',
       source TEXT NOT NULL CHECK(source IN ('pack','custom','import')),
       retired INTEGER NOT NULL DEFAULT 0 CHECK(retired IN (0,1)),
-      pack_category TEXT
+      pack_category TEXT,
+      import_batch_id TEXT REFERENCES import_batches(id)
     );
     CREATE INDEX IF NOT EXISTS idx_exercises_name ON exercises(name COLLATE NOCASE);
     CREATE INDEX IF NOT EXISTS idx_exercises_source ON exercises(source,retired);
@@ -114,6 +115,7 @@ export const DB_MIGRATIONS = [
     );
     CREATE TABLE IF NOT EXISTS import_batches (
       id TEXT PRIMARY KEY, file_hash TEXT NOT NULL UNIQUE, importer TEXT NOT NULL,
+      file_name TEXT,
       session_count INTEGER NOT NULL DEFAULT 0, set_count INTEGER NOT NULL DEFAULT 0,
       skipped_count INTEGER NOT NULL DEFAULT 0,
       created_exercises TEXT NOT NULL DEFAULT '[]', created_at TEXT NOT NULL
@@ -318,13 +320,14 @@ export type LocalStorageCounts = {
 };
 export async function localStorageCounts(): Promise<DbResult<LocalStorageCounts>> {
   return dbOperation(async db => {
-    async function count(table: 'test_workout_sessions' | 'test_nutrition_entries' |
+    async function count(table: 'sessions' | 'test_nutrition_entries' |
       'health_samples' | 'health_aggregates' | 'targets' | 'profile'): Promise<number> {
+      const where = table === 'sessions' ? " WHERE state='finished'" : '';
       return (await db.getFirstAsync<{ count: number }>(
-        `SELECT COUNT(*) AS count FROM ${table}`))?.count ?? 0;
+        `SELECT COUNT(*) AS count FROM ${table}${where}`))?.count ?? 0;
     }
     const [workouts, meals, healthSamples, healthAggregates, targetVersions, profiles] =
-      await Promise.all([count('test_workout_sessions'),count('test_nutrition_entries'),
+      await Promise.all([count('sessions'),count('test_nutrition_entries'),
         count('health_samples'),count('health_aggregates'),count('targets'),count('profile')]);
     const pages = await db.getFirstAsync<{ page_count: number }>('PRAGMA page_count');
     const size = await db.getFirstAsync<{ page_size: number }>('PRAGMA page_size');

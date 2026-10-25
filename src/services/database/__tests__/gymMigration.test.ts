@@ -11,6 +11,8 @@ test('v3 adds all gym tables, indexes and foreign keys without destructive migra
   for (const table of expected) expect(schema).toContain('CREATE TABLE IF NOT EXISTS ' + table);
   expect(schema).toContain("CHECK(kind IN (\'working\',\'warm-up\'))");
   expect(schema).toContain("CHECK(source IN ('manual','imported-file'))");
+  expect(schema).toContain('file_name TEXT');
+  expect(schema).toContain('import_batch_id TEXT REFERENCES import_batches(id)');
   expect(schema).not.toMatch(/DROP TABLE|DELETE FROM|ALTER TABLE/i);
 });
 

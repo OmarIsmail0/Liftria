@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { DB_NAME, DB_MIGRATIONS, DB_SCHEMA_VERSION, initializeDatabase, migrateDatabase,
-  clearLocalHealthCache, getSetting, listCachedHealth } from '../index';
+  clearLocalHealthCache, getSetting, listCachedHealth, localStorageCounts } from '../index';
 import { getProfile, profileSchema, saveProfile } from '../profile';
 import { decodeStoredSetting, getTypedSetting, setTypedSetting, settingDefaults } from '../settings';
 import { addTarget, decodeTargetInputs, getCurrentTarget, listTargetHistory, targetSchema } from '../targets';
@@ -14,10 +14,10 @@ type Row = Record<string, unknown>;
 const state: {
   schema: number; settings: Map<string, string>; health: Map<string, Row>;
   aggregates: Map<string, Row>; profile: Row | null; targets: Row[];
-  nextTargetId: number; migrations: number[];
+  nextTargetId: number; migrations: number[]; gymSessions: Row[];
 } = {
   schema: 0, settings: new Map(), health: new Map(), aggregates: new Map(),
-  profile: null, targets: [], nextTargetId: 1, migrations: [],
+  profile: null, targets: [], nextTargetId: 1, migrations: [], gymSessions: [],
 };
 
 const mockDb = {
@@ -37,8 +37,9 @@ const mockDb = {
         : table === 'targets' ? state.targets.length
         : table === 'app_settings' ? state.settings.size
         : table === 'health_samples' ? state.health.size
-        : table === 'health_aggregates' ? state.aggregates.size : 0;
-      return { total };
+        : table === 'health_aggregates' ? state.aggregates.size
+        : table === 'sessions' ? state.gymSessions.filter(row => row.state === 'finished').length : 0;
+      return { total, count: total };
     }
     if (sql.includes('FROM app_settings')) {
       const v = state.settings.get(args[0] as string);
@@ -272,6 +273,8 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   await setTypedSetting('onboarding.completedAt','2026-10-24T20:00:00Z');
   state.settings.set('onboarding.deferred','true');
   state.health.set('health-1',{payload_json:'{}'});
+  state.gymSessions = [{state:'finished'}, {state:'finished'}, {state:'in-progress'}];
+  expect(await localStorageCounts()).toMatchObject({ok:true,value:{workouts:2}});
   state.aggregates.set('aggregate-1',{payload_json:'{}'});
   expect((await getProfile()).ok).toBe(true);
   expect((await getCurrentTarget()).ok).toBe(true);
@@ -289,7 +292,7 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   deleteMock.mockImplementationOnce(async () => {
     state.schema=0;
     state.settings.clear();state.profile=null;state.targets=[];state.health.clear();state.aggregates.clear();
-    state.nextTargetId=1;state.migrations=[];
+    state.nextTargetId=1;state.migrations=[];state.gymSessions=[];
   });
   expect(await deleteEverythingOnPhone('DELETE')).toEqual({ok:true});
   expect(deleteMock).toHaveBeenCalledWith(DB_NAME);
@@ -304,4 +307,5 @@ test('ST-6 deletion contract: every profile, target, settings, onboarding and he
   expect(await listCachedHealth()).toEqual({ok:true,value:[]});
   expect(await onboardingDestination()).toEqual({pathname:'/onboarding/[step]',params:{step:'welcome'}});
   expect(await keyState()).toEqual({status:'missing'});
+  expect(await localStorageCounts()).toMatchObject({ok:true,value:{workouts:0}});
 });
