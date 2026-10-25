@@ -1,3 +1,4 @@
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -9,6 +10,7 @@ import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnit
 import { getTypedSetting } from '../../../src/services/database/settings';
 type Named={row:ExerciseRecord;name:string};
 export default function Records(){
+ const {t}=useLanguage();
  const [rows,setRows]=useState<Named[]>([]);
  const [unit,setUnit]=useState<WeightUnit>('kg');
  const [error,setError]=useState(false);
@@ -27,25 +29,25 @@ export default function Records(){
   return()=>{live=false;};
  },[]));
  return <Screen embedded>
-  <Header title="Records" subtitle="Only finished, logged working sets" onBack={()=>router.back()}/>
-  <Card rim="train" title="Your best sets">
-   <Typography tone="secondary">Records are recalculated whenever you edit or delete a workout. Each side of a unilateral exercise keeps its own records.</Typography>
-   {error&&<Button label="Retry" onPress={()=>router.replace('/(tabs)/train/records')}/>}
+  <Header title={t('train.records')} subtitle={t('records.subtitle')} onBack={()=>router.back()}/>
+  <Card rim="train" title={t('records.bestSets')}>
+   <Typography tone="secondary">{t('records.explanation')}</Typography>
+   {error&&<Button label={t('common.retry')} onPress={()=>router.replace('/(tabs)/train/records')}/>}
    {rows.length===0?<View style={{gap:8}}>
-    <Typography tone="secondary">Finish a workout to see your personal records here.</Typography>
-    <Button label="Start a workout" variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
+    <Typography tone="secondary">{t('records.empty')}</Typography>
+    <Button label={t('records.start')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
    </View>:rows.map(({row,name})=><ListRow key={row.exerciseId+':'+row.side}
     title={name+(row.side?' · '+row.side:'')}
-    detail={(row.lowestAssistance!==null?'Least assistance '+Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
-      row.heaviest!==null?'Heaviest '+Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:'Most reps '+row.maxReps)+
+    detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
+      row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:t('records.mostReps')+' ' +row.maxReps)+
       ' · '+new Date(row.latestAt).toLocaleDateString()}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:row.exerciseId}})}
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>
-       <Chip kind="estimate" label="Estimate"/>
-       <Typography size="small">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unit} est. 1RM</Typography>
+       <Chip kind="estimate" label={t('chips.estimate')}/>
+       <Typography size="small">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unit} {t('records.estimated1rm')}</Typography>
       </View>:undefined}/>)}
   </Card>
-  <Typography size="small" tone="secondary">Estimated 1RM uses Epley for logged 1–12 rep sets. A trend, not a test.</Typography>
+  <Typography size="small" tone="secondary">{t('records.disclaimer')}</Typography>
  </Screen>;
 }

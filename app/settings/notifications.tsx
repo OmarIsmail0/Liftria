@@ -1,24 +1,26 @@
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { router } from 'expo-router';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 
 /** TR-9 can request notification permission during the first rest. Timing remains pending device proof. */
 export default function Notifications() {
+ const {t}=useLanguage();
   return <Screen>
-    <Header title="Notifications" subtitle="Rest alerts are being tested"
+    <Header title={t('settings.home.notifications')} subtitle={t('notifications.subtitle')}
       onBack={()=>backOrReplace(router,'/settings')} />
-    <Card title="Rest timer alerts">
-      <Chip kind="pending" label="Pending S22 device test" />
-      <Typography tone="secondary">Liftria asks about rest alerts in context during your first rest. Lock-screen delivery can be delayed by Android; the in-app deadline timer remains the reliable source.</Typography>
-      <ListRow title="Rest timer notifications" detail="Permission is optional · turn on from the active workout" />
+    <Card title={t('notifications.restTitle')}>
+      <Chip kind="pending" label={t('notifications.pending')} />
+      <Typography tone="secondary">{t('notifications.restNote')}</Typography>
+      <ListRow title={t('notifications.row')} detail={t('notifications.rowDetail')} />
     </Card>
-    <Card title="Meal reminders">
-      <Chip kind="pending" label="Future · Phase 4" />
-      <Typography tone="secondary">Meal reminders will be optional, created on the phone, and off by default. They will not read your food diary.</Typography>
-      <ListRow title="Breakfast" detail="Planned default · 08:00" />
-      <ListRow title="Lunch" detail="Planned default · 12:30" />
-      <ListRow title="Dinner" detail="Planned default · 19:00" />
-      <Typography tone="secondary" size="small">These are examples of future reminder times, not active notifications.</Typography>
+    <Card title={t('notifications.mealsTitle')}>
+      <Chip kind="pending" label={t('notifications.future')} />
+      <Typography tone="secondary">{t('notifications.mealNote')}</Typography>
+      <ListRow title={t('notifications.breakfast')} detail={t('notifications.defaultMorning')} />
+      <ListRow title={t('notifications.lunch')} detail={t('notifications.defaultNoon')} />
+      <ListRow title={t('notifications.dinner')} detail={t('notifications.defaultEvening')} />
+      <Typography tone="secondary" size="small">{t('notifications.examples')}</Typography>
     </Card>
   </Screen>;
 }
