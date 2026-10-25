@@ -151,6 +151,11 @@ export async function updateRestDeadline(setId:string,sessionId:string,deadline:
     '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
     "WHERE s.id=? AND s.state='in-progress')",[deadline,setId,sessionId])).changes>0);
 }
+/** Only advance a rotation when the completed template was actually next. */
+export function shouldAdvanceRotation(sequence:unknown,nextIndex:number,templateId:string|null):boolean{
+  return templateId!==null&&Array.isArray(sequence)&&sequence.length>0&&
+    sequence[nextIndex%sequence.length]===templateId;
+}
 /** Finishing never writes untouched suggested sets. Rotation advances only after finish. */
 export async function completeWorkout(id:string,notes:string|null):Promise<DbResult<boolean>> {
   try{await cancelSessionRestAlerts(id);}catch{return {ok:false,error:{code:'db-error',message:'Could not cancel rest alerts. Retry finish.'}};}
@@ -168,8 +173,7 @@ export async function completeWorkout(id:string,notes:string|null):Promise<DbRes
           "SELECT id,next_index,schedule_json FROM plans WHERE type='rotation' AND active=1");
         for(const plan of plans){
           const sequence=JSON.parse(plan.schedule_json) as unknown;
-          if(Array.isArray(sequence)&&sequence.length>0&&
-            sequence[plan.next_index%sequence.length]===s.template_id){
+          if(shouldAdvanceRotation(sequence,plan.next_index,s.template_id)){
             await tx.runAsync('UPDATE plans SET next_index=next_index+1 WHERE id=?',[plan.id]);
           }
         }
