@@ -177,6 +177,7 @@ export const en = {
   'trend.chartNutritionA11y': "Calorie graph with {count} logged days. Unlogged days are gaps.",
   'trend.chartWeightA11y': "Weight chart with {count} observed days and a smoothed trend line.",
   'trend.chartProteinA11y': "Protein target reached on {count} days in this grid.",
+  'trend.demoDataWarning': "Demo only: {count} example weights. Not personal measurements.",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

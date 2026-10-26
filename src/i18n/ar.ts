@@ -178,6 +178,7 @@ export const ar: Record<TranslationKey, string> = {
   'trend.chartNutritionA11y': "مخطط السعرات يضم {count} يومًا مسجلًا. الأيام غير المسجلة فراغات.",
   'trend.chartWeightA11y': "مخطط الوزن يضم {count} يومًا بقياسات واتجاهًا ممهدًا.",
   'trend.chartProteinA11y': "تحقق هدف البروتين في {count} يوم بهذا المخطط.",
+  'trend.demoDataWarning': "بيانات تجريبية فقط: {count} قياسات وزن للعرض، وليست قياسات شخصية.",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',

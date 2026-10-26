@@ -41,6 +41,7 @@ export default function BodyTrends(){
  const recent=[...local,...health].filter(row=>Number.isFinite(new Date(row.at).getTime()))
   .sort((a,b)=>b.at.localeCompare(a.at)).slice(0,30);
  const counts=sourceCounts(result.points.flatMap(p=>p.entries));
+ const demoCount=local.filter(p=>p.note?.startsWith('Demo fixture')).length;
  const weight=Number(kg),validDate=/^\d{4}-\d{2}-\d{2}$/.test(day);
  const date=validDate?new Date(Number(day.slice(0,4)),Number(day.slice(5,7))-1,Number(day.slice(8)),12):null;
  const valid=kg.trim()!==''&&date!==null&&localDay(date)===day&&
@@ -85,6 +86,7 @@ export default function BodyTrends(){
     {value:'3m',label:t('polish.range3m')},{value:'1y',label:t('polish.range1y')}]}/>
   <Card rim="health" title={t('trend.weightTrend')}>
    <Typography tone="secondary" size="small">{t('trend.weightSource')}</Typography>
+   {demoCount>0&&<Typography tone="secondary" size="small">{t('trend.demoDataWarning',{count:demoCount})}</Typography>
    {result.latest?<Typography size="metric-m">{hidden?t('trend.hidden'):
     t('trend.kg',{weight:fmt(result.latest.trend)})}</Typography>:
     <Typography tone="secondary">{t('trend.weightEmpty')}</Typography>}
@@ -111,7 +113,8 @@ export default function BodyTrends(){
        t('trend.kg',{weight:fmt(row.kg)})}
       detail={bidiIsolate(language,localDay(new Date(row.at)))+' · '+
        (row.source==='liftria'?t('trend.myWeight'):t('trend.healthConnect'))+
-       (row.source==='health-connect'&&row.origin?' · '+row.origin:'')}
+       (row.source==='health-connect'&&row.origin?' · '+row.origin:'')+
+       ('note' in row&&typeof row.note==='string'&&row.note?' · '+row.note:'')}
       onPress={row.source==='liftria'?()=>open(row as LocalWeight):undefined}
       suffix={row.source==='health-connect'?<Chip kind="measured" label={t('trend.readOnly')}/>:undefined}/>)}
    {health.length>0&&<Typography tone="secondary" size="small">{t('trend.healthPrivacy')}</Typography>}
