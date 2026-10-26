@@ -16,7 +16,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    - Add `expo-localization` and ask Claude to regenerate the lockfile.
    - List the Arabic chip and safety wording in the PR description for the owner to confirm.
 3. ~~**PR P: `Phase 4 / Design polish (owner's S22 review)`.**~~ DONE: PR #18 merged (2026-10-26). Claude fixed the RTL chevrons (SVG `ChevronIcon`) and the Settings labels.
-   - **Open (Claude):** on a phone already set to Arabic, the very first launch after install is still left to right. Choosing Arabic inside the app works.
+   - Claude's PR #19 fixed it: the first launch on an Arabic phone is now right to left (config plugin `plugins/withArabicFirstLaunchRtl.js`).
    - Done.
    - The owner tested the Phase 3 APK on the S22 (2026-10-25). **Apply these rules on every screen, not only the ones named:**
    1. **Top-right avatar circle ("L") → a Settings gear icon.**
