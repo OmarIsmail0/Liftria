@@ -2,12 +2,11 @@ import {router,useLocalSearchParams} from 'expo-router';
 import {useState} from 'react';
 import {Button,Card,Field,Header,Screen,Sheet,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {useTheme} from '../../../src/design/ThemeProvider';
 import {macroMismatch,MEALS,mealAtTime,type MealKey} from '../../../src/features/eat/foodCatalog';
 import {createMyFood,logFood} from '../../../src/features/eat/diaryRepository';
 
 export default function CustomFood(){
-  const {t}=useLanguage(),{theme}=useTheme();
+  const {t}=useLanguage();
   const params=useLocalSearchParams<{meal?:MealKey;day?:string}>();
   const [meal,setMeal]=useState<MealKey>(MEALS.includes(params.meal as MealKey)?params.meal!:mealAtTime(new Date()));
   const [name,setName]=useState(''),[grams,setGrams]=useState('100'),[kcal,setKcal]=useState('');

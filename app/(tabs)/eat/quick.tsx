@@ -2,12 +2,11 @@ import {router,useLocalSearchParams} from 'expo-router';
 import {useState} from 'react';
 import {Button,Card,Chip,Field,Header,Screen,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {useTheme} from '../../../src/design/ThemeProvider';
 import {logQuick} from '../../../src/features/eat/diaryRepository';
 import {MEALS,mealAtTime,type MealKey} from '../../../src/features/eat/foodCatalog';
 
 export default function QuickCalories(){
-  const {t}=useLanguage(),{theme}=useTheme();
+  const {t}=useLanguage();
   const params=useLocalSearchParams<{day?:string;meal?:MealKey}>();
   const [meal,setMeal]=useState<MealKey>(MEALS.includes(params.meal as MealKey)?params.meal!:mealAtTime(new Date()));
   const [name,setName]=useState(''),[kcal,setKcal]=useState('');

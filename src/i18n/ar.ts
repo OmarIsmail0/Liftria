@@ -124,6 +124,7 @@ export const ar: Record<TranslationKey, string> = {
   'eatI.useEstimate': "استخدام التقدير {count} kcal",
   'eatI.week': "آخر 7 أيام",
   'eatI.weekAccessible': "تم تسجيل الطعام خلال {count} أيام هذا الأسبوع.",
+  'eatI.caloriesOnlyNoMacros': "الأصناف المسجلة بسعراتها فقط لا تتضمن قيم المغذيات.",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',

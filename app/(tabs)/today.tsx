@@ -144,7 +144,11 @@ export default function TodayTab() {
           <Typography tone="secondary">{local.hideNumbers ? t('today.targetSaved') :
             diary.logged ? t('eatI.eaten',{count:formatNumber(language,diary.kcal)}) : t('eatI.notLogged')}</Typography>
           <Typography tone="secondary" size="small">{local.hideNumbers ? t('today.macrosHidden') :
-            diary.logged ? t('eatI.macroAmounts',{p:formatNumber(language,Math.round(diary.protein??0)), c:formatNumber(language,Math.round(diary.carbs??0)), f:formatNumber(language,Math.round(diary.fat??0))}) : t('today.macrosNotLogged')}</Typography>
+            diary.logged?(diary.protein===null&&diary.carbs===null&&diary.fat===null?
+              t('eatI.caloriesOnlyNoMacros'):t('eatI.macroAmounts',{
+                p:diary.protein===null?'—':formatNumber(language,Math.round(diary.protein)),
+                c:diary.carbs===null?'—':formatNumber(language,Math.round(diary.carbs)),
+                f:diary.fat===null?'—':formatNumber(language,Math.round(diary.fat))})):t('today.macrosNotLogged')}</Typography>
         </> : <>
           <Typography tone="secondary">{diary.logged?t('eatI.eaten',{count:formatNumber(language,diary.kcal)}):t('today.firstMeal')}</Typography>
           <Typography tone="secondary" size="small">{t('today.noTarget')}</Typography>

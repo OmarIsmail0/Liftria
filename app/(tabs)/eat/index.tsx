@@ -22,7 +22,7 @@ export default function EatHome(){
   const [labels,setLabels]=useState<Partial<Record<MealKey,string>>>({});
   const [saved,setSaved]=useState<SavedMeal[]>([]);
   const [notice,setNotice]=useState<string|null>(null);
-  const [undo,setUndo]=useState<string|null>(null);
+  const [undo,setUndo]=useState<string|null>(params.undo??null);
   const [error,setError]=useState(false);
   const reload=useCallback(async()=>{
     const [diary,goal,hide,fast,names,meals]=await Promise.all([
@@ -36,9 +36,6 @@ export default function EatHome(){
     if(meals.ok)setSaved(meals.value);
   },[day]);
   useFocusEffect(useCallback(()=>{void reload();},[reload]));
-  useEffect(()=>{
-    if(params.undo)setUndo(params.undo);
-  },[params.undo]);
   useEffect(()=>{
     if(!undo)return;
     const timeout=setTimeout(()=>setUndo(null),4000);
@@ -88,8 +85,11 @@ export default function EatHome(){
       <Card rim="eat" title={t('eatI.macros')}>
         {!summary.logged?<Typography tone="secondary">{t('eatI.startLogging')}</Typography>:
           hidden?<Typography tone="secondary">{t('eatI.hidden')}</Typography>:
-          <Typography tone="secondary">{t('eatI.macroAmounts',{p:format(Math.round(summary.protein??0)),
-            c:format(Math.round(summary.carbs??0)),f:format(Math.round(summary.fat??0))})}</Typography>}
+          summary.protein===null&&summary.carbs===null&&summary.fat===null?
+          <Typography tone="secondary">{t('eatI.caloriesOnlyNoMacros')}</Typography>:
+          <Typography tone="secondary">{t('eatI.macroAmounts',{p:summary.protein===null?'—':format(Math.round(summary.protein)),
+            c:summary.carbs===null?'—':format(Math.round(summary.carbs)),
+            f:summary.fat===null?'—':format(Math.round(summary.fat))})}</Typography>}
       </Card>
       {MEALS.map(meal=>{
         const inMeal=entries.filter(entry=>entry.meal===meal),part=summary.byMeal[meal];

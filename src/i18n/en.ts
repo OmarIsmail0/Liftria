@@ -123,6 +123,7 @@ export const en = {
   'eatI.useEstimate': "Use estimated {count} kcal",
   'eatI.week': "Last 7 days",
   'eatI.weekAccessible': "Food logged on {count} days in this week.",
+  'eatI.caloriesOnlyNoMacros': "Calories-only entries do not include macros.",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

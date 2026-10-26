@@ -1,9 +1,7 @@
 import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useEffect,useState} from 'react';
-import {View} from 'react-native';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Snackbar,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {useTheme} from '../../../src/design/ThemeProvider';
 import {formatNumber} from '../../../src/i18n';
 import {MEALS,localDay,type MealKey,type Food} from '../../../src/features/eat/foodCatalog';
 import {deleteEntry,foodById,moveEntry,readDiaryDay,removeMeal,restoreEntries,saveMeal,
@@ -11,7 +9,7 @@ import {deleteEntry,foodById,moveEntry,readDiaryDay,removeMeal,restoreEntries,sa
 import {getTypedSetting} from '../../../src/services/database/settings';
 
 export default function MealDetail(){
-  const {t,language}=useLanguage(),{theme}=useTheme();
+  const {t,language}=useLanguage();
   const params=useLocalSearchParams<{meal?:MealKey;day?:string}>();
   const meal=MEALS.includes(params.meal as MealKey)?params.meal!:'breakfast',day=params.day??localDay(new Date());
   const [entries,setEntries]=useState<DiaryEntry[]>([]);

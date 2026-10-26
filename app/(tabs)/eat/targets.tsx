@@ -2,7 +2,6 @@ import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {Button,Card,Chip,Field,Header,Screen,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {useTheme} from '../../../src/design/ThemeProvider';
 import {getCurrentTarget,addTarget,type Target} from '../../../src/services/database/targets';
 import {getProfile,type Profile} from '../../../src/services/database/profile';
 import {getTypedSetting,setTypedSetting} from '../../../src/services/database/settings';
@@ -10,7 +9,7 @@ import {checkSettingsTarget,estimateEditedProfile} from '../../../src/features/s
 import {MEALS,type MealKey} from '../../../src/features/eat/foodCatalog';
 
 export default function EatTargets(){
- const {t}=useLanguage(),{theme}=useTheme();
+ const {t}=useLanguage();
  const [current,setCurrent]=useState<Target|null>(null);
  const [profile,setProfile]=useState<Profile|null>(null);
  const [kcal,setKcal]=useState(''),[protein,setProtein]=useState('');
