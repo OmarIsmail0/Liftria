@@ -32,19 +32,26 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Water:** a simple glass counter on Today and Eat (glass size in Settings, 250 ml default). Not logged ≠ 0.
    - **Fiber, sugar and sodium** in the diary and trends. The packs have all three (Claude rebuilt them on 2026-10-26: `sugar` in g and `sodium` in mg per 100 g). Any of them, and protein/carbs/fat too, can be **null** when the source doesn't report it: show "—" and never count it as 0. Snapshot them into diary entries like the macros (additive migration).
 4. **PR O: `Phase 5 / Hiku photo (Beta)`** — owner decision 2026-10-26: build it now, labeled **Beta**; the owner tests it whenever they can.
-   - **Pick a photo** from the gallery with `expo-image-picker` (installed). The camera permission stays off for now (`cameraPermission: false`); Claude raises "take a photo" with the owner separately.
+   - **Take a photo or pick one** with `expo-image-picker` (installed). The camera is approved (owner, 2026-10-26): Claude already enabled the permission and its English/Arabic prompt texts for Android and iPhone. Ask for camera access only when the user taps "Take a photo"; if they decline, explain once and offer the gallery.
    - **Before sending:** downscale with `expo-image-manipulator` (installed) to a 1024 px long edge, JPEG quality 0.7, which also strips EXIF/location. Show the exact image that will be sent, plus the optional text note, before the user taps Send.
    - **Request:** the same client and rules as text (selected model, `effort: 'low'`, `max_tokens: 8000`, JSON schema, 45 s timeout, cost recorded in `hiku_requests` with `kind: 'photo'`). Send the image as a base64 `image` content block before the text block.
    - **Review:** the same HK-4 review screen. Every item is an estimate the user checks and edits before Save; Egypt-pack matches still override the model's numbers. A "Beta" chip on the photo button and on the review screen, with one line: "Photo estimates are new. Check every item before saving."
    - **Privacy:** no photo is kept after the request unless Settings → Hiku → "Keep photos" is on (off by default). Add it to Delete all and the backup.
    - Test: the resize/EXIF step (mock the manipulator), the request body shape (image block first, no `thinking`/`temperature`), and that nothing saves without the review.
    - Screenshots: a `dev/demo-hiku-photo?auto=1` route using a bundled sample image and pack values, with Save disabled and no API call.
-5. **PR R: `Phase 5 / Release readiness`**
+5. **PR S: `Phase 5 / iPhone`** (owner, 2026-10-26: "don't forget about iPhone")
+   - The app must run on iPhone from the same code. Claude added the iPhone config (bundle id `com.liftria.app`, permission texts in English and Arabic, right to left from the first launch) and a CI job that builds it for the iPhone simulator (`ios-build.yml`; label a PR `ios` to run it).
+   - **Health:** Health Connect is Android-only. On iPhone, every Health Connect screen and call must be behind `Platform.OS === 'android'`; on iPhone show an honest "Apple Health support is coming" state, never fake data. Apple Health (HealthKit) is a separate later PR: Claude picks the library and asks the owner.
+   - Check every Android-only call (Health Connect, the Android notification channel, back-button handling) and every screen in the iPhone layout: safe areas (notch and home bar), the keyboard on Field screens, and swipe-back on stack screens.
+   - Rest notifications, Hiku, backup/restore (share sheet and document picker) and the camera must work on iPhone too.
+   - Screenshots: Claude adds an iPhone simulator screenshot pass once the build is green.
+   - **Owner:** an Apple Developer account (US$99/year) is needed to install on a real iPhone or ship on the App Store; the simulator build needs nothing.
+6. **PR R: `Phase 5 / Release readiness`**
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), and screenshot routes for the store images.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - Remove or hide every `dev/*` route in release builds, except what the emulator check needs (Claude will gate those behind a build flag).
-   - Owner: signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
+   - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release. App Store descriptions (English and Arabic) too, for iPhone.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
