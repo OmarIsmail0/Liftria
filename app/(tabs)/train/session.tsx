@@ -33,7 +33,7 @@ export default function SessionDetail(){
    setData(result.value);setTitle(result.value.session.title);setNotes(result.value.session.notes??'');
    setDraft(result.value.exercises.flatMap(e=>e.sets.map(s=>({
     id:s.id,sessionExerciseId:s.sessionExerciseId,position:s.position,kind:s.kind,side:s.side,
-    weight:s.weight,reps:s.reps,
+    weight:s.weight,reps:s.reps,rpe:s.rpe??null,rir:s.rir??null,
    }))));
   }else setError(t('sessionDetail.loadError'));
   const latest=await readRecords();
@@ -87,6 +87,8 @@ export default function SessionDetail(){
    </Typography>}
   </Card>
   {data.exercises.map(e=><Card key={e.id} title={e.name}>
+   {e.note&&<Typography tone="secondary" size="small">{t('gymParity.notesHistory',{note:e.note})}</Typography>}
+   {e.supersetGroup&&<Typography tone="secondary" size="small">{t('gymParity.superset')}</Typography>}
    {editing?draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{
     const i=draft.indexOf(s);
     return <View key={s.id??e.id+':'+i} style={{gap:8,paddingBottom:12}}>
@@ -95,6 +97,8 @@ export default function SessionDetail(){
        step={fromKg(workoutWeightStep(e.type,unit,smallPlates),unit)}
        onChange={v=>change(i,{weight:toKg(v,unit)})}/>
      <GymStepper label={t('sessionDetail.reps')} value={s.reps} onChange={v=>change(i,{reps:v})}/>
+     {(s.rpe!=null||s.rir!=null)&&<Typography tone="secondary" size="small">
+       {s.rpe!=null?'RPE '+s.rpe:'RIR '+s.rir}</Typography>}
      <Button label={t('sessionDetail.removeSet')} variant="secondary" onPress={()=>setDraft(rows=>rows.filter((_,n)=>n!==i))}/>
     </View>;
    }):e.sets.map(s=>{
@@ -106,7 +110,8 @@ export default function SessionDetail(){
       (r.bestEstimatedOneRepMaxSessionId===id&&r.bestEstimatedOneRepMax!==null&&
         estimatedOneRepMax(e.type,s)===r.bestEstimatedOneRepMax));
     return <ListRow key={s.id} title={s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}
-      detail={displayWeight(s.weight,e.type,unit)+' × '+s.reps+(s.side?' · '+s.side:'')}
+      detail={displayWeight(s.weight,e.type,unit)+' × '+s.reps+(s.side?' · '+s.side:'')+
+       (s.rpe!=null?' · RPE '+s.rpe:'')+(s.rir!=null?' · RIR '+s.rir:'')}
       suffix={pr?<Typography bold size="small" tone="secondary">{t('sessionDetail.record')}</Typography>:undefined}/>;
    })}
    {editing&&<Button label={t('sessionDetail.addSet')} variant="secondary" onPress={()=>{
