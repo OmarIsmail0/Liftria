@@ -20,7 +20,8 @@ export default function TabsLayout() {
     }} tabBar={({ state, navigation }) => {
       const active = activeCapsuleTab(state.routes[state.index]?.name);
       if (pathname.includes('/train/active') || pathname.includes('/train/preview') ||
-        pathname.includes('/train/summary')) return null;
+        pathname.includes('/train/summary') || pathname.includes('/hiku/describe') ||
+        pathname.includes('/hiku/review')) return null;
       return <View><WorkoutMiniBar/><CapsuleNav active={active} onSelect={tab => {
         const route = state.routes.find(item => item.name === tab);
         if (!route) return;

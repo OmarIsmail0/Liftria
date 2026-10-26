@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import * as Network from 'expo-network';
 import { View } from 'react-native';
-import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Toggle, Typography } from '../../src/design/primitives';
+import { Button, Card, Chip, Field, Header, ListRow, OptionRows, Screen, Sheet, Toggle, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { deleteKey, getKey, isKeyWellFormed, keyState, saveKey, type KeyState } from '../../src/services/secure-storage';
 import { getTypedSetting, setTypedSetting } from '../../src/services/database/settings';
 import { testAnthropicKey } from '../../src/features/settings/keyTest';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
+import {DEFAULT_HIKU_MODEL,HIKU_MODELS,type HikuModelId} from '../../src/features/hiku/models';
 
 type PrivacyFlags = { today: boolean; training: boolean; photos: boolean };
 const initialFlags: PrivacyFlags = { today: false, training: false, photos: false };
 
 export default function HikuKeySettings() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const [model,setModel]=useState<HikuModelId>(DEFAULT_HIKU_MODEL);
   const [state, setState] = useState<KeyState>({ status: 'missing' });
   const [flags, setFlags] = useState<PrivacyFlags>(initialFlags);
   const [entry, setEntry] = useState('');
@@ -27,10 +29,11 @@ export default function HikuKeySettings() {
     let mounted = true;
     void Promise.all([
       keyState(), getTypedSetting('hiku.shareToday'), getTypedSetting('hiku.shareTraining'),
-      getTypedSetting('hiku.keepPhotos'),
-    ]).then(([key, today, training, photos]) => {
+      getTypedSetting('hiku.keepPhotos'),getTypedSetting('hiku.model'),
+    ]).then(([key, today, training, photos, chosen]) => {
       if (!mounted) return;
       setState(key);
+      if(chosen.ok)setModel(chosen.value);
       setFlags({ today: today.ok ? today.value : false,
         training: training.ok ? training.value : false,
         photos: photos.ok ? photos.value : false });
@@ -63,11 +66,12 @@ export default function HikuKeySettings() {
       if (!key) { setState({ status: 'missing' }); setMessage(t('hikuSettings.keyRequired')); return; }
       const net = await Network.getNetworkStateAsync();
       const offline = net.isConnected === false || net.isInternetReachable === false;
-      const outcome = await testAnthropicKey(key, offline);
+      const outcome = await testAnthropicKey(key, offline, fetch, model);
       setTestWorks(outcome === 'works');
       setMessage(outcome === 'works' ? t('hikuSettings.testWorks') :
         outcome === 'unauthorized' ? t('hikuSettings.testUnauthorized') :
-        outcome === 'offline' ? t('hikuSettings.testOffline') : t('hikuSettings.testUnavailable'));
+        outcome === 'offline' ? t('hikuSettings.testOffline') :
+        outcome === 'model-unavailable' ? t('hikuK.modelUnavailable') : t('hikuSettings.testUnavailable'));
     } catch { setMessage(t('hikuSettings.testError')); }
     finally { setBusy(false); setTesting(false); }
   }
@@ -126,6 +130,17 @@ export default function HikuKeySettings() {
       {state.status === 'storage-error' && <Typography tone="secondary">{t('hikuSettings.storageUnavailable')}</Typography>}
       {message && <View accessibilityRole="alert"><Typography tone="secondary" size="small">ⓘ {message}</Typography></View>}
     </Card>
+    <Card title={t('hikuK.modelSettings')}>
+      <OptionRows label={t('hikuK.modelSettings')} value={model}
+       options={HIKU_MODELS.map(row=>({
+        value:row.id,label:language==='ar'?row.nameAr:row.nameEn,
+        description:t(row.id==='claude-haiku-5-5'?'hikuK.modelFastDetail':'hikuK.modelAccurateDetail'),
+       }))}
+       onChange={next=>{void setTypedSetting('hiku.model',next).then(result=>{
+         if(result.ok){setModel(next);setTestWorks(false);setMessage(t('hikuK.modelSaved'));}
+         else setMessage(t('hikuSettings.preferenceError'));
+       });}}/>
+    </Card>
     <Card title={t('hikuSettings.privacy')}>
       <Typography tone="secondary" size="small">{t('hikuSettings.privacyIntro')}</Typography>
       <Toggle label={t('hikuSettings.includeToday')} detail={t('hikuSettings.includeTodayDetail')}
@@ -136,8 +151,10 @@ export default function HikuKeySettings() {
         value={flags.photos} onChange={v => void setPrivacy('photos', v)} />
     </Card>
     <Card title={t('hikuSettings.usage')}>
-      <ListRow title={t('hikuSettings.usageRow')} detail={t('hikuSettings.usageComing')} />
-      <Typography tone="secondary" size="small">{t('hikuSettings.modelNote')}</Typography>
+      <ListRow title={t('hikuSettings.usageRow')} onPress={()=>router.push('/(tabs)/hiku/usage')}/>
+      <Typography tone="secondary" size="small">{t('hikuK.selectedModel',{
+        model:language==='ar'?HIKU_MODELS.find(m=>m.id===model)?.nameAr??'':HIKU_MODELS.find(m=>m.id===model)?.nameEn??''
+      })}</Typography>
     </Card>
     <Sheet visible={deletionOpen} title={t('hikuSettings.deleteTitle')}
       description={t('hikuSettings.deleteDescription')}
