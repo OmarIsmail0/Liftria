@@ -25,6 +25,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
+  ios: {
+    bundleIdentifier: 'com.liftria.app',
+    supportsTablet: false,
+  },
   android: {
     package: 'com.liftria.app',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
@@ -45,7 +49,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-notifications',
     'expo-splash-screen',
-    ['expo-image-picker', { cameraPermission: false, microphonePermission: false }],
+    // Camera (owner, 2026-10-26): only when the user taps "Take a photo" for a Hiku estimate.
+    // The plugin also writes the iPhone permission texts (NSCameraUsageDescription etc.).
+    ['expo-image-picker', {
+      cameraPermission: 'Liftria uses the camera only when you take a meal photo for a Hiku estimate.',
+      photosPermission: 'Liftria opens your photos only when you choose a meal photo for a Hiku estimate.',
+      microphonePermission: false,
+    }],
+    // iPhone: right to left from the first launch on an Arabic phone (Android uses the plugin below).
+    ['expo-localization', { supportsRTL: true }],
     ['expo-sqlite', { useSQLCipher: false }],
     'expo-secure-store',
     // RTL from the first launch on an Arabic phone (otherwise only after a restart).
