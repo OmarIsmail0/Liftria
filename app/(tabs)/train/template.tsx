@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { equipmentLabel } from '../../../src/i18n/equipment';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
@@ -7,10 +8,11 @@ import { useTheme } from '../../../src/design/ThemeProvider';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
 import type { Exercise } from '../../../src/services/database/gymTypes';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 
 export default function TemplateEditor() {
   const {theme}=useTheme();
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
   const {id,exerciseId}=useLocalSearchParams<{id?:string;exerciseId?:string}>();
   const [name,setName]=useState('');
   const [rest,setRest]=useState(120);
@@ -87,7 +89,10 @@ export default function TemplateEditor() {
         const item=library.find(x=>x.id===e.exerciseId);
         return <View key={i} style={{gap:theme.space[2],paddingVertical:theme.space[3],
           borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
-          <Typography bold>{item?.name??e.exerciseId}</Typography>
+          <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
+            {item && <ExerciseThumbnail exercise={item} />}
+            <Typography bold>{item?.name??e.exerciseId}</Typography>
+          </View>
           <Stepper label={t('template.workingSets')} value={e.targetSets} min={1} max={20} step={1}
             onChange={v=>update(i,{targetSets:v})}/>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
@@ -117,8 +122,8 @@ export default function TemplateEditor() {
     <Card title={t('template.addExercise')}>
       <Field label={t('template.searchLibrary')} value={query} onChangeText={setQuery} placeholder={t('template.searchExample')}/>
       {filtered.filter(e=>!exercises.some(row=>row.exerciseId===e.id)).map(e=>
-        <ListRow key={e.id} title={e.name} detail={e.equipment??t('template.bodyweight')}
-          onPress={()=>add(e)}/>)}
+        <ListRow key={e.id} title={e.name} detail={equipmentLabel(language,e.equipment,t('template.bodyweight'))}
+          leading={<ExerciseThumbnail exercise={e} />} onPress={()=>add(e)}/>)}
       <Button label={t('template.browseMap')} variant="secondary"
         onPress={()=>router.push('/(tabs)/train/muscles')}/>
     </Card>

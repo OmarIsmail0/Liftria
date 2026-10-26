@@ -7,8 +7,10 @@ import { readImportContext } from '../../src/features/import/importRepository';
 import { canImportPlan, createImportPlan, resolveImportMappings, keepAllAsOwn, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
 import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
+import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
-import { formatNumber } from '../../src/i18n';
+import { formatNumber, bidiIsolate } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 const sourceName=(s:string)=>({hevy:'Hevy',strong:'Strong',fitnotes:'FitNotes',csv:'CSV'} as Record<string,string>)[s]??s;
 export default function ImportPreview(){
@@ -32,6 +34,8 @@ export default function ImportPreview(){
   resolveImportMappings(draft.parsed,{...context,remembered:{}},{}) : [];
  const unmatchedNames=new Set(suggestions.filter(x=>x.status!=='exact').map(x=>x.name));
  const mappings=plan?.mappings.filter(m=>unmatchedNames.has(m.name)||decisions[m.name]==='custom')??[];
+ const exerciseCatalog=[...(context?.exercises??[]),...bundledExercises()];
+ const imageForId=(id:string|null)=>exerciseCatalog.find(e=>e.id===id);
  const start=()=>{
   if(!plan||!canImportPlan(plan))return;
   setPendingImport(plan);router.push('/import/importing');
@@ -61,8 +65,8 @@ export default function ImportPreview(){
   </Card>:<>
    <Card rim="train" title={t("im2.summary",{workouts:plan.workouts.length,sets:plan.setCount})}>
     <Typography tone="secondary" size="small">{t("im2.fromSource",{source:sourceName(draft.source)})}</Typography>
-    <Typography tone="secondary">{new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')+
-     ' – '+new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}</Typography>
+    <Typography tone="secondary">{bidiIsolate(language,new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))+
+     ' – '+bidiIsolate(language,new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}</Typography>
     <ListRow title={t("im2.warmups")} detail={formatNumber(language,plan.warmupCount)}/>
     {!plan.parsed.warmupMarked&&<Typography tone="secondary" size="small">{t("im2.warmupsNotMarked")}</Typography>}
     <ListRow title={t("im2.skipped")} detail={formatNumber(language,plan.skippedDays.length)}/>
@@ -90,7 +94,11 @@ export default function ImportPreview(){
      onPress={()=>setDecisions({})}/>}
     {mappings.length===0&&<Typography tone="secondary" size="small">{t("im2.allMatched")}</Typography>}
     {mappings.map(m=><View key={m.name} style={{gap:theme.space[2],paddingVertical:theme.space[2]}}>
-     <Typography bold>{t("im2.matchCount",{name:m.name,count:m.count})}</Typography>
+     <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
+      {imageForId(m.resolvedId??m.suggestedId) &&
+        <ExerciseThumbnail exercise={imageForId(m.resolvedId??m.suggestedId)!}/>}
+      <Typography bold>{t("im2.matchCount",{name:m.name,count:m.count})}</Typography>
+     </View>
      <Typography tone="secondary">{m.resolvedId?t("im2.currentLibrary"):t("im2.currentOwn")}</Typography>
      {suggestions.find(s=>s.name===m.name)?.status==='exact'&&
       <Button label={t("im2.useExact")} variant="secondary"
@@ -110,7 +118,9 @@ export default function ImportPreview(){
     {plan.missingUnit?<Typography tone="secondary">{t("im2.unitFirst")}</Typography>:
      plan.changes.length===0?<Typography tone="secondary">{t("im2.noRecords")}</Typography>:
      plan.changes.slice(0,6).map((change,i)=><ListRow key={i} title={change.exerciseName}
-       detail={change.before+' → '+change.after}/>)}
+       leading={exerciseCatalog.find(e=>e.name===change.exerciseName)?
+         <ExerciseThumbnail exercise={exerciseCatalog.find(e=>e.name===change.exerciseName)!}/>:undefined}
+       detail={bidiIsolate(language,change.before)+' → '+bidiIsolate(language,change.after)}/>)}
     <Typography tone="secondary" size="small">{t("im2.rmEstimate")}</Typography>
    </Card>
    {error&&<Typography>{error}</Typography>}

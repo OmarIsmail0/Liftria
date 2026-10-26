@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
+import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, OptionRows, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
@@ -154,11 +154,14 @@ export default function ProfileAndGoals() {
       onBack={() => backOrReplace(router,'/settings')} />
     <Card title={t('profileSettings.profile')}>
       <Field label={t('profileSettings.name')} value={form.name} onChangeText={v=>patch('name',v)} />
-      <Typography tone="secondary" size="small">{t('profileSettings.sexNote')}</Typography>
-      <SegmentedControl label={t('profileSettings.sex')} value={form.sexForFormula ?? 'unset'}
-        onChange={v=>patch('sexForFormula',v==='unset'?null:v)}
-        options={[{value:'unset',label:t('profileSettings.notSet')},{value:'male',label:t('profileSettings.male')},{value:'female',label:t('profileSettings.female')},
-          {value:'unspecified',label:t('profileSettings.unspecified')}]} />
+      <SegmentedControl label={t('profileSettings.sex')}
+        value={form.sexForFormula === 'unspecified' ? null : form.sexForFormula}
+        onChange={v=>patch('sexForFormula',v)}
+        options={[{value:'male',label:t('profileSettings.male')},
+          {value:'female',label:t('profileSettings.female')}] as const} />
+      <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
+      {form.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
+        onPress={()=>patch('sexForFormula',null)}/>}
       <Field label={t('profileSettings.birthYear')} value={form.birthYear} keyboardType="number-pad"
         onChangeText={v=>patch('birthYear',v)} placeholder={t('profileSettings.yearExample')} />
       {unit.height === 'cm' ? <Field label={t('profileSettings.heightCm')} value={form.heightCm} keyboardType="decimal-pad"
@@ -172,14 +175,16 @@ export default function ProfileAndGoals() {
       <Typography tone="secondary" size="small">{t('profileSettings.metricNote')}</Typography>
     </Card>
     <Card title={t('profileSettings.activityGoal')}>
-      <SegmentedControl label={t('profileSettings.activity')} value={form.activity ?? 'unset'}
-        onChange={v=>patch('activity',v==='unset'?null:v)}
-        options={[{value:'unset',label:t('profileSettings.notSet')},{value:'sitting',label:t('profileSettings.sitting')},
-          {value:'some',label:t('profileSettings.some')},{value:'active',label:t('profileSettings.active')}]} />
-      <SegmentedControl label={t('profileSettings.goal')} value={form.goal ?? 'unset'}
-        onChange={v=>patch('goal',v==='unset'?null:v)}
-        options={[{value:'unset',label:t('profileSettings.notSet')},{value:'lose',label:t('profileSettings.lose')},
-          {value:'maintain',label:t('profileSettings.maintain')},{value:'build',label:t('profileSettings.build')}]} />
+      <OptionRows label={t('profileSettings.activity')} value={form.activity}
+        onChange={v=>patch('activity',v)}
+        options={[{value:'sitting',label:t('profileSettings.sitting'),description:t('polish.activitySitting')},
+          {value:'some',label:t('profileSettings.some'),description:t('polish.activitySome')},
+          {value:'active',label:t('profileSettings.active'),description:t('polish.activityActive')}] as const} />
+      <OptionRows label={t('profileSettings.goal')} value={form.goal}
+        onChange={v=>patch('goal',v)}
+        options={[{value:'lose',label:t('profileSettings.lose'),description:t('polish.goalLose')},
+          {value:'maintain',label:t('profileSettings.maintain'),description:t('polish.goalMaintain')},
+          {value:'build',label:t('profileSettings.build'),description:t('polish.goalBuild')}] as const} />
       <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${target.kcal} kcal · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
         onPress={()=>{setTargetEditor(true);setMessage(null)}} />
       <Typography tone="secondary" size="small">{t('profileSettings.editNote')}</Typography>

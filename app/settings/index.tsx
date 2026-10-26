@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { I18nManager, Pressable, View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
-import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
+import { useLanguage, systemLanguage } from '../../src/i18n/LanguageProvider';
+import { resolveLanguage, type LanguagePreference } from '../../src/i18n';
+import { Button, Card, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
 import { localStorageCounts } from '../../src/services/database';
 import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
 
-/** ST-1: grouped local Settings, with Phase 3/4 features explicitly labeled Future. */
+/** Local-first grouped settings, with appearance controls available immediately. */
 export default function SettingsHome() {
-  const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { theme, preferences, setMode } = useTheme();
+  const { t, preference, setLanguage } = useLanguage();
+  const [reopen, setReopen] = useState(false);
+  const [languageError, setLanguageError] = useState(false);
   const taps = useRef(initialVersionTapState);
   const [databaseSize, setDatabaseSize] = useState<string | null>(null);
   useEffect(() => {
@@ -23,8 +26,27 @@ export default function SettingsHome() {
     });
     return () => { alive = false; };
   }, []);
+  async function changeLanguage(next: LanguagePreference) {
+    const ok = await setLanguage(next);
+    setLanguageError(!ok);
+    if (ok && (resolveLanguage(next, systemLanguage()) === 'ar') !== I18nManager.isRTL) setReopen(true);
+  }
   return <Screen>
     <Header title={t('settings.home.title')} onBack={() => backOrReplace(router, '/(tabs)/today')} />
+    <Card title={t('polish.appearance')}>
+      <Typography tone="secondary" size="small">{t('appearance.theme')}</Typography>
+      <SegmentedControl label={t('appearance.theme')} value={preferences.mode}
+        options={[{ value: 'system', label: t('common.system') },
+          { value: 'light', label: t('appearance.light') },
+          { value: 'dark', label: t('appearance.dark') }] as const} onChange={setMode} />
+      <Typography tone="secondary" size="small">{t('language.title')}</Typography>
+      <SegmentedControl label={t('language.title')} value={preference}
+        options={[{ value: 'system', label: t('common.system') },
+          { value: 'ar', label: t('common.arabic') },
+          { value: 'en', label: t('common.english') }] as const}
+        onChange={v => void changeLanguage(v)} />
+      {languageError && <Typography tone="secondary">{t('language.saveError')}</Typography>}
+    </Card>
     <Card title={t('settings.home.plan')}>
       <ListRow title={t('settings.home.profile')} detail={t('settings.home.profileDetail')}
         onPress={() => router.push('/settings/profile')} />
@@ -57,6 +79,10 @@ export default function SettingsHome() {
         <Typography tone="secondary" size="small">{t('settings.home.version', { version: releaseVersion.name })}</Typography>
       </Pressable>
     </Card>
+    <Sheet visible={reopen} title={t('language.restartTitle')}
+      description={t('language.restartDescription')} onClose={() => setReopen(false)}>
+      <Button label={t('common.ok')} fullWidth onPress={() => setReopen(false)} />
+    </Sheet>
     <View style={{ alignItems: 'center' }}>
       <Typography tone="secondary" size="small">{t('settings.home.storage', { size: databaseSize ?? t('settings.home.calculating') })}</Typography>
     </View>

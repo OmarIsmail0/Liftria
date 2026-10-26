@@ -2,9 +2,11 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 import { Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { equipmentLabel } from '../../../src/i18n/equipment';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { MUSCLES, type Exercise, type Muscle } from '../../../src/services/database/gymTypes';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
@@ -44,7 +46,8 @@ export default function MuscleBrowser(){
         {!loading&&!error&&rows.length===0&&<EmptyState title={t('muscle.browserEmpty')}
           description={t('muscle.browserEmptyDescription')}/>}
         {rows.slice(0,50).map(e=><ListRow key={e.id} title={e.name}
-          detail={(e.equipment??t('muscle.notSpecified'))+' · '+(e.primaryMuscles.includes(selected)?t('muscle.primary'):t('muscle.secondary'))}
+          leading={<ExerciseThumbnail exercise={e} />}
+          detail={equipmentLabel(language,e.equipment,t('muscle.notSpecified'))+' · '+(e.primaryMuscles.includes(selected)?t('muscle.primary'):t('muscle.secondary'))}
           onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>)}
         {rows.length>50&&<Typography tone="secondary">{t('muscle.browserMore', { count:rows.length })}</Typography>}
       </Card>

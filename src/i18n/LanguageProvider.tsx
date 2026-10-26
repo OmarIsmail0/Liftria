@@ -8,8 +8,12 @@ import { resolveLanguage, translate, type AppLanguage, type LanguagePreference, 
 export function systemLanguage(): AppLanguage {
   return getLocales()[0]?.languageCode?.toLowerCase() === 'ar' ? 'ar' : 'en';
 }
+/**
+ * Native RTL follows the device locale from the first launch (expo-localization supportsRTL),
+ * so English on an Arabic phone must also disallow RTL, not only stop forcing it.
+ */
 export function applyLayoutDirection(language: AppLanguage): void {
-  I18nManager.allowRTL(true);
+  I18nManager.allowRTL(language === 'ar');
   I18nManager.forceRTL(language === 'ar');
 }
 

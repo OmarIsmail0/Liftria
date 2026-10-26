@@ -17,6 +17,12 @@ import { RestOrb } from '../../../src/features/train/RestOrb';
 import { displayWeight, fromKg, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getSetting, setSetting } from '../../../src/services/database';
 import { getTypedSetting } from '../../../src/services/database/settings';
+import { getExercise } from '../../../src/services/database/exerciseLibrary';
+import { MUSCLES, type Exercise } from '../../../src/services/database/gymTypes';
+import { summarizeActiveMuscles } from '../../../src/features/train/activeMuscleLoad';
+import { BodyMap } from '../../../src/features/train/BodyMap';
+import { muscleLabel } from '../../../src/i18n/muscles';
+import { formatNumber } from '../../../src/i18n';
 
 function KeepScreenOn() { useKeepAwake('liftria-active-workout'); return null; }
 
@@ -34,7 +40,7 @@ function slotsFor(exercise:ActiveExercise,sets:ActiveSet[]):Slot[] {
 export default function ActiveWorkoutScreen() {
   const {id}=useLocalSearchParams<{id?:string}>();
   const {theme}=useTheme();
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
   const insets=useSafeAreaInsets();
   const [view,setView]=useState<ActiveWorkout|null>(null);
   const [selected,setSelected]=useState(0);
@@ -61,6 +67,8 @@ export default function ActiveWorkoutScreen() {
   const [exerciseNote,setExerciseNote]=useState('');
   const [menuOpen,setMenuOpen]=useState(false);
   const [noteOpen,setNoteOpen]=useState(false);
+  const [muscleOpen,setMuscleOpen]=useState(false);
+  const [muscleLookup,setMuscleLookup]=useState<Record<string,Exercise>>({});
   const previousRestMs=useRef<number|null>(null);
   const currentId=id??'';
   const refresh=useCallback(async()=>{
@@ -78,6 +86,20 @@ export default function ActiveWorkoutScreen() {
     return()=>setFocused(false);
   },[refresh]));
   useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
+  const exerciseIds=(view?.exercises??[]).map(e=>e.exerciseId).join('|');
+  useEffect(()=>{
+    let live=true;
+    const ids=exerciseIds.split('|').filter(Boolean);
+    void Promise.all(ids.map(id=>getExercise(id))).then(results=>{
+      if(!live)return;
+      setMuscleLookup(Object.fromEntries(ids.flatMap((id,i)=>{
+        const found=results[i];
+        return found?.ok && found.value ? [[id,found.value]] : [];
+      })));
+    });
+    return()=>{live=false;};
+  },[exerciseIds]);
+  const muscleSummary=useMemo(()=>view?summarizeActiveMuscles(view,muscleLookup):null,[view,muscleLookup]);
   const exercise=view?.exercises[selected]??null;
   const slots=useMemo(()=>exercise&&view?slotsFor(exercise,view.sets):[],[exercise,view]);
   const current=slots.find(slot=>!slot.logged)??null;
@@ -191,9 +213,17 @@ export default function ActiveWorkoutScreen() {
     {screenOn&&focused&&<KeepScreenOn/>}
     <View style={{paddingHorizontal:theme.layout.gutter,paddingTop:theme.space[2],gap:theme.space[2]}}>
       <Header title={view.title} subtitle={t('active.elapsed',{time:elapsedLabel(view.startedAt,now),count:stats?.sets??0})}
-        onBack={()=>router.replace('/(tabs)/train')} right={<Button label={t('active.finish')} variant="secondary"
-          onPress={()=>stats?.pending?setFinishVisible(true):
-            router.push({pathname:'/(tabs)/train/summary',params:{id:view.id}})}/>}/>
+        onBack={()=>router.replace('/(tabs)/train')} right={<View style={{flexDirection:'row',gap:theme.space[2],alignItems:'center'}}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('polish.musclesSoFar')}
+            onPress={()=>setMuscleOpen(true)}
+            style={{minWidth:theme.size.touch.min,minHeight:theme.size.touch.min,
+              alignItems:'center',justifyContent:'center'}}>
+            <BodyMap mini icon primary={muscleSummary?.primary??[]} secondary={muscleSummary?.secondary??[]} />
+          </Pressable>
+          <Button label={t('active.finish')} variant="secondary"
+            onPress={()=>stats?.pending?setFinishVisible(true):
+              router.push({pathname:'/(tabs)/train/summary',params:{id:view.id}})}/>
+        </View>}/>
       <View style={{height:theme.space[1],backgroundColor:theme.color.track,
         borderRadius:theme.radius.pill,overflow:'hidden'}}>
         <View style={{height:'100%',width:(stats&&view.exercises.reduce((n,e)=>n+e.targetSets,0)>0?
@@ -326,6 +356,14 @@ export default function ActiveWorkoutScreen() {
         onPress={()=>{if(view&&exercise)void reorderActiveExercise(view.id,exercise.id,1)
           .then(()=>{setSelected(Math.min(view.exercises.length-1,selected+1));void refresh();setMenuOpen(false);});}}/>
       <Button label={t('active.close')} fullWidth onPress={()=>setMenuOpen(false)}/>
+    </Sheet>
+    <Sheet visible={muscleOpen} title={t('polish.musclesSoFar')}
+      description={t('polish.effectiveHint')} onClose={()=>setMuscleOpen(false)}>
+      <BodyMap primary={muscleSummary?.primary??[]} secondary={muscleSummary?.secondary??[]}/>
+      {(muscleSummary?.completedSets??0)===0?<ListRow title={t('polish.noSetsYet')} detail="—"/>:
+        MUSCLES.filter(m=>(muscleSummary?.credit[m]??0)>0).map(m=>
+          <ListRow key={m} title={muscleLabel(language,m)}
+            detail={t('polish.effectiveSets',{count:formatNumber(language,muscleSummary?.credit[m]??0)})}/>)}
     </Sheet>
     <Sheet visible={noteOpen} title={t('active.noteTitle')} onClose={()=>setNoteOpen(false)}>
       <Field label={t('active.notesLabel')} value={exerciseNote} onChangeText={setExerciseNote} multiline/>

@@ -34,6 +34,7 @@ export default function AboutHelp() {
     <Card title={tr('p4.about.15')}>
       <Typography>{tr('p4.about.22')}</Typography>
       <Typography>{tr('p4.about.23')}</Typography>
+      <Typography>{tr('polish.bodyMapCredit')}</Typography>
       <Typography>{tr('p4.about.24')}</Typography>
       <Typography tone="secondary" size="small">{tr('p4.about.25')}</Typography>
     </Card>

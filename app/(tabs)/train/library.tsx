@@ -1,9 +1,10 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { equipmentLabel } from '../../../src/i18n/equipment';
 import type { TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
-import { BodyMap } from '../../../src/features/train/BodyMap';
+import { ActivityIndicator, Pressable, ScrollView, TextInput } from 'react-native';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 import { Button, Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { MUSCLE_GROUPS, type Exercise } from '../../../src/services/database/gymTypes';
@@ -13,9 +14,11 @@ import { recentExerciseIds } from '../../../src/services/database/gymRepositorie
 const groups=['All',...Object.keys(MUSCLE_GROUPS)] as const;
 export default function ExerciseLibrary() {
   const {theme}=useTheme();
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
   const groupLabel=(name:string)=>name==='All'?t('library.all'):name==='Chest'?t('library.chest'):
-    name==='Back'?t('library.back'):name==='Arms'?t('library.arms'):t('library.legs');
+    name==='Back'?t('library.back'):name==='Arms'?t('library.arms'):
+    name==='Shoulders'?t('polish.groupShoulders'):name==='Core'?t('polish.groupCore'):
+    name==='Neck'?t('polish.groupNeck'):t('library.legs');
   const params=useLocalSearchParams<{query?:string}>();
   const [query,setQuery]=useState(params.query??'');
   const [group,setGroup]=useState<string>('All');
@@ -51,9 +54,8 @@ export default function ExerciseLibrary() {
   const recentRows=useMemo(()=>recent.map(id=>all.find(e=>e.id===id))
     .filter((e):e is Exercise=>Boolean(e)),[all,recent]);
   const row=(e:Exercise)=><ListRow key={e.id} title={e.name}
-    detail={(e.equipment??t('library.equipmentUnknown'))+' · '+e.primaryMuscles.map(m=>t(`muscle.${m}` as TranslationKey)).join(', ')+(e.source==='custom'?' · '+t('library.mine'):'')}
-    suffix={<View style={{width:42,height:76,justifyContent:'center'}}>
-      <BodyMap mini primary={e.primaryMuscles} secondary={e.secondaryMuscles}/></View>}
+    detail={equipmentLabel(language,e.equipment,t('library.equipmentUnknown'))+' · '+e.primaryMuscles.map(m=>t(`muscle.${m}` as TranslationKey)).join(', ')+(e.source==='custom'?' · '+t('library.mine'):'')}
+    leading={<ExerciseThumbnail exercise={e} />}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>;
   return <Screen embedded scroll={false}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.space[3]}}>

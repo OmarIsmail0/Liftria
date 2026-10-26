@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { directionalChevron } from '../../i18n/layout';
+import { chevronPointsLeft } from '../../i18n/layout';
+import { ChevronIcon } from './TabIcon';
 import { AmbientBackdrop, AuroraCardDecoration, cardOuterGlow } from './VisualEffects';
 import type { CardRim } from './contracts';
 
@@ -56,7 +57,8 @@ export function Header({ title, subtitle, onBack, right }: {
     {onBack && <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel={t('common.back')}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
         borderRadius: theme.radius.pill, borderWidth: theme.size.border.thin, borderColor: theme.controlOutline }}>
-      <Typography>{directionalChevron('back', isRTL)}</Typography>
+      <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
+        size={theme.space[5]} strokeWidth={theme.size.iconStroke} />
     </Pressable>}
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography size="title">{title}</Typography>
@@ -113,8 +115,8 @@ export function Banner({ title, message, variant = 'info' }: {
   </View>;
 }
 
-export function ListRow({ title, detail, onPress, suffix, accessibilityLabel }: {
-  title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; accessibilityLabel?: string;
+export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel }: {
+  title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; leading?: ReactNode; accessibilityLabel?: string;
 }) {
   const { theme } = useTheme();
   const { isRTL } = useLanguage();
@@ -122,10 +124,12 @@ export function ListRow({ title, detail, onPress, suffix, accessibilityLabel }: 
     accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? (detail ? `${title}. ${detail}` : title)}
     style={{ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
       gap: theme.space[3], borderBottomWidth: 1, borderColor: theme.color.border.subtle, paddingVertical: theme.space[2] }}>
+    {leading}
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography bold>{title}</Typography>{detail && <Typography tone="secondary" size="small">{detail}</Typography>}
     </View>
-    {suffix ?? (onPress ? <Typography tone="secondary">{directionalChevron('forward', isRTL)}</Typography> : null)}
+    {suffix ?? (onPress ? <ChevronIcon left={chevronPointsLeft('forward', isRTL)}
+      color={theme.color.text.secondary} size={theme.space[4]} strokeWidth={theme.size.iconStroke} /> : null)}
   </Pressable>;
 }
 

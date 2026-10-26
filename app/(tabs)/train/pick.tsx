@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { equipmentLabel } from '../../../src/i18n/equipment';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Button, Card, Field, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -6,9 +7,10 @@ import { ensureExercisePack, listExercises, searchExercises } from '../../../src
 import { appendExerciseToActiveSession } from '../../../src/services/database/gymRepositories';
 import { replaceActiveExercise } from '../../../src/features/train/workoutData';
 import type { Exercise } from '../../../src/services/database/gymTypes';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 
 export default function AddWorkoutExercise() {
- const {t}=useLanguage();
+ const {t,language}=useLanguage();
   const {id,replaceId}=useLocalSearchParams<{id:string;replaceId?:string}>();
   const [query,setQuery]=useState('');
   const [all,setAll]=useState<Exercise[]>([]);
@@ -39,7 +41,8 @@ export default function AddWorkoutExercise() {
     <Card title={t('pick.offlineLibrary')}>
       <Field label={t('pick.search')} value={query} onChangeText={setQuery}/>
       {matches.map(e=><ListRow key={e.id} title={e.name}
-        detail={e.equipment??t('pick.noEquipment')} onPress={()=>void add(e.id)}/>)}
+        leading={<ExerciseThumbnail exercise={e} />}
+        detail={equipmentLabel(language,e.equipment,t('pick.noEquipment'))} onPress={()=>void add(e.id)}/>)}
       {matches.length===0&&<Typography tone="secondary">{t('pick.noMatch')}</Typography>}
     </Card>
     {error&&<Typography>{error}</Typography>}

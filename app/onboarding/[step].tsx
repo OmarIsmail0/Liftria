@@ -6,7 +6,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { fontFamilyFor } from '../../src/design/fonts';
 import type { TranslationKey } from '../../src/i18n';
-import { Button, Card, Field, Header, Orb, Screen, Sheet, Typography } from '../../src/design/primitives';
+import { Button, Card, Field, Header, Orb, Screen, OptionRows, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
 import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep, skipOnboardingStep,
@@ -313,23 +313,27 @@ export default function OnboardingStepScreen() {
           <Field label={t('onboarding.age16100')} value={age} onChangeText={setAge} keyboardType="numeric" placeholder={t('onboarding.years')} error={errors.age} />
           <Field label={t('onboarding.heightCm')} value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" error={errors.heightCm} />
           <Field label={t('onboarding.weightKg')} value={draft.weightKg} onChangeText={text => patch('weightKg', text)} keyboardType="decimal-pad" placeholder="35–300" error={errors.weightKg} />
-          <ChoiceGroup label={t('onboarding.sexForFormula')} selected={draft.sexForFormula}
-            choices={[{ value: 'male', label: t('onboarding.male') }, { value: 'female', label: t('onboarding.female') },
-              { value: 'unspecified', label: t('onboarding.preferNotToSay') }]}
+          <ChoiceGroup label={t('onboarding.sexForFormula')}
+            selected={draft.sexForFormula === 'unspecified' ? null : draft.sexForFormula}
+            choices={[{ value: 'male', label: t('onboarding.male') }, { value: 'female', label: t('onboarding.female') }]}
             onChange={v => patch('sexForFormula', v)} />
-          <Typography tone="secondary" size="small">{t('onboarding.preferNotToSayUses')}</Typography>
+          <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
+          {draft.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
+            onPress={()=>patch('sexForFormula',null)}/>}
           <InlineError message={error} />
         </Card>
         : step === 'goal'
           ? <Card title={t('onboarding.yourPlan')}>
-            <ChoiceGroup label={t('onboarding.activityLevel')} selected={draft.activity}
-              choices={[{ value: 'sitting', label: t('onboarding.mostlySitting') },
-                { value: 'some', label: t('onboarding.onMyFeetSome') },
-                { value: 'active', label: t('onboarding.activeJobOrDailyTraining') }]}
+            <OptionRows label={t('onboarding.activityLevel')} value={draft.activity}
+              options={[{ value: 'sitting', label: t('onboarding.mostlySitting'), description: t('polish.activitySitting') },
+                { value: 'some', label: t('onboarding.onMyFeetSome'), description: t('polish.activitySome') },
+                { value: 'active', label: t('onboarding.activeJobOrDailyTraining'), description: t('polish.activityActive') }] as const}
               onChange={v => patch('activity', v)} />
-            <ChoiceGroup label={t('onboarding.goal')} selected={draft.goal}
-              choices={[{ value: 'lose', label: t('onboarding.lose') }, { value: 'maintain', label: t('onboarding.maintain') },
-                { value: 'build', label: t('onboarding.build') }]} onChange={v => patch('goal', v)} />
+            <OptionRows label={t('onboarding.goal')} value={draft.goal}
+              options={[{ value: 'lose', label: t('onboarding.lose'), description: t('polish.goalLose') },
+                { value: 'maintain', label: t('onboarding.maintain'), description: t('polish.goalMaintain') },
+                { value: 'build', label: t('onboarding.build'), description: t('polish.goalBuild') }] as const}
+              onChange={v => patch('goal', v)} />
           <InlineError message={error} />
           </Card>
           : step === 'target'
