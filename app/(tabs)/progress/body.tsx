@@ -86,7 +86,7 @@ export default function BodyTrends(){
     {value:'3m',label:t('polish.range3m')},{value:'1y',label:t('polish.range1y')}]}/>
   <Card rim="health" title={t('trend.weightTrend')}>
    <Typography tone="secondary" size="small">{t('trend.weightSource')}</Typography>
-   {demoCount>0&&<Typography tone="secondary" size="small">{t('trend.demoDataWarning',{count:demoCount})}</Typography>
+   {demoCount>0&&<Typography tone="secondary" size="small">{t('trend.demoDataWarning',{count:demoCount})}</Typography>}
    {result.latest?<Typography size="metric-m">{hidden?t('trend.hidden'):
     t('trend.kg',{weight:fmt(result.latest.trend)})}</Typography>:
     <Typography tone="secondary">{t('trend.weightEmpty')}</Typography>}
