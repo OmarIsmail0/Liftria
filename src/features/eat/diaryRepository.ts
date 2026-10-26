@@ -240,8 +240,9 @@ export async function saveMeal(name:string,day:string,meal:MealKey):Promise<DbRe
 }
 export async function logSavedMeal(saved:SavedMeal,meal:MealKey,day:string):Promise<DbResult<number>>{
   return dbOperation(async db=>{
-    const catalog=[...bundledFoods(),...((await readLocalFoods()).ok?
-      (await readLocalFoods() as {ok:true;value:Food[]}).value:[])];
+    const local=await readLocalFoods();
+    if(!local.ok)throw new Error('Local foods unavailable');
+    const catalog=[...bundledFoods(),...local.value];
     const entries=saved.items.map(item=>{
       const food=catalog.find(f=>f.id===item.foodId);
       if(!food)throw new Error('Food unavailable');

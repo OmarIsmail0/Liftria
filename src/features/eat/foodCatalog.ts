@@ -28,7 +28,7 @@ export function unpackFood(row:PackRow):Food {
 }
 let cache:Food[]|null=null;
 export function bundledFoods():Food[] {
-  if(!cache)cache=[...(egyptRows as PackRow[]),...(usdaRows as PackRow[])].map(unpackFood);
+  if(!cache)cache=[...(egyptRows as unknown as PackRow[]),...(usdaRows as unknown as PackRow[])].map(unpackFood);
   return cache;
 }
 export function foodName(food:Food,language:AppLanguage):string {

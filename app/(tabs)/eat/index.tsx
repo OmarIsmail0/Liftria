@@ -13,8 +13,8 @@ import {copyDay,copyMeal,deleteEntry,listSavedMeals,logSavedMeal,readDiaryDay,
 
 export default function EatHome(){
   const {theme}=useTheme(),{t,language}=useLanguage();
-  const params=useLocalSearchParams<{undo?:string}>();
-  const [day,setDay]=useState(localDay(new Date()));
+  const params=useLocalSearchParams<{undo?:string;day?:string}>();
+  const [day,setDay]=useState(params.day??localDay(new Date()));
   const [entries,setEntries]=useState<DiaryEntry[]>([]);
   const [target,setTarget]=useState<Target|null>(null);
   const [hidden,setHidden]=useState(false);

@@ -1,6 +1,5 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
-import {View} from 'react-native';
 import {Button,Card,Chip,Field,Header,Screen,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {useTheme} from '../../../src/design/ThemeProvider';
