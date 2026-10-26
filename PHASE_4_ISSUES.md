@@ -118,7 +118,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    - Starts when PR J's `verify` is green.
    - Text is live. Photo stays behind `pending` until the owner's Test B.
    - **Egyptian dialect:** Hiku accepts Egyptian Arabic descriptions. When an item matches an Egypt-pack dish, use the pack's id, portion and values (labeled as the pack estimate), not the model's numbers.
-7. **Phase end:** Claude builds the APK on `main`. **The owner's phone tests no longer block work (owner, 2026-10-26):** after PR K merges, go straight to `PHASE_5_ISSUES.md`.
+7. **Phase end:** Claude builds the APK on `main`. **The owner's phone tests no longer block work (owner, 2026-10-26):** **PR K's code is done; start `PHASE_5_ISSUES.md` (PR L) now** while Claude finishes PR K's screenshots and merge.
 
 **Rules (same as Phase 3):**
 - **Builds:**

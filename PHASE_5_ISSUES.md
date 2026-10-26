@@ -6,7 +6,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**Start Phase 5 only after PR K (#22) is merged.** Each PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**Start PR L now, from `main`** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
