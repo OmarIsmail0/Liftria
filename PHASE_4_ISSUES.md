@@ -99,8 +99,11 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
        - Wrap number+unit and date ranges in bidi isolates (`\u2068…\u2069`), so "0 kcal" and "start – end" read in order in Arabic.
        - **Hermes rule:** only `Intl.NumberFormat`, `Intl.DateTimeFormat` and `Intl.Collator` exist on Android. For plurals use `pluralForm()`.
    - **For screenshots:** list the routes for Today, Settings, Profile, onboarding profile/goal, and Train home in the PR description.
-4. **PR I: `Phase 4 / Diary, search and targets`.**
-   - **Next: start now, branching from `main`.**
+4. ~~**PR I: `Phase 4 / Diary, search and targets`.**~~ DONE: PR #20 merged (2026-10-26). Claude made search fast (8–35 ms) and shows Arabic food names in the diary.
+   - **Small follow-ups (do in PR J):**
+     - Macro totals with quick adds: say they're partial ("Macros from 3 of 4 items"), not a plain total.
+     - Arabic for Snacks: "وجبات خفيفة" (not "سناكس"). Translate the "g" portion chip ("جم").
+     - `dev/demo-diary`: pick a plain cooked egg (e.g. "Egg, whole, cooked, hard-boiled"), not "Egg custards, dry mix".
    - **Carry-overs from the PR #18 screenshot review** (small; do first):
      - English equipment labels in title case ("Machine", not "machine").
      - Center "Set a target" on Today under the centered orb text.
@@ -109,7 +112,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
      - **Fast repeat logging:** copy a meal or a whole day, **saved meals** (a combo logged in one tap), favorites, and recents ranked by time of day. Target: a repeat meal in 2 taps, a searched food in ≤ 4 taps.
      - **Ramadan mode:** meals can be renamed, with a one-tap preset **Suhoor / Iftar / Snacks**. It's a setting, off by default, with no medical advice.
    - It uses `assets/data/foods/`: the USDA pack (8,171 foods) and the Egypt pack (29 dishes, Arabic and English). Both are on `main`; see `SOURCE.md` there and PHASE_4_PROMPT §2.
-5. **PR J: `Phase 4 / Trends and body`.** Starts when PR I's `verify` is green.
+5. **PR J: `Phase 4 / Trends and body`.** In progress, PR #21. Merge `main` into it (merge commit), retarget it to `main`, and fix the weight unit (see the PR comment).
    - Add a **trend weight** (exponential moving average) line over the daily dots. The headline shows the trend, labeled "Trend". Unit-test the smoothing.
 6. **PR K: `Phase 4 / Hiku meal estimates`.**
    - Starts when PR J's `verify` is green.
