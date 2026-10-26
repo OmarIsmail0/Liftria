@@ -6,7 +6,7 @@ import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
 import {foodName,bundledFoods,searchFoods,mealAtTime,localDay,MEALS,type Food,type MealKey} from '../../../src/features/eat/foodCatalog';
-import {listFavoriteFoods,listRecentFoods,readLocalFoods,logFood,toggleFavorite} from '../../../src/features/eat/diaryRepository';
+import {listFavoriteFoods,listRecentFoods,readLocalFoods,logFood,lastLoggedGrams,toggleFavorite} from '../../../src/features/eat/diaryRepository';
 
 export default function FoodSearch(){
   const {t,language}=useLanguage(),{theme}=useTheme();
@@ -34,7 +34,9 @@ export default function FoodSearch(){
     [catalog,query,favorites,recent]);
   async function quick(food:Food){
     if(busy)return;
-    setBusy(true);const grams=food.portions[0]?.grams??100;
+    setBusy(true);
+    const portion=await lastLoggedGrams(food);
+    const grams=portion.ok?portion.value:(food.portions[0]?.grams??100);
     const result=await logFood(food,grams,meal,day);
     if(result.ok)router.replace({pathname:'/(tabs)/eat',params:{undo:result.value.id}});
     else{setError(true);setBusy(false);}
@@ -51,12 +53,16 @@ export default function FoodSearch(){
       <Typography tone="secondary" size="small">{t('eatI.offlineSearch')}</Typography>
       <Card rim="eat" title={query?t('eatI.results'):t('eatI.recentAndEgypt')}>
         {rows.map(food=><View key={food.id} style={{gap:theme.space[1]}}>
-          <ListRow title={foodName(food,language)}
-            detail={t('eatI.per100',{count:formatNumber(language,Math.round(food.kcal))})+
-              (food.estimate?' · '+t('eatI.recipeEstimate'):'')}
-            onPress={()=>router.push({pathname:'/(tabs)/eat/portion',params:{id:food.id,meal,day}})}
-            suffix={<Button label={t('eatI.add')} disabled={busy} variant="secondary"
-              onPress={()=>void quick(food)}/>}/>
+          <View style={{flexDirection:'row',gap:theme.space[2],alignItems:'center'}}>
+            <View style={{flex:1}}>
+              <ListRow title={foodName(food,language)}
+                detail={t('eatI.per100',{count:formatNumber(language,Math.round(food.kcal))})+
+                  (food.estimate?' · '+t('eatI.recipeEstimate'):'')}
+                onPress={()=>router.push({pathname:'/(tabs)/eat/portion',params:{id:food.id,meal,day}})}/>
+            </View>
+            <Button label={t('eatI.add')} disabled={busy} variant="secondary"
+              onPress={()=>void quick(food)}/>
+          </View>
           <Button label={favorites.some(f=>f.id===food.id)?t('eatI.unfavorite'):t('eatI.favorite')}
             variant="ghost" onPress={()=>void toggleFavorite(food).then(result=>{
               if(result.ok)setFavorites(previous=>result.value?[food,...previous]:previous.filter(f=>f.id!==food.id));

@@ -180,6 +180,17 @@ export async function searchAllFoods(query:string,limit=40):Promise<DbResult<Foo
   const local=await readLocalFoods();
   return local.ok?{ok:true,value:searchFoods([...bundledFoods(),...local.value],query,limit)}:local;
 }
+/** Reuse the actual last logged grams rather than always the pack's first portion. */
+export async function lastLoggedGrams(food:Food):Promise<DbResult<number>>{
+  return dbOperation(async db=>{
+    const row=await db.getFirstAsync<{grams:number|null}>(
+      'SELECT grams FROM diary_entries WHERE food_id=? AND grams IS NOT NULL ORDER BY created_at DESC,id DESC LIMIT 1',
+      [food.id]);
+    const last=row?.grams;
+    return last!==null&&last!==undefined&&Number.isFinite(last)&&last>0&&last<=2000?
+      last:food.portions[0]?.grams??100;
+  });
+}
 export async function listRecentFoods(meal?:MealKey,limit=20):Promise<DbResult<Food[]>>{
   return dbOperation(async db=>{
     const rows=await db.getAllAsync<{food_id:string}>(`SELECT food_id FROM diary_entries
