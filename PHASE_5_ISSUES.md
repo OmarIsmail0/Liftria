@@ -31,7 +31,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **CSV export** of workouts and the food diary for spreadsheets.
    - **Water:** a simple glass counter on Today and Eat (glass size in Settings, 250 ml default). Not logged ≠ 0.
    - **Fiber, sugar and sodium** in the diary and trends. The packs have all three (Claude rebuilt them on 2026-10-26: `sugar` in g and `sodium` in mg per 100 g). Any of them, and protein/carbs/fat too, can be **null** when the source doesn't report it: show "—" and never count it as 0. Snapshot them into diary entries like the macros (additive migration).
-4. **PR O: `Phase 5 / Hiku photo`** — scope depends on the owner's answer about the Test B gate (Claude will update this item).
+4. **PR O: `Phase 5 / Hiku photo (Beta)`** — owner decision 2026-10-26: build it now, labeled **Beta**; the owner tests it whenever they can.
+   - **Pick a photo** from the gallery with `expo-image-picker` (installed). The camera permission stays off for now (`cameraPermission: false`); Claude raises "take a photo" with the owner separately.
+   - **Before sending:** downscale with `expo-image-manipulator` (installed) to a 1024 px long edge, JPEG quality 0.7, which also strips EXIF/location. Show the exact image that will be sent, plus the optional text note, before the user taps Send.
+   - **Request:** the same client and rules as text (selected model, `effort: 'low'`, `max_tokens: 8000`, JSON schema, 45 s timeout, cost recorded in `hiku_requests` with `kind: 'photo'`). Send the image as a base64 `image` content block before the text block.
+   - **Review:** the same HK-4 review screen. Every item is an estimate the user checks and edits before Save; Egypt-pack matches still override the model's numbers. A "Beta" chip on the photo button and on the review screen, with one line: "Photo estimates are new. Check every item before saving."
+   - **Privacy:** no photo is kept after the request unless Settings → Hiku → "Keep photos" is on (off by default). Add it to Delete all and the backup.
+   - Test: the resize/EXIF step (mock the manipulator), the request body shape (image block first, no `thinking`/`temperature`), and that nothing saves without the review.
+   - Screenshots: a `dev/demo-hiku-photo?auto=1` route using a bundled sample image and pack values, with Save disabled and no API call.
 5. **PR R: `Phase 5 / Release readiness`**
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), and screenshot routes for the store images.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
