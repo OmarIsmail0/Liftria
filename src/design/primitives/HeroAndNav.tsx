@@ -64,7 +64,7 @@ export function CapsuleNav({ active, onSelect }: {
   active: CapsuleTab; onSelect: (tab: CapsuleTab) => void;
 }) {
   const { theme } = useTheme();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const glass = theme.effectiveStyle === 'aurora';
   return <View style={{
@@ -86,18 +86,14 @@ export function CapsuleNav({ active, onSelect }: {
           accessibilityRole="tab" accessibilityLabel={t(`nav.${tab.key}`)}
           accessibilityState={{ selected }}
           style={{
-            flex: selected ? 1.9 : 1, minWidth: theme.size.touch.min,
+            flex: 1, minWidth: theme.size.touch.min,
             minHeight: theme.size.touch.nav, alignItems: 'center', justifyContent: 'center',
-            flexDirection: 'row', gap: theme.space[1], paddingHorizontal: theme.space[1],
+            flexDirection: 'row', paddingHorizontal: theme.space[1],
             backgroundColor: selected ? theme.color.action.primary.bg : 'transparent',
             borderRadius: theme.radius.pill,
           }}>
           <TabIcon name={tab.key} color={ink}
             size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
-          {selected && <Text allowFontScaling maxFontSizeMultiplier={2} numberOfLines={2}
-            style={{ color: ink, fontSize: theme.type.small.size,
-              fontFamily: fontFamilyFor('Figtree', theme.type.label.weight, language === 'ar'),
-              flexShrink: 1, textAlign: 'center' }}>{t(`nav.${tab.key}`)}</Text>}
         </Pressable>;
       })}
     </View>

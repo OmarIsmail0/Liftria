@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { SettingsIcon } from '../../src/design/primitives/TabIcon';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { formatNumber } from '../../src/i18n';
 import { Banner, Button, Card, Chip, Header, ListRow, Orb, Screen, Skeleton, Typography } from '../../src/design/primitives';
@@ -120,14 +121,13 @@ export default function TodayTab() {
     <ScrollView refreshControl={<RefreshControl refreshing={refreshing}
       onRefresh={() => { void Promise.allSettled([refresh(true), loadLocal(), loadTraining()]); }}
       colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}
-      contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}>
+      contentContainerStyle={{ paddingTop: 0, paddingBottom: theme.space[4], gap: theme.layout.cardGap }}>
       <Header title={local.profile?.name ? `${greeting}, ${local.profile.name}` : t('today.welcome')}
         subtitle={date} right={<Pressable accessibilityRole="button" accessibilityLabel={t('today.openSettings')}
           onPress={() => router.push('/settings')}
           style={{ minHeight: theme.size.touch.min, minWidth: theme.size.touch.min,
-            borderRadius: theme.radius.pill, borderWidth: theme.size.border.thin,
-            borderColor: theme.controlOutline, alignItems: 'center', justifyContent: 'center' }}>
-          <Typography size="head">L</Typography>
+            alignItems: 'center', justifyContent: 'center' }}>
+          <SettingsIcon color={theme.color.text.primary} size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
         </Pressable>} />
       {local.offline && <Banner variant="offline" title={t('today.offline')}
         message={t('today.offlineDescription')} />}
