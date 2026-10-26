@@ -27,7 +27,7 @@ export function PlateCalculatorCard({targetKg,onWarmup,showPlates=true,unplatedS
    });return()=>{live=false;};
  },[]));
  const bar=unit==='kg'?barKg:barLb;
- const target=manual??(targetKg&&targetKg>0?fromKg(targetKg,unit):bar);
+ const target=manual??(targetKg&&targetKg>0?fromKg(targetKg,unit):showPlates?bar:0);
  const result=showPlates?calculatePlates(target,bar,unit,small):null;
  const warmups=showPlates?suggestedWarmups(toKg(target,unit),bar,unit,small):
   suggestedUnplatedWarmups(toKg(target,unit),unit,
