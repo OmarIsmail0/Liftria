@@ -3,7 +3,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Snackbar,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
-import {MEALS,localDay,type MealKey,type Food} from '../../../src/features/eat/foodCatalog';
+import {MEALS,entryName,localDay,type MealKey,type Food} from '../../../src/features/eat/foodCatalog';
 import {deleteEntry,foodById,moveEntry,readDiaryDay,removeMeal,restoreEntries,saveMeal,
   summarizeEntries,updateEntryGrams,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
 import {getTypedSetting} from '../../../src/services/database/settings';
@@ -76,7 +76,7 @@ export default function MealDetail(){
     </Card>
     <Card title={t('eatI.itemsTitle')}>
       {entries.length===0&&<Typography tone="secondary">{t('eatI.notLogged')}</Typography>}
-      {entries.map(entry=><ListRow key={entry.id} title={entry.name}
+      {entries.map(entry=><ListRow key={entry.id} title={entryName(entry,language)}
         detail={hidden?t('eatI.hidden'):t('eatI.kcal',{count:format(entry.kcal)})}
         onPress={()=>void choose(entry)}
         suffix={entry.source==='quick'?<Chip kind="estimate" label={t('eatI.caloriesOnly')}/>:undefined}/>)}

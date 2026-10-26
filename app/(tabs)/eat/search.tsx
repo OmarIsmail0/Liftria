@@ -10,10 +10,10 @@ import {listFavoriteFoods,listRecentFoods,readLocalFoods,logFood,lastLoggedGrams
 
 export default function FoodSearch(){
   const {t,language}=useLanguage(),{theme}=useTheme();
-  const params=useLocalSearchParams<{meal?:MealKey;day?:string}>();
+  const params=useLocalSearchParams<{meal?:MealKey;day?:string;q?:string}>();
   const [meal,setMeal]=useState<MealKey>(MEALS.includes(params.meal as MealKey)?params.meal!:mealAtTime(new Date()));
   const day=params.day??localDay(new Date());
-  const [query,setQuery]=useState('');
+  const [query,setQuery]=useState(params.q??'');
   const [custom,setCustom]=useState<Food[]>([]);
   const [favorites,setFavorites]=useState<Food[]>([]);
   const [recent,setRecent]=useState<Food[]>([]);
