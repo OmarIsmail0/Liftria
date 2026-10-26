@@ -1,4 +1,4 @@
-export type SupersetExercise={id:string;supersetGroup:string|null;position:number};
+export type SupersetExercise={id:string;supersetGroup?:string|null;position:number};
 /** Supersets must be 2–3 consecutive exercises; no duplicated or stray groups. */
 export function supersetGroupsValid(rows:readonly SupersetExercise[]):boolean{
  const groups=new Map<string,number[]>();
