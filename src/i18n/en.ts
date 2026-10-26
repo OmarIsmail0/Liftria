@@ -261,6 +261,7 @@ export const en = {
   'hikuK.modelUnavailable': "Your key works, but this model is not available on your account.",
   'hikuK.contextUnavailable': "Could not read optional context. Try again.",
   'hikuK.contextPrivacy': "Only checked summaries above are added; Health Connect, your profile and full history are never sent.",
+  'hikuK.demoWarning': "Developer demo: pack-derived example only. Save is disabled; no meal was analyzed or logged.",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

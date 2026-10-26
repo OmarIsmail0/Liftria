@@ -39,7 +39,7 @@ export default function ReviewEstimate(){
   setChanged(true);setSelected(null);
  }
  async function save(){
-  if(!draft||!items.length||busy)return;setBusy(true);
+  if(!draft||draft.demo||!items.length||busy)return;setBusy(true);
   const r=await saveHikuReviewed(draft.meal,items,draft.requestId,localDay(new Date()),meal);
   if(r.ok){clearHikuDraft();router.replace('/(tabs)/eat');return;}
   setError(true);setBusy(false);
@@ -56,6 +56,7 @@ export default function ReviewEstimate(){
   </Card>:<>
    <Card rim="hiku" title={draft.meal.meal_name}>
     <Chip kind="estimate"/>
+    {draft.demo&&<Typography tone="secondary">{t('hikuK.demoWarning')}</Typography>}
     <Typography tone="secondary">{t('hikuK.checkItems')}</Typography>
     <Typography>{t('hikuK.total',{kcal:fmt(sum.kcal),protein:fmt(sum.protein),
       carbs:fmt(sum.carbs),fat:fmt(sum.fat)})}</Typography>
@@ -73,7 +74,7 @@ export default function ReviewEstimate(){
    </Card>
    {error&&<Typography>{t('hikuK.saveError')}</Typography>}
    <Button label={t('hikuK.saveTo',{meal:t(('eatI.'+meal) as 'eatI.dinner')})}
-    onPress={()=>void save()} disabled={busy||items.length===0} fullWidth/>
+    onPress={()=>void save()} disabled={busy||Boolean(draft.demo)||items.length===0} fullWidth/>
    <Button label={t('hikuK.discard')} variant="ghost" onPress={discard}/>
    <Sheet visible={selected!==null} title={t('hikuK.editGrams')} onClose={()=>setSelected(null)}>
     <Field label={t('eatI.gramsLabel')} value={edited} onChangeText={setEdited}

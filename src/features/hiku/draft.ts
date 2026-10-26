@@ -2,7 +2,7 @@ import type {HikuMeal,HikuReviewedItem} from './mealSchema';
 import type {HikuModelId} from './models';
 export type HikuDraft={
  description:string;meal:HikuMeal;items:HikuReviewedItem[];requestId:string;
- model:HikuModelId;costUsd:number|null;inputTokens:number;outputTokens:number;
+ model:HikuModelId;costUsd:number|null;inputTokens:number;outputTokens:number;demo?:boolean;
 };
 let active:HikuDraft|null=null;
 let pendingDescription='';

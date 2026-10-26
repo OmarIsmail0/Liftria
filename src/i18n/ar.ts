@@ -262,6 +262,7 @@ export const ar: Record<TranslationKey, string> = {
   'hikuK.modelUnavailable': "مفتاحك يعمل، لكن هذا النموذج غير متاح لحسابك.",
   'hikuK.contextUnavailable': "تعذر قراءة الملخصات الاختيارية. حاول مجددًا.",
   'hikuK.contextPrivacy': "تُضاف الملخصات المختارة أعلاه فقط؛ ولا تُرسل بيانات هيلث كونيكت أو الملف الشخصي أو السجل الكامل.",
+  'hikuK.demoWarning': "عرض تجريبي للمطور: مثال من حزمة الطعام فقط. الحفظ معطل؛ لم تُحلَّل وجبة أو تُسجَّل.",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',
