@@ -51,7 +51,7 @@ jobs:
             echo "- **SHA-256:**"
             sed 's/^/  - /' checksums.txt
             echo "- **Built by:** \`.github/scripts/build-food-pack.py\` (the \`Build USDA food pack\` workflow)."
-            echo "- **Per food:** stable \`id\` (\`usda:<fdcId>\`), name, FDC category, source (sr or foundation), kcal, protein, carbs, fat and fiber per 100 g, and household portions in grams where FDC has them."
+            echo "- **Per food:** stable \`id\` (\`usda:<fdcId>\`), name, FDC category, source (sr or foundation), kcal, protein, carbs, fat, fiber, sugar (g) and sodium (mg) per 100 g (null where FDC has no value), and household portions in grams where FDC has them."
             echo "- **Credit (shown in the app):** \"Food data: USDA FoodData Central (public domain).\""
           } > assets/data/foods/SOURCE.md
           git config user.name "github-actions[bot]"

@@ -5,7 +5,8 @@ Inputs: the SR Legacy and Foundation CSV zips (paths as arguments).
 Output: assets/data/foods/usda-foods.json, compact and sorted by id.
 
 Per food: values per 100 g, plus household portions in grams where FDC has them.
-Only kcal, protein, carbs, fat and fiber are kept. A food without kcal is dropped.
+Kept: kcal, protein, carbs, fat, fiber, sugar (g) and sodium (mg). A food without kcal is
+dropped; any other nutrient FDC doesn't report is null, never 0.
 """
 import csv, io, json, sys, zipfile
 
@@ -13,7 +14,8 @@ import csv, io, json, sys, zipfile
 # Atwater energies 2047 (general) / 2048 (specific), used in that order as fallback.
 KCAL, KCAL_ATWATER_GENERAL, KCAL_ATWATER_SPECIFIC = '1008', '2047', '2048'
 PROTEIN, FAT, CARBS, FIBER = '1003', '1004', '1005', '1079'
-WANTED = {KCAL, KCAL_ATWATER_GENERAL, KCAL_ATWATER_SPECIFIC, PROTEIN, FAT, CARBS, FIBER}
+SUGAR, SODIUM = '2000', '1093'  # total sugars (g), sodium (mg)
+WANTED = {KCAL, KCAL_ATWATER_GENERAL, KCAL_ATWATER_SPECIFIC, PROTEIN, FAT, CARBS, FIBER, SUGAR, SODIUM}
 
 
 def rows(z, suffix):
@@ -66,11 +68,11 @@ def load(path, source):
             if label.lower() not in seen:
                 seen.add(label.lower())
                 uniq.append([label, grams])
+        value = lambda key, digits=2: round(n[key], digits) if key in n else None
         out.append({'id': 'usda:' + fdc_id, 'name': food['name'], 'category': food['category'],
                     'source': source, 'kcal': round(kcal, 1),
-                    'protein': round(n.get(PROTEIN, 0.0), 2), 'carbs': round(n.get(CARBS, 0.0), 2),
-                    'fat': round(n.get(FAT, 0.0), 2),
-                    'fiber': round(n[FIBER], 2) if FIBER in n else None,
+                    'protein': value(PROTEIN), 'carbs': value(CARBS), 'fat': value(FAT),
+                    'fiber': value(FIBER), 'sugar': value(SUGAR), 'sodium': value(SODIUM, 1),
                     'portions': uniq})
     return out
 

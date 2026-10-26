@@ -7,7 +7,7 @@ Output rows match usda-foods.json plus name_ar, aliases, estimate and recipe fie
 """
 import json, sys
 
-FIELDS = ('kcal', 'protein', 'carbs', 'fat', 'fiber')
+FIELDS = ('kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'sodium')
 
 
 def main(recipes_path, usda_path, out_path):
@@ -24,7 +24,7 @@ def main(recipes_path, usda_path, out_path):
             if any(i.startswith('egypt:') and i not in built for i in ids):
                 continue
             total, weight = {k: 0.0 for k in FIELDS}, 0.0
-            fiber_known = True
+            unknown = set()  # a field any ingredient lacks is unknown for the dish, never 0
             for iid, grams in r['ingredients']:
                 weight += grams
                 if iid == 'water':
@@ -33,8 +33,8 @@ def main(recipes_path, usda_path, out_path):
                 if src is None:
                     raise SystemExit(f'{rid}: unknown ingredient {iid}')
                 for k in FIELDS:
-                    if src[k] is None:
-                        fiber_known = False
+                    if src.get(k) is None:
+                        unknown.add(k)
                         continue
                     total[k] += src[k] * grams / 100
             yield_g = r.get('yield_g', weight)
@@ -43,9 +43,7 @@ def main(recipes_path, usda_path, out_path):
             row = {'id': rid, 'name': r['name_en'], 'name_ar': r['name_ar'], 'aliases': r['aliases'],
                    'category': r['category'], 'source': 'egypt', 'estimate': True}
             for k in FIELDS:
-                row[k] = round(total[k] * 100 / yield_g, 2 if k != 'kcal' else 1)
-            if not fiber_known:
-                row['fiber'] = None
+                row[k] = None if k in unknown else round(total[k] * 100 / yield_g, 1 if k in ('kcal', 'sodium') else 2)
             row['portions'] = [[en, ar, g] for en, ar, g in r['portions']]
             row['recipe'] = {'ingredients': r['ingredients'], 'yield_g': yield_g}
             built[rid] = row
@@ -59,7 +57,7 @@ def main(recipes_path, usda_path, out_path):
         json.dump(out, f, ensure_ascii=False, indent=1)
         f.write('\n')
     for r in out:
-        print(f"{r['id']:<34} {r['kcal']:>6} kcal  P{r['protein']:>5}  C{r['carbs']:>5}  F{r['fat']:>5}  per 100 g")
+        print(f"{r['id']:<34} {r['kcal']!s:>6} kcal  P{r['protein']!s:>5}  C{r['carbs']!s:>5}  F{r['fat']!s:>5}  per 100 g")
 
 
 if __name__ == '__main__':
