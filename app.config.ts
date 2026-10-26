@@ -30,6 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
   },
   // iPhone system texts (app name under the icon, permission prompts) in English and Arabic.
+  // Under "ios" in each file, so Android doesn't get untranslated-default strings (lint error).
   locales: { en: './locales/en.json', ar: './locales/ar.json' },
   android: {
     package: 'com.liftria.app',

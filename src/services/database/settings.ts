@@ -22,6 +22,7 @@ export const settingsSchemas = {
   'hiku.shareToday': z.boolean(),
   'hiku.shareTraining': z.boolean(),
   'hiku.keepPhotos': z.boolean(),
+  'hiku.model': z.enum(['claude-haiku-5-5','claude-sonnet-5-5']),
   'eat.ramadan': z.boolean(),
   'eat.iftarTime': z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
   'eat.mealNames': z.object({
@@ -51,6 +52,7 @@ export const settingDefaults: { [K in SettingKey]: SettingValue<K> } = {
   'hiku.shareToday': false,
   'hiku.shareTraining': false,
   'hiku.keepPhotos': false,
+  'hiku.model': 'claude-haiku-5-5',
   'eat.ramadan': false,
   'eat.iftarTime': '18:00',
   'eat.mealNames': {},
