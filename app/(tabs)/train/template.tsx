@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
+import { ensureExercisePack, listExercises, searchExercises, newGymId } from '../../../src/services/database/exerciseLibrary';
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
@@ -54,6 +54,16 @@ export default function TemplateEditor() {
     return ()=>{live=false;sub.remove();};
   },[id,exerciseId]));
   const filtered=useMemo(()=>searchExercises(library,query).slice(0,8),[library,query]);
+  const linkGroup=(index:number,size:2|3)=>{
+    setExercises(old=>{
+      if(old.slice(index,index+size).length!==size||
+       old.slice(index,index+size).some(e=>e.supersetGroup))return old;
+      const group=newGymId();
+      return old.map((e,i)=>i>=index&&i<index+size?{...e,supersetGroup:group}:e);
+    });
+  };
+  const unlink=(group:string)=>setExercises(old=>old.map(e=>
+    e.supersetGroup===group?{...e,supersetGroup:null}:e));
   const update=(index:number,patch:Partial<TemplateExerciseInput>)=>
     setExercises(prev=>prev.map((item,i)=>i===index?{...item,...patch}:item));
   const add=(exercise:Exercise)=>{
@@ -93,6 +103,17 @@ export default function TemplateEditor() {
             {item && <ExerciseThumbnail exercise={item} />}
             <Typography bold>{item?.name??e.exerciseId}</Typography>
           </View>
+          {e.supersetGroup?<Button label={t('gymParity.unlink')} variant="secondary"
+            onPress={()=>unlink(e.supersetGroup!)}/>:
+           <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
+             <Button label={t('gymParity.linkNext')} variant="secondary"
+              disabled={i+1>=exercises.length||Boolean(exercises[i+1]?.supersetGroup)}
+              onPress={()=>linkGroup(i,2)}/>
+             <Button label={t('gymParity.superset')+' × 3'} variant="secondary"
+              disabled={i+2>=exercises.length||Boolean(exercises[i+1]?.supersetGroup)||
+                Boolean(exercises[i+2]?.supersetGroup)}
+              onPress={()=>linkGroup(i,3)}/>
+           </View>}
           <Stepper label={t('template.workingSets')} value={e.targetSets} min={1} max={20} step={1}
             onChange={v=>update(i,{targetSets:v})}/>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
@@ -109,12 +130,12 @@ export default function TemplateEditor() {
             unit="sec" onChange={v=>update(i,{restSec:v})}/>
           <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
             <Button label={t('template.moveUp')} variant="secondary" disabled={i===0}
-              onPress={()=>setExercises(old=>{const next=[...old];const a=next[i-1],b=next[i];
+              onPress={()=>setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[i-1],b=next[i];
                 if(a&&b){next[i-1]=b;next[i]=a;}return next;})}/>
             <Button label={t('template.moveDown')} variant="secondary" disabled={i===exercises.length-1}
-              onPress={()=>setExercises(old=>{const next=[...old];const a=next[i+1],b=next[i];
+              onPress={()=>setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[i+1],b=next[i];
                 if(a&&b){next[i+1]=b;next[i]=a;}return next;})}/>
-            <Button label={t('template.remove')} variant="ghost" onPress={()=>setExercises(old=>old.filter((_,n)=>n!==i))}/>
+            <Button label={t('template.remove')} variant="ghost" onPress={()=>setExercises(old=>old.filter((_,n)=>n!==i).map(x=>({...x,supersetGroup:null})))}/>
           </View>
         </View>;
       })}

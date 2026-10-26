@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
-import { startManualWorkout, readInProgressWorkout, discardInProgressWorkout, type ActiveWorkout } from '../../../src/features/train/workoutData';
+import { startManualWorkout, readInProgressWorkout, completeWorkout, type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { listTemplates, exerciseSessions, type Template } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
@@ -59,8 +59,8 @@ export default function WorkoutPreview() {
   const replaceExisting=async()=>{
     if(!existing)return;
     setBusy(true);
-    const removed=await discardInProgressWorkout(existing.id);
-    if(!removed.ok||!removed.value){setError(t('preview.discardError'));setBusy(false);return;}
+    const finished=await completeWorkout(existing.id,null);
+    if(!finished.ok||!finished.value){setError(t('preview.finishError'));setBusy(false);return;}
     setExisting(null);
     await create();
   };
