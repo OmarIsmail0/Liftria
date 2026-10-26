@@ -34,6 +34,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
 4. **PR O: `Phase 5 / Hiku photo`** — scope depends on the owner's answer about the Test B gate (Claude will update this item).
 5. **PR R: `Phase 5 / Release readiness`**
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), and screenshot routes for the store images.
+   - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - Remove or hide every `dev/*` route in release builds, except what the emulator check needs (Claude will gate those behind a build flag).
    - Owner: signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.

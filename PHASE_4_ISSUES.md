@@ -112,7 +112,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
      - **Fast repeat logging:** copy a meal or a whole day, **saved meals** (a combo logged in one tap), favorites, and recents ranked by time of day. Target: a repeat meal in 2 taps, a searched food in ≤ 4 taps.
      - **Ramadan mode:** meals can be renamed, with a one-tap preset **Suhoor / Iftar / Snacks**. It's a setting, off by default, with no medical advice.
    - It uses `assets/data/foods/`: the USDA pack (8,171 foods) and the Egypt pack (29 dishes, Arabic and English). Both are on `main`; see `SOURCE.md` there and PHASE_4_PROMPT §2.
-5. **PR J: `Phase 4 / Trends and body`.** In progress, PR #21. Merge `main` into it (merge commit), retarget it to `main`, and fix the weight unit (see the PR comment).
+5. ~~**PR J: `Phase 4 / Trends and body`.**~~ DONE: PR #21 merged (2026-10-26).
    - Add a **trend weight** (exponential moving average) line over the daily dots. The headline shows the trend, labeled "Trend". Unit-test the smoothing.
 6. **PR K: `Phase 4 / Hiku meal estimates`.**
    - Starts when PR J's `verify` is green.
