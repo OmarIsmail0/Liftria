@@ -34,8 +34,8 @@ function bodyColor(state: BodyIntensity, train: string): string {
 }
 
 /** Exact BodyMap API is retained for browse, recovery, preview and exercise miniatures. */
-export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, selected, shading }: {
-  primary?: readonly Muscle[]; secondary?: readonly Muscle[]; mini?: boolean;
+export function BodyMap({ primary=[], secondary=[], mini=false, icon=false, onSelect, selected, shading }: {
+  primary?: readonly Muscle[]; secondary?: readonly Muscle[]; mini?: boolean; icon?: boolean;
   selected?: Muscle | null; onSelect?: (muscle: Muscle)=>void;
   shading?: Partial<Record<Muscle,MuscleShade>>;
 }) {
@@ -47,7 +47,8 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
   }));
   const textColor = theme.color.text.secondary;
   const mapText = shading ? t('muscle.loadEstimate') : bodyMapDescription(primary, secondary, language);
-  const visibleSides: ('front'|'back')[] = mini ? [preferredBodySide(primary)] : ['front','back'];
+  const visibleSides: ('front'|'back')[] = icon ? ['front','back'] :
+    mini ? [preferredBodySide(primary)] : ['front','back'];
   const selectSlug = (slug?: Slug) => {
     if (!onSelect || !slug) return;
     const matches = MUSCLES.filter(m => BODY_REGIONS[m].includes(slug));
@@ -55,17 +56,17 @@ export function BodyMap({ primary=[], secondary=[], mini=false, onSelect, select
       matches.find(m=>primary.includes(m)) ?? matches[0];
     if (preferred) onSelect(preferred);
   };
-  return <View style={{ gap: theme.space[2], alignItems: 'center' }}>
+  return <View style={{ gap: mini ? 0 : theme.space[2], alignItems: 'center' }}>
     <View accessible accessibilityRole="image" accessibilityLabel={mapText}
       style={{ flexDirection: 'row', alignItems:'center', justifyContent:'center',
         gap: mini ? 0 : theme.space[4], maxWidth: '100%' }}>
       {visibleSides.map(side => <View key={side}
         importantForAccessibility="no-hide-descendants"
-        style={mini ? { width:48, height:48, borderRadius:24,
+        style={mini ? { width:icon ? 24 : 48, height:48, borderRadius:icon ? 12 : 24,
           alignItems:'center', justifyContent:'center', overflow:'hidden',
           backgroundColor:theme.color.tint.train } :
           { alignItems:'center', justifyContent:'center' }}>
-        <Body data={data} side={side} gender="male" scale={mini ? 0.16 : 0.7}
+        <Body data={data} side={side} gender="male" scale={mini ? (icon ? 0.11 : 0.16) : 0.7}
           border={theme.color.border.control} defaultFill={theme.color.track}
           defaultStroke={theme.color.border.subtle}
           hiddenParts={['hair','hands','feet']}

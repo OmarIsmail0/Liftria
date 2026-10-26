@@ -318,6 +318,8 @@ export default function OnboardingStepScreen() {
             choices={[{ value: 'male', label: t('onboarding.male') }, { value: 'female', label: t('onboarding.female') }]}
             onChange={v => patch('sexForFormula', v)} />
           <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
+          {draft.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
+            onPress={()=>patch('sexForFormula',null)}/>}
           <InlineError message={error} />
         </Card>
         : step === 'goal'

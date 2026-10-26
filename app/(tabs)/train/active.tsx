@@ -218,7 +218,7 @@ export default function ActiveWorkoutScreen() {
             onPress={()=>setMuscleOpen(true)}
             style={{minWidth:theme.size.touch.min,minHeight:theme.size.touch.min,
               alignItems:'center',justifyContent:'center'}}>
-            <Typography size="head">◉</Typography>
+            <BodyMap mini icon primary={muscleSummary?.primary??[]} secondary={muscleSummary?.secondary??[]} />
           </Pressable>
           <Button label={t('active.finish')} variant="secondary"
             onPress={()=>stats?.pending?setFinishVisible(true):

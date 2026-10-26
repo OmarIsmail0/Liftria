@@ -20,6 +20,7 @@ export const ar: Record<TranslationKey, string> = {
   'polish.groupShoulders': "الكتفان",
   'polish.groupCore': "العضلات الأساسية",
   'polish.groupNeck': "الرقبة",
+  'polish.clearSelection': "إلغاء الاختيار",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',

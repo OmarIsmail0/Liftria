@@ -19,6 +19,7 @@ export const en = {
   'polish.groupShoulders': "Shoulders",
   'polish.groupCore': "Core",
   'polish.groupNeck': "Neck",
+  'polish.clearSelection': "Clear selection",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

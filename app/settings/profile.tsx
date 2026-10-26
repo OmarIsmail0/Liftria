@@ -160,6 +160,8 @@ export default function ProfileAndGoals() {
         options={[{value:'male',label:t('profileSettings.male')},
           {value:'female',label:t('profileSettings.female')}] as const} />
       <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
+      {form.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
+        onPress={()=>patch('sexForFormula',null)}/>}
       <Field label={t('profileSettings.birthYear')} value={form.birthYear} keyboardType="number-pad"
         onChangeText={v=>patch('birthYear',v)} placeholder={t('profileSettings.yearExample')} />
       {unit.height === 'cm' ? <Field label={t('profileSettings.heightCm')} value={form.heightCm} keyboardType="decimal-pad"
