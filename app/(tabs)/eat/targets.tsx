@@ -53,7 +53,7 @@ export default function EatTargets(){
     numeric[1]===estimated.proteinG&&numeric[2]===estimated.carbsG&&numeric[3]===estimated.fatG;
   const result=await addTarget({kcal:numeric[0]!,proteinG:numeric[1]!,
     carbsG:numeric[2]!,fatG:numeric[3]!,source:matched?'estimate':'manual',
-    inputs:matched?{...estimated.inputs}:null});
+    inputs:matched&&estimated?{...estimated.inputs}:null});
   if(result.ok){setCurrent(result.value);setSaved(true);setWarning(false);}
   else setError(true);
   setBusy(false);
@@ -111,7 +111,7 @@ export default function EatTargets(){
       <Button label={t('eatI.saveTime')} variant="secondary"
         disabled={!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(iftarTime)}
         onPress={()=>void setTypedSetting('eat.iftarTime',iftarTime).then(v=>{if(!v.ok)setError(true);})}/>
-   </>
+   </>}
    {MEALS.map(meal=><Field key={meal} label={t(`eatI.${meal}`)}
      value={mealNames[meal]??''} placeholder={t(`eatI.${meal}`)}
      onChangeText={value=>void updateName(meal,value)}/>)}
