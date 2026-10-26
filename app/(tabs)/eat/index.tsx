@@ -92,6 +92,9 @@ export default function EatHome(){
           <Typography tone="secondary">{t('eatI.macroAmounts',{p:summary.protein===null?'—':format(Math.round(summary.protein)),
             c:summary.carbs===null?'—':format(Math.round(summary.carbs)),
             f:summary.fat===null?'—':format(Math.round(summary.fat))})}</Typography>}
+        {!hidden&&summary.completeMacroItems>0&&summary.completeMacroItems<summary.count&&
+          <Typography tone="secondary" size="small">{t('eatI.partialMacros',{
+            count:summary.completeMacroItems,total:summary.count})}</Typography>}
       </Card>
       {MEALS.map(meal=>{
         const inMeal=entries.filter(entry=>entry.meal===meal),part=summary.byMeal[meal];

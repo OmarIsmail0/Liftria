@@ -186,6 +186,7 @@ export const en = {
   'trend.weightValue': "{weight} {unit}",
   'trend.weightInput': "Weight ({unit})",
   'trend.weightAdjust': "Adjust by {step} {unit}",
+  'eatI.partialMacros': "Macros from {count} of {total} items",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

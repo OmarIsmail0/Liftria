@@ -71,8 +71,11 @@ export default function MealDetail(){
       <Typography>{entries.length===0?t('eatI.notLogged'):hidden?
         t('eatI.items',{count:entries.length}):t('eatI.kcal',{count:format(summary.kcal)})}</Typography>
       {!hidden&&summary.protein!==null&&<Typography tone="secondary">{t('eatI.macroAmounts',{
-        p:format(Math.round(summary.protein)),c:format(Math.round(summary.carbs??0)),
-        f:format(Math.round(summary.fat??0))})}</Typography>}
+        p:format(Math.round(summary.protein)),c:summary.carbs===null?'—':format(Math.round(summary.carbs)),
+        f:summary.fat===null?'—':format(Math.round(summary.fat))})}</Typography>}
+      {!hidden&&summary.completeMacroItems>0&&summary.completeMacroItems<summary.count&&
+        <Typography tone="secondary" size="small">{t('eatI.partialMacros',{
+          count:summary.completeMacroItems,total:summary.count})}</Typography>}
     </Card>
     <Card title={t('eatI.itemsTitle')}>
       {entries.length===0&&<Typography tone="secondary">{t('eatI.notLogged')}</Typography>}
