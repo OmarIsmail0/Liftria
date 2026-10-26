@@ -1,0 +1,70 @@
+name: iPhone build (simulator)
+
+# Proves the app builds for iPhone and gives an unsigned simulator .app to inspect.
+# A device or TestFlight build needs the owner's Apple Developer account and signing secrets.
+# Runs by hand, or on a PR with the `ios` label.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize]
+
+concurrency:
+  group: ios-build-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ios')
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Expo iOS prebuild
+        run: npx expo prebuild --clean --platform ios
+
+      - name: Build for the iPhone simulator (unsigned)
+        run: |
+          set -o pipefail
+          cd ios
+          WORKSPACE=$(ls -d *.xcworkspace | head -n1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -n 200
+
+      - name: Check the iPhone permission texts
+        run: |
+          PLIST=$(find ios/build/Build/Products -name Info.plist -path '*.app/Info.plist' | head -n1)
+          for key in NSCameraUsageDescription NSPhotoLibraryUsageDescription; do
+            /usr/libexec/PlistBuddy -c "Print :$key" "$PLIST"
+          done
+          # Nothing beyond what the app uses: no location, microphone, contacts or tracking texts.
+          for key in NSLocationWhenInUseUsageDescription NSMicrophoneUsageDescription NSContactsUsageDescription NSUserTrackingUsageDescription; do
+            if /usr/libexec/PlistBuddy -c "Print :$key" "$PLIST" >/dev/null 2>&1; then
+              echo "::error::Unexpected iPhone permission $key"; exit 1
+            fi
+          done
+
+      - name: Keep the simulator app
+        run: |
+          APP=$(find ios/build/Build/Products -maxdepth 2 -name '*.app' | head -n1)
+          ditto -c -k --keepParent "$APP" liftria-ios-simulator.zip
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: liftria-ios-simulator
+          path: liftria-ios-simulator.zip
+          retention-days: 14
