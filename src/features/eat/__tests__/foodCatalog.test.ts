@@ -1,4 +1,4 @@
-import {bundledFoods,dayOffset,foodName,localDay,macroMismatch,mealAtTime,
+import {bundledFoods,dayOffset,entryName,foodName,localDay,macroMismatch,mealAtTime,
   normalizeFoodSearch,searchFoods,snapshot,type Food} from '../foodCatalog';
 const food=(id:string,name:string,nameAr:string|null,aliases:string[]=[],source:'egypt'|'usda'='egypt'):Food=>({
   id,name,nameAr,aliases,source,estimate:source==='egypt',kcal:100,protein:10,carbs:20,fat:1,
@@ -46,4 +46,21 @@ test('real packs have unique stable ids and finite nonnegative nutrition',()=>{
     for(const n of [f.kcal,f.protein,f.carbs,f.fat])expect(Number.isFinite(n)).toBe(true); // USDA analytical values may be slightly negative
     expect(f.portions.every(p=>p.grams>0&&Number.isFinite(p.grams))).toBe(true);
   }
+});
+
+describe('search speed paths and diary names', () => {
+  it('finds Egyptian dishes by alias and by a near-miss spelling', () => {
+    const foods = bundledFoods();
+    expect(searchFoods(foods, 'kushari')[0]?.id).toBe('egypt:koshari');
+    expect(searchFoods(foods, 'كشري')[0]?.id).toBe('egypt:koshari');
+  });
+  it('skips typo matching when exact matches exist', () => {
+    const results = searchFoods(bundledFoods(), 'kosh');
+    expect(results.every(food => /kosh/i.test([food.name, ...food.aliases].join(' ')))).toBe(true);
+  });
+  it('shows a bundled food in Arabic and keeps other names as logged', () => {
+    expect(entryName({ foodId: 'egypt:koshari', name: 'Koshari' }, 'ar')).not.toBe('Koshari');
+    expect(entryName({ foodId: 'egypt:koshari', name: 'Koshari' }, 'en')).toBe('Koshari');
+    expect(entryName({ foodId: null, name: 'Snack' }, 'ar')).toBe('Snack');
+  });
 });

@@ -7,7 +7,7 @@ import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
 import {getCurrentTarget,type Target} from '../../../src/services/database/targets';
 import {getTypedSetting} from '../../../src/services/database/settings';
-import {dayOffset,localDay,MEALS,mealAtTime,type MealKey} from '../../../src/features/eat/foodCatalog';
+import {dayOffset,entryName,localDay,MEALS,mealAtTime,type MealKey} from '../../../src/features/eat/foodCatalog';
 import {copyDay,copyMeal,deleteEntry,listSavedMeals,logSavedMeal,readDiaryDay,
   summarizeEntries,type DiaryEntry,type SavedMeal} from '../../../src/features/eat/diaryRepository';
 
@@ -98,7 +98,7 @@ export default function EatHome(){
         return <Card key={meal} rim="eat" title={mealName(meal)}>
           <Typography tone="secondary">{part.count===0?t('eatI.notLogged'):
             hidden?t('eatI.items',{count:part.count}):t('eatI.kcal',{count:format(part.kcal)})}</Typography>
-          {inMeal.map(entry=><ListRow key={entry.id} title={entry.name}
+          {inMeal.map(entry=><ListRow key={entry.id} title={entryName(entry,language)}
             detail={hidden?t('eatI.hidden'):(entry.grams?t('eatI.grams',{count:format(entry.grams)})+' · ':'')+
               t('eatI.kcal',{count:format(entry.kcal)})}
             onPress={()=>router.push({pathname:'/(tabs)/eat/meal',params:{meal,day}})}/>)}

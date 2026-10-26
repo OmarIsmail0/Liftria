@@ -34,6 +34,14 @@ export function bundledFoods():Food[] {
 export function foodName(food:Food,language:AppLanguage):string {
   return language==='ar'?(food.nameAr??food.name):food.name;
 }
+let byId:Map<string,Food>|null=null;
+/** Diary rows store the English name as a snapshot; show a bundled food's Arabic name in Arabic. */
+export function entryName(entry:{foodId:string|null;name:string},language:AppLanguage):string {
+  if(language!=='ar'||!entry.foodId)return entry.name;
+  if(!byId)byId=new Map(bundledFoods().map(food=>[food.id,food]));
+  const food=byId.get(entry.foodId);
+  return food?foodName(food,language):entry.name;
+}
 /** Arabic normalization preserves meaningful letters while unifying common spellings. */
 export function normalizeFoodSearch(query:string):string {
   return query.toLowerCase().normalize('NFKD')
@@ -44,31 +52,52 @@ export function normalizeFoodSearch(query:string):string {
 }
 function closeWord(a:string,b:string):boolean{
   if(Math.abs(a.length-b.length)>2||a.length<3)return false;
+  const allowed=a.length>5?2:1;
   let previous=Array.from({length:b.length+1},(_,i)=>i);
   for(let i=1;i<=a.length;i++){
     const next=[i];
     for(let j=1;j<=b.length;j++)next.push(Math.min(
       (next[j-1]??100)+1,(previous[j]??100)+1,
       (previous[j-1]??100)+(a[i-1]===b[j-1]?0:1)));
+    if(Math.min(...next)>allowed)return false;
     previous=next;
   }
-  return (previous[b.length]??100)<= (a.length>5?2:1);
+  return (previous[b.length]??100)<=allowed;
+}
+/** Normalized names and words per food, computed once: re-normalizing ~8,200 foods on
+ * every keystroke took 120-440 ms in Node and far longer on the phone. */
+const searchKeys=new WeakMap<Food,{names:string[];words:string[][]}>();
+function keysFor(food:Food){
+  let keys=searchKeys.get(food);
+  if(!keys){
+    const names=[food.name,food.nameAr??'',...food.aliases].map(normalizeFoodSearch).filter(Boolean);
+    keys={names,words:names.map(name=>name.split(' '))};
+    searchKeys.set(food,keys);
+  }
+  return keys;
 }
 export function searchFoods(foods:readonly Food[],text:string,limit=40):Food[]{
   const query=normalizeFoodSearch(text);
   if(!query)return foods.slice(0,limit);
   const ranked: {food:Food;rank:number}[]=[];
+  const fuzzy:Food[]=[];
   for(const food of foods){
-    const names=[food.name,food.nameAr??'',...food.aliases].map(normalizeFoodSearch).filter(Boolean);
+    const {names,words}=keysFor(food);
     let score=99;
-    for(const name of names){
+    for(const [index,name] of names.entries()){
       if(name===query)score=Math.min(score,0);
       else if(name.startsWith(query))score=Math.min(score,1);
-      else if(name.split(' ').some(word=>word.startsWith(query)))score=Math.min(score,2);
+      else if(words[index]!.some(word=>word.startsWith(query)))score=Math.min(score,2);
       else if(name.includes(query))score=Math.min(score,3);
-      else if(name.split(' ').some(word=>closeWord(word,query)))score=Math.min(score,4);
     }
     if(score<99)ranked.push({food,rank:score});
+    else if(query.length>=3)fuzzy.push(food);
+  }
+  // Typo matching (edit distance) only when nothing matched exactly; it is the slow path.
+  if(ranked.length===0){
+    for(const food of fuzzy){
+      if(keysFor(food).words.some(list=>list.some(word=>closeWord(word,query))))ranked.push({food,rank:4});
+    }
   }
   ranked.sort((a,b)=>a.rank-b.rank ||
     Number(b.food.source==='egypt')-Number(a.food.source==='egypt') ||
