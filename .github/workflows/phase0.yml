@@ -25,8 +25,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: phase0-${{ github.ref }}
-  # A newer push (PR or main) makes the running 35-minute build pointless.
+  # A newer push (PR or main) makes the running 35-minute build pointless, but a build started
+  # by hand (the phase-end APK) gets its own group so later pushes can't cancel it.
+  group: phase0-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:

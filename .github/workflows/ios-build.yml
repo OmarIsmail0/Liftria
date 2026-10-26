@@ -29,6 +29,14 @@ jobs:
           node-version: '22'
           cache: npm
 
+      - name: Use the newest Xcode on the runner
+        # Expo's native packages need Swift 6.2+ (Xcode 26); the image's default Xcode is older.
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -n1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+          swift --version
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
