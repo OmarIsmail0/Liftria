@@ -48,6 +48,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['expo-image-picker', { cameraPermission: false, microphonePermission: false }],
     ['expo-sqlite', { useSQLCipher: false }],
     'expo-secure-store',
+    // RTL from the first launch on an Arabic phone (otherwise only after a restart).
+    ['expo-localization', { supportsRTL: true }],
     'react-native-health-connect',
     ['expo-build-properties', {
       android: { minSdkVersion: 28, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
