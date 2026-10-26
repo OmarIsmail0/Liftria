@@ -6,7 +6,9 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
 
 ---
 
-# Next up (2026-10-25)
+# Next up (2026-10-26): Phase 4 is DONE. Continue in `PHASE_5_ISSUES.md`.
+
+# History (2026-10-25)
 
 **Order:**
 1. ~~Phase 3~~ DONE: PRs #13–#16 merged. The phase-end APK is with the owner for S22 checks; their findings arrive as a separate fix task.
@@ -114,7 +116,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    - It uses `assets/data/foods/`: the USDA pack (8,171 foods) and the Egypt pack (29 dishes, Arabic and English). Both are on `main`; see `SOURCE.md` there and PHASE_4_PROMPT §2.
 5. ~~**PR J: `Phase 4 / Trends and body`.**~~ DONE: PR #21 merged (2026-10-26).
    - Add a **trend weight** (exponential moving average) line over the daily dots. The headline shows the trend, labeled "Trend". Unit-test the smoothing.
-6. **PR K: `Phase 4 / Hiku meal estimates`.**
+6. ~~**PR K: `Phase 4 / Hiku meal estimates`.**~~ DONE: PR #22 merged (2026-10-26).
    - Starts when PR J's `verify` is green.
    - Text is live. Photo stays behind `pending` until the owner's Test B.
    - **Egyptian dialect:** Hiku accepts Egyptian Arabic descriptions. When an item matches an Egypt-pack dish, use the pack's id, portion and values (labeled as the pack estimate), not the model's numbers.
