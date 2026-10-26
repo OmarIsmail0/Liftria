@@ -186,8 +186,10 @@ export default function ActiveWorkoutScreen() {
     if(position===undefined){setError(t('active.allLoggedError'));return;}
     setBusy(true);setError(null);
     try{await cancelSessionRestAlerts(view.id);}catch{setError(t('active.cancelAlertError'));setBusy(false);return;}
-    const superset=kind==='working'?supersetAfterSet(view.exercises,selected):
-      {nextIndex:null,startRest:true};
+    // A unilateral set is incomplete until the second side is logged.
+    const roundReady=!exercise.unilateral||current?.side!=='L';
+    const superset=kind==='working'&&roundReady?supersetAfterSet(view.exercises,selected):
+      {nextIndex:null,startRest:kind!=='working'};
     const effectiveRest=superset.startRest?exercise.restSec:0;
     const effort=effortMode==='off'||!effortValue.trim()?null:Number(effortValue);
     const saved=await logWorkoutSet({sessionId:view.id,sessionExerciseId:exercise.id,
