@@ -1,0 +1,61 @@
+--------- beginning of crash
+10-26 11:40:41.480   414   414 F libc    : Fatal signal 6 (SIGABRT), code -2 (SI_TIMER from pid 9125, uid 0) in tid 414 (traced_probes), pid 414 (traced_probes)
+10-26 11:41:50.138 14949 14949 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-26 11:41:50.138 14949 14949 F DEBUG   : Build fingerprint: 'google/sdk_gphone_x86_64/generic_x86_64_arm64:11/RSR1.240422.006/12134477:userdebug/dev-keys'
+10-26 11:41:50.138 14949 14949 F DEBUG   : Revision: '0'
+10-26 11:41:50.138 14949 14949 F DEBUG   : ABI: 'x86_64'
+10-26 11:41:50.138 14949 14949 F DEBUG   : Timestamp: 2026-10-26 11:41:45+0000
+10-26 11:41:50.138 14949 14949 F DEBUG   : pid: 414, tid: 414, name: traced_probes  >>> /system/bin/traced_probes <<<
+10-26 11:41:50.138 14949 14949 F DEBUG   : uid: 9999
+10-26 11:41:50.138 14949 14949 F DEBUG   : signal 6 (SIGABRT), code -2 (SI_TIMER from pid 9125, uid 0), fault addr --------
+10-26 11:41:50.139 14949 14949 F DEBUG   :     rax fffffffffffffffc  rbx 000079ff75470490  rcx 00007a01756bf1fa  rdx 00007ffe4d397e90
+10-26 11:41:50.139 14949 14949 F DEBUG   :     r8  0000000000000000  r9  00007ffe4d3a90b8  r10 0000000000000000  r11 0000000000000246
+10-26 11:41:50.139 14949 14949 F DEBUG   :     r12 00007ffe4d3981a8  r13 0000000000000000  r14 0000000000000002  r15 00007ffe4d397f10
+10-26 11:41:50.139 14949 14949 F DEBUG   :     rdi 000079ff75470490  rsi 0000000000000002
+10-26 11:41:50.139 14949 14949 F DEBUG   :     rbp 00007ffe4d397e90  rsp 00007ffe4d397e88  rip 00007a01756bf1fa
+10-26 11:41:57.070 14949 14949 F DEBUG   : backtrace:
+10-26 11:41:57.070 14949 14949 F DEBUG   :       #00 pc 00000000000b31fa  /apex/com.android.runtime/lib64/bionic/libc.so (__ppoll+10) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:41:57.220 14949 14949 F DEBUG   :       #01 pc 000000000006974a  /apex/com.android.runtime/lib64/bionic/libc.so (poll+74) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:41:57.220 14949 14949 F DEBUG   :       #02 pc 000000000007b9f5  /system/lib64/libperfetto.so (perfetto::base::UnixTaskRunner::Run()+101) (BuildId: 84e69ee0254f699f00602e106043a8b3)
+10-26 11:41:57.220 14949 14949 F DEBUG   :       #03 pc 00000000000c5ea2  /system/lib64/libperfetto.so (perfetto::ProbesMain(int, char**)+466) (BuildId: 84e69ee0254f699f00602e106043a8b3)
+10-26 11:41:57.220 14949 14949 F DEBUG   :       #04 pc 00000000000507c8  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+104) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:43:23.947 14958 14958 F libc    : Fatal signal 6 (SIGABRT), code -2 (SI_TIMER from pid 9, uid 0) in tid 14958 (traced_probes), pid 14958 (traced_probes)
+10-26 11:43:24.211 15063 15063 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-26 11:43:24.211 15063 15063 F DEBUG   : Build fingerprint: 'google/sdk_gphone_x86_64/generic_x86_64_arm64:11/RSR1.240422.006/12134477:userdebug/dev-keys'
+10-26 11:43:24.211 15063 15063 F DEBUG   : Revision: '0'
+10-26 11:43:24.211 15063 15063 F DEBUG   : ABI: 'x86_64'
+10-26 11:43:24.211 15063 15063 F DEBUG   : Timestamp: 2026-10-26 11:43:24+0000
+10-26 11:43:24.211 15063 15063 F DEBUG   : pid: 14958, tid: 14958, name: traced_probes  >>> /system/bin/traced_probes <<<
+10-26 11:43:24.211 15063 15063 F DEBUG   : uid: 9999
+10-26 11:43:24.211 15063 15063 F DEBUG   : signal 6 (SIGABRT), code -2 (SI_TIMER from pid 9, uid 0), fault addr --------
+10-26 11:43:24.211 15063 15063 F DEBUG   :     rax 0000000000000001  rbx 00007c5c2f21f410  rcx 00007c5e2f4851fa  rdx 00007ffdbc8a8f50
+10-26 11:43:24.211 15063 15063 F DEBUG   :     r8  0000000000000000  r9  00007ffdbc9d20b8  r10 0000000000000000  r11 0000000000000246
+10-26 11:43:24.211 15063 15063 F DEBUG   :     r12 00007ffdbc8a9268  r13 0000000000000000  r14 0000000000000002  r15 00007ffdbc8a8fd0
+10-26 11:43:24.211 15063 15063 F DEBUG   :     rdi 00007c5c2f21f410  rsi 0000000000000002
+10-26 11:43:24.211 15063 15063 F DEBUG   :     rbp 00007ffdbc8a8f50  rsp 00007ffdbc8a8f48  rip 00007c5e2f4851fa
+10-26 11:43:24.248 15063 15063 F DEBUG   : backtrace:
+10-26 11:43:24.248 15063 15063 F DEBUG   :       #00 pc 00000000000b31fa  /apex/com.android.runtime/lib64/bionic/libc.so (__ppoll+10) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:43:24.248 15063 15063 F DEBUG   :       #01 pc 000000000006974a  /apex/com.android.runtime/lib64/bionic/libc.so (poll+74) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:43:24.248 15063 15063 F DEBUG   :       #02 pc 000000000007b9f5  /system/lib64/libperfetto.so (perfetto::base::UnixTaskRunner::Run()+101) (BuildId: 84e69ee0254f699f00602e106043a8b3)
+10-26 11:43:24.248 15063 15063 F DEBUG   :       #03 pc 00000000000c5ea2  /system/lib64/libperfetto.so (perfetto::ProbesMain(int, char**)+466) (BuildId: 84e69ee0254f699f00602e106043a8b3)
+10-26 11:43:24.248 15063 15063 F DEBUG   :       #04 pc 00000000000507c8  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+104) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:45:34.764 15078 15078 F libc    : Fatal signal 6 (SIGABRT), code -2 (SI_TIMER from pid 76, uid 0) in tid 15078 (traced_probes), pid 15078 (traced_probes)
+10-26 11:46:26.023 15242 15242 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-26 11:46:26.023 15242 15242 F DEBUG   : Build fingerprint: 'google/sdk_gphone_x86_64/generic_x86_64_arm64:11/RSR1.240422.006/12134477:userdebug/dev-keys'
+10-26 11:46:26.023 15242 15242 F DEBUG   : Revision: '0'
+10-26 11:46:26.023 15242 15242 F DEBUG   : ABI: 'x86_64'
+10-26 11:46:26.023 15242 15242 F DEBUG   : Timestamp: 2026-10-26 11:46:26+0000
+10-26 11:46:26.023 15242 15242 F DEBUG   : pid: 15078, tid: 15078, name: traced_probes  >>> /system/bin/traced_probes <<<
+10-26 11:46:26.023 15242 15242 F DEBUG   : uid: 9999
+10-26 11:46:26.023 15242 15242 F DEBUG   : signal 6 (SIGABRT), code -2 (SI_TIMER from pid 76, uid 0), fault addr --------
+10-26 11:46:26.023 15242 15242 F DEBUG   :     rax fffffffffffffffc  rbx 00007b6d3ea39150  rcx 00007b6f3eb4c1fa  rdx 00007ffdeb0c4d00
+10-26 11:46:26.023 15242 15242 F DEBUG   :     r8  0000000000000000  r9  00007ffdeb10c0b8  r10 0000000000000000  r11 0000000000000246
+10-26 11:46:26.023 15242 15242 F DEBUG   :     r12 00007ffdeb0c5018  r13 0000000000000000  r14 0000000000000002  r15 00007ffdeb0c4d80
+10-26 11:46:26.023 15242 15242 F DEBUG   :     rdi 00007b6d3ea39150  rsi 0000000000000002
+10-26 11:46:26.023 15242 15242 F DEBUG   :     rbp 00007ffdeb0c4d00  rsp 00007ffdeb0c4cf8  rip 00007b6f3eb4c1fa
+10-26 11:46:26.027 15242 15242 F DEBUG   : backtrace:
+10-26 11:46:26.027 15242 15242 F DEBUG   :       #00 pc 00000000000b31fa  /apex/com.android.runtime/lib64/bionic/libc.so (__ppoll+10) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:46:26.027 15242 15242 F DEBUG   :       #01 pc 000000000006974a  /apex/com.android.runtime/lib64/bionic/libc.so (poll+74) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
+10-26 11:46:26.027 15242 15242 F DEBUG   :       #02 pc 000000000007b9f5  /system/lib64/libperfetto.so (perfetto::base::UnixTaskRunner::Run()+101) (BuildId: 84e69ee0254f699f00602e106043a8b3)
+10-26 11:46:26.027 15242 15242 F DEBUG   :       #03 pc 00000000000c5ea2  /system/lib64/libperfetto.so (perfetto::ProbesMain(int, char**)+466) (BuildId: 84e69ee0254f699f00602e106043a8b3)
+10-26 11:46:26.027 15242 15242 F DEBUG   :       #04 pc 00000000000507c8  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+104) (BuildId: edf0af8d613e7bdf6a416ec8f4edeb0d)
