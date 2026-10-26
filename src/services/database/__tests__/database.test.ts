@@ -98,7 +98,7 @@ jest.mock('expo-sqlite', () => ({ openDatabaseAsync: jest.fn(async () => mockDb)
 
 test('versioned migration, marker persistence and multirow insert', async () => {
   await initializeDatabase();
-  expect(await schemaVersion()).toEqual({ ok: true, value: 4 });
+  expect(await schemaVersion()).toEqual({ ok: true, value: 5 });
   expect(mockDb.withExclusiveTransactionAsync).toHaveBeenCalled();
   expect((await addTestData()).ok).toBe(true);
   const read = await readTestData();

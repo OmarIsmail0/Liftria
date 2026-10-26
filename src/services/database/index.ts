@@ -20,7 +20,7 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 // New application id com.liftria.app gets a fresh on-device database. Do not rename
 // databases after shipping to friends without an explicit migration/copy strategy.
 export const DB_NAME = 'liftria.db';
-export const DB_SCHEMA_VERSION = 4;
+export const DB_SCHEMA_VERSION = 5;
 
 /** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
 export const DB_MIGRATIONS = [
@@ -196,6 +196,16 @@ export const DB_MIGRATIONS = [
       id TEXT PRIMARY KEY, measured_at TEXT NOT NULL, kg REAL NOT NULL CHECK(kg>0),
       note TEXT, source TEXT NOT NULL DEFAULT 'liftria' CHECK(source='liftria')
     );
+  ` },
+  { version: 5, sql: `
+    ALTER TABLE sets ADD COLUMN rpe REAL CHECK(rpe IS NULL OR (rpe>=1 AND rpe<=10));
+    ALTER TABLE sets ADD COLUMN rir INTEGER CHECK(rir IS NULL OR (rir>=0 AND rir<=20));
+    ALTER TABLE session_exercises ADD COLUMN note TEXT;
+    ALTER TABLE session_exercises ADD COLUMN superset_group TEXT;
+    ALTER TABLE template_exercises ADD COLUMN superset_group TEXT;
+    UPDATE session_exercises SET note =
+      (SELECT value FROM app_settings WHERE key='train.note.' || session_exercises.id)
+    WHERE EXISTS (SELECT 1 FROM app_settings WHERE key='train.note.' || session_exercises.id);
   ` },
 ] as const;
 
