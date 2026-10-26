@@ -15,6 +15,7 @@ import { editLoggedSet, logWorkoutSet, readWorkout, readInProgressWorkout, remov
   type ActiveExercise, type ActiveSet, type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { RestOrb } from '../../../src/features/train/RestOrb';
 import { PlateCalculatorCard } from '../../../src/features/train/PlateCalculatorCard';
+import { isPlateLoadedBarbell } from '../../../src/features/train/plateCalculator';
 import { supersetAfterSet } from '../../../src/features/train/superset';
 import { displayWeight, fromKg, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getSetting, setSetting } from '../../../src/services/database';
@@ -109,6 +110,7 @@ export default function ActiveWorkoutScreen() {
   },[exerciseIds]);
   const muscleSummary=useMemo(()=>view?summarizeActiveMuscles(view,muscleLookup):null,[view,muscleLookup]);
   const exercise=view?.exercises[selected]??null;
+  const barbell=!!exercise&&isPlateLoadedBarbell(exercise.type,muscleLookup[exercise.exerciseId]?.equipment);
   const slots=useMemo(()=>exercise&&view?slotsFor(exercise,view.sets):[],[exercise,view]);
   const current=slots.find(slot=>!slot.logged)??null;
   const latestRest=view?.sets.filter(s=>s.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0]??null;
@@ -396,8 +398,8 @@ export default function ActiveWorkoutScreen() {
         setMenuOpen(false);if(exercise)router.push({
           pathname:'/(tabs)/train/exercise/[id]',params:{id:exercise.exerciseId}});
       }}/>
-      <Button label={t('gymParity.plates')} fullWidth variant="secondary"
-        disabled={exercise?.type!=='weighted'}
+      <Button label={t(barbell?'gymParity.plates':'gymParity.warmups')} fullWidth variant="secondary"
+        disabled={!exercise||(exercise.type!=='weighted'&&exercise.type!=='dumbbell')}
         onPress={()=>{setMenuOpen(false);setPlateVisible(true);}}/>
       {!exercise?.supersetGroup&&selected+1<view.exercises.length&&
         <Button label={t('gymParity.linkNext')} variant="secondary" fullWidth
@@ -424,9 +426,10 @@ export default function ActiveWorkoutScreen() {
           .then(()=>{setSelected(Math.min(view.exercises.length-1,selected+1));void refresh();setMenuOpen(false);});}}/>
       <Button label={t('active.close')} fullWidth onPress={()=>setMenuOpen(false)}/>
     </Sheet>
-    <Sheet visible={plateVisible} title={t('gymParity.plates')}
+    <Sheet visible={plateVisible} title={t(barbell?'gymParity.plates':'gymParity.warmups')}
       onClose={()=>setPlateVisible(false)}>
-      <PlateCalculatorCard targetKg={kg>0?kg:suggestion?.weight} onWarmup={item=>{
+      <PlateCalculatorCard targetKg={kg>0?kg:suggestion?.weight}
+       showPlates={barbell} unplatedStepKg={step} onWarmup={item=>{
         setKg(item.weight);setReps(item.reps);setKind('warm-up');
         setEdit(null);setPlateVisible(false);
       }}/>

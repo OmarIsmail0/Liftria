@@ -1,4 +1,4 @@
-import {calculatePlates,suggestedWarmups} from '../plateCalculator';
+import {calculatePlates,suggestedWarmups,suggestedUnplatedWarmups,isPlateLoadedBarbell} from '../plateCalculator';
 test('greedy kg plates produce the same load on both sides',()=>{
  const r=calculatePlates(100,20,'kg');
  expect(r.exact).toBe(true);
@@ -23,5 +23,18 @@ test('warmups are rounded DOWN to actual bar and plates, and never saved',()=>{
  expect(rows.map(r=>[r.actual,r.reps])).toEqual([[20,10],[40,5],[60,3],[80,1]]);
  expect(rows[3]?.weightKg).toBe(80);
  expect(suggestedWarmups(0,20,'kg')).toEqual([]);
- expect(suggestedWarmups(25,20,'kg').every(r=>r.actual>=20)).toBe(true);
+ expect(suggestedWarmups(25,20,'kg').map(r=>r.actual)).toEqual([20]);
+ expect(suggestedWarmups(20,20,'kg')).toEqual([]);
+ expect(suggestedWarmups(15,20,'kg')).toEqual([]);
+ expect(suggestedWarmups(50,20,'kg').map(r=>r.actual)).toEqual([20,30,40]);
+});
+
+test('machines and dumbbells get rounded percentages without fictitious plates',()=>{
+ expect(isPlateLoadedBarbell('weighted','barbell')).toBe(true);
+ expect(isPlateLoadedBarbell('weighted','machine')).toBe(false);
+ expect(isPlateLoadedBarbell('dumbbell','barbell')).toBe(false);
+ expect(isPlateLoadedBarbell('weighted',null)).toBe(false);
+ expect(suggestedUnplatedWarmups(20,'kg',2).map(r=>[r.actual,r.reps]))
+  .toEqual([[8,5],[12,3],[16,1]]);
+ expect(suggestedUnplatedWarmups(2,'kg',2)).toEqual([]);
 });

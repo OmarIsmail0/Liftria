@@ -4,13 +4,14 @@ import {View} from 'react-native';
 import {Button,Card,Stepper,Typography} from '../../design/primitives';
 import {useLanguage} from '../../i18n/LanguageProvider';
 import {getTypedSetting} from '../../services/database/settings';
-import {calculatePlates,suggestedWarmups} from './plateCalculator';
+import {calculatePlates,suggestedWarmups,suggestedUnplatedWarmups} from './plateCalculator';
 import {fromKg,toKg,type WeightUnit} from './workoutUnits';
 import {useTheme} from '../../design/ThemeProvider';
 export type WarmupPick={weight:number;reps:number};
 /** Read-only suggestions. This component never writes any set or setting. */
-export function PlateCalculatorCard({targetKg,onWarmup}:{
+export function PlateCalculatorCard({targetKg,onWarmup,showPlates=true,unplatedStepKg=2.5}:{
  targetKg?:number;onWarmup?:(item:WarmupPick)=>void;
+ showPlates?:boolean;unplatedStepKg?:number;
 }){
  const {t}=useLanguage(),{theme}=useTheme();
  const [unit,setUnit]=useState<WeightUnit>('kg'),[barKg,setBarKg]=useState(20),
@@ -27,21 +28,25 @@ export function PlateCalculatorCard({targetKg,onWarmup}:{
  },[]));
  const bar=unit==='kg'?barKg:barLb;
  const target=manual??(targetKg&&targetKg>0?fromKg(targetKg,unit):bar);
- const result=calculatePlates(target,bar,unit,small);
- const warmups=suggestedWarmups(toKg(target,unit),bar,unit,small);
+ const result=showPlates?calculatePlates(target,bar,unit,small):null;
+ const warmups=showPlates?suggestedWarmups(toKg(target,unit),bar,unit,small):
+  suggestedUnplatedWarmups(toKg(target,unit),unit,
+   Math.max(0.01,Number(fromKg(unplatedStepKg,unit).toFixed(2))));
  const label=(n:number)=>String(Number(n.toFixed(2)));
- return <Card title={t('gymParity.plates')} rim="train">
+ return <Card title={t(showPlates?'gymParity.plates':'gymParity.warmups')} rim="train">
    <Stepper label={t('gymParity.targetWeight',{unit})} value={target}
     min={0} max={unit==='kg'?1000:2200} step={unit==='kg'?2.5:5}
     unit={unit} onChange={setManual}/>
-   <Typography tone="secondary" size="small">{t('gymParity.barWeight',{unit})+': '+label(bar)+' '+unit}</Typography>
-   {result.belowBar&&<Typography tone="secondary">{t('gymParity.belowBar')}</Typography>}
-   <Typography bold>{result.exact?t('gymParity.exactWeight',{weight:label(result.actual),unit}):
-      t('gymParity.cannotMake',{weight:label(result.actual),unit})}</Typography>
-   <Typography>{t('gymParity.perSide')}</Typography>
-   {result.perSide.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-      {result.perSide.map(p=><Typography key={p.weight}>{p.count} × {label(p.weight)} {unit}</Typography>)}
-    </View>:<Typography tone="secondary">{t('gymParity.barOnly')}</Typography>}
+   {result?<>
+     <Typography tone="secondary" size="small">{t('gymParity.barWeight',{unit})+': '+label(bar)+' '+unit}</Typography>
+     {result.belowBar&&<Typography tone="secondary">{t('gymParity.belowBar')}</Typography>}
+     <Typography bold>{result.exact?t('gymParity.exactWeight',{weight:label(result.actual),unit}):
+        t('gymParity.cannotMake',{weight:label(result.actual),unit})}</Typography>
+     <Typography>{t('gymParity.perSide')}</Typography>
+     {result.perSide.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
+        {result.perSide.map(p=><Typography key={p.weight}>{p.count} × {label(p.weight)} {unit}</Typography>)}
+      </View>:<Typography tone="secondary">{t('gymParity.barOnly')}</Typography>}
+   </>:<Typography tone="secondary" size="small">{t('gymParity.unplatedHint')}</Typography>}
    {onWarmup&&<>
      <Typography bold>{t('gymParity.warmups')}</Typography>
      <Typography tone="secondary" size="small">{t('gymParity.warmupDisclaimer')}</Typography>
