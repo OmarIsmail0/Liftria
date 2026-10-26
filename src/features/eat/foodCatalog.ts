@@ -14,7 +14,8 @@ export type Food={
 };
 type PackRow={
   id:string;name:string;name_ar?:string;aliases?:string[];source:string;estimate?:boolean;
-  kcal:number;protein:number;carbs:number;fat:number;fiber:number|null;
+  kcal:number;protein:number|null;carbs:number|null;fat:number|null;fiber:number|null;
+  sugar?:number|null;sodium?:number|null;
   portions:(readonly [string,number]|readonly [string,string,number])[];
 };
 export function unpackFood(row:PackRow):Food {

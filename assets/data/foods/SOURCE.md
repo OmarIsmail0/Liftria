@@ -6,7 +6,7 @@
   - b80817294b8850530aaedf2e515c02593b1824f763a0ff356e5c2081643e6fd0  sr.zip
   - 70457ee9d9342f43bda2010318c85f04210c689fdeb9cd2da4c513b0e8dbc655  foundation.zip
 - **Built by:** `.github/scripts/build-food-pack.py` (the `Build USDA food pack` workflow).
-- **Per food:** stable `id` (`usda:<fdcId>`), name, FDC category, source (sr or foundation), kcal, protein, carbs, fat and fiber per 100 g, and household portions in grams where FDC has them.
+- **Per food:** stable `id` (`usda:<fdcId>`), name, FDC category, source (sr or foundation), kcal, protein, carbs, fat, fiber, sugar (g) and sodium (mg) per 100 g (null where FDC has no value, never 0), and household portions in grams where FDC has them.
 - **Credit (shown in the app):** "Food data: USDA FoodData Central (public domain)."
 
 # Egyptian foods (`egypt-foods.json`)
@@ -16,3 +16,5 @@
 - **They are estimates.** Every row has `estimate: true`. The app shows the `estimate` chip and "Recipe estimate from USDA ingredients". Real dishes vary by cook and shop. Never present them as measured or as a lab analysis.
 - **Changing a dish:** edit its recipe, rebuild (`python3 .github/scripts/build-egypt-foods.py assets/data/foods/egypt-recipes.json assets/data/foods/usda-foods.json assets/data/foods/egypt-foods.json`), and keep every id (ids are stable, like the USDA ones).
 - **Owner review wanted:** names, Arabic spelling, portion sizes (e.g. is a baladi loaf about 100 g?), and missing everyday foods.
+
+- **2026-10-26 rebuild:** added sugar and sodium; a nutrient FDC doesn't report is now null instead of 0. Five Egypt recipe ingredients moved from Foundation to the SR Legacy entry for the same food (garlic, granulated sugar, eggplant, 80/20 ground beef, whole-milk yogurt), because the Foundation entries don't report sodium or sugar.
