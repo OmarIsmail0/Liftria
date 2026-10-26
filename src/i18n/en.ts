@@ -11,6 +11,7 @@ export const en = {
   'polish.range4w': "4 weeks",
   'polish.range3m': "3 months",
   'polish.range1y': "1 year",
+  'polish.bodyMapCredit': "Body artwork: react-native-body-highlighter by ELABBASSI Hicham · MIT License",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

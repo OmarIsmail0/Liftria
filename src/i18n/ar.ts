@@ -12,6 +12,7 @@ export const ar: Record<TranslationKey, string> = {
   'polish.range4w': "4 أسابيع",
   'polish.range3m': "3 أشهر",
   'polish.range1y': "سنة واحدة",
+  'polish.bodyMapCredit': "رسوم العضلات: react-native-body-highlighter من ELABBASSI Hicham · ترخيص MIT",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',
