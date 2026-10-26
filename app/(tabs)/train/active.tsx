@@ -374,7 +374,7 @@ export default function ActiveWorkoutScreen() {
     <Sheet visible={restVisible} title={restLabel}
       description={t('active.restPendingDesc')}
       onClose={()=>setRestVisible(false)}>
-      <RestOrb remainingMs={rest.remainingMs} totalMs={(exercise?.restSec??120)*1000}
+      <RestOrb remainingMs={rest.remainingMs} totalMs={(view.exercises.find(e=>e.id===visibleRest?.sessionExerciseId)?.restSec??120)*1000}
         label={restLabel} />
       <Chip kind="pending" label={t('active.devicePending')}/>
       <Typography tone="secondary" size="small">{t('active.nextSet',{name:exercise?.name??t('active.nextExercise'),set:current?t('active.set',{count:current.position+1}):t('active.chooseExercise')})}</Typography>
@@ -443,7 +443,9 @@ export default function ActiveWorkoutScreen() {
       {previousNote&&<Typography tone="secondary">{t('gymParity.previousNote',{note:previousNote})}</Typography>}
       <Field label={t('active.notesLabel')} value={exerciseNote} onChangeText={setExerciseNote} multiline/>
       <Button label={t('active.saveNote')} variant="train" fullWidth onPress={()=>{
-        if(exercise)void saveWorkoutExerciseNote(exercise.id,exerciseNote).then(()=>setNoteOpen(false));
+        if(exercise)void saveWorkoutExerciseNote(exercise.id,exerciseNote).then(result=>{
+          if(result.ok)setNoteOpen(false);else setError(t('active.saveError'));
+        });
       }}/>
     </Sheet>
     <Sheet visible={pendingUndo!==null} title={t('active.undoTitle')}
