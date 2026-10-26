@@ -19,19 +19,21 @@ export default function EatHome(){
   const [target,setTarget]=useState<Target|null>(null);
   const [hidden,setHidden]=useState(false);
   const [ramadan,setRamadan]=useState(false);
+  const [iftarTime,setIftarTime]=useState('18:00');
   const [labels,setLabels]=useState<Partial<Record<MealKey,string>>>({});
   const [saved,setSaved]=useState<SavedMeal[]>([]);
   const [notice,setNotice]=useState<string|null>(null);
   const [undo,setUndo]=useState<string|null>(params.undo??null);
   const [error,setError]=useState(false);
   const reload=useCallback(async()=>{
-    const [diary,goal,hide,fast,names,meals]=await Promise.all([
+    const [diary,goal,hide,fast,names,meals,iftar]=await Promise.all([
       readDiaryDay(day),getCurrentTarget(),getTypedSetting('hideNumbers'),
-      getTypedSetting('eat.ramadan'),getTypedSetting('eat.mealNames'),listSavedMeals()]);
+      getTypedSetting('eat.ramadan'),getTypedSetting('eat.mealNames'),listSavedMeals(),getTypedSetting('eat.iftarTime')]);
     if(diary.ok)setEntries(diary.value);else setError(true);
     if(goal.ok)setTarget(goal.value);
     if(hide.ok)setHidden(hide.value);
     if(fast.ok)setRamadan(fast.value);
+    if(iftar.ok)setIftarTime(iftar.value);
     if(names.ok)setLabels(names.value??{});
     if(meals.ok)setSaved(meals.value);
   },[day]);
@@ -61,7 +63,7 @@ export default function EatHome(){
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{gap:theme.layout.cardGap,paddingVertical:theme.space[3]}}>
       <Header title={t('nav.eat')} right={<Button label={t('eatI.quick')} variant="secondary"
-        onPress={()=>router.push({pathname:'/(tabs)/eat/quick',params:{day,meal:mealAtTime(new Date())}})}/>}/>
+        onPress={()=>router.push({pathname:'/(tabs)/eat/quick',params:{day,meal:mealAtTime(new Date(),ramadan,iftarTime)}})}/>}/>
       <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
         <Button label={t('eatI.previous')} variant="ghost" onPress={()=>setDay(dayOffset(day,-1))}/>
         <Typography bold>{day===today?t('eatI.today'):day}</Typography>

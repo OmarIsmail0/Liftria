@@ -125,6 +125,8 @@ export const en = {
   'eatI.weekAccessible': "Food logged on {count} days in this week.",
   'eatI.caloriesOnlyNoMacros': "Calories-only entries do not include macros.",
   'eatI.gramUnit': "g",
+  'eatI.iftarTime': "Iftar time (local, HH:MM)",
+  'eatI.saveTime': "Save iftar time",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

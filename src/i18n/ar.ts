@@ -126,6 +126,8 @@ export const ar: Record<TranslationKey, string> = {
   'eatI.weekAccessible': "تم تسجيل الطعام خلال {count} أيام هذا الأسبوع.",
   'eatI.caloriesOnlyNoMacros': "الأصناف المسجلة بسعراتها فقط لا تتضمن قيم المغذيات.",
   'eatI.gramUnit': "g",
+  'eatI.iftarTime': "وقت الإفطار المحلي (HH:MM)",
+  'eatI.saveTime': "حفظ وقت الإفطار",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',

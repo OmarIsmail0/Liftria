@@ -84,8 +84,14 @@ export function dayOffset(day:string,offset:number):string{
   const shifted=new Date(year??2000,(month??1)-1,(date??1)+offset,12);
   return localDay(shifted);
 }
-export function mealAtTime(date:Date):MealKey{
+export function mealAtTime(date:Date,ramadan=false,iftarTime='18:00'):MealKey{
   const minute=date.getHours()*60+date.getMinutes();
+  if(ramadan){
+    const [h,m]=iftarTime.split(':').map(Number);
+    const iftar=(h??18)*60+(m??0);
+    // During the daytime default to the upcoming Iftar, and after Iftar to snacks.
+    return minute<360?'breakfast':minute<=iftar+90?'dinner':'snacks';
+  }
   return minute<630?'breakfast':minute<900?'lunch':minute<1020?'snacks':'dinner';
 }
 export type Nutrition={kcal:number;protein:number|null;carbs:number|null;fat:number|null};

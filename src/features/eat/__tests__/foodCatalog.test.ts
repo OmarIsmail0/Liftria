@@ -32,6 +32,9 @@ test('local days and time windows cross boundaries without UTC-derived day',()=>
   expect(mealAtTime(new Date(2026,9,26,10,30))).toBe('lunch');
   expect(mealAtTime(new Date(2026,9,26,15,0))).toBe('snacks');
   expect(mealAtTime(new Date(2026,9,26,17,0))).toBe('dinner');
+  expect(mealAtTime(new Date(2026,9,26,4,0),true,'17:30')).toBe('breakfast');
+  expect(mealAtTime(new Date(2026,9,26,15,0),true,'17:30')).toBe('dinner');
+  expect(mealAtTime(new Date(2026,9,26,20,0),true,'17:30')).toBe('snacks');
 });
 test('real packs have unique stable ids and finite nonnegative nutrition',()=>{
   const foods=bundledFoods();
