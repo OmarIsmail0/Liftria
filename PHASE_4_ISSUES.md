@@ -100,6 +100,10 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    - **For screenshots:** list the routes for Today, Settings, Profile, onboarding profile/goal, and Train home in the PR description.
 4. **PR I: `Phase 4 / Diary, search and targets`.**
    - Starts when PR P's `verify` is green; branch from PR P.
+   - **Carry-overs from the PR #18 screenshot review** (small; do first):
+     - English equipment labels in title case ("Machine", not "machine").
+     - Center "Set a target" on Today under the centered orb text.
+     - Same activity wording and the same sex control in onboarding and Profile.
    - **Also in PR I, from the competitive review (`docs/COMPETITIVE_REVIEW.md`):**
      - **Fast repeat logging:** copy a meal or a whole day, **saved meals** (a combo logged in one tap), favorites, and recents ranked by time of day. Target: a repeat meal in 2 taps, a searched food in ≤ 4 taps.
      - **Ramadan mode:** meals can be renamed, with a one-tap preset **Suhoor / Iftar / Snacks**. It's a setting, off by default, with no medical advice.
