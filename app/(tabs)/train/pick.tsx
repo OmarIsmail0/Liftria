@@ -6,6 +6,7 @@ import { ensureExercisePack, listExercises, searchExercises } from '../../../src
 import { appendExerciseToActiveSession } from '../../../src/services/database/gymRepositories';
 import { replaceActiveExercise } from '../../../src/features/train/workoutData';
 import type { Exercise } from '../../../src/services/database/gymTypes';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 
 export default function AddWorkoutExercise() {
  const {t}=useLanguage();
@@ -39,6 +40,7 @@ export default function AddWorkoutExercise() {
     <Card title={t('pick.offlineLibrary')}>
       <Field label={t('pick.search')} value={query} onChangeText={setQuery}/>
       {matches.map(e=><ListRow key={e.id} title={e.name}
+        leading={<ExerciseThumbnail exercise={e} />}
         detail={e.equipment??t('pick.noEquipment')} onPress={()=>void add(e.id)}/>)}
       {matches.length===0&&<Typography tone="secondary">{t('pick.noMatch')}</Typography>}
     </Card>

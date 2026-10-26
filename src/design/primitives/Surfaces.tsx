@@ -113,8 +113,8 @@ export function Banner({ title, message, variant = 'info' }: {
   </View>;
 }
 
-export function ListRow({ title, detail, onPress, suffix, accessibilityLabel }: {
-  title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; accessibilityLabel?: string;
+export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel }: {
+  title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; leading?: ReactNode; accessibilityLabel?: string;
 }) {
   const { theme } = useTheme();
   const { isRTL } = useLanguage();
@@ -122,6 +122,7 @@ export function ListRow({ title, detail, onPress, suffix, accessibilityLabel }: 
     accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? (detail ? `${title}. ${detail}` : title)}
     style={{ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
       gap: theme.space[3], borderBottomWidth: 1, borderColor: theme.color.border.subtle, paddingVertical: theme.space[2] }}>
+    {leading}
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography bold>{title}</Typography>{detail && <Typography tone="secondary" size="small">{detail}</Typography>}
     </View>

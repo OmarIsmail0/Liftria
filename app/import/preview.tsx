@@ -7,6 +7,7 @@ import { readImportContext } from '../../src/features/import/importRepository';
 import { canImportPlan, createImportPlan, resolveImportMappings, keepAllAsOwn, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
 import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
+import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
 import { getTypedSetting } from '../../src/services/database/settings';
 import { formatNumber } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';

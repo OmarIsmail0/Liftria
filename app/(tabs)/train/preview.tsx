@@ -3,6 +3,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 import { startManualWorkout, readInProgressWorkout, discardInProgressWorkout, type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { listTemplates, exerciseSessions, type Template } from '../../../src/services/database/gymRepositories';
@@ -73,6 +74,7 @@ export default function WorkoutPreview() {
     </Card>
     <Card title={t('preview.upNext')}>
       {template?template.exercises.map((e,i)=><ListRow key={i}
+        leading={lookup[e.exerciseId]?<ExerciseThumbnail exercise={lookup[e.exerciseId]!} />:undefined}
         title={lookup[e.exerciseId]?.name??t('preview.exercise')}
         detail={t('preview.sets',{count:e.targetSets,min:e.repMin,max:e.repMax})+
           (last[e.exerciseId]?t('preview.last',{date:new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}):t('preview.noLast'))}/>):
