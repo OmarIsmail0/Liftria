@@ -1,7 +1,7 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Linking, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
+import { AccessibilityInfo, AppState, Linking, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Field, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../../src/design/primitives';
@@ -11,9 +11,11 @@ import { askRestPermission, cancelSessionRestAlerts, scheduleRestOver } from '..
 import { displayRest, elapsedLabel, restAnnouncement, restAt, shiftRest } from '../../../src/features/train/restClock';
 import { editLoggedSet, logWorkoutSet, readWorkout, readInProgressWorkout, removeLoggedSet,
   updateRestDeadline, previousWorkingSets, suggestionForSlot, reorderActiveExercise,
-  saveWorkoutExerciseNote, readWorkoutExerciseNote, workoutNumbers,
+  saveWorkoutExerciseNote, readWorkoutExerciseNote, previousExerciseNote, updateActiveSuperset, workoutNumbers,
   type ActiveExercise, type ActiveSet, type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { RestOrb } from '../../../src/features/train/RestOrb';
+import { PlateCalculatorCard } from '../../../src/features/train/PlateCalculatorCard';
+import { supersetAfterSet } from '../../../src/features/train/superset';
 import { displayWeight, fromKg, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getSetting, setSetting } from '../../../src/services/database';
 import { getTypedSetting } from '../../../src/services/database/settings';
@@ -65,11 +67,16 @@ export default function ActiveWorkoutScreen() {
   const [smallPlates,setSmallPlates]=useState(false);
   const [suggestion,setSuggestion]=useState<{weight:number;reps:number;progressed:boolean}|null>(null);
   const [exerciseNote,setExerciseNote]=useState('');
+  const [previousNote,setPreviousNote]=useState<string|null>(null);
+  const [plateVisible,setPlateVisible]=useState(false);
+  const [effortMode,setEffortMode]=useState<'off'|'rpe'|'rir'>('off');
+  const [effortValue,setEffortValue]=useState('');
   const [menuOpen,setMenuOpen]=useState(false);
   const [noteOpen,setNoteOpen]=useState(false);
   const [muscleOpen,setMuscleOpen]=useState(false);
   const [muscleLookup,setMuscleLookup]=useState<Record<string,Exercise>>({});
   const previousRestMs=useRef<number|null>(null);
+  const exerciseScroll=useRef<ScrollView>(null);
   const currentId=id??'';
   const refresh=useCallback(async()=>{
     const loaded=currentId?await readWorkout(currentId):await readInProgressWorkout();
@@ -83,6 +90,7 @@ export default function ActiveWorkoutScreen() {
     void getTypedSetting('haptics').then(result=>{if(result.ok)setHaptics(result.value);});
     void getTypedSetting('units.weight').then(result=>{if(result.ok)setWeightUnit(result.value);});
     void getTypedSetting('units.smallPlates').then(result=>{if(result.ok)setSmallPlates(result.value);});
+    void getTypedSetting('train.effortField').then(result=>{if(result.ok)setEffortMode(result.value);});
     return()=>setFocused(false);
   },[refresh]));
   useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
@@ -124,10 +132,29 @@ export default function ActiveWorkoutScreen() {
   },[exercise?.exerciseId,current?.position,current?.side,edit,step]);
   useEffect(()=>{
     if(!exercise)return;
-    void readWorkoutExerciseNote(exercise.id).then(result=>{
-      if(result.ok)setExerciseNote(result.value);
+    let live=true;
+    void Promise.all([readWorkoutExerciseNote(exercise.id),
+      previousExerciseNote(exercise.exerciseId)]).then(([current,previous])=>{
+      if(!live)return;
+      if(current.ok)setExerciseNote(current.value);
+      if(previous.ok)setPreviousNote(previous.value);
     });
-  },[exercise?.id]);
+    return()=>{live=false;};
+  },[exercise?.id,exercise?.exerciseId]);
+  useEffect(()=>{
+    if(!view)return;
+    const sub=AppState.addEventListener('change',state=>{
+      if(state==='active'){void cancelSessionRestAlerts(view.id).catch(()=>setError(t('active.cancelAlertError')));return;}
+      if(state!=='background')return;
+      const latest=view.sets.filter(row=>row.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0];
+      if(latest?.restDeadline&&restAt(latest.restDeadline).status==='running'){
+        const active=view.exercises.find(e=>e.id===latest.sessionExerciseId);
+        void scheduleRestOver(latest.restDeadline,view.id,active?.name??view.title,latest.id)
+          .catch(()=>setError(t('active.scheduleError')));
+      }
+    });
+    return()=>sub.remove();
+  },[view,t]);
   useEffect(()=>{
     if(!focused||rest.status==='idle')return;
     const remaining=rest.remainingMs;
@@ -142,7 +169,11 @@ export default function ActiveWorkoutScreen() {
     if(!view||!exercise||busy)return;
     if(edit){
       setBusy(true);
-      const result=await editLoggedSet(edit.id,view.id,kg,reps);
+      const effort=effortMode==='off'?undefined:{
+        rpe:effortMode==='rpe'&&effortValue.trim()?Number(effortValue):null,
+        rir:effortMode==='rir'&&effortValue.trim()?Number(effortValue):null,
+      };
+      const result=await editLoggedSet(edit.id,view.id,kg,reps,effort);
       if(result.ok&&result.value){setEdit(null);setError(null);await refresh();}
       else setError(t('active.editError'));
       setBusy(false);return;
@@ -155,15 +186,23 @@ export default function ActiveWorkoutScreen() {
     if(position===undefined){setError(t('active.allLoggedError'));return;}
     setBusy(true);setError(null);
     try{await cancelSessionRestAlerts(view.id);}catch{setError(t('active.cancelAlertError'));setBusy(false);return;}
+    const superset=kind==='working'?supersetAfterSet(view.exercises,selected):
+      {nextIndex:null,startRest:true};
+    const effectiveRest=superset.startRest?exercise.restSec:0;
+    const effort=effortMode==='off'||!effortValue.trim()?null:Number(effortValue);
     const saved=await logWorkoutSet({sessionId:view.id,sessionExerciseId:exercise.id,
-      position,side:exercise.unilateral?(current?.side??'L'):null,weight:kg,reps,kind,restSec:exercise.restSec});
+      position,side:exercise.unilateral?(current?.side??'L'):null,weight:kg,reps,kind,
+      restSec:effectiveRest,rpe:kind==='working'&&effortMode==='rpe'?effort:null,
+      rir:kind==='working'&&effortMode==='rir'?effort:null});
     setBusy(false);
     if(!saved.ok){setError(t('active.saveError'));return;}
     if(haptics)Vibration.vibrate(12);
     setLastLogged(saved.value);
     setRestSet(saved.value);
-    if(kind==='working')setReps(0);
-    void AccessibilityInfo.announceForAccessibility(t('active.loggedAnnouncement',{name:kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:position+1}),seconds:exercise.restSec}));
+    if(kind==='working'){setReps(0);setEffortValue('');}
+    if(kind==='working'&&superset.nextIndex!==null&&superset.nextIndex!==selected)
+      choose(superset.nextIndex);
+    void AccessibilityInfo.announceForAccessibility(t('active.loggedAnnouncement',{name:kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:position+1}),seconds:effectiveRest}));
     await refresh();
     if(saved.value.restDeadline){
       const asked=await getSetting('rest.permissionPromptSeen');
@@ -172,7 +211,7 @@ export default function ActiveWorkoutScreen() {
     }
   };
   const armNotification=async(set:ActiveSet,name:string)=>{
-    if(!set.restDeadline||!view)return;
+    if(!set.restDeadline||!view||AppState.currentState==='active')return;
     try{await scheduleRestOver(set.restDeadline,view.id,name,set.id);}
     catch{setError(t('active.scheduleError'));}
   };
@@ -205,8 +244,10 @@ export default function ActiveWorkoutScreen() {
       if(next&&restAt(next).status==='running'&&exercise)void armNotification(updated,exercise.name);
     }
   };
-  const choose=(index:number)=>{setSelected(index);setEdit(null);setSuggestion(null);setKg(0);setReps(0);};
-  const selectEdit=(s:ActiveSet)=>{setEdit(s);setKg(s.weight);setReps(s.reps);setKind(s.kind);};
+  const choose=(index:number)=>{setSelected(index);setEdit(null);setSuggestion(null);setKg(0);setReps(0);
+    setEffortValue('');exerciseScroll.current?.scrollTo({x:Math.max(0,index-1)*145,animated:true});};
+  const selectEdit=(s:ActiveSet)=>{setEdit(s);setKg(s.weight);setReps(s.reps);setKind(s.kind);
+    setEffortValue(s.rpe!=null?String(s.rpe):s.rir!=null?String(s.rir):'');};
   if(!view)return <Screen embedded><Header title={t('active.workout')} onBack={()=>router.replace('/(tabs)/train')}/>
     <Typography tone="secondary">{error??t('active.opening')}</Typography></Screen>;
   return <Screen embedded scroll={false}>
@@ -238,7 +279,7 @@ export default function ActiveWorkoutScreen() {
       </View>
     </View>
     <ScrollView contentContainerStyle={{padding:theme.layout.gutter,gap:theme.layout.cardGap,paddingBottom:theme.space[3]}}>
-      <ScrollView horizontal contentContainerStyle={{gap:theme.space[2]}} showsHorizontalScrollIndicator={false}>
+      <ScrollView ref={exerciseScroll} horizontal contentContainerStyle={{gap:theme.space[2]}} showsHorizontalScrollIndicator={false}>
         {view.exercises.map((e,index)=><Button key={e.id} label={e.name}
           variant={selected===index?'train':'secondary'} onPress={()=>choose(index)}/>)}
       </ScrollView>
@@ -246,6 +287,7 @@ export default function ActiveWorkoutScreen() {
         <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
           <Button label={t('active.exerciseOptions')} variant="secondary" onPress={()=>setMenuOpen(true)}/>
         </View>
+        {exercise.supersetGroup&&<Typography tone="secondary">{t('gymParity.supersetEnd')}</Typography>}
         {view.sets.filter(s=>s.sessionExerciseId===exercise.id&&s.kind==='warm-up')
           .sort((a,b)=>a.position-b.position).map((s,index)=>
             <ListRow key={s.id} title={t('active.warmupRow',{count:index+1})}
@@ -263,7 +305,9 @@ export default function ActiveWorkoutScreen() {
               <Typography bold>{label}{active?' · '+t('active.current'):''}</Typography>
               {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t('active.loggedA11y',{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:weightUnit,reps:slot.logged.reps})}
                 onPress={()=>selectEdit(slot.logged!)}>
-                <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit)} × {slot.logged.reps} · {t('active.edit')}</Typography>
+                <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit)} × {slot.logged.reps}
+                {slot.logged.rpe!=null?' · RPE '+slot.logged.rpe:''}
+                {slot.logged.rir!=null?' · RIR '+slot.logged.rir:''} · {t('active.edit')}</Typography>
               </Pressable>:
                 <Typography tone="tertiary" size="small">{t('active.notLogged')}</Typography>}
             </View>
@@ -301,6 +345,13 @@ export default function ActiveWorkoutScreen() {
           step={fromKg(step,weightUnit)} unit={weightUnit}/>
         <GymStepper label={t('active.reps')} value={reps} onChange={setReps} step={1} max={500}/>
       </View>
+      {effortMode!=='off'&&kind==='working'&&
+        <View style={{gap:theme.space[1]}}>
+          <Field label={t(effortMode==='rpe'?'gymParity.rpeLabel':'gymParity.rirLabel')}
+            value={effortValue} onChangeText={setEffortValue} keyboardType="decimal-pad"
+            placeholder={t('gymParity.notEntered')}/>
+          <Button label={t('gymParity.notEntered')} variant="ghost" onPress={()=>setEffortValue('')}/>
+        </View>}
       <SegmentedControl label={t('active.kind')} value={kind} onChange={setKind}
         options={[{value:'working',label:t('active.working')},{value:'warm-up',label:t('active.warmup')}]}/>
       {denied&&<View style={{gap:theme.space[1]}}>
@@ -343,6 +394,20 @@ export default function ActiveWorkoutScreen() {
         setMenuOpen(false);if(exercise)router.push({
           pathname:'/(tabs)/train/exercise/[id]',params:{id:exercise.exerciseId}});
       }}/>
+      <Button label={t('gymParity.plates')} fullWidth variant="secondary"
+        disabled={exercise?.type!=='weighted'}
+        onPress={()=>{setMenuOpen(false);setPlateVisible(true);}}/>
+      {!exercise?.supersetGroup&&selected+1<view.exercises.length&&
+        <Button label={t('gymParity.linkNext')} variant="secondary" fullWidth
+          onPress={()=>{void updateActiveSuperset(view.id,selected,2).then(()=>{
+            void refresh();setMenuOpen(false);});}}/>}
+      {!exercise?.supersetGroup&&selected+2<view.exercises.length&&
+        <Button label={t('gymParity.superset')+' × 3'} variant="secondary" fullWidth
+          onPress={()=>{void updateActiveSuperset(view.id,selected,3).then(()=>{
+            void refresh();setMenuOpen(false);});}}/>}
+      {exercise?.supersetGroup&&<Button label={t('gymParity.unlink')} variant="secondary" fullWidth
+        onPress={()=>{void updateActiveSuperset(view.id,selected,0).then(()=>{
+          void refresh();setMenuOpen(false);});}}/>}
       <Button label={t('active.notes')} fullWidth variant="secondary"
         onPress={()=>{setMenuOpen(false);setNoteOpen(true);}}/>
       <Button label={t('active.replace')} fullWidth variant="secondary" onPress={()=>{
@@ -357,6 +422,13 @@ export default function ActiveWorkoutScreen() {
           .then(()=>{setSelected(Math.min(view.exercises.length-1,selected+1));void refresh();setMenuOpen(false);});}}/>
       <Button label={t('active.close')} fullWidth onPress={()=>setMenuOpen(false)}/>
     </Sheet>
+    <Sheet visible={plateVisible} title={t('gymParity.plates')}
+      onClose={()=>setPlateVisible(false)}>
+      <PlateCalculatorCard targetKg={kg>0?kg:suggestion?.weight} onWarmup={item=>{
+        setKg(item.weight);setReps(item.reps);setKind('warm-up');
+        setEdit(null);setPlateVisible(false);
+      }}/>
+    </Sheet>
     <Sheet visible={muscleOpen} title={t('polish.musclesSoFar')}
       description={t('polish.effectiveHint')} onClose={()=>setMuscleOpen(false)}>
       <BodyMap primary={muscleSummary?.primary??[]} secondary={muscleSummary?.secondary??[]}/>
@@ -366,6 +438,7 @@ export default function ActiveWorkoutScreen() {
             detail={t('polish.effectiveSets',{count:formatNumber(language,muscleSummary?.credit[m]??0)})}/>)}
     </Sheet>
     <Sheet visible={noteOpen} title={t('active.noteTitle')} onClose={()=>setNoteOpen(false)}>
+      {previousNote&&<Typography tone="secondary">{t('gymParity.previousNote',{note:previousNote})}</Typography>}
       <Field label={t('active.notesLabel')} value={exerciseNote} onChangeText={setExerciseNote} multiline/>
       <Button label={t('active.saveNote')} variant="train" fullWidth onPress={()=>{
         if(exercise)void saveWorkoutExerciseNote(exercise.id,exerciseNote).then(()=>setNoteOpen(false));
