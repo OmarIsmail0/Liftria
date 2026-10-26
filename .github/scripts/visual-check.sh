@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installs a Liftria APK on the running emulator and screenshots the app's screens and every
-# hidden primitive story in dark and light mode. Usage: visual-check.sh <apk> <out-dir> [en|ar]
+# hidden primitive story in dark and light mode. Usage: visual-check.sh <apk> <out-dir> [en|en-dark|en-light|ar]
 # "ar" switches the emulator to Arabic (Egypt) first and shoots AR_SCREENS in dark only. It runs
 # on its own emulator: switching locale after the English passes hung the emulator (PR #17).
 set -uo pipefail
@@ -43,7 +43,9 @@ if [ "$LANG_PASS" = ar ]; then
     done
   done
 else
-  for mode in dark light; do
+  # "en" = both modes; "en-dark" / "en-light" = one mode each (one emulator per mode in CI).
+  case "$LANG_PASS" in en-dark) MODES=dark;; en-light) MODES=light;; *) MODES="dark light";; esac
+  for mode in $MODES; do
     if [ "$mode" = dark ]; then adb shell cmd uimode night yes; else adb shell cmd uimode night no; fi
     sleep 2
     for entry in $SCREENS; do shot "$mode" "${entry%%=*}" "liftria://${entry#*=}"; done

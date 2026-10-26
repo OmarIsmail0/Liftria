@@ -47,7 +47,8 @@ jobs:
           echo "apk=$([ "${n:-0}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           [ "${n:-0}" -gt 0 ] || echo "No APK in run $RUN_ID (draft PR build skipped); no emulator check."
 
-  # English (dark + light) and Arabic (dark) run on separate emulators in parallel: switching
+  # English dark, English light and Arabic (dark) run on separate emulators in parallel: one
+  # emulator per pass keeps each job short (a dark+light English job lost its runner). Switching
   # locale on the emulator that already ran the English passes hung it (PR #17).
   screenshots:
     needs: has-apk
@@ -57,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lang: [en, ar]
+        lang: [en-dark, en-light, ar]
     permissions:
       actions: read          # to download the build's APK artifact
     env:
@@ -175,7 +176,7 @@ jobs:
               [ -n "$row" ] && echo "$row|"
               echo
             done
-            for lang in en ar; do
+            for lang in en-dark en-light ar; do
               if grep -qs "FATAL EXCEPTION\\|Fatal signal" shots/logcat-crash-$lang.txt shots/logcat-errors-$lang.txt; then
                 echo "> ⚠️ **The app crashed on the emulator ($lang).** Crash log: [logcat-crash-$lang.txt](https://github.com/${{ github.repository }}/blob/visual-checks/$DIR/logcat-crash-$lang.txt)"
                 echo
