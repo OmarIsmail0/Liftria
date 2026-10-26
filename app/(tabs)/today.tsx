@@ -148,7 +148,10 @@ export default function TodayTab() {
               t('eatI.caloriesOnlyNoMacros'):t('eatI.macroAmounts',{
                 p:diary.protein===null?'—':formatNumber(language,Math.round(diary.protein)),
                 c:diary.carbs===null?'—':formatNumber(language,Math.round(diary.carbs)),
-                f:diary.fat===null?'—':formatNumber(language,Math.round(diary.fat))})):t('today.macrosNotLogged')}</Typography>
+                f:diary.fat===null?'—':formatNumber(language,Math.round(diary.fat))})+
+                (diary.completeMacroItems<diary.count?' · '+
+                t('eatI.partialMacros',{count:diary.completeMacroItems,total:diary.count}):''))
+              :t('today.macrosNotLogged')}</Typography>
         </> : <>
           <Typography tone="secondary">{diary.logged?t('eatI.eaten',{count:formatNumber(language,diary.kcal)}):t('today.firstMeal')}</Typography>
           <Typography tone="secondary" size="small">{t('today.noTarget')}</Typography>

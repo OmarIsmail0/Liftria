@@ -16,7 +16,8 @@ export default function DemoDiary(){
   const diary=await readDiaryDay(today);
   if(!diary.ok){setError('Could not read the local diary.');setBusy(false);return;}
   const pack=bundledFoods();
-  const eggs=pack.find(row=>row.source==='usda'&&/^eggs?\b/i.test(row.name));
+  const eggs=pack.find(row=>row.id==='usda:173424'&&
+   row.name.toLowerCase().includes('egg, whole, cooked, hard-boiled'));
   const foods:{id:string;meal:MealKey}[]=[
    {id:'egypt:koshari',meal:'lunch'},
    {id:'egypt:baladi-bread',meal:'breakfast'},
@@ -28,7 +29,7 @@ export default function DemoDiary(){
    if(!result.ok)return false;
    seeded.push(result.value);return true;
   }
-  if(!eggs){setError('The bundled USDA egg entry was not found.');setBusy(false);return;}
+  if(!eggs){setError('The bundled hard-boiled USDA egg entry was not found.');setBusy(false);return;}
   for(const item of foods){
    const food=pack.find(f=>f.id===item.id);
    if(!food){setError('Bundled Egyptian food missing: '+item.id);setBusy(false);return;}

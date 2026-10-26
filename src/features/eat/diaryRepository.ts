@@ -16,19 +16,20 @@ const decodeEntry=(row:EntryRow):DiaryEntry=>({
   grams:row.grams,kcal:row.kcal,protein:row.protein,carbs:row.carbs,fat:row.fat,
   source:row.source,createdAt:row.created_at,editedAt:row.edited_at,
 });
-export type DaySummary={logged:boolean;count:number;kcal:number;protein:number|null;
+export type DaySummary={logged:boolean;count:number;completeMacroItems:number;kcal:number;protein:number|null;
   carbs:number|null;fat:number|null;byMeal:Record<MealKey,{count:number;kcal:number}>};
 export function summarizeEntries(entries:readonly DiaryEntry[]):DaySummary{
   const byMeal=Object.fromEntries(MEALS.map(meal=>[meal,{count:0,kcal:0}])) as DaySummary['byMeal'];
-  let kcal=0;let protein=0,carbs=0,fat=0,hasProtein=false,hasCarbs=false,hasFat=false;
+  let kcal=0;let protein=0,carbs=0,fat=0,completeMacroItems=0,hasProtein=false,hasCarbs=false,hasFat=false;
   for(const entry of entries){
     kcal+=entry.kcal;
+    if(entry.protein!==null&&entry.carbs!==null&&entry.fat!==null)completeMacroItems++;
     byMeal[entry.meal].count++;byMeal[entry.meal].kcal+=entry.kcal;
     if(entry.protein!==null){protein+=entry.protein;hasProtein=true;}
     if(entry.carbs!==null){carbs+=entry.carbs;hasCarbs=true;}
     if(entry.fat!==null){fat+=entry.fat;hasFat=true;}
   }
-  return {logged:entries.length>0,count:entries.length,kcal,
+  return {logged:entries.length>0,count:entries.length,completeMacroItems,kcal,
     protein:hasProtein?protein:null,carbs:hasCarbs?carbs:null,fat:hasFat?fat:null,byMeal};
 }
 export async function readDiaryDay(day=localDay(new Date())):Promise<DbResult<DiaryEntry[]>>{
