@@ -12,6 +12,7 @@ import {cachedHealthWeights,listLocalWeights,removeWeight,restoreWeight,saveWeig
  weightNeedsConfirmation,validateWeight,type LocalWeight} from '../../../src/features/progress/weightRepository';
 import {WeightGraph} from '../../../src/features/progress/TrendCharts';
 import {getTypedSetting} from '../../../src/services/database/settings';
+import {fromKg,toKg,type WeightUnit} from '../../../src/features/train/workoutUnits';
 
 type Undo={type:'added';entry:LocalWeight}|{type:'deleted';entry:LocalWeight}|
  {type:'edited';entry:LocalWeight};
@@ -20,16 +21,18 @@ export default function BodyTrends(){
  const [range,setRange]=useState<RangeKey>('4w');
  const [local,setLocal]=useState<LocalWeight[]>([]),[health,setHealth]=useState<WeightPoint[]>([]);
  const [hidden,setHidden]=useState(false),[error,setError]=useState(false);
+ const [weightUnit,setWeightUnit]=useState<WeightUnit>('kg');
  const [editing,setEditing]=useState(false),[current,setCurrent]=useState<LocalWeight|null>(null);
- const [kg,setKg]=useState(''),[day,setDay]=useState(localDay(new Date())),[note,setNote]=useState('');
+ const [entered,setEntered]=useState(''),[day,setDay]=useState(localDay(new Date())),[note,setNote]=useState('');
  const [busy,setBusy]=useState(false),[warning,setWarning]=useState(false);
  const [undo,setUndo]=useState<Undo|null>(null);
  const today=localDay(new Date());
  const load=useCallback(async()=>{
-  const [a,b,h]=await Promise.all([listLocalWeights(),cachedHealthWeights(),getTypedSetting('hideNumbers')]);
+  const [a,b,h,u]=await Promise.all([listLocalWeights(),cachedHealthWeights(),getTypedSetting('hideNumbers'),getTypedSetting('units.weight')]);
   if(a.ok)setLocal(a.value);else setError(true);
   if(b.ok)setHealth(b.value);else setError(true);
   if(h.ok)setHidden(h.value);
+  if(u.ok)setWeightUnit(u.value);
  },[]);
  useFocusEffect(useCallback(()=>{void load();},[load]));
  useEffect(()=>{
@@ -42,24 +45,26 @@ export default function BodyTrends(){
   .sort((a,b)=>b.at.localeCompare(a.at)).slice(0,30);
  const counts=sourceCounts(result.points.flatMap(p=>p.entries));
  const demoCount=local.filter(p=>p.note?.startsWith('Demo fixture')).length;
- const weight=Number(kg),validDate=/^\d{4}-\d{2}-\d{2}$/.test(day);
+ const inputValue=Number(entered),weightKg=toKg(inputValue,weightUnit);
+ const step=weightUnit==='lb'?0.2:0.1;
+ const validDate=/^\d{4}-\d{2}-\d{2}$/.test(day);
  const date=validDate?new Date(Number(day.slice(0,4)),Number(day.slice(5,7))-1,Number(day.slice(8)),12):null;
- const valid=kg.trim()!==''&&date!==null&&localDay(date)===day&&
-  validateWeight(weight,date.toISOString())&&note.length<=400;
+ const valid=entered.trim()!==''&&date!==null&&localDay(date)===day&&
+  validateWeight(weightKg,date.toISOString())&&note.length<=400;
  const fmt=(n:number,digits=1)=>bidiIsolate(language,formatNumber(language,n,
   {minimumFractionDigits:digits,maximumFractionDigits:digits}));
  function open(entry?:LocalWeight){
   setCurrent(entry??null);setDay(entry?localDay(new Date(entry.at)):today);
-  setKg(entry?String(entry.kg):'');setNote(entry?.note??'');
+  setEntered(entry?fromKg(entry.kg,weightUnit).toFixed(1):'');setNote(entry?.note??'');
   setWarning(false);setEditing(true);
  }
  async function save(confirmed=false){
   if(!valid||busy||!date)return;
-  if(weightNeedsConfirmation(weight)&&!confirmed){setWarning(true);return;}
+  if(weightNeedsConfirmation(weightKg)&&!confirmed){setWarning(true);return;}
   setBusy(true);
   const previous=current;
   const recordedAt=previous&&day===localDay(new Date(previous.at))?previous.at:date.toISOString();
-  const saved=await saveWeight(weight,recordedAt,note,current?.id);
+  const saved=await saveWeight(weightKg,recordedAt,note,current?.id);
   setBusy(false);
   if(!saved.ok){setError(true);return;}
   setUndo(previous?{type:'edited',entry:previous}:{type:'added',entry:saved.value});
@@ -90,11 +95,11 @@ export default function BodyTrends(){
    <Typography tone="secondary" size="small">{t('trend.weightSource')}</Typography>
    {demoCount>0&&<Typography tone="secondary" size="small">{t('trend.demoDataWarning',{count:demoCount})}</Typography>}
    {result.latest?<Typography size="metric-m">{hidden?t('trend.hidden'):
-    t('trend.kg',{weight:fmt(result.latest.trend)})}</Typography>:
+    t('trend.weightValue',{weight:fmt(fromKg(result.latest.trend,weightUnit)),unit:weightUnit})}</Typography>:
     <Typography tone="secondary">{t('trend.weightEmpty')}</Typography>}
    <Typography tone="secondary" size="small">{t('trend.emaDescription')}</Typography>
    {result.change!==null&&!hidden&&<Typography tone="secondary">{t('trend.trendChange',{
-    change:fmt(result.change)})}</Typography>}
+    change:fmt(fromKg(result.change,weightUnit)),unit:weightUnit})}</Typography>}
    {result.points.length>0&&<WeightGraph trend={result} hidden={hidden}/>}
    <View style={{flexDirection:'row',gap:theme.space[3],flexWrap:'wrap'}}>
     <Chip kind="phone" label={t('trend.myWeight')}/>
@@ -112,7 +117,7 @@ export default function BodyTrends(){
   <Card title={t('trend.weightHistory')}>
    {recent.length===0?<Typography tone="secondary">{t('trend.weightEmpty')}</Typography>:
    recent.map(row=><ListRow key={row.id} title={hidden?t('trend.hidden'):
-       t('trend.kg',{weight:fmt(row.kg)})}
+       t('trend.weightValue',{weight:fmt(fromKg(row.kg,weightUnit)),unit:weightUnit})}
       detail={bidiIsolate(language,localDay(new Date(row.at)))+' · '+
        (row.source==='liftria'?t('trend.myWeight'):t('trend.healthConnect'))+
        (row.source==='health-connect'&&row.origin?' · '+row.origin:'')+
@@ -128,11 +133,13 @@ export default function BodyTrends(){
   </View>}
   <Sheet visible={editing} title={current?t('trend.editWeight'):t('trend.logWeight')}
     description={t('trend.localWeightPrivacy')} onClose={()=>setEditing(false)}>
-   <Field label={t('trend.kgInput')} value={kg} onChangeText={v=>{setKg(v);setWarning(false);}}
-    keyboardType="decimal-pad"/>
-   {Number.isFinite(weight)&&weight>0&&<Stepper label={t('trend.adjustWeight')}
-     value={Math.round(weight*10)/10} min={0.1} max={500} step={0.1} unit="kg"
-     onChange={v=>{setKg((Math.round(v*10)/10).toFixed(1));setWarning(false);}}/>}
+   <Field label={t('trend.weightInput',{unit:weightUnit})} value={entered}
+    onChangeText={v=>{setEntered(v);setWarning(false);}} keyboardType="decimal-pad"/>
+   {Number.isFinite(inputValue)&&inputValue>0&&<Stepper
+     label={t('trend.weightAdjust',{step:step.toFixed(1),unit:weightUnit})}
+     value={Math.round(inputValue*10)/10} min={step}
+     max={weightUnit==='lb'?1102.3:500} step={step} unit={weightUnit}
+     onChange={v=>{setEntered((Math.round(v*10)/10).toFixed(1));setWarning(false);}}/>}
    <Field label={t('trend.date')} value={day} onChangeText={setDay} placeholder={t('trend.datePlaceholder')}/>
    <Field label={t('trend.note')} value={note} onChangeText={setNote} multiline/>
    {warning&&<Card title={t('trend.unusualWeight')}>
