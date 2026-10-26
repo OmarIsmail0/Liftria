@@ -5,6 +5,7 @@ import {retryAfterMs} from '../../services/anthropic';
 import {DEFAULT_HIKU_MODEL,estimateHikuCostUsd,type HikuModelId} from './models';
 import {hikuJsonSchema,parseHikuBody,type HikuMeal} from './mealSchema';
 import {finishHikuRequest,startHikuRequest} from './requestRepository';
+import type {HikuContext} from './context';
 
 export type HikuFailure='offline'|'key-missing'|'key-invalid'|'model-unavailable'|
  'unauthorized'|'rate-limited'|'server-error'|'refusal'|'truncated'|'invalid'|
@@ -21,7 +22,7 @@ export function hikuFailureForStatus(status:number):HikuFailure{
  if(status>=500)return 'server-error';
  return 'invalid';
 }
-export function hikuTextPrompt(description:string,language:'en'|'ar'):string{
+export function hikuTextPrompt(description:string,language:'en'|'ar',context:HikuContext={}):string{
  return [
   'Estimate foods eaten from this single meal description. It may contain Egyptian dialect Arabic.',
   'For Egyptian meals, use Egyptian serving sizes. Return the requested meal name and food items.',
@@ -29,14 +30,16 @@ export function hikuTextPrompt(description:string,language:'en'|'ar'):string{
   'Use English and Arabic food names. Do not invent missing fields or claim precision.',
   language==='ar'?'Respond using appropriate Egyptian food names in Arabic and English.':
     'Respond using English and Arabic names where relevant.',
+  ...(context.today?['Opted-in daily summary:',context.today]:[]),
+  ...(context.training?['Opted-in training day:',context.training]:[]),
   'Meal description:',
   description,
  ].join('\n');
 }
-/** Nothing is sent unless this function is invoked from the user's Send action.
- * No personal profile/diary/training/health data is included. */
+/** Only the text and explicitly opted-in summary from the preview are transmitted.
+ * Never sends raw diary rows, profile fields, Health Connect or workout history. */
 export async function requestHikuText(description:string,language:'en'|'ar',
- signal?:AbortSignal):Promise<HikuResponse>{
+ signal?:AbortSignal,context:HikuContext={}):Promise<HikuResponse>{
  const descriptionClean=description.trim();
  if(!descriptionClean||descriptionClean.length>2500)return {ok:false,code:'invalid'};
  if(signal?.aborted)return {ok:false,code:'cancelled'};
@@ -56,7 +59,7 @@ export async function requestHikuText(description:string,language:'en'|'ar',
  let timedOut=false;
  const timer=setTimeout(()=>{timedOut=true;controller.abort();},45000);
  const cancel=()=>controller.abort();signal?.addEventListener('abort',cancel,{once:true});
- const prompt=hikuTextPrompt(descriptionClean,language);
+ const prompt=hikuTextPrompt(descriptionClean,language,context);
  const finish=async(status:string,inputTokens?:number,outputTokens?:number)=>{
   const cost=inputTokens!==undefined&&outputTokens!==undefined?
    estimateHikuCostUsd(model,inputTokens,outputTokens):null;

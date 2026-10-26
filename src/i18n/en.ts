@@ -259,6 +259,8 @@ export const en = {
   'hikuK.modelAccurateDetail': "More detailed analysis, higher API cost",
   'hikuK.modelSaved': "Model choice saved",
   'hikuK.modelUnavailable': "Your key works, but this model is not available on your account.",
+  'hikuK.contextUnavailable': "Could not read optional context. Try again.",
+  'hikuK.contextPrivacy': "Only checked summaries above are added; Health Connect, your profile and full history are never sent.",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',

@@ -1,29 +1,42 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useRef,useState} from 'react';
-import {Button,Card,Chip,Field,Header,Screen,Typography} from '../../../src/design/primitives';
+import {Button,Card,Chip,Field,Header,Screen,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {DEFAULT_HIKU_MODEL,estimateHikuCostUsd,hikuModel,type HikuModelId} from '../../../src/features/hiku/models';
 import {requestHikuText,hikuTextPrompt,type HikuFailure} from '../../../src/features/hiku/client';
-import {getHikuDraft,setHikuDraft} from '../../../src/features/hiku/draft';
+import {getHikuDescription,rememberHikuDescription,setHikuDraft} from '../../../src/features/hiku/draft';
+import {readAvailableHikuContext,contextForSend} from '../../../src/features/hiku/context';
 import {resolveHikuItem} from '../../../src/features/hiku/mealSchema';
 export default function DescribeMeal(){
  const {t,language}=useLanguage();
- const [description,setDescription]=useState(getHikuDraft()?.description??'');
+ const [description,setDescription]=useState(getHikuDescription());
+ const [shareToday,setShareToday]=useState(false),[shareTraining,setShareTraining]=useState(false);
+ const [available,setAvailable]=useState<{today:string;training:string}|null>(null);
+ const [contextLoaded,setContextLoaded]=useState(false);
  const [model,setModel]=useState<HikuModelId>(DEFAULT_HIKU_MODEL);
  const [busy,setBusy]=useState(false),[error,setError]=useState<HikuFailure|null>(null);
  const controller=useRef<AbortController|null>(null);
  useFocusEffect(useCallback(()=>{
-  void getTypedSetting('hiku.model').then(s=>{if(s.ok)setModel(s.value);});
-  return()=>{controller.current?.abort();};
+  let live=true;
+  void Promise.all([getTypedSetting('hiku.model'),getTypedSetting('hiku.shareToday'),
+    getTypedSetting('hiku.shareTraining'),readAvailableHikuContext()]).then(([m,day,train,ctx])=>{
+     if(!live)return;
+     if(m.ok)setModel(m.value);
+     if(day.ok)setShareToday(day.value);
+     if(train.ok)setShareTraining(train.value);
+     setAvailable(ctx);setContextLoaded(true);
+   });
+  return()=>{live=false;controller.current?.abort();};
  },[]));
- const prompt=hikuTextPrompt(description,language);
+ const context=available?contextForSend(available,shareToday,shareTraining):{};
+ const prompt=hikuTextPrompt(description,language,context);
  const approximate=estimateHikuCostUsd(model,Math.ceil(prompt.length/3.5)+350,650);
  async function send(){
-  if(busy||!description.trim()||description.length>2500)return;
+  if(busy||!contextLoaded||!description.trim()||description.length>2500||!available)return;
   setBusy(true);setError(null);
   const abort=new AbortController();controller.current=abort;
-  const outcome=await requestHikuText(description,language,abort.signal);
+  const outcome=await requestHikuText(description,language,abort.signal,context);
   if(abort.signal.aborted){setBusy(false);setError('cancelled');return;}
   controller.current=null;setBusy(false);
   if(!outcome.ok){setError(outcome.code);return;}
@@ -38,15 +51,20 @@ export default function DescribeMeal(){
   <Header title={t('hikuK.beforeSend')} onBack={()=>router.back()}/>
   <Card rim="hiku">
    <Field label={t('hikuK.description')} value={description} multiline
-    onChangeText={setDescription} placeholder={t('hikuK.example')}/>
+    onChangeText={v=>{setDescription(v);rememberHikuDescription(v);}} placeholder={t('hikuK.example')}/>
    <Typography tone="secondary">{t('hikuK.privacyNote')}</Typography>
    <Typography tone="secondary" size="small">{t('hikuK.selectedModel',{model:
     language==='ar'?hikuModel(model).nameAr:hikuModel(model).nameEn})}</Typography>
   </Card>
   <Card title={t('hikuK.sentPanel')}>
+   <Toggle label={t('hikuSettings.includeToday')} value={shareToday} onChange={setShareToday}/>
+   <Toggle label={t('hikuSettings.includeTraining')} value={shareTraining} onChange={setShareTraining}/>
+   {!contextLoaded&&<Typography tone="secondary">{t('common.loading')}</Typography>}
+   {contextLoaded&&!available&&<Typography tone="secondary">{t('hikuK.contextUnavailable')}</Typography>}
    <Typography tone="secondary" size="small">{t('hikuK.exactText')}</Typography>
    <Typography>{prompt}</Typography>
-   <Typography tone="secondary">{t('hikuK.noExtraContext')}</Typography>
+   {!shareToday&&!shareTraining&&<Typography tone="secondary">{t('hikuK.noExtraContext')}</Typography>}
+   <Typography tone="secondary" size="small">{t('hikuK.contextPrivacy')}</Typography>
   </Card>
   <Card title={t('hikuK.costTitle')}>
    <Chip kind="estimate"/>
@@ -65,7 +83,7 @@ export default function DescribeMeal(){
    {error==='key-missing'&&<Button label={t('hikuK.apiKey')}
     onPress={()=>router.push('/settings/hiku-key')}/>}
   </Card>}
-  {!busy&&<Button label={t('hikuK.send')} disabled={description.trim().length===0||description.length>2500}
+  {!busy&&<Button label={t('hikuK.send')} disabled={!contextLoaded||!available||description.trim().length===0||description.length>2500}
    fullWidth onPress={()=>void send()}/>}
  </Screen>;
 }
