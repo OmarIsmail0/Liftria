@@ -33,10 +33,10 @@ test('v2 upgrades v3 through v5, atomically marking user_version last', async ()
     }),
   } as unknown as SQLite.SQLiteDatabase;
   await migrateDatabase(db);
-  expect(transactions).toBe(2);
+  expect(transactions).toBe(3);
   expect(sql).toEqual(['PRAGMA foreign_keys = ON;', schema, 'PRAGMA user_version = 3;',DB_MIGRATIONS[3].sql,'PRAGMA user_version = 4;',DB_MIGRATIONS[4].sql,'PRAGMA user_version = 5;']);
   await migrateDatabase(db);
-  expect(transactions).toBe(2);
+  expect(transactions).toBe(3);
 });
 
 
@@ -62,7 +62,7 @@ test('v3 upgrades through v5 in additive transactions',async()=>{
     withExclusiveTransactionAsync:jest.fn(async(fn:(tx:object)=>Promise<void>)=>{await fn(db);}),
   } as unknown as SQLite.SQLiteDatabase;
   await migrateDatabase(db);
-  expect(db.withExclusiveTransactionAsync).toHaveBeenCalledTimes(1);
+  expect(db.withExclusiveTransactionAsync).toHaveBeenCalledTimes(2);
   expect(statements).toEqual(['PRAGMA foreign_keys = ON;',DB_MIGRATIONS[3].sql,
     'PRAGMA user_version = 4;',DB_MIGRATIONS[4].sql,'PRAGMA user_version = 5;']);
 });
