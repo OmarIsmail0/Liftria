@@ -2,7 +2,6 @@ import {useState} from 'react';
 import {View} from 'react-native';
 import Svg,{Circle,Line,Path,Rect} from 'react-native-svg';
 import {useTheme} from '../../design/ThemeProvider';
-import {dayOffset} from '../eat/foodCatalog';
 import type {NutritionTrend,WeightTrend} from './trendMath';
 
 /** Chart axes are permanently chronological left-to-right even in an RTL interface. */
@@ -65,7 +64,6 @@ export function WeightGraph({trend,hidden}:{
  const height=170,pad=14;
  const days=trend.points;
  const all=days.flatMap(d=>[d.trend,...d.entries.map(e=>e.kg)]);
- const low=Math.min(...all,0),high=Math.max(...all,0);
  // On real data the lower bound is the observed minimum, not zero.
  const min=all.length?Math.min(...all):0,max=all.length?Math.max(...all):1;
  const span=Math.max(1,max-min),minY=min-span*0.1,maxY=max+span*0.1;

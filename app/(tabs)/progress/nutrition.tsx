@@ -1,9 +1,7 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
-import {View} from 'react-native';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
-import {useTheme} from '../../../src/design/ThemeProvider';
 import {Button,Card,Header,ListRow,Screen,SegmentedControl,Typography} from '../../../src/design/primitives';
 import {dayOffset,localDay} from '../../../src/features/eat/foodCatalog';
 import {readDiaryRange,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
@@ -13,18 +11,19 @@ import {nutritionTrend,rangeDays,type RangeKey} from '../../../src/features/prog
 import {NutritionGraph,ProteinPips} from '../../../src/features/progress/TrendCharts';
 
 export default function NutritionTrends(){
- const {t,language}=useLanguage(),{theme}=useTheme();
+ const {t,language}=useLanguage();
  const [range,setRange]=useState<RangeKey>('4w'),[entries,setEntries]=useState<DiaryEntry[]>([]);
  const [target,setTarget]=useState<Target|null>(null),[hidden,setHidden]=useState(false),[error,setError]=useState(false);
  const today=localDay(new Date()),days=rangeDays(range);
- const start=dayOffset(today,-days),end=dayOffset(today,-1);
  const load=useCallback(async()=>{
+  const now=localDay(new Date());
   const [diary,goal,hide]=await Promise.all([
-   readDiaryRange(start,end),getCurrentTarget(),getTypedSetting('hideNumbers')]);
+   readDiaryRange(dayOffset(now,-rangeDays(range)),dayOffset(now,-1)),
+   getCurrentTarget(),getTypedSetting('hideNumbers')]);
   if(diary.ok)setEntries(diary.value);else setError(true);
   if(goal.ok)setTarget(goal.value);
   if(hide.ok)setHidden(hide.value);
- },[start,end]);
+ },[range]);
  useFocusEffect(useCallback(()=>{void load();},[load]));
  const summary=nutritionTrend(entries,today,days,target?.proteinG??null);
  const amount=(v:number|null)=>v===null?'—':bidiIsolate(language,formatNumber(language,Math.round(v)));

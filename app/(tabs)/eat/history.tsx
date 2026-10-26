@@ -17,12 +17,13 @@ export default function NutritionHistory(){
  const [hidden,setHidden]=useState(false),[error,setError]=useState(false);
  const today=localDay(new Date()),first=dayOffset(today,-7),last=dayOffset(today,-1);
  const load=useCallback(async()=>{
+  const day=localDay(new Date());
   const [diary,goal,hide]=await Promise.all([
-   readDiaryRange(first,last),getCurrentTarget(),getTypedSetting('hideNumbers')]);
+   readDiaryRange(dayOffset(day,-7),dayOffset(day,-1)),getCurrentTarget(),getTypedSetting('hideNumbers')]);
   if(diary.ok)setEntries(diary.value);else setError(true);
   if(goal.ok)setTarget(goal.value);
   if(hide.ok)setHidden(hide.value);
- },[first,last]);
+ },[]);
  useFocusEffect(useCallback(()=>{void load();},[load]));
  const week=nutritionTrend(entries,today,7,target?.proteinG??null);
  const total=week.loggedDays,avg=week.avgKcal;
