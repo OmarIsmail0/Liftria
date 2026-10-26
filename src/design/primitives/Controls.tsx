@@ -44,7 +44,7 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
 /** Radio-group segmented control: one accessible, selected option per group. */
 export function SegmentedControl<T extends string>({ label, options, value, onChange }: {
   label: string; options: readonly { value: T; label: string }[];
-  value: T; onChange: (next: T) => void;
+  value: T | null; onChange: (next: T) => void;
 }) {
   const { theme } = useTheme();
   const { fontScale } = useWindowDimensions();
@@ -76,6 +76,50 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
           color: selected ? theme.color.action.primary.fg : theme.color.text.primary,
           textAlign: 'center',
         }}>{option.label}</Text>
+      </Pressable>;
+    })}
+  </View>;
+}
+
+/** Use radio rows when choices are described, rather than crowding a segmented pill. */
+export function OptionRows<T extends string>({ label, options, value, onChange }: {
+  label: string;
+  options: readonly { value: T; label: string; description: string }[];
+  value: T | null; onChange: (next: T) => void;
+}) {
+  const { theme } = useTheme();
+  const { language } = useLanguage();
+  return <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.space[2] }}>
+    <Typography bold>{label}</Typography>
+    {options.map(option => {
+      const checked = option.value === value;
+      return <Pressable key={option.value} accessibilityRole="radio"
+        accessibilityLabel={option.label + '. ' + option.description}
+        accessibilityState={{ checked }} onPress={() => onChange(option.value)}
+        style={({ pressed }) => ({
+          minHeight: theme.size.touch.min, padding: theme.space[3],
+          borderRadius: theme.radius.md, flexDirection: 'row', alignItems: 'center', gap: theme.space[3],
+          borderWidth: theme.size.border.thin,
+          borderColor: checked ? theme.color.domain.train : theme.controlOutline,
+          backgroundColor: checked ? theme.color.tint.train : theme.color.bg.raised,
+          opacity: pressed ? 0.8 : 1,
+        })}>
+        <View importantForAccessibility="no" style={{
+          width: theme.space[5], height: theme.space[5], borderRadius: theme.radius.pill,
+          borderWidth: 2, borderColor: checked ? theme.color.domain.train : theme.color.text.secondary,
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          {checked && <View style={{ width: theme.space[2], height: theme.space[2],
+            borderRadius: theme.radius.pill, backgroundColor: theme.color.domain.train }} />}
+        </View>
+        <View style={{ flex: 1, gap: theme.space[1] }}>
+          <Text allowFontScaling style={{ color: theme.color.text.primary,
+            fontSize: theme.type.body.size,
+            fontFamily: fontFamilyFor('Figtree', '600', language === 'ar') }}>{option.label}</Text>
+          <Text allowFontScaling style={{ color: theme.color.text.secondary,
+            fontSize: theme.type.small.size,
+            fontFamily: fontFamilyFor('Figtree', '400', language === 'ar') }}>{option.description}</Text>
+        </View>
       </Pressable>;
     })}
   </View>;
@@ -202,10 +246,11 @@ export function Sheet({ visible, title, description, children, onClose, destruct
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   return <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}
     statusBarTranslucent accessibilityViewIsModal>
     <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-      <Pressable accessible={false} accessibilityRole="button" accessibilityLabel="Close sheet"
+      <Pressable accessible={false} accessibilityRole="button" accessibilityLabel={t('common.close')}
         style={{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0,
           backgroundColor: theme.color.bg.base, opacity: theme.rim.strength + theme.rim.glow }}
         onPress={onClose} />
@@ -223,7 +268,7 @@ export function Sheet({ visible, title, description, children, onClose, destruct
         <Typography size="title">{title}</Typography>
         {description && <Typography tone="secondary">{description}</Typography>}
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
-        <Button label="Cancel" fullWidth onPress={onClose} />
+        <Button label={t('common.cancel')} fullWidth onPress={onClose} />
       </View>
     </View>
   </Modal>;

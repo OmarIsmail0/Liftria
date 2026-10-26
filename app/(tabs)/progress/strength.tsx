@@ -39,7 +39,7 @@ export default function Strength(){
  return <Screen embedded>
   <Header title={tr('p4.strength.0')} subtitle={tr('p4.strength.1')} onBack={()=>router.back()}/>
   <SegmentedControl label={tr('p4.strength.2')} value={range} onChange={setRange}
-   options={[{value:'4w',label:'4 W'},{value:'3m',label:'3 M'},{value:'1y',label:'1 Y'}]}/>
+   options={[{value:'4w',label:tr('polish.range4w')},{value:'3m',label:tr('polish.range3m')},{value:'1y',label:tr('polish.range1y')}]}/>
   {error&&<Button label={tr('p4.strength.3')} onPress={()=>void refresh()}/>}
   {rows.length===0?<Card rim="train" title={tr('p4.strength.4')}>
    <Typography tone="secondary">{tr('p4.strength.14')}</Typography>
