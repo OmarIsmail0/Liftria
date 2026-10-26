@@ -6,13 +6,13 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**Start PR L now, from `main`** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**PR L is done; next is PR M (adaptive expenditure), from `main`.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
 ## Order
 
-1. **PR L: `Phase 5 / Gym parity`** (Hevy features people expect)
+1. ~~**PR L: `Phase 5 / Gym parity`**~~ DONE: PR #23 merged (2026-10-26). (Hevy features people expect)
    - **Plate calculator:** from the target weight and the bar (20 kg / 45 lb default, editable in Settings), show the plates per side. Use the "small plates" setting that already exists. Unit-test the greedy split and the "can't make this exact weight" case (show the closest lower load).
    - **Warm-up calculator:** a "Warm-up sets" action on a working exercise adds suggested warm-up rows (e.g. bar × 10, 40% × 5, 60% × 3, 80% × 1, rounded to loadable plates). They are suggestions until the user logs them, the same as other suggested values (never saved as data until logged).
    - **Supersets:** link 2–3 exercises in a template or an active workout. Logging a set moves focus to the next exercise in the superset (smart scrolling), and the rest timer starts after the last exercise of the round.
@@ -48,6 +48,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Owner:** an Apple Developer account (US$99/year) is needed to install on a real iPhone or ship on the App Store; the simulator build needs nothing.
 6. **PR R: `Phase 5 / Release readiness`**
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), and screenshot routes for the store images.
+   - **Long titles:** screen headers wrap long names mid-word ("Demo · Superset s / creenshot"). Use at most two lines with an ellipsis, breaking between words.
    - **Hiku polish (from PR #22's screenshots):** show costs as "less than $0.01" / "$0.03" (not "$0.00000"), and the price source as a tappable link, not a raw URL.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
