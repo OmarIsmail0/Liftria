@@ -1,6 +1,6 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useEffect,useState} from 'react';
-import {View} from 'react-native';
+import {ScrollView,View} from 'react-native';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
 import {useTheme} from '../../../src/design/ThemeProvider';
@@ -79,7 +79,9 @@ export default function BodyTrends(){
     await restoreWeight(undo.entry);
   if(result.ok){setUndo(null);await load();}else setError(true);
  }
- return <Screen embedded>
+ return <Screen embedded scroll={false}>
+  <ScrollView keyboardShouldPersistTaps="handled"
+   contentContainerStyle={{gap:theme.layout.cardGap,paddingVertical:theme.space[3]}}>
   <Header title={t('trend.body')} onBack={()=>router.back()}/>
   <SegmentedControl label={t('trend.range')} value={range} onChange={setRange}
    options={[{value:'4w',label:t('polish.range4w')},
@@ -120,7 +122,10 @@ export default function BodyTrends(){
    {health.length>0&&<Typography tone="secondary" size="small">{t('trend.healthPrivacy')}</Typography>}
   </Card>
   {error&&<Button label={t('common.retry')} onPress={()=>{setError(false);void load();}}/>}
-  {undo&&<Snackbar message={t('trend.weightChanged')} onUndo={()=>void undoAction()}/>}
+  </ScrollView>
+  {undo&&<View style={{paddingVertical:theme.space[2]}}>
+   <Snackbar message={t('trend.weightChanged')} onUndo={()=>void undoAction()}/>
+  </View>}
   <Sheet visible={editing} title={current?t('trend.editWeight'):t('trend.logWeight')}
     description={t('trend.localWeightPrivacy')} onClose={()=>setEditing(false)}>
    <Field label={t('trend.kgInput')} value={kg} onChangeText={v=>{setKg(v);setWarning(false);}}
