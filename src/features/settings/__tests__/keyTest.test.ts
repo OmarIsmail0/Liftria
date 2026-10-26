@@ -20,3 +20,10 @@ test('ST-4 rejected and unreachable API test remain distinguishable', async () =
   expect(await testAnthropicKey('synthetic-test-key', false,
     async () => { throw new Error('offline'); })).toBe('unavailable');
 });
+
+test('selected-model access check distinguishes 403/404 without switching models',async()=>{
+ const request=jest.fn(async()=>({ok:false,status:404}));
+ expect(await testAnthropicKey('synthetic',false,request,'claude-sonnet-5-5')).toBe('model-unavailable');
+ expect(request).toHaveBeenCalledWith('https://api.anthropic.com/v1/models/claude-sonnet-5-5',
+  {method:'GET',headers:{'x-api-key':'synthetic','anthropic-version':'2023-06-01'}});
+});
