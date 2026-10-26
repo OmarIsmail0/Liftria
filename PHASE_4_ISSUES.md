@@ -112,13 +112,13 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
      - **Fast repeat logging:** copy a meal or a whole day, **saved meals** (a combo logged in one tap), favorites, and recents ranked by time of day. Target: a repeat meal in 2 taps, a searched food in ≤ 4 taps.
      - **Ramadan mode:** meals can be renamed, with a one-tap preset **Suhoor / Iftar / Snacks**. It's a setting, off by default, with no medical advice.
    - It uses `assets/data/foods/`: the USDA pack (8,171 foods) and the Egypt pack (29 dishes, Arabic and English). Both are on `main`; see `SOURCE.md` there and PHASE_4_PROMPT §2.
-5. **PR J: `Phase 4 / Trends and body`.** In progress, PR #21. Merge `main` into it (merge commit), retarget it to `main`, and fix the weight unit (see the PR comment).
+5. ~~**PR J: `Phase 4 / Trends and body`.**~~ DONE: PR #21 merged (2026-10-26).
    - Add a **trend weight** (exponential moving average) line over the daily dots. The headline shows the trend, labeled "Trend". Unit-test the smoothing.
 6. **PR K: `Phase 4 / Hiku meal estimates`.**
    - Starts when PR J's `verify` is green.
    - Text is live. Photo stays behind `pending` until the owner's Test B.
    - **Egyptian dialect:** Hiku accepts Egyptian Arabic descriptions. When an item matches an Egypt-pack dish, use the pack's id, portion and values (labeled as the pack estimate), not the model's numbers.
-7. **Phase end:** Claude builds the APK on `main`, and the owner does PHASE_4_PROMPT §7.
+7. **Phase end:** Claude builds the APK on `main`. **The owner's phone tests no longer block work (owner, 2026-10-26):** after PR K merges, go straight to `PHASE_5_ISSUES.md`.
 
 **Rules (same as Phase 3):**
 - **Builds:**

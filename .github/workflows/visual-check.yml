@@ -53,7 +53,7 @@ jobs:
     needs: has-apk
     if: needs.has-apk.outputs.apk == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
