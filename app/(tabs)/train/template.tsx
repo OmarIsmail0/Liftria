@@ -12,7 +12,7 @@ import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail
 
 export default function TemplateEditor() {
   const {theme}=useTheme();
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
   const {id,exerciseId}=useLocalSearchParams<{id?:string;exerciseId?:string}>();
   const [name,setName]=useState('');
   const [rest,setRest]=useState(120);

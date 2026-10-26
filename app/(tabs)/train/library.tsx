@@ -3,7 +3,7 @@ import { equipmentLabel } from '../../../src/i18n/equipment';
 import type { TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, TextInput } from 'react-native';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 import { Button, Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -16,7 +16,9 @@ export default function ExerciseLibrary() {
   const {theme}=useTheme();
   const {t,language}=useLanguage();
   const groupLabel=(name:string)=>name==='All'?t('library.all'):name==='Chest'?t('library.chest'):
-    name==='Back'?t('library.back'):name==='Arms'?t('library.arms'):t('library.legs');
+    name==='Back'?t('library.back'):name==='Arms'?t('library.arms'):
+    name==='Shoulders'?t('polish.groupShoulders'):name==='Core'?t('polish.groupCore'):
+    name==='Neck'?t('polish.groupNeck'):t('library.legs');
   const params=useLocalSearchParams<{query?:string}>();
   const [query,setQuery]=useState(params.query??'');
   const [group,setGroup]=useState<string>('All');

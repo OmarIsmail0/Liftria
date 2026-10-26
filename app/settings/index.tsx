@@ -11,7 +11,7 @@ import releaseVersion from '../../src/config/releaseVersion.json';
 import { localStorageCounts } from '../../src/services/database';
 import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
 
-/** ST-1: grouped local Settings, with Phase 3/4 features explicitly labeled Future. */
+/** Local-first grouped settings, with appearance controls available immediately. */
 export default function SettingsHome() {
   const { theme, preferences, setMode } = useTheme();
   const { t, preference, setLanguage } = useLanguage();
