@@ -34,10 +34,12 @@ export default function SettingsHome() {
   return <Screen>
     <Header title={t('settings.home.title')} onBack={() => backOrReplace(router, '/(tabs)/today')} />
     <Card title={t('polish.appearance')}>
+      <Typography tone="secondary" size="small">{t('appearance.theme')}</Typography>
       <SegmentedControl label={t('appearance.theme')} value={preferences.mode}
         options={[{ value: 'system', label: t('common.system') },
           { value: 'light', label: t('appearance.light') },
           { value: 'dark', label: t('appearance.dark') }] as const} onChange={setMode} />
+      <Typography tone="secondary" size="small">{t('language.title')}</Typography>
       <SegmentedControl label={t('language.title')} value={preference}
         options={[{ value: 'system', label: t('common.system') },
           { value: 'ar', label: t('common.arabic') },
