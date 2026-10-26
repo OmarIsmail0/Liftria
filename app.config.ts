@@ -49,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['expo-sqlite', { useSQLCipher: false }],
     'expo-secure-store',
     // RTL from the first launch on an Arabic phone (otherwise only after a restart).
-    ['expo-localization', { supportsRTL: true }],
+    './plugins/withArabicFirstLaunchRtl',
     'react-native-health-connect',
     ['expo-build-properties', {
       android: { minSdkVersion: 28, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
