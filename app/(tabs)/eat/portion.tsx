@@ -44,7 +44,7 @@ export default function PortionPicker(){
               label={food.source==='custom'?t('eatI.myFood'):t('eatI.usda')}/>}
           <Typography tone="secondary">{t('eatI.chooseUnit')}</Typography>
           <ScrollView horizontal contentContainerStyle={{gap:theme.space[2]}}>
-            <Button label="g" variant={unit==='g'?'primary':'secondary'}
+            <Button label={t('eatI.gramUnit')} variant={unit==='g'?'primary':'secondary'}
               onPress={()=>{setUnit('g');setGrams('100');}}/>
             {food.portions.map(p=><Button key={p.labelEn}
               label={language==='ar'?(p.labelAr??p.labelEn):p.labelEn}

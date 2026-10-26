@@ -124,6 +124,7 @@ export const en = {
   'eatI.week': "Last 7 days",
   'eatI.weekAccessible': "Food logged on {count} days in this week.",
   'eatI.caloriesOnlyNoMacros': "Calories-only entries do not include macros.",
+  'eatI.gramUnit': "g",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',
