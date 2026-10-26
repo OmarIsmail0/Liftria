@@ -44,7 +44,8 @@ jobs:
           if ! xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO build > ../xcodebuild.log 2>&1; then
-            echo "::group::Errors"; grep -nE "error:|fatal error|Undefined symbol|ld: " ../xcodebuild.log | head -n 80; echo "::endgroup::"
+            echo "::group::Errors"; grep -nE -A15 "error:|fatal error|Undefined symbol|ld: " ../xcodebuild.log | head -n 200; echo "::endgroup::"
+            echo "::group::Failing script output"; grep -n -B2 -A40 "PhaseScriptExecution" ../xcodebuild.log | grep -v "^[0-9]*-note:" | head -n 200; echo "::endgroup::"
             tail -n 60 ../xcodebuild.log; exit 1
           fi
           tail -n 20 ../xcodebuild.log
