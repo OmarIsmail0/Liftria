@@ -2,7 +2,7 @@ import {router,useLocalSearchParams} from 'expo-router';
 import {useEffect,useRef,useState} from 'react';
 import {Button,Card,Header,Screen,Typography} from '../../src/design/primitives';
 import {bundledFoods,localDay,type Food,type MealKey} from '../../src/features/eat/foodCatalog';
-import {logFood,logQuick,readDiaryDay,type DiaryEntry} from '../../src/features/eat/diaryRepository';
+import {logFood,logQuick,readDiaryDay} from '../../src/features/eat/diaryRepository';
 
 /** Hidden screenshot fixture; all nutrition comes from the bundled source packs.
  * Reopening only adds missing entries to today's actual local diary. */
@@ -57,7 +57,7 @@ export default function DemoDiary(){
   <Card rim="eat" title="Developer screenshot data">
    <Typography tone="secondary">Adds a real portion of Koshari, baladi bread,
    one USDA egg entry and a calories-only quick add from bundled nutrition.
-   Existing entries are kept; opening again doesn't duplicate these fixtures.</Typography>
+   Existing entries are kept; opening again does not duplicate these fixtures.</Typography>
    <Button label={busy?'Opening…':'Log demo foods and open Eat'} disabled={busy}
     onPress={()=>void create()}/>
    {error&&<Typography>{error}</Typography>}
