@@ -9,16 +9,16 @@ export async function startHikuRequest(model:HikuModelId,kind:'text'|'photo')
  :Promise<DbResult<string>>{
  return dbOperation(async db=>{
   const id=newGymId();
-  await db.runAsync(\`INSERT INTO hiku_requests(id,kind,created_at,model,status,price_table_version)
-   VALUES(?,?,?,?,?,?)\`,[id,kind,new Date().toISOString(),model,'started',HIKU_PRICE_VERSION]);
+  await db.runAsync(`INSERT INTO hiku_requests(id,kind,created_at,model,status,price_table_version)
+   VALUES(?,?,?,?,?,?)`,[id,kind,new Date().toISOString(),model,'started',HIKU_PRICE_VERSION]);
   return id;
  });
 }
 export async function finishHikuRequest(id:string,status:string,
  inputTokens:number|null,outputTokens:number|null,cost:number|null):Promise<DbResult<void>>{
  return dbOperation(async db=>{
-  await db.runAsync(\`UPDATE hiku_requests SET status=?,input_tokens=?,output_tokens=?,
-   est_cost_usd=? WHERE id=?\`,[status,inputTokens,outputTokens,cost,id]);
+  await db.runAsync(`UPDATE hiku_requests SET status=?,input_tokens=?,output_tokens=?,
+   est_cost_usd=? WHERE id=?`,[status,inputTokens,outputTokens,cost,id]);
  });
 }
 export type RequestUsage={id:string;kind:'text'|'photo';createdAt:string;model:string;
@@ -63,14 +63,14 @@ export async function saveHikuReviewed(meal:HikuMeal,items:readonly HikuReviewed
    for(const item of validated){
     if(item.foodId){
      const food=pack.find(f=>f.id===item.foodId)!;
-     await tx.runAsync(\`INSERT OR IGNORE INTO foods(id,name_en,name_ar,aliases,source,estimate,
-      kcal,protein,carbs,fat,fiber,retired) VALUES(?,?,?,?,?,?,?,?,?,?,?,0)\`,
+     await tx.runAsync(`INSERT OR IGNORE INTO foods(id,name_en,name_ar,aliases,source,estimate,
+      kcal,protein,carbs,fat,fiber,retired) VALUES(?,?,?,?,?,?,?,?,?,?,?,0)`,
       [food.id,food.name,food.nameAr,JSON.stringify(food.aliases),food.source,1,
        food.kcal,food.protein,food.carbs,food.fat,food.fiber]);
     }
-    await tx.runAsync(\`INSERT INTO diary_entries(id,day,meal,food_id,name_snapshot,grams,
+    await tx.runAsync(`INSERT INTO diary_entries(id,day,meal,food_id,name_snapshot,grams,
      kcal,protein,carbs,fat,source,hiku_request_id,original_json,created_at,edited_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)\`,
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
      [newGymId(),day,bucket,item.foodId,item.nameDisplay,item.grams,
       item.kcal,item.protein,item.carbs,item.fat,'hiku-estimate',requestId,
       JSON.stringify({meal:meal.meal_name,item:item.original}),now,now]);

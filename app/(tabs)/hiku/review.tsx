@@ -1,0 +1,94 @@
+import {router} from 'expo-router';
+import {useState} from 'react';
+import {Button,Card,Chip,Field,Header,Screen,Sheet,Typography} from '../../../src/design/primitives';
+import {useLanguage} from '../../../src/i18n/LanguageProvider';
+import {formatNumber} from '../../../src/i18n';
+import {MEALS,localDay,type MealKey} from '../../../src/features/eat/foodCatalog';
+import {getHikuDraft,clearHikuDraft} from '../../../src/features/hiku/draft';
+import {resolveHikuItem,type HikuReviewedItem} from '../../../src/features/hiku/mealSchema';
+import {saveHikuReviewed} from '../../../src/features/hiku/requestRepository';
+import {bundledFoods,snapshot} from '../../../src/features/eat/foodCatalog';
+
+export default function ReviewEstimate(){
+ const {t,language}=useLanguage();
+ const draft=getHikuDraft();
+ const [items,setItems]=useState<HikuReviewedItem[]>(draft?.items??[]);
+ const [meal,setMeal]=useState<MealKey>('dinner');
+ const [selected,setSelected]=useState<number|null>(null),[edited,setEdited]=useState('');
+ const [busy,setBusy]=useState(false),[error,setError]=useState(false);
+ const [discardConfirm,setDiscardConfirm]=useState(false),[changed,setChanged]=useState(false);
+ const sum=items.reduce((s,item)=>({kcal:s.kcal+item.kcal,protein:s.protein+item.protein,
+  carbs:s.carbs+item.carbs,fat:s.fat+item.fat}),{kcal:0,protein:0,carbs:0,fat:0});
+ function edit(index:number){setSelected(index);setEdited(String(items[index]?.grams??''));}
+ function apply(){
+  if(selected===null)return;
+  const item=items[selected],grams=Number(edited);
+  if(!item||!Number.isFinite(grams)||grams<=0||grams>2000)return;
+  let updated:HikuReviewedItem;
+  if(item.foodId){
+   const food=bundledFoods().find(f=>f.id===item.foodId);
+   if(!food)return;
+   const n=snapshot(food,grams);
+   updated={...item,grams,kcal:n.kcal,protein:n.protein??0,carbs:n.carbs??0,fat:n.fat??0};
+  }else{
+   const factor=grams/item.original.grams;
+   updated={...item,grams,kcal:item.original.kcal*factor,protein:item.original.protein*factor,
+    carbs:item.original.carbs*factor,fat:item.original.fat*factor};
+  }
+  setItems(prev=>prev.map((entry,index)=>index===selected?updated:entry));
+  setChanged(true);setSelected(null);
+ }
+ async function save(){
+  if(!draft||!items.length||busy)return;setBusy(true);
+  const r=await saveHikuReviewed(draft.meal,items,draft.requestId,localDay(new Date()),meal);
+  if(r.ok){clearHikuDraft();router.replace('/(tabs)/eat');return;}
+  setError(true);setBusy(false);
+ }
+ function discard(){
+  if(changed){setDiscardConfirm(true);return;}
+  clearHikuDraft();router.replace('/(tabs)/hiku');
+ }
+ const fmt=(n:number)=>formatNumber(language,Math.round(n));
+ return <Screen embedded>
+  <Header title={t('hikuK.review')} onBack={()=>router.back()}/>
+  {!draft?<Card title={t('hikuK.noDraft')}>
+   <Button label={t('hikuK.describe')} onPress={()=>router.push('/(tabs)/hiku/describe')}/>
+  </Card>:<>
+   <Card rim="hiku" title={draft.meal.meal_name}>
+    <Chip kind="estimate"/>
+    <Typography tone="secondary">{t('hikuK.checkItems')}</Typography>
+    <Typography>{t('hikuK.total',{kcal:fmt(sum.kcal),protein:fmt(sum.protein),
+      carbs:fmt(sum.carbs),fat:fmt(sum.fat)})}</Typography>
+    <Typography tone="secondary" size="small">{t('hikuK.originalReview')}</Typography>
+   </Card>
+   <Card title={t('hikuK.foodItems')}>
+    {items.map((item,index)=><Button key={index} variant="secondary" fullWidth
+      label={(language==='ar'?item.name_ar:item.name_en)+' · '+fmt(item.grams)+' g · '+
+       fmt(item.kcal)+' kcal · '+t(item.confidence==='sure'?'hikuK.sure':'hikuK.check')}
+      onPress={()=>edit(index)}/>)}
+   </Card>
+   <Card title={t('hikuK.mealChoice')}>
+    {MEALS.map(key=><Button key={key} label={t(('eatI.'+key) as 'eatI.dinner')}
+     variant={meal===key?'primary':'secondary'} onPress={()=>setMeal(key)}/>)}
+   </Card>
+   {error&&<Typography>{t('hikuK.saveError')}</Typography>}
+   <Button label={t('hikuK.saveTo',{meal:t(('eatI.'+meal) as 'eatI.dinner')})}
+    onPress={()=>void save()} disabled={busy||items.length===0} fullWidth/>
+   <Button label={t('hikuK.discard')} variant="ghost" onPress={discard}/>
+   <Sheet visible={selected!==null} title={t('hikuK.editGrams')} onClose={()=>setSelected(null)}>
+    <Field label={t('eatI.gramsLabel')} value={edited} onChangeText={setEdited}
+      keyboardType="decimal-pad"/>
+    <Button label={t('hikuK.apply')} disabled={!Number.isFinite(Number(edited))||
+     Number(edited)<=0||Number(edited)>2000} fullWidth onPress={apply}/>
+    <Button label={t('hikuK.remove')} variant="danger" onPress={()=>{
+      setItems(prev=>prev.filter((_,index)=>index!==selected));setChanged(true);setSelected(null);}}/>
+   </Sheet>
+   <Sheet visible={discardConfirm} title={t('hikuK.discardTitle')}
+    description={t('hikuK.discardWarning')} onClose={()=>setDiscardConfirm(false)}>
+    <Button label={t('hikuK.keepEditing')} onPress={()=>setDiscardConfirm(false)}/>
+    <Button label={t('hikuK.discard')} variant="danger" onPress={()=>{
+      clearHikuDraft();setDiscardConfirm(false);router.replace('/(tabs)/hiku');}}/>
+   </Sheet>
+  </>}
+ </Screen>;
+}
