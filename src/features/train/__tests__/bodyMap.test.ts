@@ -15,6 +15,7 @@ test('every bundled muscle has a library artwork region', () => {
 test('shared library regions choose strongest shade', () => {
   expect(mapBodyRegions(['glutes'],['abductors']).get('gluteal')).toBe('primary');
   expect(mapBodyRegions([],['abductors','glutes'],{'glutes':'higher'}).get('gluteal')).toBe('higher');
+  expect(mapBodyRegions([],['glutes'],{'glutes':'low'}).get('gluteal')).toBe('secondary');
   expect(mapBodyRegions([],[],{'lats':'some','middle back':'low'}).get('upper-back')).toBe('some');
   expect(mapBodyRegions(['abdominals'],[]).get('obliques')).toBe('primary');
 });

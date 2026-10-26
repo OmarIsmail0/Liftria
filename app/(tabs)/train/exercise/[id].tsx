@@ -3,6 +3,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { BodyMap } from '../../../../src/features/train/BodyMap';
+import { equipmentLabel } from '../../../../src/i18n/equipment';
 import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Sheet, Typography } from '../../../../src/design/primitives';
 import { useTheme } from '../../../../src/design/ThemeProvider';
 import { type Exercise } from '../../../../src/services/database/gymTypes';
@@ -74,7 +75,7 @@ export default function ExerciseDetail(){
   const volume=records.reduce((n,r)=>Math.max(n,r.bestSessionVolume),0);
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
-      <Header title={exercise.name} subtitle={exercise.equipment??t('exerciseDetail.equipmentUnknown')}
+      <Header title={exercise.name} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
         onBack={()=>router.back()}/>
       <Card rim="train">
         <BodyMap primary={exercise.primaryMuscles} secondary={exercise.secondaryMuscles}/>

@@ -35,9 +35,12 @@ export function mapBodyRegions(
 ): Map<Slug, BodyIntensity> {
   const result = new Map<Slug, BodyIntensity>();
   for (const muscle of MUSCLES) {
-    const intensity: BodyIntensity | null =
-      muscle === selected || primary.includes(muscle) ? 'primary' :
-      shading?.[muscle] ?? (secondary.includes(muscle) ? 'secondary' : null);
+    const candidates: BodyIntensity[] = [];
+    if (muscle === selected || primary.includes(muscle)) candidates.push('primary');
+    if (secondary.includes(muscle)) candidates.push('secondary');
+    const shaded = shading?.[muscle];
+    if (shaded) candidates.push(shaded);
+    const intensity = candidates.sort((a,b)=>priority[b]-priority[a])[0];
     if (!intensity) continue;
     for (const slug of BODY_REGIONS[muscle]) {
       const old = result.get(slug);

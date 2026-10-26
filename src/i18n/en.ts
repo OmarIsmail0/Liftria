@@ -1,7 +1,7 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
   'polish.appearance': "Appearance",
-  'polish.sexExplanation': "Used only for the calorie estimate. Leave it blank and the estimate uses an average.",
+  'polish.sexExplanation': "Used to calculate a calorie estimate. If not selected, no estimate is calculated.",
   'polish.activitySitting': "Sitting for most of the day.",
   'polish.activitySome': "Standing or walking for part of the day.",
   'polish.activityActive': "On your feet often or active most days.",

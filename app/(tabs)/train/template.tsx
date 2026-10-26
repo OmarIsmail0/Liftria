@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { equipmentLabel } from '../../../src/i18n/equipment';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, View } from 'react-native';
@@ -121,7 +122,7 @@ export default function TemplateEditor() {
     <Card title={t('template.addExercise')}>
       <Field label={t('template.searchLibrary')} value={query} onChangeText={setQuery} placeholder={t('template.searchExample')}/>
       {filtered.filter(e=>!exercises.some(row=>row.exerciseId===e.id)).map(e=>
-        <ListRow key={e.id} title={e.name} detail={e.equipment??t('template.bodyweight')}
+        <ListRow key={e.id} title={e.name} detail={equipmentLabel(language,e.equipment,t('template.bodyweight'))}
           leading={<ExerciseThumbnail exercise={e} />} onPress={()=>add(e)}/>)}
       <Button label={t('template.browseMap')} variant="secondary"
         onPress={()=>router.push('/(tabs)/train/muscles')}/>

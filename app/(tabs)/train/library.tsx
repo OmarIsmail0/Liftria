@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { equipmentLabel } from '../../../src/i18n/equipment';
 import type { TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -13,7 +14,7 @@ import { recentExerciseIds } from '../../../src/services/database/gymRepositorie
 const groups=['All',...Object.keys(MUSCLE_GROUPS)] as const;
 export default function ExerciseLibrary() {
   const {theme}=useTheme();
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
   const groupLabel=(name:string)=>name==='All'?t('library.all'):name==='Chest'?t('library.chest'):
     name==='Back'?t('library.back'):name==='Arms'?t('library.arms'):t('library.legs');
   const params=useLocalSearchParams<{query?:string}>();
@@ -51,7 +52,7 @@ export default function ExerciseLibrary() {
   const recentRows=useMemo(()=>recent.map(id=>all.find(e=>e.id===id))
     .filter((e):e is Exercise=>Boolean(e)),[all,recent]);
   const row=(e:Exercise)=><ListRow key={e.id} title={e.name}
-    detail={(e.equipment??t('library.equipmentUnknown'))+' · '+e.primaryMuscles.map(m=>t(`muscle.${m}` as TranslationKey)).join(', ')+(e.source==='custom'?' · '+t('library.mine'):'')}
+    detail={equipmentLabel(language,e.equipment,t('library.equipmentUnknown'))+' · '+e.primaryMuscles.map(m=>t(`muscle.${m}` as TranslationKey)).join(', ')+(e.source==='custom'?' · '+t('library.mine'):'')}
     leading={<ExerciseThumbnail exercise={e} />}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>;
   return <Screen embedded scroll={false}>

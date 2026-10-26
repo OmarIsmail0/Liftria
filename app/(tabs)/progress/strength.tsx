@@ -1,5 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { bidiIsolate, formatNumber } from '../../../src/i18n';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -13,7 +14,7 @@ import { getTypedSetting } from '../../../src/services/database/settings';
 
 type Range='4w'|'3m'|'1y';
 export default function Strength(){
-  const { t: tr } = useLanguage();
+  const { t: tr, language } = useLanguage();
   const {theme}=useTheme();
  const [rows,setRows]=useState<StrengthObservation[]>([]);
  const [records,setRecords]=useState<ExerciseRecord[]>([]);
@@ -46,9 +47,9 @@ export default function Strength(){
    <Button label={tr('p4.strength.5')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
   </Card>:<>
    <Card rim="train" title={tr('p4.strength.6')}>
-    <Typography size="metric-m">{Math.round(fromKg(summary.total,unit)).toLocaleString()} {unit}</Typography>
+    <Typography size="metric-m">{bidiIsolate(language,formatNumber(language,Math.round(fromKg(summary.total,unit)))+' '+unit)}</Typography>
     <Typography tone="secondary" size="small">{summary.changePct===null?tr('p4.strength.18'):
-      (summary.changePct>=0?'+':'')+Math.round(summary.changePct)+'% '+tr('p4.strength.19')}</Typography>
+      bidiIsolate(language,(summary.changePct>=0?'+':'')+formatNumber(language,Math.round(summary.changePct))+'%')+' '+tr('p4.strength.19')}</Typography>
     <Typography tone="tertiary" size="small">{tr('p4.strength.15')}</Typography>
     <View style={{flexDirection:'row',alignItems:'flex-end',gap:theme.space[1],height:170}}>
      {bars.map(w=><View key={w.label} style={{flex:1,minWidth:20,alignItems:'center',gap:theme.space[1]}}>
@@ -62,7 +63,7 @@ export default function Strength(){
       <Text numberOfLines={1} adjustsFontSizeToFit
         accessibilityLabel={tr('p4.strength.21')+' '+w.label}
         style={{color:theme.color.text.tertiary,fontSize:theme.type.small.size,textAlign:'center'}}>
-        {w.start.toLocaleDateString(undefined,{month:'numeric',day:'numeric'})}
+        {bidiIsolate(language,w.start.toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US',{month:'numeric',day:'numeric'}))}
       </Text>
      </View>)}
     </View>
@@ -70,7 +71,7 @@ export default function Strength(){
    <Card title={tr('p4.strength.7')}>
     {top.length===0?<Typography tone="secondary">{tr('p4.strength.16')}</Typography>:
      top.map(r=><ListRow key={r.exerciseId+':'+r.side} title={names.get(r.exerciseId)??r.exerciseId}
-      detail={Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit))+' '+unit+' '+tr('p4.strength.20')+' · '+new Date(r.latestAt).toLocaleDateString()}
+      detail={bidiIsolate(language,formatNumber(language,Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit)))+' '+unit)+' '+tr('p4.strength.20')+' · '+bidiIsolate(language,new Date(r.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}
       suffix={<Chip kind="estimate" label={tr('p4.strength.8')}/>}
       onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:r.exerciseId}})}/>)}
     <Typography tone="secondary" size="small">{tr('p4.strength.17')}</Typography>

@@ -10,7 +10,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
 import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
-import { formatNumber } from '../../src/i18n';
+import { formatNumber, bidiIsolate } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 const sourceName=(s:string)=>({hevy:'Hevy',strong:'Strong',fitnotes:'FitNotes',csv:'CSV'} as Record<string,string>)[s]??s;
 export default function ImportPreview(){
@@ -65,8 +65,8 @@ export default function ImportPreview(){
   </Card>:<>
    <Card rim="train" title={t("im2.summary",{workouts:plan.workouts.length,sets:plan.setCount})}>
     <Typography tone="secondary" size="small">{t("im2.fromSource",{source:sourceName(draft.source)})}</Typography>
-    <Typography tone="secondary">{new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')+
-     ' – '+new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}</Typography>
+    <Typography tone="secondary">{bidiIsolate(language,new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))+
+     ' – '+bidiIsolate(language,new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}</Typography>
     <ListRow title={t("im2.warmups")} detail={formatNumber(language,plan.warmupCount)}/>
     {!plan.parsed.warmupMarked&&<Typography tone="secondary" size="small">{t("im2.warmupsNotMarked")}</Typography>}
     <ListRow title={t("im2.skipped")} detail={formatNumber(language,plan.skippedDays.length)}/>
@@ -120,7 +120,7 @@ export default function ImportPreview(){
      plan.changes.slice(0,6).map((change,i)=><ListRow key={i} title={change.exerciseName}
        leading={exerciseCatalog.find(e=>e.name===change.exerciseName)?
          <ExerciseThumbnail exercise={exerciseCatalog.find(e=>e.name===change.exerciseName)!}/>:undefined}
-       detail={change.before+' → '+change.after}/>)}
+       detail={bidiIsolate(language,change.before)+' → '+bidiIsolate(language,change.after)}/>)}
     <Typography tone="secondary" size="small">{t("im2.rmEstimate")}</Typography>
    </Card>
    {error&&<Typography>{error}</Typography>}

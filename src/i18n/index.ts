@@ -2,6 +2,11 @@ import { en, type TranslationKey } from './en';
 import { ar } from './ar';
 
 export type AppLanguage = 'en' | 'ar';
+
+/** Keep numeric values and units in their own LTR isolate inside RTL sentences. */
+export function bidiIsolate(language: AppLanguage, value: string): string {
+  return language === 'ar' ? '\u2068' + value + '\u2069' : value;
+}
 export type LanguagePreference = 'system' | AppLanguage;
 export type TranslationParams = Record<string, string | number>;
 export const languages = { en, ar } as const;
