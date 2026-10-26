@@ -72,8 +72,8 @@ export async function requestHikuText(description:string,language:'en'|'ar',
   try{
    response=await fetch(endpoint,{method:'POST',signal:controller.signal,
     headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json'},
-    body:JSON.stringify({model,max_tokens:1800,
-      output_config:{format:{type:'json_schema',schema:hikuJsonSchema}},
+    body:JSON.stringify({model,max_tokens:8000,
+      output_config:{effort:'low',format:{type:'json_schema',schema:hikuJsonSchema}},
       messages:[{role:'user',content:[{type:'text',text:prompt}]}]}),
    });
   }catch{
