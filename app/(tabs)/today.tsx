@@ -15,6 +15,7 @@ import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/us
 import { heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/health/presentation';
 import { listPlans, listSessions, listTemplates } from '../../src/services/database/gymRepositories';
 import { scheduledTemplate, isLocalDate } from '../../src/features/train/weekPlan';
+import { readDiaryDay, summarizeEntries, type DaySummary } from '../../src/features/eat/diaryRepository';
 
 type TrainingToday = { title: string; detail: string } | null;
 type LocalToday = {
@@ -34,6 +35,7 @@ export default function TodayTab() {
   const [localLoading, setLocalLoading] = useState(true);
   const [connectDismissed,setConnectDismissed] = useState(false);
   const [training,setTraining] = useState<TrainingToday>(null);
+  const [diary,setDiary]=useState<DaySummary>(summarizeEntries([]));
   const loadTraining=useCallback(async()=>{
     const [sessions,plans,templates]=await Promise.all([
       listSessions(100),listPlans(),listTemplates(),
@@ -47,11 +49,12 @@ export default function TodayTab() {
       next?{title:next.name,detail:t('today.trainingPlanned')}:null);
   },[t]);
   const loadLocal = useCallback(async () => {
-    const [profile, target, hide, completed, saved, key, net] = await Promise.all([
+    const [profile, target, hide, completed, saved, key, net,entries] = await Promise.all([
       getProfile(), getCurrentTarget(), getTypedSetting('hideNumbers'),
       getTypedSetting('onboarding.completedAt'), getTypedSetting('onboarding.step'), keyState(),
-      Network.getNetworkStateAsync().catch(() => null),
+      Network.getNetworkStateAsync().catch(() => null), readDiaryDay(),
     ]);
+    if(entries.ok)setDiary(summarizeEntries(entries.value));
     setLocal({
       profile: profile.ok ? profile.value : null,
       target: target.ok ? target.value : null,
@@ -131,7 +134,7 @@ export default function TodayTab() {
         </Pressable>} />
       {local.offline && <Banner variant="offline" title={t('today.offline')}
         message={t('today.offlineDescription')} />}
-      <Orb eaten={0} target={local.target?.kcal ?? null} hidden={local.hideNumbers}
+      <Orb eaten={diary.kcal} target={local.target?.kcal ?? null} hidden={local.hideNumbers}
         active onPress={() => router.push('/(tabs)/eat')} />
       <View style={{ gap: theme.space[2], alignItems: 'center' }}>
         {hasTarget ? <>
@@ -139,22 +142,29 @@ export default function TodayTab() {
             ? <Chip kind="estimate" />
             : <Typography tone="secondary" size="small">{t('today.manualTarget')}</Typography>}
           <Typography tone="secondary">{local.hideNumbers ? t('today.targetSaved') :
-            t('today.targetNotLogged', { calories: local.target?.kcal ?? 0 })}</Typography>
+            diary.logged ? t('eatI.eaten',{count:formatNumber(language,diary.kcal)}) : t('eatI.notLogged')}</Typography>
           <Typography tone="secondary" size="small">{local.hideNumbers ? t('today.macrosHidden') :
-            t('today.macros', { protein: local.target?.proteinG ?? 0, fat: local.target?.fatG ?? 0, carbs: local.target?.carbsG ?? 0 })}</Typography>
+            diary.logged?(diary.protein===null&&diary.carbs===null&&diary.fat===null?
+              t('eatI.caloriesOnlyNoMacros'):t('eatI.macroAmounts',{
+                p:diary.protein===null?'—':formatNumber(language,Math.round(diary.protein)),
+                c:diary.carbs===null?'—':formatNumber(language,Math.round(diary.carbs)),
+                f:diary.fat===null?'—':formatNumber(language,Math.round(diary.fat))})):t('today.macrosNotLogged')}</Typography>
         </> : <>
-          <Typography tone="secondary">{t('today.firstMeal')}</Typography>
+          <Typography tone="secondary">{diary.logged?t('eatI.eaten',{count:formatNumber(language,diary.kcal)}):t('today.firstMeal')}</Typography>
           <Typography tone="secondary" size="small">{t('today.noTarget')}</Typography>
           <Typography tone="secondary" size="small">{local.hideNumbers
             ? t('today.macrosHidden') : t('today.macrosNotLogged')}</Typography>
-          <Button label={t('today.setTarget')} variant="secondary" onPress={() =>
-            router.push({ pathname: '/onboarding/[step]', params: { step: 'target' } })} />
+          <View style={{ alignItems: 'center' }}>
+            <Button label={t('today.setTarget')} variant="secondary" onPress={() =>
+              router.push('/(tabs)/eat/targets')} />
+          </View>
         </>}
       </View>
       <Card title={t('today.actions')} rim="eat">
         <Button label={t('today.logMeal')} variant="secondary" fullWidth
           onPress={() => router.push('/(tabs)/eat')} />
-        <Typography tone="secondary" size="small">{t('today.mealComing')}</Typography>
+        {diary.logged&&<Typography tone="secondary" size="small">{local.hideNumbers ?
+          t('eatI.items',{count:diary.count}) : t('eatI.eaten',{count:formatNumber(language,diary.kcal)})}</Typography>}
       </Card>
       {(!local.onboardingFinished || !hasTarget) && <Card title={t('today.gettingStarted')}>
         <Typography tone="secondary">{t('today.setupDetails')}</Typography>

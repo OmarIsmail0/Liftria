@@ -20,7 +20,7 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 // New application id com.liftria.app gets a fresh on-device database. Do not rename
 // databases after shipping to friends without an explicit migration/copy strategy.
 export const DB_NAME = 'liftria.db';
-export const DB_SCHEMA_VERSION = 3;
+export const DB_SCHEMA_VERSION = 4;
 
 /** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
 export const DB_MIGRATIONS = [
@@ -148,9 +148,58 @@ export const DB_MIGRATIONS = [
     );
     CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets(session_exercise_id,position);
   ` },
+  { version: 4, sql: `
+    CREATE TABLE IF NOT EXISTS foods (
+      id TEXT PRIMARY KEY, name_en TEXT NOT NULL, name_ar TEXT,
+      aliases TEXT NOT NULL DEFAULT '[]',
+      source TEXT NOT NULL CHECK(source IN ('usda','egypt','custom','hiku')),
+      estimate INTEGER NOT NULL CHECK(estimate IN (0,1)),
+      kcal REAL NOT NULL CHECK(kcal>=0), protein REAL, carbs REAL, fat REAL, fiber REAL,
+      retired INTEGER NOT NULL DEFAULT 0 CHECK(retired IN (0,1))
+    );
+    CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name_en COLLATE NOCASE);
+    CREATE TABLE IF NOT EXISTS food_portions (
+      food_id TEXT NOT NULL REFERENCES foods(id) ON DELETE CASCADE,
+      label_en TEXT NOT NULL, label_ar TEXT, grams REAL NOT NULL CHECK(grams>0),
+      PRIMARY KEY (food_id,label_en)
+    );
+    CREATE TABLE IF NOT EXISTS hiku_requests (
+      id TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK(kind IN ('text','photo')),
+      created_at TEXT NOT NULL, model TEXT NOT NULL, input_tokens INTEGER,
+      output_tokens INTEGER, est_cost_usd REAL, status TEXT NOT NULL,
+      price_table_version TEXT
+    );
+    CREATE TABLE IF NOT EXISTS diary_entries (
+      id TEXT PRIMARY KEY, day TEXT NOT NULL,
+      meal TEXT NOT NULL CHECK(meal IN ('breakfast','lunch','dinner','snacks')),
+      food_id TEXT REFERENCES foods(id), name_snapshot TEXT NOT NULL,
+      grams REAL CHECK(grams>0 OR grams IS NULL),
+      kcal REAL NOT NULL CHECK(kcal>=0), protein REAL, carbs REAL, fat REAL,
+      source TEXT NOT NULL CHECK(source IN ('search','quick','hiku-estimate','repeat')),
+      hiku_request_id TEXT REFERENCES hiku_requests(id), original_json TEXT,
+      created_at TEXT NOT NULL, edited_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_diary_day ON diary_entries(day,meal,created_at);
+    CREATE INDEX IF NOT EXISTS idx_diary_food ON diary_entries(food_id,created_at);
+    CREATE TABLE IF NOT EXISTS favorite_foods (
+      food_id TEXT PRIMARY KEY REFERENCES foods(id), created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS saved_meals (
+      id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS saved_meal_items (
+      id TEXT PRIMARY KEY, meal_id TEXT NOT NULL REFERENCES saved_meals(id) ON DELETE CASCADE,
+      food_id TEXT NOT NULL REFERENCES foods(id),
+      grams REAL NOT NULL CHECK(grams>0), position INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS weights (
+      id TEXT PRIMARY KEY, measured_at TEXT NOT NULL, kg REAL NOT NULL CHECK(kg>0),
+      note TEXT, source TEXT NOT NULL DEFAULT 'liftria' CHECK(source='liftria')
+    );
+  ` },
 ] as const;
 
-/** Fresh install runs v1, v2, then v3; older installations run only missing migrations. One exclusive transaction per version. */
+/** Each missing schema version is applied transactionally; existing installs retain all prior data. */
 export async function migrateDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA foreign_keys = ON;');
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
@@ -320,14 +369,14 @@ export type LocalStorageCounts = {
 };
 export async function localStorageCounts(): Promise<DbResult<LocalStorageCounts>> {
   return dbOperation(async db => {
-    async function count(table: 'sessions' | 'test_nutrition_entries' |
+    async function count(table: 'sessions' | 'diary_entries' |
       'health_samples' | 'health_aggregates' | 'targets' | 'profile'): Promise<number> {
       const where = table === 'sessions' ? " WHERE state='finished'" : '';
       return (await db.getFirstAsync<{ count: number }>(
         `SELECT COUNT(*) AS count FROM ${table}${where}`))?.count ?? 0;
     }
     const [workouts, meals, healthSamples, healthAggregates, targetVersions, profiles] =
-      await Promise.all([count('sessions'),count('test_nutrition_entries'),
+      await Promise.all([count('sessions'),count('diary_entries'),
         count('health_samples'),count('health_aggregates'),count('targets'),count('profile')]);
     const pages = await db.getFirstAsync<{ page_count: number }>('PRAGMA page_count');
     const size = await db.getFirstAsync<{ page_size: number }>('PRAGMA page_size');
@@ -346,7 +395,7 @@ export async function clearLocalHealthCache(): Promise<DbResult<void>> {
   });
 }
 
-/** Destructive reset after exact typed confirmation; future app-managed files are not present in Phase 2. */
+/** Deleting the complete SQLite file also removes all v4 diary, favorites, saved meals and weights. */
 export async function deleteLocalDatabase(): Promise<DbResult<void>> {
   try {
     const pending = dbPromise;

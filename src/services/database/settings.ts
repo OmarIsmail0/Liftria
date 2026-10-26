@@ -19,6 +19,12 @@ export const settingsSchemas = {
   'hiku.shareToday': z.boolean(),
   'hiku.shareTraining': z.boolean(),
   'hiku.keepPhotos': z.boolean(),
+  'eat.ramadan': z.boolean(),
+  'eat.iftarTime': z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+  'eat.mealNames': z.object({
+    breakfast:z.string().max(40).optional(),lunch:z.string().max(40).optional(),
+    dinner:z.string().max(40).optional(),snacks:z.string().max(40).optional(),
+  }),
   'onboarding.step': z.number().int().min(0),
   'onboarding.completedAt': z.string().datetime({ offset: true }).nullable(),
 } as const;
@@ -39,6 +45,9 @@ export const settingDefaults: { [K in SettingKey]: SettingValue<K> } = {
   'hiku.shareToday': false,
   'hiku.shareTraining': false,
   'hiku.keepPhotos': false,
+  'eat.ramadan': false,
+  'eat.iftarTime': '18:00',
+  'eat.mealNames': {},
   'onboarding.step': 0,
   'onboarding.completedAt': null,
 };

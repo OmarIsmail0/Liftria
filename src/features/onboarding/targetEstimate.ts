@@ -4,7 +4,7 @@ export type Activity = 'sitting' | 'some' | 'active';
 export type Goal = 'lose' | 'maintain' | 'build';
 
 export type FormulaProfile = {
-  sexForFormula: FormulaSex;
+  sexForFormula: FormulaSex | null;
   birthYear: number;
   heightCm: number;
   weightKg: number;
@@ -34,7 +34,7 @@ export function canEstimateTarget(
   return Number.isInteger(age) && age >= 16 && age <= 100 &&
     typeof p.heightCm === 'number' && Number.isFinite(p.heightCm) && p.heightCm >= 120 && p.heightCm <= 230 &&
     typeof p.weightKg === 'number' && Number.isFinite(p.weightKg) && p.weightKg >= 35 && p.weightKg <= 300 &&
-    (p.sexForFormula === 'male' || p.sexForFormula === 'female' || p.sexForFormula === 'unspecified') &&
+    (p.sexForFormula == null || p.sexForFormula === 'male' || p.sexForFormula === 'female' || p.sexForFormula === 'unspecified') &&
     (p.activity === 'sitting' || p.activity === 'some' || p.activity === 'active') &&
     (p.goal === 'lose' || p.goal === 'maintain' || p.goal === 'build');
 }
@@ -54,7 +54,7 @@ export function estimateTarget(p: FormulaProfile, nowYear = new Date().getFullYe
   return {
     kcal, proteinG, fatG, carbsG, source: 'estimate',
     inputs: { ...p, age, bmr, activityFactor, goalFactor },
-    lessPrecise: p.sexForFormula === 'unspecified',
+    lessPrecise: p.sexForFormula === null || p.sexForFormula === 'unspecified',
   };
 }
 
