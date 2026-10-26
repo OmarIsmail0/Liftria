@@ -41,9 +41,13 @@ jobs:
           cd ios
           WORKSPACE=$(ls -d *.xcworkspace | head -n1)
           SCHEME=$(basename "$WORKSPACE" .xcworkspace)
-          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
+          if ! xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -n 200
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build > ../xcodebuild.log 2>&1; then
+            echo "::group::Errors"; grep -nE "error:|fatal error|Undefined symbol|ld: " ../xcodebuild.log | head -n 80; echo "::endgroup::"
+            tail -n 60 ../xcodebuild.log; exit 1
+          fi
+          tail -n 20 ../xcodebuild.log
 
       - name: Check the iPhone permission texts
         run: |
@@ -62,6 +66,14 @@ jobs:
         run: |
           APP=$(find ios/build/Build/Products -maxdepth 2 -name '*.app' | head -n1)
           ditto -c -k --keepParent "$APP" liftria-ios-simulator.zip
+
+      - name: Keep the Xcode log
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: liftria-ios-xcodebuild-log
+          path: xcodebuild.log
+          retention-days: 14
 
       - uses: actions/upload-artifact@v6
         with:
