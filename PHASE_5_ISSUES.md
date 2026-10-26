@@ -30,7 +30,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Backup and restore (important for a local-first app):** Settings → Data → "Export a backup" writes one JSON file with every table (versioned, with the schema version). "Restore from backup" reads it, shows what it contains, and replaces local data only after a typed confirmation. Use `expo-document-picker` and `expo-file-system` (both already installed) plus the system share sheet; no new permissions. Test a round trip.
    - **CSV export** of workouts and the food diary for spreadsheets.
    - **Water:** a simple glass counter on Today and Eat (glass size in Settings, 250 ml default). Not logged ≠ 0.
-   - **Fiber** in the diary and trends (the packs already have it; null when unknown). Claude adds sodium and sugar to the food pack first; GPT shows them when Claude says the pack is updated.
+   - **Fiber, sugar and sodium** in the diary and trends. The packs have all three (Claude rebuilt them on 2026-10-26: `sugar` in g and `sodium` in mg per 100 g). Any of them, and protein/carbs/fat too, can be **null** when the source doesn't report it: show "—" and never count it as 0. Snapshot them into diary entries like the macros (additive migration).
 4. **PR O: `Phase 5 / Hiku photo`** — scope depends on the owner's answer about the Test B gate (Claude will update this item).
 5. **PR R: `Phase 5 / Release readiness`**
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), and screenshot routes for the store images.
