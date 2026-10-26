@@ -128,7 +128,7 @@ export default function BodyTrends(){
    {Number.isFinite(weight)&&weight>0&&<Stepper label={t('trend.adjustWeight')}
      value={Math.round(weight*10)/10} min={0.1} max={500} step={0.1} unit="kg"
      onChange={v=>{setKg((Math.round(v*10)/10).toFixed(1));setWarning(false);}}/>}
-   <Field label={t('trend.date')} value={day} onChangeText={setDay} placeholder="YYYY-MM-DD"/>
+   <Field label={t('trend.date')} value={day} onChangeText={setDay} placeholder={t('trend.datePlaceholder')}/>
    <Field label={t('trend.note')} value={note} onChangeText={setNote} multiline/>
    {warning&&<Card title={t('trend.unusualWeight')}>
      <Typography tone="secondary">{t('trend.unusualDetail')}</Typography>

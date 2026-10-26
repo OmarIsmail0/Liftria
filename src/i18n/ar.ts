@@ -179,6 +179,7 @@ export const ar: Record<TranslationKey, string> = {
   'trend.chartWeightA11y': "مخطط الوزن يضم {count} يومًا بقياسات واتجاهًا ممهدًا.",
   'trend.chartProteinA11y': "تحقق هدف البروتين في {count} يوم بهذا المخطط.",
   'trend.demoDataWarning': "بيانات تجريبية فقط: {count} قياسات وزن للعرض، وليست قياسات شخصية.",
+  'trend.datePlaceholder': "YYYY-MM-DD",
   'nav.today': 'اليوم',
   'nav.train': 'التمارين',
   'nav.eat': 'الطعام',

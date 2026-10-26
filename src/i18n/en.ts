@@ -178,6 +178,7 @@ export const en = {
   'trend.chartWeightA11y': "Weight chart with {count} observed days and a smoothed trend line.",
   'trend.chartProteinA11y': "Protein target reached on {count} days in this grid.",
   'trend.demoDataWarning': "Demo only: {count} example weights. Not personal measurements.",
+  'trend.datePlaceholder': "YYYY-MM-DD",
   'nav.today': 'Today',
   'nav.train': 'Train',
   'nav.eat': 'Eat',
