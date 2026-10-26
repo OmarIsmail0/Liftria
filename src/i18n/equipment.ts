@@ -12,6 +12,7 @@ const ARABIC_EQUIPMENT: Record<string,string> = {
 };
 export function equipmentLabel(language:AppLanguage, raw:string|null, fallback:string):string {
   if(raw===null || raw.trim()==='')return fallback;
-  if(language==='en')return raw==='body only'?'Bodyweight':raw;
+  if(language==='en')return raw.trim().toLocaleLowerCase('en')==='body only'?'Bodyweight':
+    raw.trim().replace(/\b[a-z]/g,character=>character.toUpperCase());
   return ARABIC_EQUIPMENT[raw.trim().toLocaleLowerCase('en')]??raw;
 }

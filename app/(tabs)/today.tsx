@@ -147,8 +147,10 @@ export default function TodayTab() {
           <Typography tone="secondary" size="small">{t('today.noTarget')}</Typography>
           <Typography tone="secondary" size="small">{local.hideNumbers
             ? t('today.macrosHidden') : t('today.macrosNotLogged')}</Typography>
-          <Button label={t('today.setTarget')} variant="secondary" onPress={() =>
-            router.push({ pathname: '/onboarding/[step]', params: { step: 'target' } })} />
+          <View style={{ alignItems: 'center' }}>
+            <Button label={t('today.setTarget')} variant="secondary" onPress={() =>
+              router.push('/(tabs)/eat/targets')} />
+          </View>
         </>}
       </View>
       <Card title={t('today.actions')} rim="eat">

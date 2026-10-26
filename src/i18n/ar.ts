@@ -2,7 +2,7 @@ import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
   'polish.appearance': "المظهر",
-  'polish.sexExplanation': "يُستخدم لحساب تقدير السعرات. إذا لم تختر قيمة، فلن يُحسب التقدير.",
+  'polish.sexExplanation': "يُستخدم فقط لتقدير السعرات. اتركه فارغًا لاستخدام متوسط في التقدير.",
   'polish.activitySitting': "تقضي معظم اليوم جالسًا.",
   'polish.activitySome': "تقف أو تمشي خلال جزء من اليوم.",
   'polish.activityActive': "تتحرك كثيرًا أو تتمرن أغلب الأيام.",

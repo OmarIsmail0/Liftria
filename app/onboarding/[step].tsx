@@ -6,7 +6,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { fontFamilyFor } from '../../src/design/fonts';
 import type { TranslationKey } from '../../src/i18n';
-import { Button, Card, Field, Header, Orb, Screen, OptionRows, Sheet, Typography } from '../../src/design/primitives';
+import { Button, Card, Field, Header, Orb, Screen, OptionRows, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
 import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep, skipOnboardingStep,
@@ -313,9 +313,10 @@ export default function OnboardingStepScreen() {
           <Field label={t('onboarding.age16100')} value={age} onChangeText={setAge} keyboardType="numeric" placeholder={t('onboarding.years')} error={errors.age} />
           <Field label={t('onboarding.heightCm')} value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" error={errors.heightCm} />
           <Field label={t('onboarding.weightKg')} value={draft.weightKg} onChangeText={text => patch('weightKg', text)} keyboardType="decimal-pad" placeholder="35–300" error={errors.weightKg} />
-          <ChoiceGroup label={t('onboarding.sexForFormula')}
-            selected={draft.sexForFormula === 'unspecified' ? null : draft.sexForFormula}
-            choices={[{ value: 'male', label: t('onboarding.male') }, { value: 'female', label: t('onboarding.female') }]}
+          <SegmentedControl label={t('onboarding.sexForFormula')}
+            value={draft.sexForFormula === 'unspecified' ? null : draft.sexForFormula}
+            options={[{ value: 'male', label: t('onboarding.male') },
+              { value: 'female', label: t('onboarding.female') }] as const}
             onChange={v => patch('sexForFormula', v)} />
           <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
           {draft.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
