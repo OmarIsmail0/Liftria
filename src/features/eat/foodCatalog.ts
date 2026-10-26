@@ -23,7 +23,7 @@ export function unpackFood(row:PackRow):Food {
     estimate:row.estimate===true,kcal:row.kcal,protein:row.protein,carbs:row.carbs,
     fat:row.fat,fiber:row.fiber,portions:row.portions.map(p=>(
       typeof p[1]==='number'?{labelEn:p[0],labelAr:null,grams:p[1]}:
-        {labelEn:p[0],labelAr:p[1],grams:p[2]})),
+        {labelEn:p[0],labelAr:p[1],grams:p[2]!})),
   };
 }
 let cache:Food[]|null=null;

@@ -20,7 +20,10 @@ export const settingsSchemas = {
   'hiku.shareTraining': z.boolean(),
   'hiku.keepPhotos': z.boolean(),
   'eat.ramadan': z.boolean(),
-  'eat.mealNames': z.record(z.enum(['breakfast','lunch','dinner','snacks']), z.string().max(40)).optional(),
+  'eat.mealNames': z.object({
+    breakfast:z.string().max(40).optional(),lunch:z.string().max(40).optional(),
+    dinner:z.string().max(40).optional(),snacks:z.string().max(40).optional(),
+  }),
   'onboarding.step': z.number().int().min(0),
   'onboarding.completedAt': z.string().datetime({ offset: true }).nullable(),
 } as const;
