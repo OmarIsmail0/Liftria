@@ -15,8 +15,9 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
    - Translate every existing screen: onboarding, Today, Health, Settings, and all of Train and Progress.
    - Add `expo-localization` and ask Claude to regenerate the lockfile.
    - List the Arabic chip and safety wording in the PR description for the owner to confirm.
-3. **PR P: `Phase 4 / Design polish (owner's S22 review)`.**
-   - **Next: start now, branching from `main`.**
+3. ~~**PR P: `Phase 4 / Design polish (owner's S22 review)`.**~~ DONE: PR #18 merged (2026-10-26). Claude fixed the RTL chevrons (SVG `ChevronIcon`) and the Settings labels.
+   - **Open (Claude):** on a phone already set to Arabic, the very first launch after install is still left to right. Choosing Arabic inside the app works.
+   - Done.
    - The owner tested the Phase 3 APK on the S22 (2026-10-25). **Apply these rules on every screen, not only the ones named:**
    1. **Top-right avatar circle ("L") → a Settings gear icon.**
       - Same line style and size as the tab icons, with no outline circle and a 48dp touch target.
@@ -99,7 +100,7 @@ Build plan and definition of done: `docs/phase4/PHASE_4_PROMPT.md`. **Read §0 f
        - **Hermes rule:** only `Intl.NumberFormat`, `Intl.DateTimeFormat` and `Intl.Collator` exist on Android. For plurals use `pluralForm()`.
    - **For screenshots:** list the routes for Today, Settings, Profile, onboarding profile/goal, and Train home in the PR description.
 4. **PR I: `Phase 4 / Diary, search and targets`.**
-   - Starts when PR P's `verify` is green; branch from PR P.
+   - **Next: start now, branching from `main`.**
    - **Carry-overs from the PR #18 screenshot review** (small; do first):
      - English equipment labels in title case ("Machine", not "machine").
      - Center "Set a target" on Today under the centered orb text.
