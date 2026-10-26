@@ -1,7 +1,7 @@
 import { ar } from '../ar';
 import { en } from '../en';
 import { formatNumber, resolveLanguage, translate, translateWorkoutCount } from '..';
-import { directionalChevron, logicalInsets } from '../layout';
+import { chevronPointsLeft, logicalInsets } from '../layout';
 
 describe('Phase 4 bilingual contract', () => {
   it('keeps identical English/Arabic key sets with nonempty values', () => {
@@ -25,8 +25,9 @@ describe('Phase 4 bilingual contract', () => {
   });
   it('retains logical start/end and swaps directional chevrons only', () => {
     expect(logicalInsets(12, 4)).toEqual({ paddingStart: 12, paddingEnd: 4 });
-    expect(directionalChevron('back', false)).toBe('‹');
-    expect(directionalChevron('back', true)).toBe('›');
-    expect(directionalChevron('forward', true)).toBe('‹');
+    expect(chevronPointsLeft('back', false)).toBe(true);
+    expect(chevronPointsLeft('back', true)).toBe(false);
+    expect(chevronPointsLeft('forward', false)).toBe(false);
+    expect(chevronPointsLeft('forward', true)).toBe(true);
   });
 });

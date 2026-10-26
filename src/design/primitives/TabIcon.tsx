@@ -33,3 +33,15 @@ export function SettingsIcon({ color, size, strokeWidth }: {
     <Path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
   </Svg>;
 }
+
+// Back/forward chevron; `left` is the on-screen direction (see chevronPointsLeft).
+export function ChevronIcon({ left, color, size, strokeWidth }: {
+  left: boolean; color: string; size: number; strokeWidth: number;
+}) {
+  return <Svg width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke={color} strokeWidth={strokeWidth}
+    strokeLinecap="round" strokeLinejoin="round"
+    pointerEvents="none" importantForAccessibility="no-hide-descendants">
+    <Path d={left ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} />
+  </Svg>;
+}
