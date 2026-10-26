@@ -1,10 +1,11 @@
 import { dbOperation, type DbResult } from './index';
 import { newGymId } from './exerciseLibrary';
+import { supersetGroupsValid } from '../../features/train/superset';
 import { calculateRecords, type ExerciseRecord, type RecordObservation, type SetKind, type SetSide } from './gymMath';
 
 export type TemplateExerciseInput = {
   exerciseId: string; targetSets: number; repMin: number; repMax: number;
-  restSec: number | null; notes: string | null;
+  restSec: number | null; notes: string | null; supersetGroup?:string|null;
 };
 export type TemplateInput = { name: string; restSec: number; notes: string | null; exercises: TemplateExerciseInput[] };
 export type Template = TemplateInput & { id: string };
@@ -39,6 +40,9 @@ function validateTemplate(input: TemplateInput): void {
   if (!input.name.trim() || input.name.length > 100 || input.exercises.length === 0)
     throw new Error('A template needs a name and at least one exercise.');
   if (!safeInt(input.restSec,0,3600)) throw new Error('Invalid default rest.');
+  if(!supersetGroupsValid(input.exercises.map((e,i)=>({
+    id:String(i),position:i,supersetGroup:e.supersetGroup??null
+  }))))throw new Error('Supersets require 2 or 3 adjacent exercises.');
   for (const e of input.exercises) {
     if (!e.exerciseId || !safeInt(e.targetSets,1,20) ||
       !safeInt(e.repMin,1,100) || !safeInt(e.repMax,e.repMin,100) ||
@@ -58,8 +62,8 @@ export async function saveTemplate(input: TemplateInput, existingId?: string): P
       await tx.runAsync('DELETE FROM template_exercises WHERE template_id=?',[id]);
       for (const [position,e] of input.exercises.entries()) {
         await tx.runAsync('INSERT INTO template_exercises '+
-          '(id,template_id,exercise_id,position,target_sets,rep_min,rep_max,rest_sec,notes) '+
-          'VALUES(?,?,?,?,?,?,?,?,?)',[newGymId(),id,e.exerciseId,position,e.targetSets,e.repMin,e.repMax,e.restSec,e.notes]);
+          '(id,template_id,exercise_id,position,target_sets,rep_min,rep_max,rest_sec,notes,superset_group) '+
+          'VALUES(?,?,?,?,?,?,?,?,?,?)',[newGymId(),id,e.exerciseId,position,e.targetSets,e.repMin,e.repMax,e.restSec,e.notes,e.supersetGroup??null]);
       }
     });
     return id;
@@ -71,11 +75,11 @@ export async function listTemplates(): Promise<DbResult<Template[]>> {
       'SELECT * FROM templates ORDER BY updated_at DESC');
     const result: Template[]=[];
     for(const row of rows){
-      const exercises=await db.getAllAsync<{exercise_id:string;target_sets:number;rep_min:number;rep_max:number;rest_sec:number|null;notes:string|null}>(
+      const exercises=await db.getAllAsync<{exercise_id:string;target_sets:number;rep_min:number;rep_max:number;rest_sec:number|null;notes:string|null;superset_group:string|null}>(
         'SELECT * FROM template_exercises WHERE template_id=? ORDER BY position',[row.id]);
       result.push({id:row.id,name:row.name,restSec:row.rest_sec,notes:row.notes,
         exercises:exercises.map(e=>({exerciseId:e.exercise_id,targetSets:e.target_sets,
-          repMin:e.rep_min,repMax:e.rep_max,restSec:e.rest_sec,notes:e.notes}))});
+          repMin:e.rep_min,repMax:e.rep_max,restSec:e.rest_sec,notes:e.notes,supersetGroup:e.superset_group}))});
     }
     return result;
   });

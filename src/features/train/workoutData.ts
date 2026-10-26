@@ -4,15 +4,17 @@ import { setVolume } from '../../services/database/gymMath';
 import type { ExerciseType } from '../../services/database/gymTypes';
 import { restDeadline } from './restClock';
 import { cancelSessionRestAlerts } from './restAlerts';
+import {canLinkSuperset,supersetGroupsValid} from './superset';
 
 export type ActiveExercise = {
   id:string; exerciseId:string; name:string; type:ExerciseType; unilateral:boolean;
   position:number; targetSets:number; repMin:number; repMax:number; restSec:number;
+  supersetGroup?:string|null; note?:string|null;
 };
 export type ActiveSet = {
   id:string; sessionExerciseId:string; position:number; side:'L'|'R'|null;
   weight:number; reps:number; kind:'working'|'warm-up';
-  loggedAt:string; restDeadline:string|null;
+  loggedAt:string; restDeadline:string|null; rpe?:number|null; rir?:number|null;
 };
 export type ActiveWorkout = {
   id:string; title:string; templateId:string|null; startedAt:string;
@@ -23,9 +25,9 @@ type WorkoutRow = {id:string;title:string;template_id:string|null;started_at:str
   ended_at:string|null;state:ActiveWorkout['state'];notes:string|null};
 type ExerciseRow = {id:string;exercise_id:string;name:string;type:ExerciseType;
   unilateral:number;position:number;target_sets:number|null;rep_min:number|null;
-  rep_max:number|null;rest_sec:number|null;default_rest:number|null};
+  rep_max:number|null;rest_sec:number|null;default_rest:number|null;superset_group:string|null;note:string|null};
 type SetRow = {id:string;session_exercise_id:string;position:number;side:'L'|'R'|null;
-  weight:number;reps:number;kind:'working'|'warm-up';logged_at:string;rest_deadline:string|null};
+  weight:number;reps:number;kind:'working'|'warm-up';logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null};
 
 const asWorkout = (row:WorkoutRow,exercises:ExerciseRow[],sets:SetRow[]):ActiveWorkout => ({
   id:row.id,title:row.title,templateId:row.template_id,startedAt:row.started_at,
@@ -33,11 +35,12 @@ const asWorkout = (row:WorkoutRow,exercises:ExerciseRow[],sets:SetRow[]):ActiveW
   exercises:exercises.map(e=>({
     id:e.id,exerciseId:e.exercise_id,name:e.name,type:e.type,unilateral:e.unilateral===1,
     position:e.position,targetSets:e.target_sets??3,repMin:e.rep_min??8,repMax:e.rep_max??12,
-    restSec:e.rest_sec??e.default_rest??120,
+    restSec:e.rest_sec??e.default_rest??120,supersetGroup:e.superset_group,note:e.note,
   })),
   sets:sets.map(s=>({
     id:s.id,sessionExerciseId:s.session_exercise_id,position:s.position,side:s.side,
     weight:s.weight,reps:s.reps,kind:s.kind,loggedAt:s.logged_at,restDeadline:s.rest_deadline,
+    rpe:s.rpe??null,rir:s.rir??null,
   })),
 });
 
@@ -46,7 +49,7 @@ export async function readWorkout(id:string):Promise<DbResult<ActiveWorkout|null
     const session=await db.getFirstAsync<WorkoutRow>('SELECT * FROM sessions WHERE id=?',[id]);
     if(!session)return null;
     const exercises=await db.getAllAsync<ExerciseRow>(
-      'SELECT se.id,se.exercise_id,e.name,e.type,e.unilateral,se.position,'+
+      'SELECT se.id,se.exercise_id,e.name,e.type,e.unilateral,se.position,se.note,se.superset_group,'+
       'te.target_sets,te.rep_min,te.rep_max,te.rest_sec,t.rest_sec AS default_rest '+
       'FROM session_exercises se JOIN exercises e ON e.id=se.exercise_id '+
       'JOIN sessions s ON s.id=se.session_id '+
@@ -79,11 +82,11 @@ export async function startManualWorkout(title:string, templateId:string|null=nu
       await tx.runAsync('INSERT INTO sessions (id,title,template_id,source,started_at,state) '+
         "VALUES(?,?,?,'manual',?,'in-progress')",[id,title.trim(),templateId,now]);
       if(templateId){
-        const refs=await tx.getAllAsync<{exercise_id:string;position:number}>(
-          'SELECT exercise_id,position FROM template_exercises WHERE template_id=? ORDER BY position',[templateId]);
+        const refs=await tx.getAllAsync<{exercise_id:string;position:number;superset_group:string|null}>(
+          'SELECT exercise_id,position,superset_group FROM template_exercises WHERE template_id=? ORDER BY position',[templateId]);
         for(const ref of refs)await tx.runAsync(
-          'INSERT INTO session_exercises(id,session_id,exercise_id,position) VALUES (?,?,?,?)',
-          [newGymId(),id,ref.exercise_id,ref.position]);
+          'INSERT INTO session_exercises(id,session_id,exercise_id,position,superset_group) VALUES (?,?,?,?,?)',
+          [newGymId(),id,ref.exercise_id,ref.position,ref.superset_group]);
       }
       resultId=id;
     });
@@ -91,12 +94,18 @@ export async function startManualWorkout(title:string, templateId:string|null=nu
   });
 }
 export type SetInput={sessionId:string;sessionExerciseId:string;position:number;
-  side:'L'|'R'|null;kind:'working'|'warm-up';weight:number;reps:number;restSec:number};
+  side:'L'|'R'|null;kind:'working'|'warm-up';weight:number;reps:number;restSec:number;
+  rpe?:number|null;rir?:number|null};
 export function validateSet(input:SetInput):string|null {
   if(!Number.isFinite(input.weight)||input.weight<0||input.weight>10000)return 'Enter a valid weight.';
   if(!Number.isInteger(input.reps)||input.reps<1||input.reps>500)return 'Add reps first.';
   if(!Number.isInteger(input.position)||input.position<0||input.position>1000 ||
     !Number.isFinite(input.restSec)||input.restSec<0||input.restSec>3600)return 'Invalid set settings.';
+  if(input.rpe!==undefined&&input.rpe!==null&&(!Number.isFinite(input.rpe)||input.rpe<1||input.rpe>10||input.rpe*2!==Math.round(input.rpe*2)))
+    return 'RPE must be 1–10 in half-point increments.';
+  if(input.rir!==undefined&&input.rir!==null&&(!Number.isInteger(input.rir)||input.rir<0||input.rir>20))
+    return 'RIR must be a whole number 0–20.';
+  if(input.rpe!=null&&input.rir!=null)return 'Choose RPE or RIR, not both.';
   return null;
 }
 /** A set is persisted only on explicit Log set; repeated taps cannot create duplicates. */
@@ -116,16 +125,17 @@ export async function logWorkoutSet(input:SetInput):Promise<DbResult<ActiveSet>>
         [input.sessionExerciseId,input.position,input.side,input.side]);
       if(prior){logged={id:prior.id,sessionExerciseId:prior.session_exercise_id,
         position:prior.position,side:prior.side,kind:prior.kind,weight:prior.weight,reps:prior.reps,
-        loggedAt:prior.logged_at,restDeadline:prior.rest_deadline};return;}
+        loggedAt:prior.logged_at,restDeadline:prior.rest_deadline,rpe:prior.rpe??null,rir:prior.rir??null};return;}
       const id=newGymId(),now=new Date().toISOString();
       const deadline=input.restSec>0?restDeadline(now,input.restSec):null;
       await tx.runAsync('INSERT INTO sets '+
-        '(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline) '+
-        'VALUES (?,?,?,?,?,?,?,?,?)',
-        [id,input.sessionExerciseId,input.position,input.kind,input.side,input.weight,input.reps,now,deadline]);
+        '(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline,rpe,rir) '+
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+        [id,input.sessionExerciseId,input.position,input.kind,input.side,input.weight,input.reps,now,deadline,
+         input.rpe??null,input.rir??null]);
       logged={id,sessionExerciseId:input.sessionExerciseId,position:input.position,
         side:input.side,kind:input.kind,weight:input.weight,reps:input.reps,
-        loggedAt:now,restDeadline:deadline};
+        loggedAt:now,restDeadline:deadline,rpe:input.rpe??null,rir:input.rir??null};
     });
     if(!logged)throw new Error('Set was not logged');
     return logged as ActiveSet;
@@ -137,13 +147,17 @@ export async function removeLoggedSet(setId:string,sessionId:string):Promise<DbR
     '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
     "WHERE s.id=? AND s.state='in-progress')",[setId,sessionId])).changes>0);
 }
-export async function editLoggedSet(setId:string,sessionId:string,weight:number,reps:number):Promise<DbResult<boolean>> {
+export async function editLoggedSet(setId:string,sessionId:string,weight:number,reps:number,
+ effort?:{rpe:number|null;rir:number|null}):Promise<DbResult<boolean>> {
   if(!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<1)return {
     ok:false,error:{code:'db-error',message:'Invalid set values'}};
+  if(effort&&((effort.rpe!==null&&(!Number.isFinite(effort.rpe)||effort.rpe<1||effort.rpe>10))||
+   (effort.rir!==null&&(!Number.isInteger(effort.rir)||effort.rir<0||effort.rir>20))))
+   return {ok:false,error:{code:'db-error',message:'Invalid effort rating'}};
   return dbOperation(async db=>(await db.runAsync(
-    'UPDATE sets SET weight=?,reps=? WHERE id=? AND session_exercise_id IN '+
+    'UPDATE sets SET weight=?,reps=?'+(effort?',rpe=?,rir=?':'')+' WHERE id=? AND session_exercise_id IN '+
     '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
-    "WHERE s.id=? AND s.state='in-progress')",[weight,reps,setId,sessionId])).changes>0);
+    "WHERE s.id=? AND s.state='in-progress')",[weight,reps,...(effort?[effort.rpe,effort.rir]:[]),setId,sessionId])).changes>0);
 }
 export async function updateRestDeadline(setId:string,sessionId:string,deadline:string|null):Promise<DbResult<boolean>> {
   return dbOperation(async db=>(await db.runAsync(
@@ -273,10 +287,43 @@ export async function reorderActiveExercise(sessionId:string,exerciseId:string,d
 }
 export async function saveWorkoutExerciseNote(sessionExerciseId:string,note:string):Promise<DbResult<void>>{
   return dbOperation(async db=>{await db.runAsync(
-    'INSERT INTO app_settings(key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
-    ['train.note.'+sessionExerciseId,note]);});
+    "UPDATE session_exercises SET note=? WHERE id=? AND session_id IN "+
+    "(SELECT id FROM sessions WHERE state='in-progress')",[note.slice(0,1000).trim(),sessionExerciseId]);});
 }
 export async function readWorkoutExerciseNote(sessionExerciseId:string):Promise<DbResult<string>>{
-  return dbOperation(async db=>(await db.getFirstAsync<{value:string}>(
-    'SELECT value FROM app_settings WHERE key=?',['train.note.'+sessionExerciseId]))?.value??'');
+  return dbOperation(async db=>(await db.getFirstAsync<{note:string|null}>(
+    'SELECT note FROM session_exercises WHERE id=?',[sessionExerciseId]))?.note??'');
+}
+/** The latest note on a finished session of the same exercise, not on a
+ * one-off session-exercise ID. Displayed only as a hint, never prefilled. */
+export async function previousExerciseNote(exerciseId:string):Promise<DbResult<string|null>>{
+ return dbOperation(async db=>(await db.getFirstAsync<{note:string}>(
+  "SELECT se.note FROM session_exercises se JOIN sessions s ON s.id=se.session_id "+
+  "WHERE se.exercise_id=? AND s.state='finished' AND se.note IS NOT NULL AND length(trim(se.note))>0 "+
+  "ORDER BY s.started_at DESC LIMIT 1",[exerciseId]))?.note??null);
+}
+/** Update or remove 2–3 adjacent links in an in-progress workout only. */
+export async function updateActiveSuperset(sessionId:string,first:number,count:0|2|3)
+ :Promise<DbResult<boolean>>{
+ return dbOperation(async db=>{
+  let changed=false;
+  await db.withExclusiveTransactionAsync(async tx=>{
+   const active=await tx.getFirstAsync<{id:string}>("SELECT id FROM sessions WHERE id=? AND state='in-progress'",[sessionId]);
+   if(!active)return;
+   const rows=await tx.getAllAsync<{id:string;position:number;superset_group:string|null}>(
+    'SELECT id,position,superset_group FROM session_exercises WHERE session_id=? ORDER BY position',[sessionId]);
+   if(count===0){
+    const selected=rows[first];if(!selected?.superset_group)return;
+    await tx.runAsync('UPDATE session_exercises SET superset_group=NULL WHERE session_id=? AND superset_group=?',
+      [sessionId,selected.superset_group]);changed=true;return;
+   }
+   if(!supersetGroupsValid(rows.map(row=>({...row,supersetGroup:row.superset_group})))||
+      !canLinkSuperset(rows.map(row=>({...row,supersetGroup:row.superset_group})),first,count))return;
+   const group=newGymId();
+   for(const row of rows.slice(first,first+count))
+    await tx.runAsync('UPDATE session_exercises SET superset_group=? WHERE id=?',[group,row.id]);
+   changed=true;
+  });
+  return changed;
+ });
 }
