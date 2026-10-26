@@ -29,6 +29,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'com.liftria.app',
     supportsTablet: false,
   },
+  // iPhone system texts (app name under the icon, permission prompts) in English and Arabic.
+  locales: { en: './locales/en.json', ar: './locales/ar.json' },
   android: {
     package: 'com.liftria.app',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
