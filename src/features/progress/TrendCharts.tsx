@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {View} from 'react-native';
 import Svg,{Circle,Line,Path,Rect} from 'react-native-svg';
 import {useTheme} from '../../design/ThemeProvider';
+import {useLanguage} from '../../i18n/LanguageProvider';
 import type {NutritionTrend,WeightTrend} from './trendMath';
 
 /** Chart axes are permanently chronological left-to-right even in an RTL interface. */
@@ -9,14 +10,14 @@ export function NutritionGraph({trend,target,hidden=false}:{
  trend:NutritionTrend;target:number|null;hidden?:boolean;
 }){
  const {theme}=useTheme();
+ const {t}=useLanguage();
  const [width,setWidth]=useState(320);const height=150,pad=10;
  const values=trend.days.filter(d=>d.logged).map(d=>d.kcal??0);
  const ceiling=Math.max(1,target??0,...values)*1.1;
  const x=(i:number)=>pad+i*(width-2*pad)/Math.max(1,trend.days.length-1);
  const y=(n:number)=>height-pad-(height-2*pad)*n/ceiling;
  return <View accessible accessibilityRole="image"
-  accessibilityLabel={hidden?'Nutrition graph, numbers hidden':
-    'Calories chart, '+trend.loggedDays+' logged days. Unlogged days are gaps.'}
+  accessibilityLabel={hidden?t('trend.hidden'):t('trend.chartNutritionA11y',{count:trend.loggedDays})}
   onLayout={event=>{const next=event.nativeEvent.layout.width;if(next>0)setWidth(next);}}
   style={{height}}>
   <Svg width={width} height={height}>
@@ -43,13 +44,16 @@ export function ProteinPips({days,hidden}:{
  days:NutritionTrend['days'];hidden:boolean;
 }){
  const {theme}=useTheme();
+ const {t}=useLanguage();
  return <View accessibilityRole="image" accessible
-  accessibilityLabel={hidden?'Protein grid, numbers hidden':
-    days.filter(d=>d.proteinGoal==='met').length+' days meeting the protein target'}
+  accessibilityLabel={hidden?t('trend.hidden'):
+    t('trend.chartProteinA11y',{count:days.filter(d=>d.proteinGoal==='met').length})}
   style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[1]}}>
   {days.map(day=>{
    const goal=day.proteinGoal;
-   return <View key={day.day} accessibilityLabel={day.day+': '+goal}
+   const name=goal==='met'?t('trend.proteinMet'):goal==='below'?t('trend.proteinBelow'):
+     goal==='unknown'?t('trend.proteinUnknown'):t('trend.proteinUnlogged');
+   return <View key={day.day} accessibilityLabel={day.day+': '+name}
     style={{width:17,height:17,borderRadius:theme.radius.sm,
       borderWidth:1,borderColor:theme.color.domain.eat,
       borderStyle:goal==='unlogged'||goal==='unknown'?'dashed':'solid',
@@ -60,7 +64,8 @@ export function ProteinPips({days,hidden}:{
 export function WeightGraph({trend,hidden}:{
  trend:WeightTrend;hidden:boolean;
 }){
- const {theme}=useTheme();const [width,setWidth]=useState(320);
+ const {theme}=useTheme();
+ const {t}=useLanguage();const [width,setWidth]=useState(320);
  const height=170,pad=14;
  const days=trend.points;
  const all=days.flatMap(d=>[d.trend,...d.entries.map(e=>e.kg)]);
@@ -72,8 +77,7 @@ export function WeightGraph({trend,hidden}:{
  const y=(kg:number)=>height-pad-(kg-minY)/(maxY-minY)*(height-2*pad);
  return <View onLayout={e=>{const w=e.nativeEvent.layout.width;if(w>0)setWidth(w);}}
   accessible accessibilityRole="image"
-  accessibilityLabel={hidden?'Weight trend. Numbers hidden.':
-    days.length+' days with weight entries; trend is a seven-observation exponential moving average.'}
+  accessibilityLabel={hidden?t('trend.hidden'):t('trend.chartWeightA11y',{count:days.length})}
   style={{height}}>
    <Svg width={width} height={height}>
     {days.map((day,i)=><ViewPlaceholder key={'t'+day.day} i={i}
