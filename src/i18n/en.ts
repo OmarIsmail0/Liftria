@@ -1,5 +1,14 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'water.title': 'Water',
+  'water.unlogged': 'Not logged yet',
+  'water.total': '{glasses} glasses · {ml} ml',
+  'water.size': 'Glass size: {ml} ml',
+  'water.add': 'Add glass',
+  'water.remove': 'Remove glass',
+  'water.error': 'Could not save water. Try again.',
+  'water.settings': 'Water tracking',
+  'water.glassSize': 'Glass size',
   'adaptive.burnTitle': 'Estimated burn',
   'adaptive.burnValue': '{count} kcal/day',
   'adaptive.loading': 'Checking your logged history…',

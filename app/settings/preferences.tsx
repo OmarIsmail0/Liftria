@@ -11,10 +11,10 @@ import type { WeightUnit, HeightUnit } from '../../src/features/settings/units';
 type Prefs = {
   weight: WeightUnit; height: HeightUnit; hideNumbers: boolean;
   keepScreenOn: boolean; haptics: boolean; smallPlates: boolean;
-  barKg:number;barLb:number;effort:'off'|'rpe'|'rir';
+  barKg:number;barLb:number;effort:'off'|'rpe'|'rir';glassMl:number;
 };
 const defaults: Prefs = { weight: 'kg', height: 'cm', hideNumbers: false,
-  keepScreenOn: true, haptics: true, smallPlates: false,barKg:20,barLb:45,effort:'off' };
+  keepScreenOn: true, haptics: true, smallPlates: false,barKg:20,barLb:45,effort:'off',glassMl:250 };
 
 export default function UnitsAndPreferences() {
   const { theme } = useTheme();
@@ -29,14 +29,15 @@ export default function UnitsAndPreferences() {
       getTypedSetting('hideNumbers'), getTypedSetting('keepScreenOn'),
       getTypedSetting('haptics'), getTypedSetting('units.smallPlates'),
       getTypedSetting('train.barKg'),getTypedSetting('train.barLb'),getTypedSetting('train.effortField'),
-    ]).then(([weight, height, hide, screen, haptics, plates, barKg, barLb, effort]) => {
+      getTypedSetting('water.glassMl'),
+    ]).then(([weight, height, hide, screen, haptics, plates, barKg, barLb, effort,glassMl]) => {
       if (!mounted) return;
       setValues({
         weight: weight.ok ? weight.value : 'kg', height: height.ok ? height.value : 'cm',
         hideNumbers: hide.ok ? hide.value : false,
         keepScreenOn: screen.ok ? screen.value : true,
         barKg:barKg.ok?barKg.value:20,barLb:barLb.ok?barLb.value:45,
-        effort:effort.ok?effort.value:'off',
+        effort:effort.ok?effort.value:'off',glassMl:glassMl.ok?glassMl.value:250,
         haptics: haptics.ok ? haptics.value : true,
         smallPlates: plates.ok ? plates.value : false,
       });
@@ -49,7 +50,8 @@ export default function UnitsAndPreferences() {
     const old = values[name];
     setValues(previous => ({ ...previous, [name]: value }));
     setError(null);
-    const saved = name === 'barKg' ? await setTypedSetting('train.barKg', value as number) :
+    const saved = name === 'glassMl' ? await setTypedSetting('water.glassMl',value as number) :
+      name === 'barKg' ? await setTypedSetting('train.barKg', value as number) :
       name === 'barLb' ? await setTypedSetting('train.barLb', value as number) :
       name === 'effort' ? await setTypedSetting('train.effortField',value as Prefs['effort']) :
       name === 'weight' ? await setTypedSetting('units.weight', value as WeightUnit) :
@@ -81,6 +83,10 @@ export default function UnitsAndPreferences() {
         value={values.smallPlates} onChange={v => void change('smallPlates', v)} />
       <Typography tone="secondary">{t('preferences.energy')}</Typography>
       <Typography tone="secondary" size="small">{t('preferences.kjFuture')}</Typography>
+    </Card>
+    <Card title={t('water.settings')}>
+      <Stepper label={t('water.glassSize')} value={values.glassMl} unit="ml"
+       step={50} min={50} max={1000} onChange={v=>void change('glassMl',v)}/>
     </Card>
     <Card title={t('gymParity.trainingSettings')}>
       <Typography tone="secondary" size="small">{t('gymParity.effortHint')}</Typography>

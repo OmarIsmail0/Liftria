@@ -16,6 +16,7 @@ import { heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/he
 import { listPlans, listSessions, listTemplates } from '../../src/services/database/gymRepositories';
 import { scheduledTemplate, isLocalDate } from '../../src/features/train/weekPlan';
 import { readDiaryDay, summarizeEntries, type DaySummary } from '../../src/features/eat/diaryRepository';
+import {WaterCounterCard} from '../../src/features/eat/WaterCounterCard';
 
 type TrainingToday = { title: string; detail: string } | null;
 type LocalToday = {
@@ -163,6 +164,7 @@ export default function TodayTab() {
           </View>
         </>}
       </View>
+      <WaterCounterCard/>
       <Card title={t('today.actions')} rim="eat">
         <Button label={t('today.logMeal')} variant="secondary" fullWidth
           onPress={() => router.push('/(tabs)/eat')} />

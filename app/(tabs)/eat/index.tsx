@@ -5,6 +5,7 @@ import {Button,Card,Chip,Header,ListRow,Orb,Screen,Snackbar,Typography} from '..
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
+import {WaterCounterCard} from '../../../src/features/eat/WaterCounterCard';
 import {getCurrentTarget,type Target} from '../../../src/services/database/targets';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {dayOffset,entryName,localDay,MEALS,mealAtTime,type MealKey} from '../../../src/features/eat/foodCatalog';
@@ -84,6 +85,7 @@ export default function EatHome(){
         {!target&&<Button label={t('today.setTarget')} variant="secondary" onPress={()=>
           router.push('/(tabs)/eat/targets')}/>}
       </View>
+      <WaterCounterCard/>
       <Card rim="eat" title={t('eatI.macros')}>
         {!summary.logged?<Typography tone="secondary">{t('eatI.startLogging')}</Typography>:
           hidden?<Typography tone="secondary">{t('eatI.hidden')}</Typography>:
