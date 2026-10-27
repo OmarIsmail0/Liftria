@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import {Platform,Share,View} from 'react-native';
+import {View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import {File,Paths} from 'expo-file-system';
-import * as LegacyFileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
@@ -34,22 +34,19 @@ export default function DataAndStorage() {
     else setMessage(t('dataStorage.readError'));
   },[t]);
   useEffect(()=>{void Promise.resolve().then(() => load());},[load]);
-  async function shareFile(name:string,content:string,kind:'json'|'csv'):Promise<boolean>{
-    // Export only after explicit user interaction. SAF is Android's system Save
-    // document chooser; it needs no storage permission and shares no URI as text.
-    if(Platform.OS==='android'){
-      const permission=await LegacyFileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-      if(!permission.granted)return false;
-      const uri=await LegacyFileSystem.StorageAccessFramework.createFileAsync(
-       permission.directoryUri,name.replace(/\.[^.]+$/,''),kind==='csv'?'text/csv':'application/json');
-      await LegacyFileSystem.writeAsStringAsync(uri,content);
-      return true;
-    }
+  async function shareFile(name:string,content:string,kind:'json'|'csv'):Promise<void>{
+    // Both platforms share the actual attachment; never transmit a file URI as text.
     const file=new File(Paths.cache,name);
-    file.create({overwrite:true});
-    await file.write(content);
-    const shared=await Share.share({url:file.uri,title:name});
-    return shared.action===Share.sharedAction;
+    try{
+      file.create({overwrite:true});
+      file.write(content);
+      await Sharing.shareAsync(file.uri,{
+        mimeType:kind==='csv'?'text/csv':'application/json',dialogTitle:name,
+      });
+    }finally{
+      // Backups contain private data: remove the temporary full copy even on errors.
+      try{file.delete();}catch{/* File may already have been removed by the OS. */}
+    }
   }
   async function exportData(kind:'backup'|'workouts'|'diary'){
     if(busy)return;setBusy(true);setMessage(null);
@@ -59,9 +56,9 @@ export default function DataAndStorage() {
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
       const date=new Date().toISOString().slice(0,10);
-      const exported=await shareFile('liftria-'+kind+'-'+date+'.'+extension,
+      await shareFile('liftria-'+kind+'-'+date+'.'+extension,
        typeof result.value==='string'?result.value:JSON.stringify(result.value),extension==='json'?'json':'csv');
-      if(exported)setMessage(t('backup.ready'));
+      setMessage(t('backup.ready'));
     }catch{setMessage(t('backup.shareFailed'));}
     finally{setBusy(false);}
   }
@@ -73,8 +70,13 @@ export default function DataAndStorage() {
       const asset=result.assets[0];
       if(!asset)throw new Error('Missing picked document');
       const file=new File(asset.uri);
-      const parsed=parseBackup(await file.text());
-      setPendingRestore(parsed);setRestoreText('');
+      try{
+        const parsed=parseBackup(await file.text());
+        setPendingRestore(parsed);setRestoreText('');
+      }finally{
+        // DocumentPicker was asked to copy to cache; do not retain a second full backup.
+        try{file.delete();}catch{/* Picker can clean its own cached file. */}
+      }
     }catch{setMessage(t('backup.invalid'));}
     finally{setBusy(false);}
   }
