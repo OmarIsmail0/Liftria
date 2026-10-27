@@ -48,8 +48,8 @@ export default function DataAndStorage() {
     const file=new File(Paths.cache,name);
     file.create({overwrite:true});
     await file.write(content);
-    await Share.share({url:file.uri,title:name});
-    return true;
+    const shared=await Share.share({url:file.uri,title:name});
+    return shared.action===Share.sharedAction;
   }
   async function exportData(kind:'backup'|'workouts'|'diary'){
     if(busy)return;setBusy(true);setMessage(null);
@@ -188,7 +188,7 @@ export default function DataAndStorage() {
         {backupPreview(pendingRestore).counts.filter(x=>x.count>0).map(x=>
          <Typography key={x.table} tone="secondary" size="small">{x.table}: {x.count}</Typography>)}
       </>}
-      <Field label={t('backup.typeRestore')} placeholder="RESTORE"
+      <Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}
        value={restoreText} onChangeText={setRestoreText}/>
       <Button label={t('backup.cancel')} variant="secondary" disabled={busy}
        onPress={()=>{setPendingRestore(null);setRestoreText('');}}/>
