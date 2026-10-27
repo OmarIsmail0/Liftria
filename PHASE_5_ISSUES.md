@@ -6,7 +6,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**PR L and PR M are done. Next: PR N (#25), now targeting `main`: merge `main` into it (merge commit), then work through Claude's review comment.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**PR L, M and N are done. Next: PR O (Hiku photo, Beta), from `main`.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
@@ -26,7 +26,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Label:** always "Estimated burn" with the estimate chip. Never mix in watch or Health Connect calorie data (the "Daily calories NOT READY" gate stays).
    - **Weekly check-in:** once a week, *propose* a new calorie target from the estimate and the goal (lose / maintain / build, with the same safety floor and sheet as EA-6). The user accepts, edits or dismisses. Never change the target silently. Record the proposal and the answer.
    - Unit-test the estimate with fixed data, including gaps, a weight plateau and too-little-data cases.
-3. **PR N: `Phase 5 / Backup, water and fiber`**
+3. ~~**PR N: `Phase 5 / Backup, water and fiber`**~~ DONE: PR #25 merged (2026-10-27).
    - **Backup and restore (important for a local-first app):** Settings → Data → "Export a backup" writes one JSON file with every table (versioned, with the schema version). "Restore from backup" reads it, shows what it contains, and replaces local data only after a typed confirmation. Use `expo-document-picker` and `expo-file-system` (both already installed) plus the system share sheet; no new permissions. Test a round trip.
    - **CSV export** of workouts and the food diary for spreadsheets.
    - **Water:** a simple glass counter on Today and Eat (glass size in Settings, 250 ml default). Not logged ≠ 0.
@@ -52,6 +52,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Hiku polish (from PR #22's screenshots):** show costs as "less than $0.01" / "$0.03" (not "$0.00000"), and the price source as a tappable link, not a raw URL.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - **Wording (from PR #24's screenshots):** the burn card says "smoothed weight change", but the estimate now uses a fitted weight trend; say "weight trend". In Arabic, numbers 11 and above take the singular ("14 يومًا", not "14 أيام"); check every counted phrase through `pluralForm()`.
+   - **More from PR #24/#25's screenshots:** "1 weigh-ins" on the burn card (use `pluralForm()`); the restore sheet has both "Keep current data" and "Cancel" (keep one); the Eat ring shows "kcal" in English in Arabic, and the over-target ring draws a dark square behind the circle in Arabic.
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - Remove or hide every `dev/*` route in release builds, except what the emulator check needs (Claude will gate those behind a build flag).
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release. App Store descriptions (English and Arabic) too, for iPhone.
