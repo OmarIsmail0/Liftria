@@ -43,7 +43,8 @@ const palette = {
     train: { gradEnd: '#FF6A6A' },
     orb: { 1: '#FFCF5E', 2: '#FF8F6B', 3: '#7B5CFF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFC2A3', 2: '#FF8F6B', 3: '#D9487A' },
-    sheet: { glass: 'rgba(16,17,30,0.94)' },
+    // Sheets are opaque: the page behind must never read through the panel.
+    sheet: { glass: 'rgba(17,19,30,1)', scrim: 'rgba(0,0,0,0.55)' },
     elevation: { card: '0 1px 2px rgba(0,0,0,0.30), 0 10px 28px rgba(0,0,0,0.28)', thumb: '0 1px 3px rgba(0,0,0,0.40)' },
     // One even hairline per surface; the domain color lives in the title dot, not the edge.
     surface: { hairline: 'rgba(255,255,255,0.09)', control: 'rgba(255,255,255,0.08)', pressed: 'rgba(255,255,255,0.06)' },
@@ -82,7 +83,7 @@ const palette = {
     train: { gradEnd: '#B8322E' },
     orb: { 1: '#FFE09A', 2: '#FFB496', 3: '#B9A8FF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFD9C7', 2: '#FFB496', 3: '#F08DB0' },
-    sheet: { glass: 'rgba(255,255,255,0.95)' },
+    sheet: { glass: 'rgba(255,255,255,1)', scrim: 'rgba(16,24,40,0.36)' },
     // Opaque cards so the shadow sits under the card instead of bleeding through it.
     elevation: { card: '0 1px 2px rgba(16,24,40,0.05), 0 6px 18px rgba(16,24,40,0.07)', thumb: '0 1px 3px rgba(16,24,40,0.16)' },
     surface: { hairline: 'rgba(16,24,40,0.08)', control: 'rgba(16,24,40,0.05)', pressed: 'rgba(16,24,40,0.05)' },

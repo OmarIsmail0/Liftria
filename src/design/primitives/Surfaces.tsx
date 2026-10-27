@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -65,8 +65,12 @@ export function Header({ title, subtitle, onBack, right }: {
         marginStart: -theme.space[1] }}>
       {({ pressed }) => <Animated.View style={[{ width: theme.space[10], height: theme.space[10],
         borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: 'center',
-        backgroundColor: pressed ? theme.surface.hairline : theme.surface.control,
-        borderWidth: solid ? theme.size.border.thin : 0, borderColor: theme.controlOutline }, press.style]}>
+        backgroundColor: theme.mode === 'light' && !solid
+          ? (pressed ? theme.color.bg.raised : theme.glass.card)
+          : (pressed ? theme.surface.hairline : theme.surface.control),
+        borderWidth: theme.size.border.thin,
+        borderColor: solid ? theme.controlOutline : theme.surface.hairline,
+        boxShadow: theme.mode === 'light' && !solid ? theme.elevation.thumb : undefined }, press.style]}>
         <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
           size={theme.space[5]} strokeWidth={2.2} />
       </Animated.View>}
@@ -105,9 +109,19 @@ export function Card({ children, rim = 'none', title, flat = false }: {
           borderRadius: theme.radius.pill, backgroundColor: border }} />}
         <Typography size="head">{title}</Typography>
       </View>}
-      {children}
+      {withoutTrailingDivider(children)}
     </View>
   </Animated.View>;
+}
+
+/** Dividers belong between rows; the card's own edge closes the last one. */
+function withoutTrailingDivider(children: ReactNode): ReactNode {
+  const items = Children.toArray(children);
+  const lastIndex = items.length - 1;
+  const last = items[lastIndex];
+  if (!isValidElement(last) || last.type !== ListRow) return children;
+  items[lastIndex] = cloneElement(last as ReactElement<{ divider?: boolean }>, { divider: false });
+  return items;
 }
 
 export function Banner({ title, message, variant = 'info' }: {
@@ -127,15 +141,16 @@ export function Banner({ title, message, variant = 'info' }: {
   </View>;
 }
 
-export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel }: {
+export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel, divider = true }: {
   title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; leading?: ReactNode; accessibilityLabel?: string;
+  divider?: boolean;
 }) {
   const { theme } = useTheme();
   const { isRTL } = useLanguage();
   return <Pressable onPress={onPress} disabled={!onPress} accessible={Boolean(onPress)}
     accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? (detail ? `${title}. ${detail}` : title)}
     style={({ pressed }) => ({ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
-      gap: theme.space[3], borderBottomWidth: 1, borderColor: theme.surface.hairline, paddingVertical: theme.space[2],
+      gap: theme.space[3], borderBottomWidth: divider ? 1 : 0, borderColor: theme.surface.hairline, paddingVertical: theme.space[2],
       backgroundColor: pressed ? theme.surface.pressed : 'transparent' })}>
     {leading}
     <View style={{ flex: 1, gap: theme.space[1] }}>

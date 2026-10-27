@@ -311,14 +311,13 @@ export function Sheet({ visible, title, description, children, onClose, destruct
     const timer = setTimeout(() => setMounted(false), reduceMotion ? 0 : duration);
     return () => clearTimeout(timer);
   }, [progress, reduceMotion, theme.motion.base, visible]);
-  const scrim = theme.rim.strength + theme.rim.glow;
-  const backdrop = useAnimatedStyle(() => ({ opacity: progress.get() * scrim }));
+  const backdrop = useAnimatedStyle(() => ({ opacity: progress.get() }));
   const panel = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.get()) * height }] }));
   return <Modal transparent visible={mounted} animationType="none" onRequestClose={onClose}
     statusBarTranslucent accessibilityViewIsModal>
     <View style={{ flex: 1, justifyContent: 'flex-end' }}>
       <Animated.View style={[{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0,
-        backgroundColor: theme.color.bg.base }, backdrop]}>
+        backgroundColor: theme.sheet.scrim }, backdrop]}>
         <Pressable accessible={false} accessibilityRole="button" accessibilityLabel={t('common.close')}
           style={{ flex: 1 }} onPress={onClose} />
       </Animated.View>
