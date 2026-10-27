@@ -16,14 +16,34 @@ export type BackupData={format:'liftria-backup';formatVersion:1;schemaVersion:nu
 export type BackupPreview={schemaVersion:number;exportedAt:string;
  counts:Array<{table:string;count:number}>;total:number};
 const obj=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
-const keys=new Set<string>(BACKUP_TABLES);
+/** The first backup format shipped with schema v6. When adding a table in a future
+ * migration, list it in BACKUP_TABLES and record its introduction here. */
+export type BackupManifest={schemaVersion:number;tables:readonly string[];
+ introducedIn:Readonly<Record<string,number>>};
+export const BACKUP_MANIFEST:BackupManifest={
+ schemaVersion:DB_SCHEMA_VERSION,tables:BACKUP_TABLES,
+ introducedIn:Object.fromEntries(BACKUP_TABLES.map(table=>[table,6])),
+};
+export const MIN_BACKUP_SCHEMA_VERSION=6;
 const validCell=(v:unknown)=>v===null||typeof v==='string'||typeof v==='number'&&Number.isFinite(v);
-function validateTables(tables:Record<string,unknown>):Record<string,BackupRow[]>{
- const names=Object.keys(tables);
- if(names.length!==BACKUP_TABLES.length||names.some(x=>!keys.has(x)))throw new Error('Missing or unknown tables');
+/** Validate the file against the receiving schema. A missing table is only legal
+ * if that table was introduced after the file's schema version. */
+export function validateBackupTables(tables:Record<string,unknown>,backupVersion:number,
+ manifest:BackupManifest=BACKUP_MANIFEST):Record<string,BackupRow[]>{
+ if(!Number.isInteger(backupVersion)||backupVersion<MIN_BACKUP_SCHEMA_VERSION||
+  backupVersion>manifest.schemaVersion)throw new Error('Unsupported backup schema version');
+ const allowed=new Set(manifest.tables),names=Object.keys(tables);
+ if(names.some(name=>!allowed.has(name)))throw new Error('Unknown backup table');
  const data:Record<string,BackupRow[]>={};
- for(const table of BACKUP_TABLES){
+ for(const table of manifest.tables){
+  const added=manifest.introducedIn[table];
+  if(!Number.isInteger(added)||added!<MIN_BACKUP_SCHEMA_VERSION||
+    added!>manifest.schemaVersion)throw new Error('Invalid backup table manifest');
   const value=tables[table];
+  if(value===undefined){
+   if(added!<=backupVersion)throw new Error('Missing backup table: '+table);
+   data[table]=[];continue;
+  }
   if(!Array.isArray(value)||value.length>1000000)throw new Error('Invalid backup rows');
   data[table]=value.map(row=>{
    if(!obj(row)||Object.keys(row).some(k=>!/^[_a-z][_a-z0-9]*$/i.test(k) || !validCell(row[k])))
@@ -33,15 +53,27 @@ function validateTables(tables:Record<string,unknown>):Record<string,BackupRow[]
  }
  return data;
 }
-export function parseBackup(raw:string):BackupData{
+export function parseBackup(raw:string,manifest:BackupManifest=BACKUP_MANIFEST):BackupData{
  if(raw.length>100*1024*1024)throw new Error('Backup is too large');
  const value:unknown=JSON.parse(raw);
  if(!obj(value)||value.format!=='liftria-backup'||value.formatVersion!==1||
-   value.schemaVersion!==DB_SCHEMA_VERSION||typeof value.exportedAt!=='string'||
+   typeof value.schemaVersion!=='number'||typeof value.exportedAt!=='string'||
    !Number.isFinite(Date.parse(value.exportedAt))||!obj(value.tables))
-  throw new Error('Unsupported backup format or schema version');
- return {format:'liftria-backup',formatVersion:1,schemaVersion:DB_SCHEMA_VERSION,
-  exportedAt:value.exportedAt,tables:validateTables(value.tables)};
+  throw new Error('Unsupported backup format');
+ return {format:'liftria-backup',formatVersion:1,schemaVersion:value.schemaVersion,
+  exportedAt:value.exportedAt,tables:validateBackupTables(value.tables,value.schemaVersion,manifest)};
+}
+/** SQLite table_info compatibility: omitted columns must be nullable or supply a
+ * default. Caller inserts only the original columns so new defaults apply. */
+export type ColumnInfo={name:string;notnull:number;dflt_value:string|null;pk:number};
+export function restoreColumns(row:BackupRow,info:readonly ColumnInfo[]):string[]{
+ const columns=Object.keys(row),known=new Set(info.map(c=>c.name));
+ if(columns.length===0||columns.some(name=>!known.has(name)))throw new Error('Unknown backup column');
+ for(const column of info){
+  if(!Object.prototype.hasOwnProperty.call(row,column.name)&&column.notnull!==0&&
+   column.dflt_value===null)throw new Error('Missing required backup column: '+column.name);
+ }
+ return columns;
 }
 export function backupPreview(backup:BackupData):BackupPreview{
  const counts=BACKUP_TABLES.map(table=>({table,count:backup.tables[table]?.length??0}));
@@ -71,29 +103,28 @@ export async function restoreBackup(backup:BackupData,confirmation:string):Promi
  return dbOperation(async db=>{
   if(confirmation!=='RESTORE')throw new Error('Typed confirmation required');
   // Re-validate even when called programmatically, not just in the UI.
-  const tables=validateTables(backup.tables);
   if(backup.format!=='liftria-backup'||backup.formatVersion!==1||
-    backup.schemaVersion!==DB_SCHEMA_VERSION)throw new Error('Incompatible backup');
+    !Number.isInteger(backup.schemaVersion)||backup.schemaVersion<MIN_BACKUP_SCHEMA_VERSION||
+    backup.schemaVersion>DB_SCHEMA_VERSION)throw new Error('Incompatible backup');
+  const tables=validateBackupTables(backup.tables,backup.schemaVersion);
   await db.withExclusiveTransactionAsync(async tx=>{
    const actual=(await tx.getAllAsync<{name:string}>(
     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"))
     .map(x=>x.name).sort();
    if(actual.join('|')!==[...BACKUP_TABLES].sort().join('|'))
     throw new Error('Schema manifest mismatch');
-   // Reject unknown/missing columns BEFORE any deletion; restore is atomic regardless.
+   // Validate every populated row and future nullable/defaulted column BEFORE deletes.
+   const columnsByTable=new Map<string,ColumnInfo[]>();
    for(const table of BACKUP_TABLES){
-    const columns=(await tx.getAllAsync<{name:string}>('PRAGMA table_info('+table+')')).map(x=>x.name);
-    const known=new Set(columns);
-    for(const row of tables[table]??[]){
-     if(columns.some(column=>!Object.prototype.hasOwnProperty.call(row,column))||
-       Object.keys(row).some(column=>!known.has(column)))throw new Error('Backup column mismatch');
-    }
+    const info=await tx.getAllAsync<ColumnInfo>('PRAGMA table_info('+table+')');
+    columnsByTable.set(table,info);
+    for(const row of tables[table]??[])restoreColumns(row,info);
    }
    await tx.execAsync('PRAGMA defer_foreign_keys = ON;');
    // Children first for deletes, parents first for inserts.
    for(const table of [...BACKUP_TABLES].reverse())await tx.runAsync('DELETE FROM '+table);
    for(const table of BACKUP_TABLES)for(const row of tables[table]??[]){
-    const columns=Object.keys(row);
+    const columns=restoreColumns(row,columnsByTable.get(table)??[]);
     await tx.runAsync('INSERT INTO '+table+' ('+columns.join(',')+') VALUES ('+
      columns.map(()=>'?').join(',')+')',columns.map(column=>row[column]??null));
    }
