@@ -1,0 +1,41 @@
+--------- beginning of system
+--------- beginning of kernel
+10-27 20:05:15.910  4242  4242 E ActivityThread: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@2da7021 that was originally bound here
+10-27 20:05:15.910  4242  4242 E ActivityThread: android.app.ServiceConnectionLeaked: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@2da7021 that was originally bound here
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.app.LoadedApk$ServiceDispatcher.<init>(LoadedApk.java:1811)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcherCommon(LoadedApk.java:1683)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcher(LoadedApk.java:1662)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.app.ContextImpl.bindServiceCommon(ContextImpl.java:1819)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.app.ContextImpl.bindService(ContextImpl.java:1749)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.content.ContextWrapper.bindService(ContextWrapper.java:756)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at bdu.run(Unknown Source:1)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.os.Handler.handleCallback(Handler.java:938)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.os.Looper.loop(Looper.java:223)
+10-27 20:05:15.910  4242  4242 E ActivityThread: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-27 20:05:32.133   496  1827 E PackageDexUsage: Unsupported context?
+10-27 20:05:41.817   496  1822 E PackageDexUsage: Unsupported context?
+--------- beginning of main
+10-27 20:12:05.717   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:12.433   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:19.211   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:26.019   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:32.827   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:39.550   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:46.390   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:53.116   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:12:55.641   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:06.664   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:13.503   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:20.361   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:27.080   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:33.830   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:39.022  1178  8227 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-27 20:13:39.024  1178  8227 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-27 20:13:40.666   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:41.601  1178 10941 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-27 20:13:47.346   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:13:54.169   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:14:00.945   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:14:07.687   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-27 20:14:14.609   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
