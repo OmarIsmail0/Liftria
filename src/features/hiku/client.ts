@@ -1,6 +1,7 @@
 import * as Network from 'expo-network';
 import {getKey,isKeyWellFormed} from '../../services/secure-storage';
 import {getTypedSetting} from '../../services/database/settings';
+import {setSetting} from '../../services/database';
 import {retryAfterMs} from '../../services/anthropic';
 import {DEFAULT_HIKU_MODEL,estimateHikuCostUsd,type HikuModelId} from './models';
 import {hikuJsonSchema,parseHikuBody,type HikuMeal} from './mealSchema';
@@ -36,12 +37,45 @@ export function hikuTextPrompt(description:string,language:'en'|'ar',context:Hik
   description,
  ].join('\n');
 }
-/** Only the text and explicitly opted-in summary from the preview are transmitted.
- * Never sends raw diary rows, profile fields, Health Connect or workout history. */
+export type HikuImageBlock={type:'image';source:{type:'base64';media_type:'image/jpeg';data:string}};
+export type HikuTextBlock={type:'text';text:string};
+export function hikuPhotoPrompt(note:string,language:'en'|'ar',context:HikuContext={}):string{
+ return [
+  'Estimate the foods actually visible in this single meal photo. Do not assume food that is not visible.',
+  'Photo portions and nutrition are approximate. Treat ambiguous items as uncertain.',
+  'Use Egyptian portions and both Arabic and English food names where applicable.',
+  ...(context.today?['Opted-in daily summary:',context.today]:[]),
+  ...(context.training?['Opted-in training day:',context.training]:[]),
+  language==='ar'?'Use natural Egyptian Arabic food naming.':'Use clear food names.',
+  'Optional user note:',note.trim()||'No note provided',
+ ].join('\n');
+}
+export function hikuContent(kind:'text'|'photo',prompt:string,jpegBase64?:string)
+ :Array<HikuImageBlock|HikuTextBlock>{
+ if(kind==='photo'){
+  if(!jpegBase64||!/^[/+A-Za-z0-9]+={0,2}$/.test(jpegBase64)||
+    jpegBase64.length>12_000_000)throw new Error('Invalid JPEG content');
+  return [{type:'image',source:{type:'base64',media_type:'image/jpeg',data:jpegBase64}},
+    {type:'text',text:prompt}];
+ }
+ return [{type:'text',text:prompt}];
+}
+/** Text and photo share the same model, timeout, schema, price and cancellation.
+ * Only the previewed image, note and opted-in summaries are transmitted. */
 export async function requestHikuText(description:string,language:'en'|'ar',
  signal?:AbortSignal,context:HikuContext={}):Promise<HikuResponse>{
+ return requestHiku('text',description,language,signal,context);
+}
+export async function requestHikuPhoto(jpegBase64:string,note:string,language:'en'|'ar',
+ signal?:AbortSignal,context:HikuContext={}):Promise<HikuResponse>{
+ return requestHiku('photo',note,language,signal,context,jpegBase64);
+}
+async function requestHiku(kind:'text'|'photo',description:string,language:'en'|'ar',
+ signal?:AbortSignal,context:HikuContext={},jpegBase64?:string):Promise<HikuResponse>{
  const descriptionClean=description.trim();
- if(!descriptionClean||descriptionClean.length>2500)return {ok:false,code:'invalid'};
+ if(descriptionClean.length>2500||kind==='text'&&!descriptionClean||
+  kind==='photo'&&(!jpegBase64||jpegBase64.length>12_000_000))
+  return {ok:false,code:'invalid'};
  if(signal?.aborted)return {ok:false,code:'cancelled'};
  const network=await Network.getNetworkStateAsync().catch(()=>null);
  if(network?.isConnected===false||network?.isInternetReachable===false)return {ok:false,code:'offline'};
@@ -52,14 +86,18 @@ export async function requestHikuText(description:string,language:'en'|'ar',
  const choice=await getTypedSetting('hiku.model');
  if(!choice.ok)return {ok:false,code:'database-error'};
  const model=choice.value??DEFAULT_HIKU_MODEL;
- const started=await startHikuRequest(model,'text');
+ const started=await startHikuRequest(model,kind);
  if(!started.ok)return {ok:false,code:'database-error'};
  const requestId=started.value;
  const controller=new AbortController();
  let timedOut=false;
  const timer=setTimeout(()=>{timedOut=true;controller.abort();},45000);
  const cancel=()=>controller.abort();signal?.addEventListener('abort',cancel,{once:true});
- const prompt=hikuTextPrompt(descriptionClean,language,context);
+ const prompt=kind==='photo'?hikuPhotoPrompt(descriptionClean,language,context):
+  hikuTextPrompt(descriptionClean,language,context);
+ let content:Array<HikuImageBlock|HikuTextBlock>;
+ try{content=hikuContent(kind,prompt,jpegBase64);}
+ catch{return {ok:false,code:'invalid'};}
  const finish=async(status:string,inputTokens?:number,outputTokens?:number)=>{
   const cost=inputTokens!==undefined&&outputTokens!==undefined?
    estimateHikuCostUsd(model,inputTokens,outputTokens):null;
@@ -74,7 +112,7 @@ export async function requestHikuText(description:string,language:'en'|'ar',
     headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json'},
     body:JSON.stringify({model,max_tokens:8000,
       output_config:{effort:'low',format:{type:'json_schema',schema:hikuJsonSchema}},
-      messages:[{role:'user',content:[{type:'text',text:prompt}]}]}),
+      messages:[{role:'user',content}]}),
    });
   }catch{
    const code=controller.signal.aborted?(timedOut?'timeout':'cancelled'):'network-error';
@@ -97,6 +135,16 @@ export async function requestHikuText(description:string,language:'en'|'ar',
     data.usage.output_tokens:0;
   if(!parsed.ok){await finish(parsed.reason,inTokens,outTokens);return {ok:false,code:parsed.reason};}
   const cost=await finish('review-ready',inTokens,outTokens);
+  if(kind==='photo'){
+   const retain=await getTypedSetting('hiku.keepPhotos');
+   // In-app retention is optional, off by default; the original picked image is
+   // never persisted. The app_settings table is included in backup and Delete All.
+   if(retain.ok&&retain.value&&jpegBase64){
+    await setSetting('hiku.photo.'+requestId,JSON.stringify({
+     mimeType:'image/jpeg',base64:jpegBase64,storedAt:new Date().toISOString(),
+    }));
+   }
+  }
   return {ok:true,meal:parsed.meal,model,requestId,inputTokens:inTokens,outputTokens:outTokens,costUsd:cost};
  }finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
 }
