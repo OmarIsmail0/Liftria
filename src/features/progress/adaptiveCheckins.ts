@@ -85,7 +85,7 @@ export async function answerWeeklyCheckin(week:string,action:'accept'|'edit'|'di
     resultTargetId=created.lastInsertRowId;
     chosenKcal=next;
    }
-   updated={...record,status:action==='dismiss'?'dismissed':action,
+   updated={...record,status:action==='dismiss'?'dismissed':action==='accept'?'accepted':'edited',
     chosenKcal,resultTargetId,answeredAt:new Date().toISOString()};
    await tx.runAsync('UPDATE app_settings SET value=? WHERE key=?',[JSON.stringify(updated),key]);
   });
