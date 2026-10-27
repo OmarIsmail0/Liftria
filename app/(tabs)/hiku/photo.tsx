@@ -88,7 +88,7 @@ export default function HikuPhoto(){
   // After the request only the structured estimate passes to HK-4 review.
   replacePhoto(null);
   setHikuDraft({kind:'photo',description:note,meal:outcome.meal,
-   items:outcome.meal.items.map(resolveHikuItem),requestId:outcome.requestId,
+   items:outcome.meal.items.map(item=>resolveHikuItem(item)),requestId:outcome.requestId,
    model:outcome.model,costUsd:outcome.costUsd,
    inputTokens:outcome.inputTokens,outputTokens:outcome.outputTokens});
   router.push('/(tabs)/hiku/review');
