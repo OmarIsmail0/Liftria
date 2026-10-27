@@ -8,6 +8,7 @@ import {getHikuDraft,clearHikuDraft} from '../../../src/features/hiku/draft';
 import {resolveHikuItem,type HikuReviewedItem} from '../../../src/features/hiku/mealSchema';
 import {saveHikuReviewed} from '../../../src/features/hiku/requestRepository';
 import {bundledFoods,snapshot} from '../../../src/features/eat/foodCatalog';
+import {DemoPhotoIllustration} from '../../../src/features/hiku/DemoPhotoIllustration';
 
 export default function ReviewEstimate(){
  const {t,language}=useLanguage();
@@ -56,6 +57,10 @@ export default function ReviewEstimate(){
   </Card>:<>
    <Card rim="hiku" title={draft.meal.meal_name}>
     <Chip kind="estimate"/>
+    {draft.demo&&draft.kind==='photo'&&<>
+     <Typography tone="secondary">{t('hikuPhoto.sampleNotice')}</Typography>
+     <DemoPhotoIllustration/>
+    </>}
     {draft.kind==='photo'&&<>
      <Chip kind="pending" label={t('hikuPhoto.beta')}/>
      <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>

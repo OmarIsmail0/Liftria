@@ -1,20 +1,7 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
-  'hikuPhoto.title': 'صورة هيكو',
-  'hikuPhoto.beta': 'تجريبي',
-  'hikuPhoto.warning': 'تقديرات الصور جديدة. راجع كل عنصر قبل الحفظ.',
-  'hikuPhoto.open': 'تحليل صورة وجبة',
-  'hikuPhoto.take': 'التقاط صورة',
-  'hikuPhoto.gallery': 'اختيار من المعرض',
-  'hikuPhoto.denied': 'تم رفض إذن الكاميرا. يمكنك اختيار صورة من المعرض.',
-  'hikuPhoto.processing': 'جارٍ تجهيز معاينة JPEG بدون بيانات الموقع…',
-  'hikuPhoto.exactImage': 'هذه هي الصورة التي ستُرسل',
-  'hikuPhoto.dimensions': '{width} × {height} بكسل · JPEG',
-  'hikuPhoto.note': 'ملاحظة اختيارية',
-  'hikuPhoto.noteHint': 'مثلًا: تناولت نصف الأرز',
-  'hikuPhoto.privacy': 'تُرسل إلى كلود الصورة المعروضة بدون بيانات تعريفية والملاحظة والملخصات التي تختارها فقط. حفظ الصور معطّل افتراضيًا في إعدادات هيكو.',
-  'hikuPhoto.imageError': 'تعذّر تجهيز الصورة. اختر صورة أخرى.',
+  'hikuPhoto.sampleNotice': 'رسم توضيحي تجريبي · لم تُرسل صورة أو طلب.',
   'water.demoNote': 'عرض تجريبي فقط · لم تُحفظ أي كمية ماء.',
   'backup.demoNotice': 'معاينة تجريبية فقط — لن تُستبدل أي بيانات.',
   'backup.group.workouts': 'التمارين',
