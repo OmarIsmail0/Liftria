@@ -1,6 +1,15 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'water.title': 'الماء',
+  'water.unlogged': 'لم يُسجَّل بعد',
+  'water.total': '{glasses} أكواب · {ml} مل',
+  'water.size': 'حجم الكوب: {ml} مل',
+  'water.add': 'إضافة كوب',
+  'water.remove': 'إزالة كوب',
+  'water.error': 'تعذّر حفظ الماء. حاول مجددًا.',
+  'water.settings': 'تتبّع شرب الماء',
+  'water.glassSize': 'حجم الكوب',
   'backup.export': 'تصدير نسخة احتياطية',
   'backup.restore': 'استعادة من نسخة احتياطية',
   'backup.workoutsCsv': 'تصدير التمارين (CSV)',

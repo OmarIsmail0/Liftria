@@ -138,7 +138,7 @@ describe('monotonic, separate and additive migrations', () => {
   });
 
   test('newer-than-app schema is rejected without running SQL', async () => {
-    state.schema = 6;
+    state.schema = 7;
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await expect(migrateDatabase(asDb)).rejects.toThrow('Database schema is newer than app');
     expect(mockDb.withExclusiveTransactionAsync.mock.calls.length).toBe(before);

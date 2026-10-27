@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import {Platform,Share,View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import {File,Paths} from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
@@ -33,19 +34,22 @@ export default function DataAndStorage() {
     else setMessage(t('dataStorage.readError'));
   },[t]);
   useEffect(()=>{void Promise.resolve().then(() => load());},[load]);
-  async function shareFile(name:string,content:string,kind:'json'|'csv'){
-    // A user action always precedes writing or opening a local backup.
+  async function shareFile(name:string,content:string,kind:'json'|'csv'):Promise<boolean>{
+    // Export only after explicit user interaction. SAF is Android's system Save
+    // document chooser; it needs no storage permission and shares no URI as text.
+    if(Platform.OS==='android'){
+      const permission=await LegacyFileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+      if(!permission.granted)return false;
+      const uri=await LegacyFileSystem.StorageAccessFramework.createFileAsync(
+       permission.directoryUri,name.replace(/\.[^.]+$/,''),kind==='csv'?'text/csv':'application/json');
+      await LegacyFileSystem.writeAsStringAsync(uri,content);
+      return true;
+    }
     const file=new File(Paths.cache,name);
     file.create({overwrite:true});
     await file.write(content);
-    // Native preview lets the user explicitly save/copy the file. iOS additionally
-    // supports a URI-backed share sheet. Android share attachment requires Expo Sharing
-    // (dependency approval requested in PR; never fake a completed share).
-    if(Platform.OS==='ios'){
-      await Share.share({url:file.uri,title:name});
-    }else{
-      await file.preview({title:name,mimeType:kind==='csv'?'text/csv':'application/json'});
-    }
+    await Share.share({url:file.uri,title:name});
+    return true;
   }
   async function exportData(kind:'backup'|'workouts'|'diary'){
     if(busy)return;setBusy(true);setMessage(null);
@@ -55,9 +59,9 @@ export default function DataAndStorage() {
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
       const date=new Date().toISOString().slice(0,10);
-      await shareFile('liftria-'+kind+'-'+date+'.'+extension,
-       typeof result.value==='string'?result.value:JSON.stringify(result.value),'json'===extension?'json':'csv');
-      setMessage(t('backup.ready'));
+      const exported=await shareFile('liftria-'+kind+'-'+date+'.'+extension,
+       typeof result.value==='string'?result.value:JSON.stringify(result.value),extension==='json'?'json':'csv');
+      if(exported)setMessage(t('backup.ready'));
     }catch{setMessage(t('backup.shareFailed'));}
     finally{setBusy(false);}
   }
@@ -81,8 +85,7 @@ export default function DataAndStorage() {
       const restored=await restoreBackup(pendingRestore,restoreText);
       if(!restored.ok){setMessage(t('backup.restoreFailed'));return;}
       setPendingRestore(null);setRestoreText('');
-      // Re-read persistent preferences, counters, and visible screens after restoration.
-      resetLocalPreferences();resetLanguage();
+      // Do not reset Settings here: that would overwrite the restored theme/language.
       setMessage(t('backup.restored'));
       await load();
     }catch{setMessage(t('backup.restoreFailed'));}
