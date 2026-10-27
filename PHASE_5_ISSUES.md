@@ -6,7 +6,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**PR L is done. PR M (#24) has review changes requested; PR N (#25) is stacked on it and reviewed.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**PR L and PR M are done. Next: PR N (#25), now targeting `main`: merge `main` into it (merge commit), then work through Claude's review comment.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
@@ -20,7 +20,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Exercise notes:** a note per exercise in a workout (exists in the schema? if not, an additive migration). Show the last note on the next session of the same exercise, and in History.
    - **Rest timer notification:** when rest starts and the app goes to the background, schedule a local notification for the end of rest (`expo-notifications`, already installed; `POST_NOTIFICATIONS` is allowed). Cancel it when the user returns or skips. **No foreground service, no exact-alarm permission** (the release permission gate blocks them).
    - Screenshots: add `dev/demo-*` routes for a superset workout and the plate calculator.
-2. **PR M: `Phase 5 / Adaptive expenditure`** (MacroFactor's main feature; the competitive review's #1)
+2. ~~**PR M: `Phase 5 / Adaptive expenditure`**~~ DONE: PR #24 merged (2026-10-27). (MacroFactor's main feature; the competitive review's #1)
    - **Estimate:** daily expenditure ≈ average logged intake − (change in **trend** weight × 7,700 kcal/kg) ÷ days, over the last 14–28 days. Use only logged days for intake.
    - **When to show it:** at least 14 days of history, at least 10 logged days and at least 4 weigh-ins in that window. Before that, show "Needs N more logged days / weigh-ins", never a number.
    - **Label:** always "Estimated burn" with the estimate chip. Never mix in watch or Health Connect calorie data (the "Daily calories NOT READY" gate stays).
@@ -51,6 +51,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Long titles:** screen headers wrap long names mid-word ("Demo · Superset s / creenshot"). Use at most two lines with an ellipsis, breaking between words.
    - **Hiku polish (from PR #22's screenshots):** show costs as "less than $0.01" / "$0.03" (not "$0.00000"), and the price source as a tappable link, not a raw URL.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
+   - **Wording (from PR #24's screenshots):** the burn card says "smoothed weight change", but the estimate now uses a fitted weight trend; say "weight trend". In Arabic, numbers 11 and above take the singular ("14 يومًا", not "14 أيام"); check every counted phrase through `pluralForm()`.
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - Remove or hide every `dev/*` route in release builds, except what the emulator check needs (Claude will gate those behind a build flag).
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release. App Store descriptions (English and Arabic) too, for iPhone.
