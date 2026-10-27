@@ -6,7 +6,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**PR L is done; next is PR M (adaptive expenditure), from `main`.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**PR L is done. PR M (#24) has review changes requested; PR N (#25) is stacked on it and reviewed.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
@@ -60,6 +60,6 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
 **Rules (same as Phase 4):**
 - Every push runs `verify`. Claude adds `build` for emulator screenshots and merges when `verify` is green and the screenshots are clean.
 - One commit per sub-step. Batch your pushes. Run nothing you can't check; Claude runs the checks.
-- **New dependencies:** none approved. `expo-document-picker`, `expo-file-system` and `expo-notifications` are already installed. Ask in the PR before adding anything else; Claude regenerates the lockfile.
+- **New dependencies:** `expo-sharing` approved and installed by Claude (2026-10-27) for backup/CSV export on Android and iPhone. `expo-document-picker`, `expo-file-system` and `expo-notifications` are already installed. Ask in the PR before adding anything else; Claude regenerates the lockfile.
 - **Never:** workflow edits, fabricated results, invented nutrition numbers, `crypto.*` (use `newGymId()`), suggested values saved as data, anything from openGym (AGPL), `Intl` APIs other than `NumberFormat` / `DateTimeFormat` / `Collator`.
 - Every new string in English and Arabic. Every new table is covered by Delete all and by the backup.
