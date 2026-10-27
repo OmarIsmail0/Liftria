@@ -1,4 +1,4 @@
-import {BACKUP_TABLES,parseBackup,backupPreview,restoreColumns,validateBackupTables,type BackupData,type ColumnInfo} from '../backup';
+import {BACKUP_TABLES,parseBackup,backupPreview,previewGroups,restoreColumns,validateBackupTables,type BackupData,type ColumnInfo} from '../backup';
 import {csvRows} from '../csvExport';
 test('backup JSON round trip preserves nulls, text and every schema table',()=>{
  const tables=Object.fromEntries(BACKUP_TABLES.map(name=>[name,[]])) as BackupData['tables'];
@@ -10,6 +10,8 @@ test('backup JSON round trip preserves nulls, text and every schema table',()=>{
  const restored=parseBackup(JSON.stringify(backup));
  expect(restored).toEqual(backup);
  expect(backupPreview(restored).total).toBe(3);
+ expect(previewGroups(restored).reduce((n,g)=>n+g.count,0)).toBe(3);
+ expect(previewGroups(restored).find(g=>g.group==='water')?.count).toBe(1);
 });
 test('restore parser rejects missing tables, foreign/unsupported formats and bad cells',()=>{
  const backup={format:'liftria-backup',formatVersion:1,schemaVersion:6,
@@ -50,7 +52,7 @@ test('v6 backup rejects newer-version tables and unknown names',()=>{
  const tables=Object.fromEntries(BACKUP_TABLES.map(name=>[name,[]]));
  const manifest={schemaVersion:7,tables:[...BACKUP_TABLES,'future_table'],
   introducedIn:{...Object.fromEntries(BACKUP_TABLES.map(t=>[t,6])),future_table:7}};
- expect(()=>validateBackupTables({...tables,future_table:[]},6,manifest)).toThrow('Missing');
+ expect(()=>validateBackupTables({...tables,future_table:[]},6,manifest)).toThrow('Table introduced');
  expect(()=>validateBackupTables({...tables,unknown_table:[]},6,manifest)).toThrow('Unknown');
  expect(()=>validateBackupTables(tables,8,manifest)).toThrow('Unsupported');
  expect(()=>validateBackupTables(tables,6)).not.toThrow();

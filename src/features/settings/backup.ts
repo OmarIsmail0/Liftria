@@ -40,6 +40,7 @@ export function validateBackupTables(tables:Record<string,unknown>,backupVersion
   if(!Number.isInteger(added)||added!<MIN_BACKUP_SCHEMA_VERSION||
     added!>manifest.schemaVersion)throw new Error('Invalid backup table manifest');
   const value=tables[table];
+  if(value!==undefined&&added!>backupVersion)throw new Error('Table introduced after backup version');
   if(value===undefined){
    if(added!<=backupVersion)throw new Error('Missing backup table: '+table);
    data[table]=[];continue;
@@ -74,6 +75,23 @@ export function restoreColumns(row:BackupRow,info:readonly ColumnInfo[]):string[
    column.dflt_value===null)throw new Error('Missing required backup column: '+column.name);
  }
  return columns;
+}
+export const BACKUP_GROUPS={
+ workouts:['sessions','test_workout_sessions'],
+ sets:['sets','test_workout_sets','session_exercises'],
+ diary:['diary_entries','test_nutrition_entries','saved_meals','saved_meal_items'],
+ foods:['foods','food_portions','favorite_foods'],
+ weights:['weights'],
+ water:['water_logs'],
+ health:['health_samples','health_aggregates'],
+ plans:['plans','templates','template_exercises','exercises','import_batches'],
+ settings:['app_settings','profile','targets','hiku_requests'],
+} as const;
+export type BackupGroup=keyof typeof BACKUP_GROUPS;
+export function previewGroups(backup:BackupData):{group:BackupGroup;count:number}[]{
+ return (Object.entries(BACKUP_GROUPS) as [BackupGroup,readonly string[]][]).map(([group,names])=>({
+  group,count:names.reduce((total,name)=>total+(backup.tables[name]?.length??0),0),
+ }));
 }
 export function backupPreview(backup:BackupData):BackupPreview{
  const counts=BACKUP_TABLES.map(table=>({table,count:backup.tables[table]?.length??0}));
