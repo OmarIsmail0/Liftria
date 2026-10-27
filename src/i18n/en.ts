@@ -7,6 +7,8 @@ export const en = {
   'adaptive.sourceNote': 'Estimate from food diary intake and smoothed weight change over the last 28 complete days. Missing days are gaps, not zero. No watch calories are used.',
   'adaptive.burnMethod': '{logged} logged days · {weights} weigh-in days · {days} days between weigh-ins',
   'adaptive.weeklyTitle': 'Weekly target check-in',
+  'adaptive.review': 'Review weekly proposal',
+  'adaptive.demoWarning': 'Demo screenshot data, not your personal measurements. Clear it from Developer tools.',
   'adaptive.proposal': 'Proposed new target: {count} kcal/day',
   'adaptive.currentTarget': 'Current target: {count} kcal/day. Nothing changes unless you choose.',
   'adaptive.accept': 'Accept proposed target',
