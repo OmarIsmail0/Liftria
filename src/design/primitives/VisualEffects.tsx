@@ -3,7 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import type { LiftriaTheme } from '../tokens';
 import type { CardRim } from './contracts';
-import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, shouldShowOrbHighlight, stopProps, withOpacity } from './VisualGeometry';
+import { ambientGlows, cssLinearGradient, ringGeometry, shouldShowOrbHighlight, stopProps, withOpacity } from './VisualGeometry';
 
 export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme: LiftriaTheme }) {
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
@@ -22,25 +22,21 @@ export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme:
   </Svg>;
 });
 
-export function cardOuterGlow(theme: LiftriaTheme, rim: CardRim, flat: boolean): ViewStyle {
+export function cardOuterGlow(theme: LiftriaTheme, _rim: CardRim, flat: boolean): ViewStyle {
   if (theme.effectiveStyle !== 'aurora' || flat) return {};
-  // Every Aurora card has depth, including neutral rims. Colored rims add a soft
-  // themed glow; the shadow still comes exclusively from design tokens.
-  const rimGlow = rim === 'none' ? '' : ', 0px 0px ' + theme.visual.cardGlowBlur + 'px ' +
-    withOpacity(theme.color.domain[rim], theme.rim.glow);
-  return { boxShadow: theme.elevation.card + rimGlow };
+  // One soft, layered shadow for every card. Domain color no longer tints the shadow:
+  // a colored halo per card read as uneven, so the domain lives in the title dot.
+  return { boxShadow: theme.elevation.card };
 }
 
-/** Sheen and 1.2dp gradient rim. Measured dimensions keep the rounded stroke inside bounds. */
-export function AuroraCardDecoration({ theme, rim, width, height }: {
-  theme: LiftriaTheme; rim: CardRim; width: number; height: number;
+/** A faint top sheen and one even hairline edge. Measured dimensions keep the rounded stroke inside bounds. */
+export function AuroraCardDecoration({ theme, width, height }: {
+  theme: LiftriaTheme; width: number; height: number;
 }) {
   if (width <= 0 || height <= 0) return null;
-  const edge = theme.size.border.rim;
-  const edgeColor = rim === 'none' ? theme.color.border.strong : theme.color.domain[rim];
-  // The prototype's CSS angles (165° sheen, 140° rim), resolved against this card's real size.
+  const edge = theme.size.border.thin;
+  // The prototype's 165° sheen, resolved against this card's real size.
   const sheen = cssLinearGradient(165, width, height);
-  const rimLine = cssLinearGradient(140, width, height);
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
     style={StyleSheet.absoluteFill} width={width} height={height}>
     <Defs>
@@ -49,17 +45,11 @@ export function AuroraCardDecoration({ theme, rim, width, height }: {
         <Stop offset="45%" {...stopProps(theme.glass.highlight, 0)} />
         <Stop offset="100%" {...stopProps(theme.glass.highlight, 0)} />
       </LinearGradient>
-      <LinearGradient id="card-rim" gradientUnits="userSpaceOnUse" x1={rimLine.x1} y1={rimLine.y1} x2={rimLine.x2} y2={rimLine.y2}>
-        <Stop offset={(cardRimStops[0] * 100) + '%'} {...stopProps(edgeColor, 1)} />
-        <Stop offset={(cardRimStops[1] * 100) + '%'} {...stopProps(edgeColor, theme.rim.strength)} />
-        <Stop offset={(cardRimStops[2] * 100) + '%'} {...stopProps(edgeColor, 0)} />
-        <Stop offset={(cardRimStops[3] * 100) + '%'} {...stopProps(edgeColor, 0.08)} />
-      </LinearGradient>
     </Defs>
     <Rect width={width} height={height} rx={theme.radius.lg} fill="url(#card-sheen)" />
     <Rect x={edge / 2} y={edge / 2} width={Math.max(0, width - edge)}
       height={Math.max(0, height - edge)} rx={theme.radius.lg - edge / 2}
-      fill="none" strokeWidth={edge} stroke="url(#card-rim)" />
+      fill="none" strokeWidth={edge} stroke={theme.surface.hairline} />
   </Svg>;
 }
 

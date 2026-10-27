@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
+import Reanimated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
@@ -7,6 +8,7 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { OrbArtwork } from './VisualEffects';
 import { TabIcon } from './TabIcon';
 import { capsuleTabs, orbSummary, type CapsuleTab } from './contracts';
+import { usePressScale, useSpringValue } from './Motion';
 
 export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   eaten: number; target: number | null; hidden?: boolean; active?: boolean; onPress?: () => void;
@@ -67,35 +69,59 @@ export function CapsuleNav({ active, onSelect }: {
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const glass = theme.effectiveStyle === 'aurora';
+  const index = Math.max(0, capsuleTabs.findIndex(tab => tab.key === active));
+  const position = useSpringValue(index);
+  const [width, setWidth] = useState(0);
+  const inset = theme.space[1];
+  const segment = width > 0 ? (width - inset * 2) / capsuleTabs.length : 0;
+  // Logical row + growing spacer: the pill slides the right way in Arabic too.
+  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }));
   return <View style={{
     paddingHorizontal: theme.space[4], paddingTop: theme.space[2],
     paddingBottom: Math.max(insets.bottom, theme.space[4]),
     backgroundColor: 'transparent',
   }}>
-    <View accessibilityRole="tablist" style={{
+    <View accessibilityRole="tablist" onLayout={event => setWidth(event.nativeEvent.layout.width)} style={{
       flexDirection: 'row', alignItems: 'center',
       minHeight: theme.size.touch.nav, borderRadius: theme.radius.pill,
-      padding: theme.space[1], borderWidth: theme.size.border.thin,
-      borderColor: glass ? theme.glass.border : theme.color.border.strong,
+      padding: inset, borderWidth: theme.size.border.thin,
+      borderColor: glass ? theme.surface.hairline : theme.color.border.strong,
       backgroundColor: glass ? theme.glass.card : theme.color.bg.glass,
+      boxShadow: glass ? theme.elevation.card : undefined,
     }}>
-      {capsuleTabs.map(tab => {
-        const selected = tab.key === active;
-        const ink = selected ? theme.color.action.primary.fg : theme.color.text.secondary;
-        return <Pressable key={tab.key} onPress={() => onSelect(tab.key)}
-          accessibilityRole="tab" accessibilityLabel={t(`nav.${tab.key}`)}
-          accessibilityState={{ selected }}
-          style={{
-            flex: 1, minWidth: theme.size.touch.min,
-            minHeight: theme.size.touch.nav, alignItems: 'center', justifyContent: 'center',
-            flexDirection: 'row', paddingHorizontal: theme.space[1],
-            backgroundColor: selected ? theme.color.action.primary.bg : 'transparent',
-            borderRadius: theme.radius.pill,
-          }}>
-          <TabIcon name={tab.key} color={ink}
-            size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
-        </Pressable>;
-      })}
+      {segment > 0 && <View pointerEvents="none" style={{ position: 'absolute', top: inset, bottom: inset,
+        start: inset, end: inset, flexDirection: 'row' }}>
+        <Reanimated.View style={spacer} />
+        <View style={{ width: segment, borderRadius: theme.radius.pill, backgroundColor: theme.color.action.primary.bg }} />
+      </View>}
+      {capsuleTabs.map((tab, at) => <CapsuleTabButton key={tab.key} tab={tab.key} selected={tab.key === active}
+        at={at} position={position} sliding={segment > 0}
+        label={t(`nav.${tab.key}`)} onPress={() => onSelect(tab.key)} />)}
     </View>
   </View>;
+}
+
+function CapsuleTabButton({ tab, selected, at, position, sliding, label, onPress }: {
+  tab: CapsuleTab; selected: boolean; at: number; position: SharedValue<number>; sliding: boolean;
+  label: string; onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  const press = usePressScale();
+  // Two inks cross-fade as the pill passes under the icon, so it never flashes white on the bar.
+  const lit = useAnimatedStyle(() => ({
+    opacity: sliding ? Math.max(0, 1 - Math.abs(position.get() - at)) : selected ? 1 : 0,
+  }));
+  const unlit = useAnimatedStyle(() => ({
+    opacity: sliding ? Math.min(1, Math.abs(position.get() - at)) : selected ? 0 : 1,
+  }));
+  const icon = (color: string) => <TabIcon name={tab} color={color} size={theme.space[6]} strokeWidth={theme.size.iconStroke} />;
+  return <Pressable onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+    accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }}
+    style={{ flex: 1, minWidth: theme.size.touch.min, minHeight: theme.size.touch.nav,
+      alignItems: 'center', justifyContent: 'center' }}>
+    <Reanimated.View style={press.style}>
+      <Reanimated.View style={unlit}>{icon(theme.color.text.secondary)}</Reanimated.View>
+      <Reanimated.View style={[{ position: 'absolute', top: 0, start: 0 }, lit]}>{icon(theme.color.action.primary.fg)}</Reanimated.View>
+    </Reanimated.View>
+  </Pressable>;
 }
