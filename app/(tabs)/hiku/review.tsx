@@ -56,6 +56,10 @@ export default function ReviewEstimate(){
   </Card>:<>
    <Card rim="hiku" title={draft.meal.meal_name}>
     <Chip kind="estimate"/>
+    {draft.kind==='photo'&&<>
+     <Chip kind="pending" label={t('hikuPhoto.beta')}/>
+     <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>
+    </>}
     {draft.demo&&<Typography tone="secondary">{t('hikuK.demoWarning')}</Typography>}
     <Typography tone="secondary">{t('hikuK.checkItems')}</Typography>
     <Typography>{t('hikuK.total',{kcal:fmt(sum.kcal),protein:fmt(sum.protein),
