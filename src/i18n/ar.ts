@@ -1,6 +1,10 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'hikuPhoto.sampleNotice': 'رسم توضيحي تجريبي · لم تُرسل صورة أو طلب.',
+  'hikuPhoto.reviewProgress': 'تمت مراجعة {checked} من {total} عناصر. افتح كل عنصر وأكّد الكمية قبل الحفظ.',
+  'hikuPhoto.checked': 'تمت المراجعة',
+  'hikuPhoto.toCheck': 'راجع الكمية',
   'hikuPhoto.title': 'صورة هيكو',
   'hikuPhoto.beta': 'تجريبي',
   'hikuPhoto.warning': 'تقديرات الصور جديدة. راجع كل عنصر قبل الحفظ.',

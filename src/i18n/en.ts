@@ -1,5 +1,9 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'hikuPhoto.sampleNotice': 'Bundled sample illustration · no photo or request was sent.',
+  'hikuPhoto.reviewProgress': '{checked} of {total} items checked. Open each item and confirm its portion before Save.',
+  'hikuPhoto.checked': 'Checked',
+  'hikuPhoto.toCheck': 'Check portion',
   'hikuPhoto.title': 'Hiku photo',
   'hikuPhoto.beta': 'Beta',
   'hikuPhoto.warning': 'Photo estimates are new. Check every item before saving.',
