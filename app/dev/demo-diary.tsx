@@ -21,6 +21,8 @@ export default function DemoDiary(){
   const foods:{id:string;meal:MealKey}[]=[
    {id:'egypt:koshari',meal:'lunch'},
    {id:'egypt:baladi-bread',meal:'breakfast'},
+   // Egyptian pack has actual fiber and sodium but unreported sugar (null).
+   {id:'egypt:basbousa',meal:'snacks'},
   ];
   const seeded=diary.value.slice();
   async function addFood(food:Food,grams:number,meal:MealKey):Promise<boolean>{
@@ -46,7 +48,7 @@ export default function DemoDiary(){
    const quick=await logQuick(Math.max(1,Math.round(eggs.kcal)),'snacks',today,snackName);
    if(!quick.ok){setError('Could not write the demo quick add.');setBusy(false);return;}
   }
-  router.replace('/(tabs)/eat');
+  router.replace({pathname:'/(tabs)/eat',params:{demoWater:'3'}});
  };
  useEffect(()=>{
   if(auto!=='1'||once.current)return;
@@ -57,8 +59,9 @@ export default function DemoDiary(){
   <Header title="Demo diary" onBack={()=>router.back()}/>
   <Card rim="eat" title="Developer screenshot data">
    <Typography tone="secondary">Adds a real portion of Koshari, baladi bread,
-   one USDA egg entry and a calories-only quick add from bundled nutrition.
-   Existing entries are kept; opening again does not duplicate these fixtures.</Typography>
+   basbousa with unreported sugar, one USDA egg and a calories-only quick add.
+   The Eat screen shows three demo water glasses (read-only, not saved).
+   Existing diary entries are kept; reopening does not duplicate these fixtures.</Typography>
    <Button label={busy?'Opening…':'Log demo foods and open Eat'} disabled={busy}
     onPress={()=>void create()}/>
    {error&&<Typography>{error}</Typography>}

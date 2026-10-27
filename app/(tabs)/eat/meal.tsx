@@ -73,6 +73,9 @@ export default function MealDetail(){
       {!hidden&&summary.protein!==null&&<Typography tone="secondary">{t('eatI.macroAmounts',{
         p:format(Math.round(summary.protein)),c:summary.carbs===null?'—':format(Math.round(summary.carbs)),
         f:summary.fat===null?'—':format(Math.round(summary.fat))})}</Typography>}
+      {entries.length>0&&!hidden&&<Typography tone="secondary" size="small">{t('nutrients.values',{fiber:summary.fiber===null?'—':format(Math.round(summary.fiber*10)/10),
+ sugar:summary.sugar===null?'—':format(Math.round(summary.sugar*10)/10),
+ sodium:summary.sodium===null?'—':format(Math.round(summary.sodium))})}</Typography>}
       {!hidden&&summary.completeMacroItems>0&&summary.completeMacroItems<summary.count&&
         <Typography tone="secondary" size="small">{t('eatI.partialMacros',{
           count:summary.completeMacroItems,total:summary.count})}</Typography>}
@@ -97,6 +100,11 @@ export default function MealDetail(){
     {error&&<Typography>{t('eatI.error')}</Typography>}
     <Sheet visible={selected!==null} title={selected?.name??displayName}
       onClose={()=>setSelected(null)}>
+      {selected&&!hidden&&<Typography tone="secondary">{t('nutrients.values',{
+        fiber:selected.fiber==null?'—':format(Math.round(selected.fiber*10)/10),
+        sugar:selected.sugar==null?'—':format(Math.round(selected.sugar*10)/10),
+        sodium:selected.sodium==null?'—':format(Math.round(selected.sodium))
+       })}</Typography>}
       {selected?.grams&&food&&<Field label={t('eatI.gramsLabel')} value={edited}
         onChangeText={setEdited} keyboardType="decimal-pad"/>}
       {selected?.grams&&food&&<Button label={t('eatI.save')} onPress={()=>void update()} fullWidth/>}

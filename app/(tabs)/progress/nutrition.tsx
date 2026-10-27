@@ -4,7 +4,7 @@ import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {dayOffset,localDay} from '../../../src/features/eat/foodCatalog';
-import {readDiaryRange,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
+import {readDiaryRange,summarizeEntries,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
 import {getCurrentTarget,type Target} from '../../../src/services/database/targets';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {nutritionTrend,rangeDays,type RangeKey} from '../../../src/features/progress/trendMath';
@@ -55,6 +55,16 @@ export default function NutritionTrends(){
  const shownCheckin=demoAdaptive==='early'?null:checkin;
  const summary=nutritionTrend(entries,today,days,target?.proteinG??null);
  const amount=(v:number|null)=>v===null?'—':bidiIsolate(language,formatNumber(language,Math.round(v)));
+ const micros=(()=>{
+  const days=new Map<string,DiaryEntry[]>();
+  for(const item of entries){const list=days.get(item.day)??[];list.push(item);days.set(item.day,list);}
+  const values=[...days.values()].map(summarizeEntries);
+  const average=(key:'fiber'|'sugar'|'sodium')=>{
+   const known=values.map(v=>v[key]).filter((v):v is number=>v!==null);
+   return {value:known.length?known.reduce((a,b)=>a+b,0)/known.length:null,days:known.length};
+  };
+  return {fiber:average('fiber'),sugar:average('sugar'),sodium:average('sodium')};
+ })();
  const edited=proposedInput.trim()?Number(proposedInput):NaN;
  const editedValid=Number.isInteger(edited)&&edited>=1000&&edited<=10000;
  async function answer(action:'accept'|'edit'|'dismiss',kcal:number|null=null,confirmed=false){
@@ -110,6 +120,13 @@ export default function NutritionTrends(){
     <Typography tone="secondary" size="small">{t('trend.diarySource')}</Typography>
     <NutritionGraph trend={summary} target={target?.kcal??null} hidden={hidden}/>
     <Typography tone="secondary" size="small">{t('trend.gapsNote')}</Typography>
+   </Card>
+   <Card rim="eat" title={t('nutrients.trend')}>
+    <Typography tone="secondary" size="small">{t('nutrients.gaps')}</Typography>
+    {(['fiber','sugar','sodium'] as const).map(key=><ListRow key={key}
+      title={t('nutrients.'+key as 'nutrients.fiber'|'nutrients.sugar'|'nutrients.sodium')}
+      detail={hidden?t('trend.hidden'):t('nutrients.average',{value:micros[key].value===null?'—':
+        formatNumber(language,Math.round(micros[key].value*10)/10),days:micros[key].days})}/>)}
    </Card>
    <Card rim="eat" title={t('trend.proteinGoal')}>
     <Typography tone="secondary">{target?.proteinG===undefined?t('trend.noProteinGoal'):
