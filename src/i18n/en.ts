@@ -36,7 +36,7 @@ export const en = {
   'backup.cancel': 'Keep current data',
   'backup.replace': 'Restore this backup',
   'backup.restoreFailed': 'Restore failed. Existing data is preserved.',
-  'backup.restored': 'Backup restored. Restart Liftria to apply the restored theme, language, units and other settings.'
+  'backup.restored': 'Backup restored. Restart Liftria to apply the restored theme, language, units and other settings.',
   'nutrients.values': 'Fiber {fiber} g · Sugar {sugar} g · Sodium {sodium} mg',
   'nutrients.trend': 'Fiber, sugar and sodium',
   'nutrients.gaps': 'Average of complete logged days for each nutrient. Unknown is not zero.',
