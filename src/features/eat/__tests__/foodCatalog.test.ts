@@ -20,7 +20,8 @@ test('offline aliases, prefix and fuzzy search with Egyptian tie preference',()=
   expect(foodName(foods[1]!, 'ar')).toBe('كشري');
 });
 test('snapshots round kcal only; quick adds can omit macros',()=>{
-  expect(snapshot(food('e','Fatta','فتة'),155)).toEqual({kcal:155,protein:15.5,carbs:31,fat:1.55});
+  expect(snapshot(food('e','Fatta','فتة'),155)).toEqual({kcal:155,protein:15.5,carbs:31,fat:1.55,
+    fiber:0,sugar:null,sodium:null});
   expect(()=>snapshot(food('e','Fatta','فتة'),0)).toThrow();
   expect(macroMismatch(100,10,10,1)).toBe(false);
   expect(macroMismatch(100,0,0,0)).toBe(true);
@@ -65,4 +66,10 @@ describe('search speed paths and diary names', () => {
     expect(entryName({ foodId: 'egypt:koshari', name: 'Koshari' }, 'en')).toBe('Koshari');
     expect(entryName({ foodId: null, name: 'Snack' }, 'ar')).toBe('Snack');
   });
+});
+
+test('pack micronutrients snapshot when present; unknown values stay null',()=>{
+ const input={...food('x','Test',null),fiber:2,sugar:3,sodium:100};
+ expect(snapshot(input,150)).toMatchObject({fiber:3,sugar:4.5,sodium:150});
+ expect(snapshot({...input,sugar:null,sodium:undefined},150)).toMatchObject({sugar:null,sodium:null});
 });

@@ -23,3 +23,10 @@ test('quick add calories remain calories only with null macro fields',()=>{
   expect(value.fat).toBeNull();
   expect(value.completeMacroItems).toBe(0);
 });
+
+test('incomplete micronutrients never contribute fabricated zero values',()=>{
+ const filled={...entry('breakfast',100,5),fiber:2,sugar:3,sodium:100};
+ expect(summarizeEntries([filled])).toMatchObject({fiber:2,sugar:3,sodium:100});
+ const partial=summarizeEntries([filled,entry('dinner',250,null)]);
+ expect(partial.fiber).toBeNull();expect(partial.sugar).toBeNull();expect(partial.sodium).toBeNull();
+});

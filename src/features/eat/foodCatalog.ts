@@ -10,6 +10,7 @@ export type Food={
   id:string; name:string;nameAr:string|null;aliases:string[];
   source:FoodSource;estimate:boolean; kcal:number;
   protein:number|null;carbs:number|null;fat:number|null;fiber:number|null;
+  sugar?:number|null;sodium?:number|null;
   portions:Portion[];
 };
 type PackRow={
@@ -22,7 +23,7 @@ export function unpackFood(row:PackRow):Food {
   return {id:row.id,name:row.name,nameAr:row.name_ar??null,
     aliases:row.aliases??[],source:row.source==='egypt'?'egypt':'usda',
     estimate:row.estimate===true,kcal:row.kcal,protein:row.protein,carbs:row.carbs,
-    fat:row.fat,fiber:row.fiber,portions:row.portions.map(p=>(
+    fat:row.fat,fiber:row.fiber,sugar:row.sugar??null,sodium:row.sodium??null,portions:row.portions.map(p=>(
       typeof p[1]==='number'?{labelEn:p[0],labelAr:null,grams:p[1]}:
         {labelEn:p[0],labelAr:p[1],grams:p[2]!})),
   };
@@ -124,12 +125,14 @@ export function mealAtTime(date:Date,ramadan=false,iftarTime='18:00'):MealKey{
   }
   return minute<630?'breakfast':minute<900?'lunch':minute<1020?'snacks':'dinner';
 }
-export type Nutrition={kcal:number;protein:number|null;carbs:number|null;fat:number|null};
+export type Nutrition={kcal:number;protein:number|null;carbs:number|null;fat:number|null;
+ fiber?:number|null;sugar?:number|null;sodium?:number|null};
 export function snapshot(food:Food,grams:number):Nutrition {
   if(!Number.isFinite(grams)||grams<=0||grams>2000)throw new Error('Invalid food portion');
   const multiply=(value:number|null)=>value===null?null:value*grams/100;
   return {kcal:Math.round(food.kcal*grams/100),
-    protein:multiply(food.protein),carbs:multiply(food.carbs),fat:multiply(food.fat)};
+    protein:multiply(food.protein),carbs:multiply(food.carbs),fat:multiply(food.fat),
+    fiber:multiply(food.fiber),sugar:multiply(food.sugar??null),sodium:multiply(food.sodium??null)};
 }
 export function macroMismatch(kcal:number,protein:number,carbs:number,fat:number):boolean{
   if(![kcal,protein,carbs,fat].every(Number.isFinite)||kcal<0)return true;

@@ -6,18 +6,22 @@ import {bundledFoods,searchFoods,snapshot,localDay,MEALS,type Food,type FoodSour
 export type DiaryEntry={
   id:string;day:string;meal:MealKey;foodId:string|null;name:string;grams:number|null;
   kcal:number;protein:number|null;carbs:number|null;fat:number|null;
+  fiber?:number|null;sugar?:number|null;sodium?:number|null;
   source:'search'|'quick'|'hiku-estimate'|'repeat';createdAt:string;editedAt:string;
 };
 type EntryRow={id:string;day:string;meal:MealKey;food_id:string|null;
   name_snapshot:string;grams:number|null;kcal:number;protein:number|null;
-  carbs:number|null;fat:number|null;source:DiaryEntry['source'];created_at:string;edited_at:string};
+  carbs:number|null;fat:number|null;fiber:number|null;sugar:number|null;sodium:number|null;
+  source:DiaryEntry['source'];created_at:string;edited_at:string};
 const decodeEntry=(row:EntryRow):DiaryEntry=>({
   id:row.id,day:row.day,meal:row.meal,foodId:row.food_id,name:row.name_snapshot,
   grams:row.grams,kcal:row.kcal,protein:row.protein,carbs:row.carbs,fat:row.fat,
+  fiber:row.fiber??null,sugar:row.sugar??null,sodium:row.sodium??null,
   source:row.source,createdAt:row.created_at,editedAt:row.edited_at,
 });
 export type DaySummary={logged:boolean;count:number;completeMacroItems:number;kcal:number;protein:number|null;
-  carbs:number|null;fat:number|null;byMeal:Record<MealKey,{count:number;kcal:number}>};
+  carbs:number|null;fat:number|null;fiber:number|null;sugar:number|null;sodium:number|null;
+  byMeal:Record<MealKey,{count:number;kcal:number}>};
 export function summarizeEntries(entries:readonly DiaryEntry[]):DaySummary{
   const byMeal=Object.fromEntries(MEALS.map(meal=>[meal,{count:0,kcal:0}])) as DaySummary['byMeal'];
   let kcal=0;let protein=0,carbs=0,fat=0,completeMacroItems=0,hasProtein=false,hasCarbs=false,hasFat=false;
@@ -29,8 +33,12 @@ export function summarizeEntries(entries:readonly DiaryEntry[]):DaySummary{
     if(entry.carbs!==null){carbs+=entry.carbs;hasCarbs=true;}
     if(entry.fat!==null){fat+=entry.fat;hasFat=true;}
   }
+  const complete=(field:'fiber'|'sugar'|'sodium'):number|null=>
+    entries.length>0&&entries.every(e=>e[field]!=null&&Number.isFinite(e[field]))?
+     entries.reduce((sum,e)=>sum+(e[field]??0),0):null;
   return {logged:entries.length>0,count:entries.length,completeMacroItems,kcal,
-    protein:hasProtein?protein:null,carbs:hasCarbs?carbs:null,fat:hasFat?fat:null,byMeal};
+    protein:hasProtein?protein:null,carbs:hasCarbs?carbs:null,fat:hasFat?fat:null,
+    fiber:complete('fiber'),sugar:complete('sugar'),sodium:complete('sodium'),byMeal};
 }
 export async function readDiaryDay(day=localDay(new Date())):Promise<DbResult<DiaryEntry[]>>{
   return dbOperation(async db=>(await db.getAllAsync<EntryRow>(
@@ -43,10 +51,11 @@ export async function readDiaryRange(first:string,last:string):Promise<DbResult<
 }
 const INSERT=`INSERT INTO diary_entries
   (id,day,meal,food_id,name_snapshot,grams,kcal,protein,carbs,fat,source,
-   hiku_request_id,original_json,created_at,edited_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+   hiku_request_id,original_json,created_at,edited_at,fiber,sugar,sodium) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 function values(entry:DiaryEntry): (string|number|null)[]{
   return [entry.id,entry.day,entry.meal,entry.foodId,entry.name,entry.grams,entry.kcal,
-    entry.protein,entry.carbs,entry.fat,entry.source,null,null,entry.createdAt,entry.editedAt];
+    entry.protein,entry.carbs,entry.fat,entry.source,null,null,entry.createdAt,entry.editedAt,
+    entry.fiber??null,entry.sugar??null,entry.sodium??null];
 }
 function createEntry(food:Food|null,grams:number|null,nutrition:Nutrition,meal:MealKey,
   day:string,name:string,source:DiaryEntry['source']):DiaryEntry{
@@ -57,10 +66,10 @@ function createEntry(food:Food|null,grams:number|null,nutrition:Nutrition,meal:M
 async function upsertFood(db:Awaited<ReturnType<typeof import('../../services/database').initializeDatabase>>,
   food:Food):Promise<void>{
   await db.runAsync(`INSERT OR IGNORE INTO foods
-    (id,name_en,name_ar,aliases,source,estimate,kcal,protein,carbs,fat,fiber,retired)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,0)`,
+    (id,name_en,name_ar,aliases,source,estimate,kcal,protein,carbs,fat,fiber,sugar,sodium,retired)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0)`,
     [food.id,food.name,food.nameAr,JSON.stringify(food.aliases),food.source,
-      food.estimate?1:0,food.kcal,food.protein,food.carbs,food.fat,food.fiber]);
+      food.estimate?1:0,food.kcal,food.protein,food.carbs,food.fat,food.fiber,food.sugar??null,food.sodium??null]);
   for(const portion of food.portions){
     await db.runAsync(`INSERT OR IGNORE INTO food_portions
       (food_id,label_en,label_ar,grams) VALUES (?,?,?,?)`,
@@ -101,8 +110,8 @@ export async function updateEntryGrams(id:string,food:Food,grams:number):Promise
     const entry=await db.getFirstAsync<{food_id:string|null}>('SELECT food_id FROM diary_entries WHERE id=?',[id]);
     if(entry?.food_id!==food.id)throw new Error('Mismatched entry food');
     const changed=await db.runAsync(`UPDATE diary_entries
-      SET grams=?,kcal=?,protein=?,carbs=?,fat=?,edited_at=? WHERE id=?`,
-      [grams,v.kcal,v.protein,v.carbs,v.fat,new Date().toISOString(),id]);
+      SET grams=?,kcal=?,protein=?,carbs=?,fat=?,fiber=?,sugar=?,sodium=?,edited_at=? WHERE id=?`,
+      [grams,v.kcal,v.protein,v.carbs,v.fat,v.fiber??null,v.sugar??null,v.sodium??null,new Date().toISOString(),id]);
     return changed.changes;
   });
 }
@@ -143,14 +152,14 @@ export async function restoreEntries(entries:DiaryEntry[]):Promise<DbResult<void
     await db.withExclusiveTransactionAsync(async tx=>{
       for(const entry of entries)await tx.runAsync('INSERT OR IGNORE INTO diary_entries '+
         '(id,day,meal,food_id,name_snapshot,grams,kcal,protein,carbs,fat,source,'+
-        'hiku_request_id,original_json,created_at,edited_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',values(entry));
+        'hiku_request_id,original_json,created_at,edited_at,fiber,sugar,sodium) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',values(entry));
     });
   });
 }
 export async function createMyFood(input:Omit<Food,'id'|'source'|'estimate'>):Promise<DbResult<Food>>{
   return dbOperation(async db=>{
     if(!input.name.trim() || input.name.length>90 || input.kcal<0 ||
-      [input.kcal,input.protein,input.carbs,input.fat].some(v=>v!==null&&!Number.isFinite(v)))throw new Error('Invalid food');
+      [input.kcal,input.protein,input.carbs,input.fat,input.fiber,input.sugar,input.sodium].some(v=>v!=null&&!Number.isFinite(v)))throw new Error('Invalid food');
     const food:Food={...input,id:newGymId(),source:'custom',estimate:false};
     await db.withExclusiveTransactionAsync(async tx=>{await upsertFood(tx,food);});
     return food;
@@ -159,12 +168,13 @@ export async function createMyFood(input:Omit<Food,'id'|'source'|'estimate'>):Pr
 export async function readLocalFoods():Promise<DbResult<Food[]>>{
   return dbOperation(async db=>{
     const rows=await db.getAllAsync<{id:string;name_en:string;name_ar:string|null;aliases:string;
-      source:FoodSource;estimate:number;kcal:number;protein:number|null;carbs:number|null;fat:number|null;fiber:number|null}>(
+      source:FoodSource;estimate:number;kcal:number;protein:number|null;carbs:number|null;fat:number|null;fiber:number|null;
+      sugar:number|null;sodium:number|null}>(
       "SELECT * FROM foods WHERE source IN ('custom','hiku') AND retired=0 ORDER BY name_en");
     return Promise.all(rows.map(async row=>({
       id:row.id,name:row.name_en,nameAr:row.name_ar,aliases:JSON.parse(row.aliases) as string[],
       source:row.source,estimate:row.estimate===1,kcal:row.kcal,protein:row.protein,
-      carbs:row.carbs,fat:row.fat,fiber:row.fiber,
+      carbs:row.carbs,fat:row.fat,fiber:row.fiber,sugar:row.sugar??null,sodium:row.sodium??null,
       portions:(await db.getAllAsync<{label_en:string;label_ar:string|null;grams:number}>(
         'SELECT label_en,label_ar,grams FROM food_portions WHERE food_id=?',[row.id]))
         .map(p=>({labelEn:p.label_en,labelAr:p.label_ar,grams:p.grams})),
