@@ -13,32 +13,47 @@ export type BurnResult=BurnReadiness|BurnEstimate;
 const dateMs=(day:string)=>Date.parse(day+'T00:00:00Z');
 const elapsed=(first:string,last:string)=>(dateMs(last)-dateMs(first))/86400000;
 
-/** Uses the existing seven-observation EMA. No Health Connect *calorie* records enter this calculation.
- * End at yesterday so an incomplete day never biases the intake average.
- * Require 14 calendar days spanned by DISTINCT weigh-in days, 4 weigh-ins and 10
- * days with diary logs, all in the last 28 complete days. */
+/** Ordinary least-squares slope of daily mean weigh-ins, kg per calendar day.
+ * Uses actual elapsed dates (missing weigh-in days aren't filled with zeros);
+ * a single boundary measurement no longer entirely defines the weight change. */
+export function weightSlope(rows:readonly {day:string;kg:number}[]):number|null{
+ if(rows.length<2)return null;
+ const start=dateMs(rows[0]!.day);
+ const points=rows.map(row=>({x:(dateMs(row.day)-start)/86400000,y:row.kg}));
+ if(points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)))return null;
+ const meanX=points.reduce((total,p)=>total+p.x,0)/points.length;
+ const meanY=points.reduce((total,p)=>total+p.y,0)/points.length;
+ const denominator=points.reduce((total,p)=>total+(p.x-meanX)**2,0);
+ if(denominator<=0)return null;
+ return points.reduce((total,p)=>total+(p.x-meanX)*(p.y-meanY),0)/denominator;
+}
+/** No watch or Health Connect *calorie* records enter the estimate. Exclude
+ * unfinished today and average only food logs between the first and last weigh-in.
+ * Require 14 spanned calendar days, 4 distinct weigh-in days and 10 logged days
+ * within that same span, all in the last 28 complete days. */
 export function adaptiveExpenditure(intake:readonly IntakeDay[],weights:readonly WeightPoint[],today:string):BurnResult{
  const last=dayOffset(today,-1),first=dayOffset(last,-27);
+ const points=weightTrend(weights,first,last).points;
+ const weighIns=points.length; // Unique weigh-in dates, daily-means if multiple samples.
+ const firstWeight=points[0]?.day,lastWeight=points.at(-1)?.day;
+ const historyDays=firstWeight&&lastWeight?elapsed(firstWeight,lastWeight)+1:0;
  const byDay=new Map<string,number>();
  for(const row of intake){
-  if(row.day<first||row.day>last||!Number.isFinite(row.kcal)||row.kcal<0)continue;
+  if(!firstWeight||!lastWeight||row.day<firstWeight||row.day>lastWeight||
+   !Number.isFinite(row.kcal)||row.kcal<0)continue;
   byDay.set(row.day,(byDay.get(row.day)??0)+row.kcal);
  }
  const loggedDays=byDay.size;
- const trend=weightTrend(weights,first,last);
- const points=trend.points;
- const weighIns=points.length; // Separate weigh-in dates, not multiple readings from one day.
- const firstWeight=points[0]?.day,lastWeight=points.at(-1)?.day;
- const historyDays=firstWeight&&lastWeight?elapsed(firstWeight,lastWeight)+1:0;
  const missing={ready:false as const,needHistory:Math.max(0,14-historyDays),
   needLogged:Math.max(0,10-loggedDays),needWeighIns:Math.max(0,4-weighIns),
   historyDays,loggedDays,weighIns};
  if(missing.needHistory||missing.needLogged||missing.needWeighIns)return missing;
  const elapsedDays=elapsed(firstWeight!,lastWeight!);
- if(elapsedDays<=0)return missing;
+ const slope=weightSlope(points);
+ if(elapsedDays<=0||slope===null)return missing;
  const averageIntake=[...byDay.values()].reduce((sum,value)=>sum+value,0)/loggedDays;
- const trendChangeKg=points.at(-1)!.trend-points[0]!.trend;
- const estimatedBurn=Math.round(averageIntake-trendChangeKg*7700/elapsedDays);
+ const trendChangeKg=slope*elapsedDays;
+ const estimatedBurn=Math.round(averageIntake-slope*7700);
  // An inconsistent/incomplete diary may yield an implausible nonpositive result.
  // Never present it as an estimate or use it to propose a target.
  if(!Number.isFinite(estimatedBurn)||estimatedBurn<=0)return missing;

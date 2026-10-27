@@ -41,6 +41,8 @@ export const ar: Record<TranslationKey, string> = {
   'adaptive.sourceNote': 'تقدير من السعرات المسجلة وتغيّر اتجاه الوزن خلال آخر 28 يومًا مكتملًا. الأيام غير المسجلة ليست صفرًا. لا نستخدم سعرات الساعة.',
   'adaptive.burnMethod': '{logged} يومًا للطعام · {weights} أيام وزن · {days} يومًا بين أول وآخر وزن',
   'adaptive.weeklyTitle': 'مراجعة الهدف الأسبوعية',
+  'adaptive.review': 'مراجعة الاقتراح الأسبوعي',
+  'adaptive.demoWarning': 'بيانات تجريبية للعرض وليست قياساتك الشخصية. احذفها من أدوات المطور.',
   'adaptive.proposal': 'الهدف المقترح: {count} سعرة يوميًا',
   'adaptive.currentTarget': 'الهدف الحالي: {count} سعرة يوميًا. لن يتغير دون اختيارك.',
   'adaptive.accept': 'قبول الهدف المقترح',

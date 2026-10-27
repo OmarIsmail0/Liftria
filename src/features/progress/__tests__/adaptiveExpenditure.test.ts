@@ -1,4 +1,4 @@
-import {adaptiveExpenditure,proposedCalories,proposedMacros,checkinWeek} from '../adaptiveExpenditure';
+import {adaptiveExpenditure,weightSlope,proposedCalories,proposedMacros,checkinWeek} from '../adaptiveExpenditure';
 import {dayOffset} from '../../eat/foodCatalog';
 import type {WeightPoint} from '../trendMath';
 const TODAY='2026-10-27';
@@ -13,14 +13,15 @@ test('plateau over 14+ days estimates average logged intake, not zero for gaps',
  if(result.ready){expect(result.estimatedBurn).toBe(2300);expect(result.loggedDays).toBe(12);
   expect(result.trendChangeKg).toBe(0);expect(result.elapsedDays).toBe(21);}
 });
-test('weight trend change adjusts daily burn using elapsed calendar days',()=>{
- const result=adaptiveExpenditure(diary([1,2,3,4,5,6,8,9,10,11,12],2000),
-   weights([[22,80],[17,79.8],[9,79.4],[1,79]]),TODAY);
+test('daily-mean least-squares slope uses elapsed days even with missing weigh-ins',()=>{
+ const samples=weights([[22,80],[17,79.8],[9,79.4],[1,79]]);
+ const slope=weightSlope(samples.map(v=>({day:v.at.slice(0,10),kg:v.kg})));
+ expect(slope).not.toBeNull();
+ const result=adaptiveExpenditure(diary([1,2,3,4,5,6,8,9,10,11,12],2000),samples,TODAY);
  expect(result.ready).toBe(true);
  if(result.ready){
-  const lastTrend=80+(79.8-80)*.25;const next=lastTrend+(79.4-lastTrend)*.25;
-  const final=next+(79-next)*.25;
-  expect(result.estimatedBurn).toBe(Math.round(2000-(final-80)*7700/21));
+  expect(result.estimatedBurn).toBe(Math.round(2000-slope!*7700));
+  expect(result.trendChangeKg).toBeCloseTo(slope!*21,9);
   expect(result.estimatedBurn).toBeGreaterThan(2000);
  }
 });
@@ -47,4 +48,44 @@ test('weekly goal proposals and macros are pure, never auto-saved',()=>{
  expect(proposedCalories(2400,'build')).toBe(2650);
  expect(proposedCalories(1050,'lose')).toBe(1000);
  expect(proposedMacros(2000,140,60)).toEqual({kcal:2000,proteinG:140,fatG:60,carbsG:225});
+});
+
+const dailyWeights=(firstNoise=0,lastNoise=0):WeightPoint[]=>weights(
+ Array.from({length:28},(_,i)=>[28-i,80+(i===0?firstNoise:i===27?lastNoise:0)] as [number,number]));
+test('least-squares slope holds steady weight near 2500 with noisy first or last reading',()=>{
+ const intake=diary(Array.from({length:28},(_,i)=>i+1),2500);
+ for(const noise of [-1,0,1]){
+  for(const edge of ['first','last'] as const){
+   const rows=edge==='first'?dailyWeights(noise,0):dailyWeights(0,noise);
+   const result=adaptiveExpenditure(intake,rows,TODAY);
+   expect(result.ready).toBe(true);
+   if(result.ready)expect(Math.abs(result.estimatedBurn-2500)).toBeLessThanOrEqual(60);
+  }
+ }
+});
+test('linear weight loss of 0.5 kg per week adds approximately 550 kcal to average intake',()=>{
+ const rows=weights(Array.from({length:28},(_,i)=>
+  [28-i,80-i*0.5/7] as [number,number]));
+ const result=adaptiveExpenditure(diary(Array.from({length:28},(_,i)=>i+1),2000),rows,TODAY);
+ expect(result.ready).toBe(true);
+ if(result.ready){
+  expect(result.estimatedBurn).toBe(2550);
+  expect(result.trendChangeKg).toBeCloseTo(-27*0.5/7,8);
+ }
+});
+test('intake logs outside the first-to-last weigh-in dates do not count or bias burn',()=>{
+ const rows=weights([[20,80],[15,80],[10,80],[5,80]]);
+ const inside=[5,6,7,8,9,10,11,12,13,14,15,16];
+ const result=adaptiveExpenditure([...diary(inside,2200),...diary([25,24,23,3,2,1],9000)],rows,TODAY);
+ expect(result.ready).toBe(true);
+ if(result.ready){expect(result.loggedDays).toBe(inside.length);expect(result.averageIntake).toBe(2200);
+  expect(result.estimatedBurn).toBe(2200);}
+ const missing=adaptiveExpenditure([...diary(inside.slice(0,9),2200),...diary([25,24,23,3],2000)],rows,TODAY);
+ expect(missing).toMatchObject({ready:false,needLogged:1,loggedDays:9});
+});
+test('distinct readings on one weigh-in day are averaged before calculating a slope',()=>{
+ const rows=weights([[22,80],[22,82],[15,81],[9,81],[1,81]]);
+ const result=adaptiveExpenditure(diary(Array.from({length:22},(_,i)=>i+1),2500),rows,TODAY);
+ expect(result.ready).toBe(true);
+ if(result.ready){expect(result.weighIns).toBe(4);expect(result.estimatedBurn).toBe(2500);}
 });
