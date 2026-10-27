@@ -2,7 +2,7 @@ import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useRef,useState} from 'react';
 import {Image,View} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import {File} from 'expo-file-system';
+import {File,Paths} from 'expo-file-system';
 import {Button,Card,Chip,Field,Header,Screen,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {getTypedSetting} from '../../../src/services/database/settings';
@@ -61,8 +61,17 @@ export default function HikuPhoto(){
    const selection=camera?await ImagePicker.launchCameraAsync(options):
     await ImagePicker.launchImageLibraryAsync(options);
    if(selection.canceled||!selection.assets[0])return;
-   const clean=await sanitizeHikuPhoto(selection.assets[0]);
-   replacePhoto(clean);
+   const picked=selection.assets[0],sourceUri=picked.uri;
+   try{
+    const clean=await sanitizeHikuPhoto(picked);
+    replacePhoto(clean);
+   }finally{
+    // Camera captures and picker copies inside *our* cache are temporary;
+    // never delete a photograph from the user's gallery.
+    if(camera||sourceUri.startsWith(Paths.cache.uri)){
+     try{new File(sourceUri).delete();}catch{/* The picker may have removed it. */}
+    }
+   }
   }catch{setError('image-error');}
   finally{setLoading(false);}
  }

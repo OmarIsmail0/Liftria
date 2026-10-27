@@ -86,6 +86,11 @@ async function requestHiku(kind:'text'|'photo',description:string,language:'en'|
  const choice=await getTypedSetting('hiku.model');
  if(!choice.ok)return {ok:false,code:'database-error'};
  const model=choice.value??DEFAULT_HIKU_MODEL;
+ const prompt=kind==='photo'?hikuPhotoPrompt(descriptionClean,language,context):
+  hikuTextPrompt(descriptionClean,language,context);
+ let content:Array<HikuImageBlock|HikuTextBlock>;
+ try{content=hikuContent(kind,prompt,jpegBase64);}
+ catch{return {ok:false,code:'invalid'};}
  const started=await startHikuRequest(model,kind);
  if(!started.ok)return {ok:false,code:'database-error'};
  const requestId=started.value;
@@ -93,11 +98,6 @@ async function requestHiku(kind:'text'|'photo',description:string,language:'en'|
  let timedOut=false;
  const timer=setTimeout(()=>{timedOut=true;controller.abort();},45000);
  const cancel=()=>controller.abort();signal?.addEventListener('abort',cancel,{once:true});
- const prompt=kind==='photo'?hikuPhotoPrompt(descriptionClean,language,context):
-  hikuTextPrompt(descriptionClean,language,context);
- let content:Array<HikuImageBlock|HikuTextBlock>;
- try{content=hikuContent(kind,prompt,jpegBase64);}
- catch{return {ok:false,code:'invalid'};}
  const finish=async(status:string,inputTokens?:number,outputTokens?:number)=>{
   const cost=inputTokens!==undefined&&outputTokens!==undefined?
    estimateHikuCostUsd(model,inputTokens,outputTokens):null;

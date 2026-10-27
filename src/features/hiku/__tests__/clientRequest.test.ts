@@ -9,7 +9,7 @@ jest.mock('../../../services/secure-storage',()=>({
  isKeyWellFormed:jest.fn(()=>true),
 }));
 jest.mock('../../../services/database/settings',()=>({
- getTypedSetting:jest.fn(async()=>({ok:true,value:'claude-haiku-5-5'})),
+ getTypedSetting:jest.fn(async(key:string)=>({ok:true,value:key==='hiku.keepPhotos'?false:'claude-haiku-5-5'})),
 }));
 jest.mock('../../../services/database',()=>({setSetting:jest.fn(async()=>({ok:true,value:undefined}))}));
 jest.mock('../requestRepository',()=>({
