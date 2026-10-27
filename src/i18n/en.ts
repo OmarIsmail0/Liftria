@@ -1,6 +1,5 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
-  'hikuPhoto.sampleNotice': 'Bundled sample illustration · no photo or request was sent.',
   'water.demoNote': 'Demo only · no water entry was saved.',
   'backup.demoNotice': 'Demo preview only — no data will be replaced.',
   'backup.group.workouts': 'Workouts',
@@ -989,7 +988,7 @@ export const en = {
   "hikuSettings.includeTraining": "Include training day",
   "hikuSettings.includeTrainingDetail": "Allow the current training day when you request advice.",
   "hikuSettings.keepPhotos": "Keep photos",
-  "hikuSettings.keepPhotosDetail": "Save selected photos on this device for later use.",
+  "hikuSettings.keepPhotosDetail": "Off by default. When enabled, retain the re-encoded JPEG on this phone after Hiku responds. Included in local backups and Delete all.",
   "hikuSettings.usage": "Usage and model",
   "hikuSettings.usageRow": "Usage and what is sent",
   "hikuSettings.usageComing": "Hiku request details · Coming soon",

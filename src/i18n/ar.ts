@@ -1,7 +1,6 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
-  'hikuPhoto.sampleNotice': 'رسم توضيحي تجريبي · لم تُرسل صورة أو طلب.',
   'water.demoNote': 'عرض تجريبي فقط · لم تُحفظ أي كمية ماء.',
   'backup.demoNotice': 'معاينة تجريبية فقط — لن تُستبدل أي بيانات.',
   'backup.group.workouts': 'التمارين',
@@ -990,7 +989,7 @@ export const ar: Record<TranslationKey, string> = {
   "hikuSettings.includeTraining": "تضمين يوم التدريب",
   "hikuSettings.includeTrainingDetail": "السماح بتضمين يوم التدريب الحالي عندما تطلب نصيحة.",
   "hikuSettings.keepPhotos": "الاحتفاظ بالصور",
-  "hikuSettings.keepPhotosDetail": "حفظ الصور التي تختارها على هذا الجهاز لاستخدامها لاحقًا.",
+  "hikuSettings.keepPhotosDetail": "معطّل افتراضيًا. عند تشغيله تُحفظ صورة JPEG المعالجة على الهاتف بعد رد هيكو، وتُضمَّن في النسخ الاحتياطية وحذف الكل.",
   "hikuSettings.usage": "الاستخدام والنموذج",
   "hikuSettings.usageRow": "الاستخدام والبيانات المُرسلة",
   "hikuSettings.usageComing": "تفاصيل طلبات هيكو · قريبًا",
