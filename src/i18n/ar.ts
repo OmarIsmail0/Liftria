@@ -1,6 +1,16 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'backup.demoNotice': 'معاينة تجريبية فقط — لن تُستبدل أي بيانات.',
+  'backup.group.workouts': 'التمارين',
+  'backup.group.sets': 'المجموعات',
+  'backup.group.diary': 'يوميات الطعام',
+  'backup.group.foods': 'الأطعمة',
+  'backup.group.weights': 'الأوزان',
+  'backup.group.water': 'الماء',
+  'backup.group.health': 'البيانات الصحية',
+  'backup.group.plans': 'الخطط والقوالب',
+  'backup.group.settings': 'الإعدادات والسجل',
   'water.title': 'الماء',
   'water.unlogged': 'لم يُسجَّل بعد',
   'water.total': '{glasses} أكواب · {ml} مل',
@@ -26,7 +36,7 @@ export const ar: Record<TranslationKey, string> = {
   'backup.cancel': 'الاحتفاظ بالبيانات الحالية',
   'backup.replace': 'استعادة هذه النسخة',
   'backup.restoreFailed': 'فشلت الاستعادة. بقيت البيانات الحالية كما هي.',
-  'backup.restored': 'تمت الاستعادة. افتح الصفحات من جديد لتحديث البيانات.',
+  'backup.restored': 'تمت الاستعادة. أعد تشغيل ليفتريا لتطبيق المظهر واللغة والوحدات والإعدادات المستعادة.'
   'nutrients.values': 'الألياف {fiber} غ · السكر {sugar} غ · الصوديوم {sodium} ملغ',
   'nutrients.trend': 'الألياف والسكر والصوديوم',
   'nutrients.gaps': 'متوسط الأيام المكتملة المبلّغ فيها عن كل عنصر. المجهول ليس صفرًا.',

@@ -1,5 +1,15 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'backup.demoNotice': 'Demo preview only — no data will be replaced.',
+  'backup.group.workouts': 'Workouts',
+  'backup.group.sets': 'Sets',
+  'backup.group.diary': 'Food diary',
+  'backup.group.foods': 'Foods',
+  'backup.group.weights': 'Weights',
+  'backup.group.water': 'Water',
+  'backup.group.health': 'Health data',
+  'backup.group.plans': 'Plans and templates',
+  'backup.group.settings': 'Settings and history',
   'water.title': 'Water',
   'water.unlogged': 'Not logged yet',
   'water.total': '{glasses} glasses · {ml} ml',
@@ -25,7 +35,7 @@ export const en = {
   'backup.cancel': 'Keep current data',
   'backup.replace': 'Restore this backup',
   'backup.restoreFailed': 'Restore failed. Existing data is preserved.',
-  'backup.restored': 'Backup restored. Reopen screens to refresh restored data.',
+  'backup.restored': 'Backup restored. Restart Liftria to apply the restored theme, language, units and other settings.'
   'nutrients.values': 'Fiber {fiber} g · Sugar {sugar} g · Sodium {sodium} mg',
   'nutrients.trend': 'Fiber, sugar and sodium',
   'nutrients.gaps': 'Average of complete logged days for each nutrient. Unknown is not zero.',

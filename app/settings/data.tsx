@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { router } from 'expo-router';
+import { router,useLocalSearchParams } from 'expo-router';
 import {View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import {File,Paths} from 'expo-file-system';
@@ -8,15 +8,29 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
-import { localStorageCounts, type LocalStorageCounts } from '../../src/services/database';
+import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, formatLocalDatabaseSize } from '../../src/features/settings/storage';
-import {exportBackup,parseBackup,backupPreview,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {exportBackup,parseBackup,backupPreview,previewGroups,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
 import {workoutCsv,diaryCsv} from '../../src/features/settings/csvExport';
 
+/** In-memory sample never written to SQLite or accepted by restoreBackup. */
+const DEMO_BACKUP:BackupData={
+ format:'liftria-backup',formatVersion:1,schemaVersion:DB_SCHEMA_VERSION,
+ exportedAt:'2026-10-27T10:00:00Z',
+ tables:{...Object.fromEntries(BACKUP_TABLES.map(table=>[table,[]])),
+  sessions:[{id:'demo-session',title:'Demo workout',state:'finished'}],
+  sets:[{id:'demo-set'}],
+  diary_entries:[{id:'demo-meal',name_snapshot:'Demo food',kcal:100}],
+  foods:[{id:'demo-food'}],
+  water_logs:[{day:'2026-10-27',glasses:3,glass_ml:250}],
+  app_settings:[{key:'demo.preview',value:'true'}]},
+};
 export default function DataAndStorage() {
+  const {demoBackup}=useLocalSearchParams<{demoBackup?:string}>();
+  const isDemo=demoBackup==='1';
   const { theme, resetLocalPreferences } = useTheme();
-  const { resetLanguage, t } = useLanguage();
+  const { language,resetLanguage, t } = useLanguage();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
   const [imported,setImported]=useState<ImportBatch|null>(null);
   const [undoVisible,setUndoVisible]=useState(false);
@@ -26,6 +40,15 @@ export default function DataAndStorage() {
   const [message,setMessage]=useState<string|null>(null);
   const [pendingRestore,setPendingRestore]=useState<BackupData|null>(null);
   const [restoreText,setRestoreText]=useState('');
+  const previewBackup=isDemo?DEMO_BACKUP:pendingRestore;
+  const groups=previewBackup?previewGroups(previewBackup).filter(g=>g.count>0):[];
+  const date=previewBackup?new Intl.DateTimeFormat(language==='ar'?'ar-EG-u-nu-latn':'en-US',
+   {dateStyle:'medium',timeStyle:'short'}).format(new Date(previewBackup.exportedAt)):'';
+  const closePreview=()=>{
+   if(busy)return;
+   if(isDemo)router.replace('/settings/data');
+   else{setPendingRestore(null);setRestoreText('');}
+  };
   const load=useCallback(async()=>{
     const result=await localStorageCounts();
     if(result.ok)setCounts(result.value);
@@ -81,7 +104,7 @@ export default function DataAndStorage() {
     finally{setBusy(false);}
   }
   async function confirmRestore(){
-    if(!pendingRestore||restoreText!=='RESTORE'||busy)return;
+    if(isDemo||!pendingRestore||restoreText!=='RESTORE'||busy)return;
     setBusy(true);setMessage(null);
     try{
       const restored=await restoreBackup(pendingRestore,restoreText);
@@ -182,20 +205,24 @@ export default function DataAndStorage() {
       <Button label={t('dataStorage.removeImport')} variant="danger" fullWidth disabled={busy}
         onPress={()=>void removeImport()}/>
     </Sheet>
-    <Sheet visible={pendingRestore!==null} destructive title={t('backup.confirmTitle')}
-      description={t('backup.confirmDetail')} onClose={()=>{if(!busy)setPendingRestore(null);}}>
-      {pendingRestore&&<>
-        <Typography tone="secondary">{t('backup.preview',{schema:backupPreview(pendingRestore).schemaVersion,
-         count:backupPreview(pendingRestore).total,date:backupPreview(pendingRestore).exportedAt})}</Typography>
-        {backupPreview(pendingRestore).counts.filter(x=>x.count>0).map(x=>
-         <Typography key={x.table} tone="secondary" size="small">{x.table}: {x.count}</Typography>)}
+    <Sheet visible={previewBackup!==null} destructive title={t('backup.confirmTitle')}
+      description={t('backup.confirmDetail')} onClose={closePreview}>
+      {previewBackup&&<>
+        {isDemo&&<Typography tone="secondary">{t('backup.demoNotice')}</Typography>}
+        <Typography tone="secondary">{t('backup.preview',{
+         schema:backupPreview(previewBackup).schemaVersion,
+         count:backupPreview(previewBackup).total,date})}</Typography>
+        {groups.map(g=><Typography key={g.group} tone="secondary" size="small">
+          {t(('backup.group.'+g.group) as 'backup.group.workouts'|'backup.group.sets'|
+           'backup.group.diary'|'backup.group.foods'|'backup.group.weights'|'backup.group.water'|
+           'backup.group.health'|'backup.group.plans'|'backup.group.settings')}: {g.count}
+        </Typography>)}
       </>}
-      <Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}
-       value={restoreText} onChangeText={setRestoreText}/>
-      <Button label={t('backup.cancel')} variant="secondary" disabled={busy}
-       onPress={()=>{setPendingRestore(null);setRestoreText('');}}/>
-      <Button label={t('backup.replace')} variant="danger" disabled={busy||restoreText!=='RESTORE'}
-       onPress={()=>void confirmRestore()}/>
+      {!isDemo&&<Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}
+       value={restoreText} onChangeText={setRestoreText}/>}
+      <Button label={t('backup.cancel')} variant="secondary" disabled={busy} onPress={closePreview}/>
+      <Button label={t('backup.replace')} variant="danger"
+       disabled={isDemo||busy||restoreText!=='RESTORE'} onPress={()=>void confirmRestore()}/>
     </Sheet>
     <Sheet visible={open} destructive title={t('dataStorage.deleteSheet')}
       description={t('dataStorage.deleteDescription')}
