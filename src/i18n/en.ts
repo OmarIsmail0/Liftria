@@ -1,5 +1,6 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'water.demoNote': 'Demo only · no water entry was saved.',
   'backup.demoNotice': 'Demo preview only — no data will be replaced.',
   'backup.group.workouts': 'Workouts',
   'backup.group.sets': 'Sets',

@@ -14,7 +14,7 @@ import {copyDay,copyMeal,deleteEntry,listSavedMeals,logSavedMeal,readDiaryDay,
 
 export default function EatHome(){
   const {theme}=useTheme(),{t,language}=useLanguage();
-  const params=useLocalSearchParams<{undo?:string;day?:string}>();
+  const params=useLocalSearchParams<{undo?:string;day?:string;demoWater?:string}>();
   const [day,setDay]=useState(params.day??localDay(new Date()));
   const [entries,setEntries]=useState<DiaryEntry[]>([]);
   const [target,setTarget]=useState<Target|null>(null);
@@ -85,7 +85,7 @@ export default function EatHome(){
         {!target&&<Button label={t('today.setTarget')} variant="secondary" onPress={()=>
           router.push('/(tabs)/eat/targets')}/>}
       </View>
-      <WaterCounterCard/>
+      <WaterCounterCard day={day} demoGlasses={params.demoWater==='3'?3:undefined}/>
       <Card rim="eat" title={t('eatI.macros')}>
         {!summary.logged?<Typography tone="secondary">{t('eatI.startLogging')}</Typography>:
           hidden?<Typography tone="secondary">{t('eatI.hidden')}</Typography>:

@@ -1,6 +1,7 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'water.demoNote': 'عرض تجريبي فقط · لم تُحفظ أي كمية ماء.',
   'backup.demoNotice': 'معاينة تجريبية فقط — لن تُستبدل أي بيانات.',
   'backup.group.workouts': 'التمارين',
   'backup.group.sets': 'المجموعات',

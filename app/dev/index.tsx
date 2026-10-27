@@ -18,6 +18,8 @@ export default function DeveloperHome() {
         onPress={() => router.push('/dev/demo-workout')} />
       <ListRow title="Demo adaptive expenditure" detail="Seed/clear labeled diary and weight fixtures"
         onPress={() => router.push('/dev/demo-adaptive')} />
+      <ListRow title="Demo backup preview" detail="Read-only sample: no restore and no database write"
+        onPress={() => router.push('/dev/demo-backup')} />
       <ListRow title="Demo history" detail="Three finished Demo sessions, only when requested"
         onPress={() => router.push('/dev/demo-history')} />
       <ListRow title="Demo import" detail="Fixture opens IM-2 preview, no saved rows"
