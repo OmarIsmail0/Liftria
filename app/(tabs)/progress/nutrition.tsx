@@ -1,5 +1,5 @@
 import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
-import {useCallback,useEffect,useState} from 'react';
+import {useCallback,useState} from 'react';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
@@ -26,7 +26,7 @@ export default function NutritionTrends(){
  const [editing,setEditing]=useState(false),[proposedInput,setProposedInput]=useState('');
  const [pendingAnswer,setPendingAnswer]=useState<{action:'accept'|'edit';kcal:number}|null>(null);
  const [guidance,setGuidance]=useState(false),[busy,setBusy]=useState(false);
- const [reviewVisible,setReviewVisible]=useState(false);
+ const [reviewVisible,setReviewVisible]=useState(demoAdaptive==='ready');
  const today=localDay(new Date()),days=rangeDays(range);
  const load=useCallback(async()=>{
   const now=localDay(new Date());
@@ -44,16 +44,13 @@ export default function NutritionTrends(){
    [...weights.value,...health.value],now);
   setBurn(result);
   setCheckin(null);
-  if(result.ready&&goal.ok&&goal.value&&profile.ok&&profile.value?.goal){
+  if(demoAdaptive!=='early'&&result.ready&&goal.ok&&goal.value&&profile.ok&&profile.value?.goal){
    const weekly=await ensureWeeklyCheckin(checkinWeek(now),profile.value.goal,
     result.estimatedBurn,proposedCalories(result.estimatedBurn,profile.value.goal),goal.value);
    if(weekly.ok)setCheckin(weekly.value);else setError(true);
   }
- },[range]);
+ },[range,demoAdaptive]);
  useFocusEffect(useCallback(()=>{void load();},[load]));
- useEffect(()=>{
-  if(demoAdaptive==='ready'&&checkin?.status==='pending')setReviewVisible(true);
- },[demoAdaptive,checkin?.status]);
  const shownBurn=demoAdaptive==='early'?adaptiveExpenditure([],[],today):burn;
  const shownCheckin=demoAdaptive==='early'?null:checkin;
  const summary=nutritionTrend(entries,today,days,target?.proteinG??null);
