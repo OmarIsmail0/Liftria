@@ -19,9 +19,9 @@ const DEMO_BACKUP:BackupData={
  format:'liftria-backup',formatVersion:1,schemaVersion:DB_SCHEMA_VERSION,
  exportedAt:'2026-10-27T10:00:00Z',
  tables:{...Object.fromEntries(BACKUP_TABLES.map(table=>[table,[]])),
-  sessions:[{id:'demo-session',title:'Demo workout',state:'finished'}],
+  sessions:[{id:'demo-session',state:'finished'}],
   sets:[{id:'demo-set'}],
-  diary_entries:[{id:'demo-meal',name_snapshot:'Demo food',kcal:100}],
+  diary_entries:[{id:'demo-meal',kcal:100}],
   foods:[{id:'demo-food'}],
   water_logs:[{day:'2026-10-27',glasses:3,glass_ml:250}],
   app_settings:[{key:'demo.preview',value:'true'}]},
@@ -120,7 +120,7 @@ export default function DataAndStorage() {
     if(busy)return;
     setBusy(true);
     try{
-      const result=await clearHealthCacheOnPhone();
+      const result=await clearHealthCacheOnPhone(language);
       setMessage(t(result.ok?'dataStorage.cacheCleared':'dataStorage.cacheFailed'));
       if(result.ok)await load();
     }catch{setMessage(t('dataStorage.cacheFailed'))}
@@ -142,7 +142,7 @@ export default function DataAndStorage() {
     if(busy||!canDeleteEverything(confirmation))return;
     setBusy(true);setMessage(null);
     try{
-      const result=await deleteEverythingOnPhone(confirmation);
+      const result=await deleteEverythingOnPhone(confirmation,undefined,language);
       if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':'dataStorage.deleteKeyFailed'));setOpen(false);return;}
       // All app-owned Phase 2 data and the saved key are gone. Return to fresh onboarding.
       setOpen(false);setConfirmation('');
@@ -164,7 +164,7 @@ export default function DataAndStorage() {
         <ListRow title={t('dataStorage.health')} detail={String(counts.healthSamples+counts.healthAggregates)} />
         <ListRow title={t('dataStorage.targets')} detail={String(counts.targetVersions)} />
         <ListRow title={t('dataStorage.profiles')} detail={String(counts.profiles)} />
-        <ListRow title={t('dataStorage.database')} detail={formatLocalDatabaseSize(counts.databaseBytes)} />
+        <ListRow title={t('dataStorage.database')} detail={formatLocalDatabaseSize(counts.databaseBytes, language)} />
       </> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
       <Typography tone="secondary" size="small">{t('dataStorage.countsNote')}</Typography>
     </Card>

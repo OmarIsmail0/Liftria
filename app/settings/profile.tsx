@@ -186,7 +186,7 @@ export default function ProfileAndGoals() {
         options={[{value:'lose',label:t('profileSettings.lose'),description:t('polish.goalLose')},
           {value:'maintain',label:t('profileSettings.maintain'),description:t('polish.goalMaintain')},
           {value:'build',label:t('profileSettings.build'),description:t('polish.goalBuild')}] as const} />
-      <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${target.kcal} kcal · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
+      <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${t('eatI.kcal',{count:target.kcal})} · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
         onPress={()=>{setTargetEditor(true);setMessage(null)}} />
       <Typography tone="secondary" size="small">{t('profileSettings.editNote')}</Typography>
       {target?.source==='manual' && <Typography tone="secondary">{t('profileSettings.manualNote')}</Typography>}

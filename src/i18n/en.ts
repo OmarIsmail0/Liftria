@@ -1879,5 +1879,15 @@ export const en = {
   "restAlerts.channel": "Rest timer (device test)",
   "restAlerts.title": "Rest over",
   "restAlerts.body": "Ready for your next set of {name}",
+  "setError.weight": "Enter a valid weight.",
+  "setError.reps": "Add reps first.",
+  "setError.settings": "Invalid set settings.",
+  "setError.rpe": "RPE must be 1–10 in half-point increments.",
+  "setError.rir": "RIR must be a whole number 0–20.",
+  "setError.both": "Choose RPE or RIR, not both.",
+  "dataStorage.sizeUnavailable": "Size unavailable",
+  "im1.importedWorkout": "Imported workout",
+  "today.heartValue": "{value} bpm",
+  "strength.thousands": "{count}k",
 } as const;
 export type TranslationKey = keyof typeof en;

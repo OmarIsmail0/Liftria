@@ -14,7 +14,7 @@ import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
 /** Local-first grouped settings, with appearance controls available immediately. */
 export default function SettingsHome() {
   const { theme, preferences, setMode } = useTheme();
-  const { t, preference, setLanguage } = useLanguage();
+  const { t, language, preference, setLanguage } = useLanguage();
   const [reopen, setReopen] = useState(false);
   const [languageError, setLanguageError] = useState(false);
   const taps = useRef(initialVersionTapState);
@@ -22,10 +22,10 @@ export default function SettingsHome() {
   useEffect(() => {
     let alive = true;
     void localStorageCounts().then(result => {
-      if(alive && result.ok) setDatabaseSize(formatLocalDatabaseSize(result.value.databaseBytes));
+      if(alive && result.ok) setDatabaseSize(formatLocalDatabaseSize(result.value.databaseBytes, language));
     });
     return () => { alive = false; };
-  }, []);
+  }, [language]);
   async function changeLanguage(next: LanguagePreference) {
     const ok = await setLanguage(next);
     setLanguageError(!ok);
