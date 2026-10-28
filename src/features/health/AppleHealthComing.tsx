@@ -14,7 +14,7 @@ export function AppleHealthComing({backTo='/(tabs)/progress/health'}:{
   <Card rim="health" title={t('iosHealth.coming')}>
    <Typography>{t('iosHealth.description')}</Typography>
    <Typography tone="secondary">{t('iosHealth.noData')}</Typography>
-   <Typography tone="secondary" size="small">{t('iosHealth.offline')}</Typography>
+   <Typography tone="secondary" size="small">{t('iosHealth.askFirst')}</Typography>
   </Card>
  </Screen>;
 }
