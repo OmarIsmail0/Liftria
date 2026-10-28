@@ -110,8 +110,11 @@ export default function OnboardingStepScreen() {
   const [floorOpen, setFloorOpen] = useState(false);
   const [editManual, setEditManual] = useState(false);
   const [manualWarning, setManualWarning] = useState(false);
-  const [healthStatus, setHealthStatus] = useState(t('onboarding.notConnected'));
-  const [healthAvailability, setHealthAvailability] = useState<'available' | 'not-installed' | 'needs-update' | 'unsupported' | null>(null);
+  const [healthStatus, setHealthStatus] = useState(Platform.OS==='ios'?
+    t('iosHealth.coming'):t('onboarding.notConnected'));
+
+  const [healthAvailability, setHealthAvailability] = useState<'available' | 'not-installed' | 'needs-update' | 'unsupported' | null>(
+    Platform.OS==='ios'?'unsupported':null);
   const [healthMissing, setHealthMissing] = useState<string[]>([]);
   const [keyInput, setKeyInput] = useState('');
   const [keySaved, setKeySaved] = useState(false);
@@ -131,10 +134,6 @@ export default function OnboardingStepScreen() {
         if (availability !== 'available') setHealthStatus(availabilityMessage(availability, language));
       }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
-    else {
-      setHealthAvailability('unsupported');
-      setHealthStatus(t('iosHealth.coming'));
-    }
     return () => { mounted = false; };
   }, [language,t]);
 
