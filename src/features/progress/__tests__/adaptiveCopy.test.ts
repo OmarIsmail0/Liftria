@@ -11,7 +11,7 @@ test('adaptive need-data copy pluralizes English counts',()=>{
 
 test('adaptive burn-card Arabic counts use the singular noun for 11 and above',()=>{
  const text=adaptiveNeedDataCopy(translator('ar'),'ar',14,14,14);
- expect(text).toBe('يلزم 14 يوم تسجيل طعام إضافي / 14 يوم قياس وزن إضافي / 14 يومًا من سجل الوزن قبل إظهار التقدير.');
+ expect(text).toBe('يلزم 14 يومًا إضافيًا لتسجيل الطعام / 14 يومًا إضافيًا لقياس الوزن / 14 يومًا من سجل الوزن قبل إظهار التقدير.');
 });
 
 test('burn method copy pluralizes each counted phrase independently',()=>{

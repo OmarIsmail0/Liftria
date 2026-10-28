@@ -14,7 +14,7 @@ export function NutritionGraph({trend,target,hidden=false}:{
  const {theme}=useTheme();
  const {t,language}=useLanguage();
  const [width,setWidth]=useState(320);
- const height=178,pad={top:12,right:12,bottom:30,left:50};
+ const height=178,pad={top:12,right:12,bottom:30,left:language==='ar'?76:58};
  const values=trend.days.filter(d=>d.logged).map(d=>d.kcal??0);
  const ceiling=Math.max(1,target??0,...values)*1.1;
  const x=(i:number)=>pad.left+i*(width-pad.left-pad.right)/Math.max(1,trend.days.length-1);
