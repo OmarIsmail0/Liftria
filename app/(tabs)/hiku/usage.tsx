@@ -3,9 +3,9 @@ import {useCallback,useState} from 'react';
 import {Linking} from 'react-native';
 import {Button,Card,Chip,Header,ListRow,Screen,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {pluralForm,type TranslationKey} from '../../../src/i18n';
+import {pluralForm,type TranslationKey,languages} from '../../../src/i18n';
 import {listHikuUsage,type RequestUsage} from '../../../src/features/hiku/requestRepository';
-import {HIKU_PRICE_SOURCE,HIKU_PRICE_VERSION,classifyHikuCostUsd,formatHikuUsd} from '../../../src/features/hiku/models';
+import {HIKU_PRICE_SOURCE,HIKU_PRICE_VERSION,classifyHikuCostUsd,formatHikuUsd,hikuModelName} from '../../../src/features/hiku/models';
 export default function HikuUsage(){
  const {t,language}=useLanguage();const [rows,setRows]=useState<RequestUsage[]>([]),[error,setError]=useState(false);
  useFocusEffect(useCallback(()=>{
@@ -23,6 +23,11 @@ export default function HikuUsage(){
   if(band==='unknown')return null;
   return band==='less-than-cent'?t('hikuK.costLessThanCent'):formatHikuUsd(value??0);
  };
+ const translateStatus=(status:string)=>{
+  const key=`hikuK.requestStatus.${status}` as TranslationKey;
+  if(key in languages[language])return t(key);
+  return status;
+ };
  return <Screen embedded>
   <Header title={t('hikuK.usageTitle')} onBack={()=>router.back()}/>
   <Card rim="hiku" title={t('hikuK.monthUsage')}>
@@ -37,8 +42,10 @@ export default function HikuUsage(){
    {rows.length===0&&<Typography tone="secondary">{t('hikuK.noRequests')}</Typography>}
    {rows.map(row=>{
     const rowCost=formatRowCost(row.costUsd);
-    return <ListRow key={row.id} title={row.model}
-     detail={row.createdAt.slice(0,16)+' · '+row.status+(rowCost?' · '+rowCost:'')}/>;
+    const modelName=hikuModelName(row.model,language);
+    const statusText=translateStatus(row.status);
+    return <ListRow key={row.id} title={modelName}
+     detail={row.createdAt.slice(0,16)+' · '+statusText+(rowCost?' · '+rowCost:'')}/>;
    })}
    {error&&<Typography>{t('eatI.error')}</Typography>}
   </Card>
