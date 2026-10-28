@@ -91,7 +91,8 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
       // Solid (high contrast) keeps the 3:1 control outline; Aurora uses a filled track.
       borderWidth: edge, borderColor: theme.controlOutline,
     }}>
-    {sliding && <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
+    {/* Mounted before layout (zero width until measured), so the measured width moves it into place. */}
+    {!stack && index >= 0 && <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
       start: inset, width: segment, borderRadius: theme.radius.pill,
       backgroundColor: theme.color.action.primary.bg, boxShadow: theme.elevation.thumb }, slide]} />}
     {options.map((option, at) => {

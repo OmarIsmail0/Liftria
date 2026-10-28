@@ -103,9 +103,11 @@ export function CapsuleNav({ active, onSelect }: {
       backgroundColor: glass ? theme.glass.card : theme.color.bg.glass,
       boxShadow: glass ? theme.elevation.card : undefined,
     }}>
-      {segment > 0 && <Reanimated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
+      {/* Mounted from the first frame (zero width until measured): a pill that mounts after
+          layout keeps the style computed before the width existed and sits on the first tab. */}
+      <Reanimated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
         start: inset, width: segment, borderRadius: theme.radius.pill,
-        backgroundColor: theme.color.action.primary.bg }, slide]} />}
+        backgroundColor: theme.color.action.primary.bg }, slide]} />
       {capsuleTabs.map((tab, at) => <CapsuleTabButton key={tab.key} tab={tab.key} selected={tab.key === active}
         at={at} position={position} sliding={segment > 0}
         label={t(`nav.${tab.key}`)} onPress={() => onSelect(tab.key)} />)}
