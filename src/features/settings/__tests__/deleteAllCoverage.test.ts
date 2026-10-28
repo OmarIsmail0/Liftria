@@ -1,4 +1,4 @@
-import { TEMPORARY_FILE_FOLDERS, deleteEverythingOnPhone, type DeletionOps } from '../storage';
+import { TEMPORARY_FILE_FOLDERS, deleteEverythingOnPhone, exportFileName, isExportFileName, type DeletionOps } from '../storage';
 import { BACKUP_TABLES } from '../backup';
 import { DB_MIGRATIONS, DB_NAME, dbOperation, deleteLocalDatabase, initializeDatabase } from '../../../services/database';
 import { deleteKey, saveKey } from '../../../services/secure-storage';
@@ -32,20 +32,26 @@ const openDatabase = async () => (await initializeDatabase()) as unknown as Memo
 
 /** Cache folders the native modules write into, read from their Android and iOS sources:
  * expo-image-picker ImagePickerConstants.kt / MediaHandler.swift, expo-image-manipulator
- * FileUtils.kt / ImageManipulatorUtils.swift. */
+ * FileUtils.kt / ImageManipulatorUtils.swift, expo-document-picker DocumentPickerModule. */
 const NATIVE_CACHE_FOLDERS: Record<string, string> = {
   'expo-image-picker': 'ImagePicker',
   'expo-image-manipulator': 'ImageManipulator',
+  'expo-document-picker': 'DocumentPicker',
 };
-/** Copies the Hiku photo flow leaves in the cache when the app closes before the photo
- * screen deletes them: the camera capture and its re-encoded JPEG. */
+/** Copies a flow leaves in the cache when the app closes before the flow deletes them:
+ * a camera capture and its re-encoded JPEG (Hiku photo), a picked backup or import file,
+ * and the export copies handed to the share sheet. */
 const LEFTOVER_FILES = [
   'ImagePicker/2b1f0c9e.jpg',
   'ImageManipulator/7d4e8a31.jpg',
+  'DocumentPicker/c3a5f2d0.json',
+  'liftria-backup-2026-10-28.json',
+  'liftria-workouts-2026-10-28.csv',
+  'liftria-diary-2026-10-28.csv',
 ];
 
 /** Every table holds at least one row, the Anthropic key is saved, a Hiku photo is kept,
- * and the photo flow has left copies in the cache. */
+ * and the photo, import and export flows have left copies in the cache. */
 async function fillThePhone(): Promise<void> {
   await seedRows(await openDatabase(), EVERY_TABLE_ROWS);
   expect(await saveKey('sk-ant-test-only-not-a-real-key')).toMatchObject({ status: 'ready' });
@@ -105,6 +111,14 @@ test('the guard notices a table, the key or a file that Delete all leaves behind
   expect(await deleteKey()).toEqual({ status: 'missing' });
 });
 
+test('export copies are named the way Delete all recognises them', () => {
+  const day = new Date('2026-10-28T08:00:00.000Z');
+  expect([exportFileName('backup', day), exportFileName('workouts', day), exportFileName('diary', day)])
+    .toEqual(LEFTOVER_FILES.filter(file => file.startsWith('liftria-')));
+  for (const other of ['liftria-backup-2026-10-28.csv', 'liftria-backup-2026-10-28.json.part', 'backup.json', 'liftria.db'])
+    expect(isExportFileName(other)).toBe(false);
+});
+
 /** Every source file under app/ and src/, tests excluded. */
 function appSources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -143,6 +157,13 @@ test('every file Liftria writes is in a place Delete all clears', () => {
   for (const module of fileModules.filter(name => name in NATIVE_CACHE_FOLDERS))
     expect(TEMPORARY_FILE_FOLDERS).toContain(NATIVE_CACHE_FOLDERS[module]);
 
-  // No persistent document files: Liftria's own files live only in the cache.
+  // No persistent document files. The only file Liftria creates itself is the export copy in
+  // the cache root, named by exportFileName; storage.ts only deletes.
   expect(SOURCES.filter(({ code }) => /Paths\.document|documentDirectory/.test(code)).map(({ name }) => name)).toEqual([]);
+  const writers = SOURCES.filter(({ code }) => /new\s+(?:File|Directory)\(\s*Paths\./.test(code)).map(({ name }) => name);
+  expect(writers.sort()).toEqual(['app/settings/data.tsx', 'src/features/settings/storage.ts']);
+  const exportCode = SOURCES.find(({ name }) => name === 'app/settings/data.tsx')!.code;
+  const shared = [...exportCode.matchAll(/await\s+shareFile\(\s*([A-Za-z]+)\(/g)].map(match => match[1]);
+  expect(shared.length).toBeGreaterThan(0);
+  expect(new Set(shared)).toEqual(new Set(['exportFileName']));
 });

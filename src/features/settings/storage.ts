@@ -1,4 +1,4 @@
-import { Directory, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import { clearLocalHealthCache, deleteLocalDatabase, localStorageCounts } from '../../services/database';
 import { deleteKey } from '../../services/secure-storage';
 import { clearImportDraft } from '../import/importDraft';
@@ -12,15 +12,26 @@ export async function clearHealthCacheOnPhone(): Promise<{ ok: boolean; message:
 }
 
 /** Cache folders where expo-image-picker and expo-image-manipulator write the Hiku photo
- * copies (the camera capture and the re-encoded JPEG). The photo screen deletes them, but
- * they stay if the app closes while that screen is open. Both modules recreate the folder. */
-export const TEMPORARY_FILE_FOLDERS = ['ImagePicker', 'ImageManipulator'] as const;
+ * copies (the camera capture and the re-encoded JPEG), and expo-document-picker the copy of
+ * a picked backup or import file. Each flow deletes its copy, but it stays if the app closes
+ * mid-flow. The modules recreate the folder on their next use. */
+export const TEMPORARY_FILE_FOLDERS = ['ImagePicker', 'ImageManipulator', 'DocumentPicker'] as const;
+export type ExportKind = 'backup' | 'workouts' | 'diary';
+/** Name of the export copy written to the cache root for the share sheet. */
+export function exportFileName(kind: ExportKind, date: Date = new Date()): string {
+  return `liftria-${kind}-${date.toISOString().slice(0, 10)}.${kind === 'backup' ? 'json' : 'csv'}`;
+}
+export function isExportFileName(name: string): boolean {
+  return /^liftria-(?:backup-\d{4}-\d{2}-\d{2}\.json|(?:workouts|diary)-\d{4}-\d{2}-\d{2}\.csv)$/.test(name);
+}
 export async function deleteTemporaryFiles(): Promise<boolean> {
   try {
     for (const name of TEMPORARY_FILE_FOLDERS) {
       const folder = new Directory(Paths.cache, name);
       if (folder.exists) folder.delete();
     }
+    for (const entry of Paths.cache.list())
+      if (entry instanceof File && isExportFileName(entry.name)) entry.delete();
     return true;
   } catch {
     return false;
