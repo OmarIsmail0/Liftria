@@ -67,8 +67,12 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   touch, and "draft PR, one commit per sub-step".
 - **Local CLI (fallback):** `~/.local/bin/cursor-agent -p "<task>" --trust --force`. PR #29 (R1) was
   built this way.
-- **Treat Cursor like GPT:** its output is a claim. Run the checks yourself, review the diff, and keep
-  the same rules.
+- **Model:** always set `model` when launching. Without it Cursor picks its own default, which missed
+  things on PR T (guessed status names instead of reading the code). Start with
+  `claude-opus-5-thinking-high`; switch (e.g. `gpt-5.6-sol-high`) if an agent keeps missing things.
+  A running agent can't change model: stop it and launch a new one.
+- **Treat Cursor like GPT (owner, 2026-10-28: "it might be an idiot"):** its output is a claim. Run the
+  checks yourself, read the whole diff, verify its assumptions against the code, and keep the same rules.
 
 ## How to review a builder PR
 
