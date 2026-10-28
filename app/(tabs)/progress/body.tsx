@@ -100,10 +100,10 @@ export default function BodyTrends(){
    <Typography tone="secondary" size="small">{t('trend.emaDescription')}</Typography>
    {result.change!==null&&!hidden&&<Typography tone="secondary">{t('trend.trendChange',{
     change:fmt(fromKg(result.change,weightUnit)),unit:weightUnit})}</Typography>}
-   {result.points.length>0&&<WeightGraph trend={result} hidden={hidden}/>}
+   {result.points.length>0&&<WeightGraph trend={result} hidden={hidden} unit={weightUnit}/>}
    <View style={{flexDirection:'row',gap:theme.space[3],flexWrap:'wrap'}}>
     <Chip kind="phone" label={t('trend.myWeight')}/>
-    <Chip kind="measured" label={t('trend.healthConnect')}/>
+    <Chip kind={counts.health===0?'off':'measured'} label={t('trend.healthConnect')}/>
    </View>
    <Typography tone="secondary" size="small">{t('trend.sourceCounts',{
     local:counts.local,health:counts.health})}</Typography>
