@@ -1,4 +1,5 @@
 import {dbOperation,listCachedHealth,type DbResult} from '../../services/database';
+import {Platform} from 'react-native';
 import {newGymId} from '../../services/database/exerciseLibrary';
 import type {WeightPoint} from './trendMath';
 
@@ -50,6 +51,8 @@ export async function restoreWeight(weight:LocalWeight):Promise<DbResult<boolean
  });
 }
 export async function cachedHealthWeights():Promise<DbResult<WeightPoint[]>>{
+ // A restored Android backup must not appear as iPhone Apple Health readings.
+ if(Platform.OS!=='android')return {ok:true,value:[]};
  const cache=await listCachedHealth(500);
  if(!cache.ok)return cache;
  const seen=new Set<string>(),values:WeightPoint[]=[];

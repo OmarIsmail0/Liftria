@@ -1,5 +1,6 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'iosHealth.watch': 'Watch health syncing is not yet available on iPhone. Your choice is saved locally, but no health records are read.',
   'iosHealth.title': 'Apple Health',
   'iosHealth.coming': 'Apple Health support is coming',
   'iosHealth.description': 'Health Connect is Android-only. Apple Health is not connected on iPhone yet.',

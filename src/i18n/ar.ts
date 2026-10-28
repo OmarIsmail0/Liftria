@@ -1,6 +1,7 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'iosHealth.watch': 'مزامنة بيانات الساعة الصحية غير متاحة على آيفون بعد. سيُحفظ اختيارك على الجهاز لكن لن نقرأ أي سجلات صحية.',
   'iosHealth.title': 'صحة Apple',
   'iosHealth.coming': 'دعم صحة Apple قريبًا',
   'iosHealth.description': 'Health Connect متاح على أندرويد فقط. لم يتم ربط صحة Apple على آيفون بعد.',

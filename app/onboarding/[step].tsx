@@ -125,12 +125,16 @@ export default function OnboardingStepScreen() {
       setAge(d.birthYear ? String(profileAge(Number(d.birthYear))) : '');
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError(t('onboarding.localSettingsCouldNotBe')); } });
-    void healthConnect.getAvailability().then(availability => {
+    if(Platform.OS==='android')void healthConnect.getAvailability().then(availability => {
       if (mounted) {
         setHealthAvailability(availability);
         if (availability !== 'available') setHealthStatus(availabilityMessage(availability, language));
       }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
+    else {
+      setHealthAvailability('unsupported');
+      setHealthStatus(t('iosHealth.coming'));
+    }
     return () => { mounted = false; };
   }, [language,t]);
 
@@ -195,6 +199,7 @@ export default function OnboardingStepScreen() {
   }
 
   async function requestHealth() {
+    if(Platform.OS!=='android')return; // Never access Health Connect on iPhone.
     setBusy(true); setError(null);
     try {
       const availability = await healthConnect.getAvailability();
@@ -301,7 +306,8 @@ export default function OnboardingStepScreen() {
     </Card>
     : step === 'privacy'
       ? <Card title={t('onboarding.privacyByDesign')}>
-        <Typography>{t('onboarding.healthConnectReadOnlyWith')}</Typography>
+        <Typography>{Platform.OS==='ios'?t('iosHealth.description'):
+          t('onboarding.healthConnectReadOnlyWith')}</Typography>
         <Typography>{t('onboarding.profileGoalsAndHistoryStored')}</Typography>
         <Typography>{t('onboarding.hikuUsesYourOwnAnthropic')}</Typography>
         <Typography tone="secondary" size="small">{t('onboarding.noBackendAccountNoAutomatic')}</Typography>
@@ -355,14 +361,20 @@ export default function OnboardingStepScreen() {
           <InlineError message={error} />
             </Card>
             : step === 'health'
-              ? <Card rim="health" title={t('onboarding.connectOnDeviceHealthData')}>
+              ? Platform.OS==='ios'
+                ? <Card rim="health" title={t('iosHealth.coming')}>
+                  <Typography>{t('iosHealth.description')}</Typography>
+                  <Typography tone="secondary">{t('iosHealth.noData')}</Typography>
+                  <InlineError message={error} />
+                </Card>
+                : <Card rim="health" title={t('onboarding.connectOnDeviceHealthData')}>
                 <Typography>{t('onboarding.readStepsHeartRateMovement')}</Typography>
                 <Typography tone="secondary">{t('onboarding.dataMayStartFromThe')}</Typography>
                 <Button label={t('onboarding.openHealthConnectPermissions')} onPress={() => void requestHealth()} />
                 <Typography tone="secondary">{healthStatus}</Typography>
                 {healthMissing.map(note => <Typography key={note} tone="secondary" size="small">ⓘ {note}</Typography>)}
           <InlineError message={error} />
-                {offerHealthConnectInstall(healthAvailability) &&
+                {Platform.OS==='android'&&offerHealthConnectInstall(healthAvailability) &&
                   <Button variant="ghost" label={t('onboarding.getHealthConnect')} onPress={() =>
                     void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
               </Card>
@@ -371,7 +383,9 @@ export default function OnboardingStepScreen() {
                   <ChoiceGroup label={t('onboarding.whichAppDoesYourWatch')} selected={draft.selectedWatch}
                     choices={watchOptions.map(v => ({ value: v, label: v === 'Other' ? t('onboarding.other') : v === 'No watch' ? t('onboarding.noWatch') : v }))}
                     onChange={v => patch('selectedWatch', v)} />
-                  {draft.selectedWatch !== 'No watch' && <>
+                  {Platform.OS==='ios'?
+                    <Typography tone="secondary">{t('iosHealth.watch')}</Typography>:
+                    draft.selectedWatch !== 'No watch' && <>
                     <Typography>{t('onboarding.1OpenAndLetIt', { app: draft.selectedWatch })}</Typography>
                     <Typography>{t('onboarding.2InHealthConnectGrant')}</Typography>
                     <Typography tone="secondary">{t('onboarding.syncStartsTodaySomeBrands')}</Typography>
