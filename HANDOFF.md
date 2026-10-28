@@ -41,7 +41,7 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   - Contents: an even hairline card edge, opaque light cards, a soft layered shadow, a white
     back-button disc, an opaque sheet with a scrim, and no trailing row divider. Motion: press
     scale, cards fade up, sliding segmented control / toggle / tab pill, sheets slide.
-  - **Pending:** check the screenshots for `64cd2f0`, the third fix for sliding indicators
+  - **Pending:** check the screenshots for the newest commit on the PR (`f01e129`, the fourth fix) for sliding indicators
     stuck on the first option. In English, `hiku/photo` must show the pill on Hiku (tab 5);
     Arabic was already right on `de6e88b`. Then ask the owner to approve the merge. They
     have only seen the before-and-after so far.
@@ -101,7 +101,8 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   - Slide indicators (tab pill, segmented thumb, toggle knob) move with `translateX`, mirrored
     for RTL. Animating a spacer's `width` from the UI thread was not applied on Android.
   - A value measured in `onLayout` that an animated style multiplies by must itself be a
-    shared value. A dependency array is not enough: when a bar first mounts on a later
+    shared value, and the animated view must be mounted from the first frame. A dependency
+    array is not enough: when a bar first mounts on a later
     option, nothing re-runs the style after layout, and the pill sits on the first option.
   - Check sliding indicators on a screen that opens directly on a later option (for example
     `hiku/photo`), not only by switching tabs.
@@ -141,5 +142,5 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 
 1. `git pull` on `main`. Read `PHASE_5_ISSUES.md`.
 2. Run `cursor-agent status`. If it isn't installed, install it as above.
-3. Check PR #27's latest screenshots (`pr-27/64cd2f0`) and report to the owner.
+3. Check PR #27's latest screenshots (`pr-27/f01e129`) and report to the owner.
 4. Check the builder's open PR (PR S once it exists) and review it.
