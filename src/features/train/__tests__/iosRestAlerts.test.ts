@@ -2,6 +2,7 @@ import {Platform} from 'react-native';
 import * as Notifications from 'expo-notifications';
 import {prepareRestAlerts,REST_CHANNEL} from '../restAlerts';
 jest.mock('react-native',()=>({Platform:{OS:'ios'}}));
+jest.mock('../../../services/database',()=>({dbOperation:jest.fn()}));
 jest.mock('expo-notifications',()=>({
  setNotificationChannelAsync:jest.fn(async()=>({})),
  getPermissionsAsync:jest.fn(async()=>({granted:true})),
