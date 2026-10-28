@@ -41,10 +41,9 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   - Contents: an even hairline card edge, opaque light cards, a soft layered shadow, a white
     back-button disc, an opaque sheet with a scrim, and no trailing row divider. Motion: press
     scale, cards fade up, sliding segmented control / toggle / tab pill, sheets slide.
-  - **Pending:** check the screenshots for the newest commit on the PR (`f01e129`, the fourth fix) for sliding indicators
-    stuck on the first option. In English, `hiku/photo` must show the pill on Hiku (tab 5);
-    Arabic was already right on `de6e88b`. Then ask the owner to approve the merge. They
-    have only seen the before-and-after so far.
+  - **Screenshots verified on `f01e129`** (2026-10-28): the tab pill and segmented thumb sit on
+    the right option, including a bar that first opens on Hiku, in English and Arabic.
+    **Waiting only on the owner's approval to merge.** They have seen the before-and-after.
   - After it merges, tell the builder to merge `main` into its open branch.
 - **Owner items:** Android signing secrets (`LIFTRIA_*`) for the signed release, and an Apple
   Developer account for real iPhone installs.
@@ -146,5 +145,5 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 
 1. `git pull` on `main`. Read `PHASE_5_ISSUES.md`.
 2. Run `cursor-agent status`. If it isn't installed, install it as above.
-3. Check PR #27's latest screenshots (`pr-27/f01e129`) and report to the owner.
+3. Ask the owner whether to merge PR #27 (screenshots already verified on `f01e129`).
 4. Check the builder's open PR (PR S once it exists) and review it.
