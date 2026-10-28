@@ -1,5 +1,13 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'hikuSettings.keptPhotoCount': 'Kept photos: {count} (≈{mb} MB)',
+  'hikuSettings.deletePhotos': 'Delete kept photos',
+  'hikuSettings.deletePhotosWarning': 'Delete only the photos kept by Hiku on this phone? The saved requests, food diary, API key and other settings will remain. This cannot be undone.',
+  'hikuSettings.keepPhotosCancel': 'Keep kept photos',
+  'hikuSettings.deletePhotosConfirm': 'Delete kept photos now',
+  'hikuSettings.photosDeleteError': 'Could not delete kept photos. Try again.',
+  'hikuSettings.photosReadError': 'Kept photo usage is unavailable.',
+  'hikuSettings.photosDeleted': 'Kept photos deleted.',
   'hikuPhoto.sampleNotice': 'Bundled sample illustration · no photo or request was sent.',
   'hikuPhoto.reviewProgress': '{checked} of {total} items checked. Open each item and confirm its portion before Save.',
   'hikuPhoto.checked': 'Checked',

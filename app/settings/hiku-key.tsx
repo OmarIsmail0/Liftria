@@ -9,6 +9,7 @@ import { getTypedSetting, setTypedSetting } from '../../src/services/database/se
 import { testAnthropicKey } from '../../src/features/settings/keyTest';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import {DEFAULT_HIKU_MODEL,HIKU_MODELS,type HikuModelId} from '../../src/features/hiku/models';
+import {keptPhotoUsage,deleteKeptPhotos,type KeptPhotoUsage} from '../../src/features/hiku/keptPhotos';
 
 type PrivacyFlags = { today: boolean; training: boolean; photos: boolean };
 const initialFlags: PrivacyFlags = { today: false, training: false, photos: false };
@@ -21,6 +22,8 @@ export default function HikuKeySettings() {
   const [entry, setEntry] = useState('');
   const [replacing, setReplacing] = useState(false);
   const [deletionOpen, setDeletionOpen] = useState(false);
+  const [photoDeleteOpen,setPhotoDeleteOpen]=useState(false);
+  const [photoUsage,setPhotoUsage]=useState<KeptPhotoUsage|null>(null);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testWorks, setTestWorks] = useState(false);
@@ -29,11 +32,12 @@ export default function HikuKeySettings() {
     let mounted = true;
     void Promise.all([
       keyState(), getTypedSetting('hiku.shareToday'), getTypedSetting('hiku.shareTraining'),
-      getTypedSetting('hiku.keepPhotos'),getTypedSetting('hiku.model'),
-    ]).then(([key, today, training, photos, chosen]) => {
+      getTypedSetting('hiku.keepPhotos'),getTypedSetting('hiku.model'),keptPhotoUsage(),
+    ]).then(([key, today, training, photos, chosen, usage]) => {
       if (!mounted) return;
       setState(key);
       if(chosen.ok)setModel(chosen.value);
+      if(usage.ok)setPhotoUsage(usage.value);
       setFlags({ today: today.ok ? today.value : false,
         training: training.ok ? training.value : false,
         photos: photos.ok ? photos.value : false });
@@ -90,6 +94,21 @@ export default function HikuKeySettings() {
       setMessage(t('hikuSettings.deleted'));
     } catch { setMessage(t('hikuSettings.deleteError')); }
     finally { setBusy(false); }
+  }
+
+  async function removeKeptPhotos(){
+    if(busy)return;
+    setBusy(true);setMessage(null);
+    try{
+      const result=await deleteKeptPhotos();
+      if(!result.ok){setMessage(t('hikuSettings.photosDeleteError'));return;}
+      setPhotoDeleteOpen(false);
+      const next=await keptPhotoUsage();
+      if(next.ok)setPhotoUsage(next.value);
+      else setMessage(t('hikuSettings.photosReadError'));
+      if(next.ok)setMessage(t('hikuSettings.photosDeleted'));
+    }catch{setMessage(t('hikuSettings.photosDeleteError'));}
+    finally{setBusy(false);}
   }
 
   async function setPrivacy<K extends keyof PrivacyFlags>(field: K, value: PrivacyFlags[K]) {
@@ -149,6 +168,12 @@ export default function HikuKeySettings() {
         value={flags.training} onChange={v => void setPrivacy('training', v)} />
       <Toggle label={t('hikuSettings.keepPhotos')} detail={t('hikuSettings.keepPhotosDetail')}
         value={flags.photos} onChange={v => void setPrivacy('photos', v)} />
+      <Typography tone="secondary" size="small">{photoUsage?
+        t('hikuSettings.keptPhotoCount',{count:photoUsage.count,
+         mb:(photoUsage.bytes/(1024*1024)).toFixed(2)}):
+        t('hikuSettings.photosReadError')}</Typography>
+      <Button label={t('hikuSettings.deletePhotos')} variant="secondary"
+       disabled={busy||!photoUsage?.count} onPress={()=>setPhotoDeleteOpen(true)}/>
     </Card>
     <Card title={t('hikuSettings.usage')}>
       <ListRow title={t('hikuSettings.usageRow')} onPress={()=>router.push('/(tabs)/hiku/usage')}/>
@@ -156,6 +181,14 @@ export default function HikuKeySettings() {
         model:language==='ar'?HIKU_MODELS.find(m=>m.id===model)?.nameAr??'':HIKU_MODELS.find(m=>m.id===model)?.nameEn??''
       })}</Typography>
     </Card>
+    <Sheet visible={photoDeleteOpen} destructive title={t('hikuSettings.deletePhotos')}
+      description={t('hikuSettings.deletePhotosWarning')}
+      onClose={()=>{if(!busy)setPhotoDeleteOpen(false);}}>
+      <Button label={t('hikuSettings.keepPhotosCancel')} fullWidth disabled={busy}
+       onPress={()=>setPhotoDeleteOpen(false)}/>
+      <Button label={t('hikuSettings.deletePhotosConfirm')} variant="danger" fullWidth disabled={busy}
+       onPress={()=>void removeKeptPhotos()}/>
+    </Sheet>
     <Sheet visible={deletionOpen} title={t('hikuSettings.deleteTitle')}
       description={t('hikuSettings.deleteDescription')}
       onClose={() => setDeletionOpen(false)}>

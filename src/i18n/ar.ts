@@ -1,6 +1,14 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'hikuSettings.keptPhotoCount': 'الصور المحتفظ بها: {count} (حوالي {mb} ميغابايت)',
+  'hikuSettings.deletePhotos': 'حذف الصور المحتفظ بها',
+  'hikuSettings.deletePhotosWarning': 'هل تريد حذف صور هيكو المحفوظة فقط من هذا الهاتف؟ ستبقى الطلبات ويوميات الطعام ومفتاح API والإعدادات الأخرى. لا يمكن التراجع.',
+  'hikuSettings.keepPhotosCancel': 'الاحتفاظ بالصور',
+  'hikuSettings.deletePhotosConfirm': 'حذف الصور المحفوظة الآن',
+  'hikuSettings.photosDeleteError': 'تعذّر حذف الصور المحفوظة. حاول مرة أخرى.',
+  'hikuSettings.photosReadError': 'تعذّر قراءة مساحة الصور المحتفظ بها.',
+  'hikuSettings.photosDeleted': 'تم حذف الصور المحتفظ بها.',
   'hikuPhoto.sampleNotice': 'رسم توضيحي تجريبي · لم تُرسل صورة أو طلب.',
   'hikuPhoto.reviewProgress': 'تمت مراجعة {checked} من {total} عناصر. افتح كل عنصر وأكّد الكمية قبل الحفظ.',
   'hikuPhoto.checked': 'تمت المراجعة',
