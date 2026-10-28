@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
@@ -43,7 +43,9 @@ export function Screen({ children, scroll = true, padded = true, embedded = fals
   return <View style={[layout, { backgroundColor: embedded ? 'transparent' : theme.background }]}>
     {!embedded && theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     {scroll
-      ? <ScrollView contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+      ? <ScrollView automaticallyAdjustKeyboardInsets={Platform.OS==='ios'}
+        contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4],
+          gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}
   </View>;
 }

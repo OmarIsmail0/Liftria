@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { Stack, router } from 'expo-router';
-import { StatusBar } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { bundledFonts } from '../src/design/fonts';
 import { LanguageProvider } from '../src/i18n/LanguageProvider';
@@ -42,6 +42,7 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
     <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'}
       translucent backgroundColor="transparent" />
     <Stack screenOptions={{ headerShown: false,
+      ...(Platform.OS==='ios'?{gestureEnabled:true}:{}),
       contentStyle: { backgroundColor: theme.background } }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />

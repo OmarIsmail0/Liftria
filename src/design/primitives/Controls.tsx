@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import {
-  Modal, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
+  Modal, Platform, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
@@ -267,7 +267,8 @@ export function Sheet({ visible, title, description, children, onClose, destruct
         </View>
         <Typography size="title">{title}</Typography>
         {description && <Typography tone="secondary">{description}</Typography>}
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
+        <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={Platform.OS==='ios'}
+          contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
         <Button label={t('common.cancel')} fullWidth onPress={onClose} />
       </View>
     </View>
