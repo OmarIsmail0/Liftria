@@ -67,7 +67,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Arabic gram label:** the portion chip says "جم" while the rest of the app now says "غ". Use "غ" everywhere.
    - **Don't touch** `src/design/**` or the Health screens and stack layouts (PR S).
    - **Claude (not this PR):** the over-target Eat ring still draws a dark square in Arabic (PR #30 screenshots); R1's `EatRing` wrapper didn't fix it. Claude fixes it in `Orb` after PR #27 merges and removes the wrapper.
-9. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+9. **PR V: `Phase 5 / Data coverage guards`** (builder: **Cursor**, branch from `main`)
+   - The rule "every new table is covered by Delete all and by the backup" has no test. Add guards that fail when it breaks:
+     - **Backup:** every table the migrations create (read the `CREATE TABLE` statements in `src/services/database/index.ts`) is in `BACKUP_TABLES`, and every `BACKUP_TABLES` entry exists in the schema. A test that adds a fake table must make the guard fail.
+     - **Delete all:** `app/settings/data.tsx` → Delete all removes every row of every table (except what the code documents it must keep, if anything: say why), the Anthropic key in SecureStore, and kept Hiku photo files on disk. Move the delete logic into a testable function in `src/features/settings/` if it lives in the screen, and test it against an in-memory or mocked database that lists every table.
+     - **Restore:** a round trip (export → restore) keeps every table's rows; add a table to the fixture and the test must notice it's missing.
+   - Fix any real gap the guards find (a table or file that isn't deleted or backed up), one commit per fix, and list each gap in the PR description.
+   - **Don't touch** `src/design/**`, the Health screens or the stack layouts.
+10. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header`, and gating every `dev/*` route out of release builds except what the emulator check needs.
