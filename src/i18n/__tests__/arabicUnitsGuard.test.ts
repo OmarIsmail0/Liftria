@@ -109,4 +109,27 @@ describe('Arabic units guard', () => {
       );
     }
   });
+
+  test('placeholders followed by Arabic units use non-breaking space (U+00A0)', () => {
+    const violations: string[] = [];
+    const arabicUnits = ['سعرة', 'غ', 'ملغ', 'مل'];
+    
+    for (const [key, value] of Object.entries(ar)) {
+      if (typeof value !== 'string') continue;
+      
+      for (const unit of arabicUnits) {
+        // Match {placeholder} followed by regular space and unit
+        const regularSpacePattern = new RegExp(`\\{[a-z_]+\\}\\x20${unit}\\b`);
+        if (regularSpacePattern.test(value)) {
+          violations.push(`${key}: "${value}" has regular space before ${unit}, should use U+00A0`);
+        }
+      }
+    }
+    
+    if (violations.length > 0) {
+      throw new Error(
+        `Found ${violations.length} Arabic translations with regular space before units:\n${violations.join('\n')}`
+      );
+    }
+  });
 });
