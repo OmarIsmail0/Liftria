@@ -1235,6 +1235,7 @@ export const en = {
   "dataStorage.deleteFailed": "Could not finish deletion. Check the key in Settings and try again.",
   "dataStorage.deleteDatabaseFailed": "Could not delete the Liftria database. Your key was not changed. Try again.",
   "dataStorage.deleteKeyFailed": "Local database was deleted, but the saved API key could not be removed. Retry deletion from Settings.",
+  "dataStorage.deleteFilesFailed": "Your data and API key were deleted, but some temporary files could not be removed. Try again.",
   "dataStorage.testEntries": "{count} local test entries",
   "profileSettings.title": "Profile and goals",
   "profileSettings.subtitle": "Stored locally · optional fields",

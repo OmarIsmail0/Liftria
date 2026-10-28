@@ -143,7 +143,8 @@ export default function DataAndStorage() {
     setBusy(true);setMessage(null);
     try{
       const result=await deleteEverythingOnPhone(confirmation);
-      if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':'dataStorage.deleteKeyFailed'));setOpen(false);return;}
+      if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':
+        result.stage==='key'?'dataStorage.deleteKeyFailed':'dataStorage.deleteFilesFailed'));setOpen(false);return;}
       // All app-owned Phase 2 data and the saved key are gone. Return to fresh onboarding.
       setOpen(false);setConfirmation('');
       resetLocalPreferences();
