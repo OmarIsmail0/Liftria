@@ -1876,5 +1876,8 @@ export const en = {
   "count.exercises.few": "{count} exercises",
   "count.exercises.many": "{count} exercises",
   "count.exercises.other": "{count} exercises",
+  "restAlerts.channel": "Rest timer (device test)",
+  "restAlerts.title": "Rest over",
+  "restAlerts.body": "Ready for your next set of {name}",
 } as const;
 export type TranslationKey = keyof typeof en;

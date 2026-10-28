@@ -1877,4 +1877,7 @@ export const ar: Record<TranslationKey, string> = {
   "count.exercises.few": "{count} تمارين",
   "count.exercises.many": "{count} تمرينًا",
   "count.exercises.other": "{count} تمرين",
+  "restAlerts.channel": "مؤقت الراحة (اختبار الجهاز)",
+  "restAlerts.title": "انتهت الراحة",
+  "restAlerts.body": "جاهز لمجموعتك التالية من {name}",
 };

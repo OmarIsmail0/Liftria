@@ -152,12 +152,12 @@ export default function ActiveWorkoutScreen() {
       const latest=view.sets.filter(row=>row.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0];
       if(latest?.restDeadline&&restAt(latest.restDeadline).status==='running'){
         const active=view.exercises.find(e=>e.id===latest.sessionExerciseId);
-        void scheduleRestOver(latest.restDeadline,view.id,active?.name??view.title,latest.id)
+        void scheduleRestOver(latest.restDeadline,view.id,active?.name??view.title,latest.id,language)
           .catch(()=>setError(t('active.scheduleError')));
       }
     });
     return()=>sub.remove();
-  },[view,t]);
+  },[view,t,language]);
   useEffect(()=>{
     if(!focused||rest.status==='idle')return;
     const remaining=rest.remainingMs;
@@ -217,13 +217,13 @@ export default function ActiveWorkoutScreen() {
   };
   const armNotification=async(set:ActiveSet,name:string)=>{
     if(!set.restDeadline||!view||AppState.currentState==='active')return;
-    try{await scheduleRestOver(set.restDeadline,view.id,name,set.id);}
+    try{await scheduleRestOver(set.restDeadline,view.id,name,set.id,language);}
     catch{setError(t('active.scheduleError'));}
   };
   const allow=async(grant:boolean)=>{
     setAskVisible(false);
     await setSetting('rest.permissionPromptSeen','yes');
-    if(grant){const approved=await askRestPermission().catch(()=>false);
+    if(grant){const approved=await askRestPermission(language).catch(()=>false);
       setDenied(!approved);
       if(approved&&restSet&&exercise)void armNotification(restSet,exercise.name);
     }else setDenied(true);
