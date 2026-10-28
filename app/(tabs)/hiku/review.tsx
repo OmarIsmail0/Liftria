@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {MEALS,localDay,type MealKey} from '../../../src/features/eat/foodCatalog';
 import {getHikuDraft,clearHikuDraft,photoReviewReady} from '../../../src/features/hiku/draft';
 import type {HikuReviewedItem,HikuItem} from '../../../src/features/hiku/mealSchema';
@@ -21,7 +22,8 @@ export default function ReviewEstimate(){
  const [discardConfirm,setDiscardConfirm]=useState(false),[changed,setChanged]=useState(false);
  const sum=items.reduce((s,item)=>({kcal:s.kcal+item.kcal,protein:s.protein+item.protein,
   carbs:s.carbs+item.carbs,fat:s.fat+item.fat}),{kcal:0,protein:0,carbs:0,fat:0});
- function edit(index:number){setSelected(index);setEdited(String(items[index]?.grams??''));}
+ function edit(index:number){setSelected(index);
+  setEdited(formatEditableNumber(items[index]?.grams,'grams'));}
  function apply(){
   if(selected===null)return;
   const item=items[selected],grams=Number(edited);

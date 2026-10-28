@@ -2,6 +2,7 @@ import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {dayOffset,localDay} from '../../../src/features/eat/foodCatalog';
 import {readDiaryRange,summarizeEntries,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
@@ -159,7 +160,7 @@ export default function NutritionTrends(){
      onPress={()=>void answer('accept')}/>
     <Button label={t('adaptive.edit')} variant="secondary" fullWidth disabled={busy}
      onPress={()=>{
-      setProposedInput(String(shownCheckin?.proposedKcal??''));
+      setProposedInput(formatEditableNumber(shownCheckin?.proposedKcal,'kcal'));
       setReviewVisible(false);setEditing(true);
      }}/>
     <Button label={t('adaptive.dismiss')} variant="ghost" fullWidth disabled={busy}
@@ -178,7 +179,7 @@ export default function NutritionTrends(){
     <Toggle label={t('eatI.guidance')} value={guidance} onChange={setGuidance}/>
     <Button label={t('eatI.use1200')} onPress={()=>{
      const safe=Math.max(1200,Math.ceil((checkin?.estimatedBurn??0)*.75/50)*50);
-     setProposedInput(String(safe));setPendingAnswer(null);setEditing(true);
+     setProposedInput(formatEditableNumber(safe,'kcal'));setPendingAnswer(null);setEditing(true);
     }}/>
     <Button label={t('eatI.keepTarget')} variant="secondary" fullWidth
      disabled={!guidance||busy} onPress={()=>{

@@ -5,6 +5,7 @@ import {Button,Card,Chip,Field,Header,Screen,Typography} from '../../../src/desi
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {foodName,snapshot,MEALS,type MealKey,type Food} from '../../../src/features/eat/foodCatalog';
 import {foodById,logFood} from '../../../src/features/eat/diaryRepository';
 
@@ -20,7 +21,8 @@ export default function PortionPicker(){
     let alive=true;
     void foodById(params.id).then(result=>{
       if(!alive)return;
-      if(result.ok){setFood(result.value);setGrams(String(result.value?.portions[0]?.grams??100));}
+      if(result.ok){setFood(result.value);
+        setGrams(formatEditableNumber(result.value?.portions[0]?.grams??100,'grams'));}
       else setError(true);
     });
     return()=>{alive=false;};
@@ -49,7 +51,7 @@ export default function PortionPicker(){
             {food.portions.map(p=><Button key={p.labelEn}
               label={language==='ar'?(p.labelAr??p.labelEn):p.labelEn}
               variant={unit===p.labelEn?'primary':'secondary'}
-              onPress={()=>{setUnit(p.labelEn);setGrams(String(p.grams));}}/>)}
+              onPress={()=>{setUnit(p.labelEn);setGrams(formatEditableNumber(p.grams,'grams'));}}/>)}
           </ScrollView>
           <Field label={t('eatI.gramsLabel')} value={grams} keyboardType="decimal-pad" onChangeText={v=>{setGrams(v);setUnit('g');}}/>
           <Typography tone="secondary" size="small">{t('eatI.storedGrams')}</Typography>
