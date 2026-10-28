@@ -41,28 +41,34 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   - Contents: an even hairline card edge, opaque light cards, a soft layered shadow, a white
     back-button disc, an opaque sheet with a scrim, and no trailing row divider. Motion: press
     scale, cards fade up, sliding segmented control / toggle / tab pill, sheets slide.
-  - **Pending:** check the screenshots for `accdb0d`. That commit fixed sliding indicators
-    stuck on the first option; the Hiku photo screen opens on tab 5, so check that the pill
-    sits on Hiku. Then ask the owner to approve the merge. They have only seen the
-    before-and-after so far.
+  - **Pending:** check the screenshots for the newest commit on the PR (`f01e129`, the fourth fix) for sliding indicators
+    stuck on the first option. In English, `hiku/photo` must show the pill on Hiku (tab 5);
+    Arabic was already right on `de6e88b`. Then ask the owner to approve the merge. They
+    have only seen the before-and-after so far.
   - After it merges, tell the builder to merge `main` into its open branch.
 - **Owner items:** Android signing secrets (`LIFTRIA_*`) for the signed release, and an Apple
   Developer account for real iPhone installs.
 
 ## Cursor
 
-- **Install:** `curl -fsS https://cursor.com/install -o install.sh`, read it, then
-  `bash install.sh`. It installs `~/.local/bin/cursor-agent` and needs no sudo.
-- **Allowed hosts:** `cursor.com`, `downloads.cursor.com`, `api2.cursor.sh`.
-- **Auth:** the key is the environment variable `CURSOR_API_KEY`. Never print it.
-  `cursor-agent status` shows the login.
-- **Non-interactive use:** `cursor-agent -p "<task>" --output-format text`. Add `--force` only
-  when it may write files and run commands. Use `--mode plan` for read-only analysis.
-  `--model` picks a model (`--list-models`).
-- **Trust:** pass `--trust` (the repo folder is not trusted by default).
-- **Branch and PR:** Claude commits Cursor's work on Claude's session branch and opens the draft PR.
-- **Treat Cursor like GPT:** its output is a claim. Run the checks yourself, review the diff,
-  and keep the same rules.
+- **How (owner, 2026-10-28): Cursor Cloud Agents.** Each Cursor task runs on Cursor's servers, so the
+  owner can watch it live at cursor.com/agents. The agent pushes its own branch and opens its own PR;
+  review that PR like GPT's.
+- **API:** `https://api.cursor.com/v0`, basic auth with `-u "$CURSOR_API_KEY:"`. Never print the key.
+  - Check: `GET /v0/me`, `GET /v0/agents`, `GET /v0/models`.
+  - Launch: `POST /v0/agents` with JSON
+    `{"prompt":{"text":"..."},"source":{"repository":"https://github.com/OmarIsmail0/Liftria","ref":"main"},"target":{"autoCreatePr":true,"branchName":"cursor/<task>"},"model":"<id>"}`.
+  - Follow: `GET /v0/agents/{id}` (status) and `GET /v0/agents/{id}/conversation`.
+  - Steer: `POST /v0/agents/{id}/followup` with `{"prompt":{"text":"..."}}`.
+- **Environment:** the owner saved a Liftria Cloud Agent environment (install `npm ci` +
+  `npx expo install --check`). It has no Android SDK; screenshots still come from GitHub Actions.
+- **Allowed hosts here:** `cursor.com`, `downloads.cursor.com`, `*.cursor.sh`, `api.cursor.com`.
+- **The prompt** names the task in `PHASE_5_ISSUES.md`, the rules from this file, the files it must not
+  touch, and "draft PR, one commit per sub-step".
+- **Local CLI (fallback):** `~/.local/bin/cursor-agent -p "<task>" --trust --force`. PR #29 (R1) was
+  built this way.
+- **Treat Cursor like GPT:** its output is a claim. Run the checks yourself, review the diff, and keep
+  the same rules.
 
 ## How to review a builder PR
 
@@ -92,8 +98,14 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   - Sliding indicators use a logical row plus a growing spacer, never a physical `left`.
 - **Reanimated:**
   - Use `.get()` / `.set()`; the React Compiler lint rejects `.value =`.
-  - Every `useAnimatedStyle` that reads a render value (a measured width, colors) needs a
-    dependency array. Without one, a measured width arriving after the first frame is ignored.
+  - Slide indicators (tab pill, segmented thumb, toggle knob) move with `translateX`, mirrored
+    for RTL. Animating a spacer's `width` from the UI thread was not applied on Android.
+  - A value measured in `onLayout` that an animated style multiplies by must itself be a
+    shared value, and the animated view must be mounted from the first frame. A dependency
+    array is not enough: when a bar first mounts on a later
+    option, nothing re-runs the style after layout, and the pill sits on the first option.
+  - Check sliding indicators on a screen that opens directly on a later option (for example
+    `hiku/photo`), not only by switching tabs.
 - **Locales:** the `locales/en.json` / `ar.json` keys sit under `"ios"`. Otherwise Android lint
   fails with ExtraTranslation.
 - **Hiku API:**
@@ -130,5 +142,5 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 
 1. `git pull` on `main`. Read `PHASE_5_ISSUES.md`.
 2. Run `cursor-agent status`. If it isn't installed, install it as above.
-3. Check PR #27's latest screenshots (`pr-27/accdb0d`) and report to the owner.
+3. Check PR #27's latest screenshots (`pr-27/f01e129`) and report to the owner.
 4. Check the builder's open PR (PR S once it exists) and review it.

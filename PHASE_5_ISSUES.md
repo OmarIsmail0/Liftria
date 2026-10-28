@@ -46,7 +46,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Rest notifications, Hiku, backup/restore (share sheet and document picker) and the camera must work on iPhone too.
    - Screenshots: Claude adds an iPhone simulator screenshot pass once the build is green.
    - **Owner:** an Apple Developer account (US$99/year) is needed to install on a real iPhone or ship on the App Store; the simulator build needs nothing.
-6. **PR R1: `Phase 5 / Release polish: text, Hiku and charts`** (builder: **Cursor**, branch from `main`)
+6. ~~**PR R1: `Phase 5 / Release polish: text, Hiku and charts`**~~ DONE: PR #29 merged (2026-10-28). (builder: **Cursor**)
    - **Hiku polish (from PR #22's screenshots):** show costs as "less than $0.01" / "$0.03" (not "$0.00000"), and the price source as a tappable link, not a raw URL.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - **Wording (from PR #24's screenshots):** the burn card says "smoothed weight change", but the estimate now uses a fitted weight trend; say "weight trend". In Arabic, numbers 11 and above take the singular ("14 يومًا", not "14 أيام"); check every counted phrase through `pluralForm()`.
@@ -54,7 +54,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **From PR #26's screenshots:** in Arabic, the Hiku review totals line mixes English units into Arabic text and the order comes out scrambled ("924 kcal · 31 بروتين g …"); use translated units and one direction-safe string per value. Hiku review items are pill buttons with long concatenated labels that wrap into two centered lines; make them list rows (name, grams · kcal, trailing status).
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - **Don't touch** `src/design/**` (Claude's, PR #27), the Health screens, or the stack layouts (PR S). Build on the existing primitives.
-7. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+7. **PR T: `Phase 5 / Arabic copy sweep`** (builder: **Cursor**; started from PR #29's branch, so merge `main` in with a merge commit now that #29 has merged)
+   - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. `kg` and `lb` stay Latin (app convention).
+   - **One direction-safe value:** every number with its unit is one string with a no-break space (U+00A0) between them, wrapped with `bidiIsolate()` where it sits inside Arabic text, so it never wraps or reorders.
+   - **Counted phrases:** every remaining Arabic count goes through `pluralForm()` with correct forms (11–99 take the singular accusative: "14 يومًا"). Where a count sits in "X of Y" phrasing, reword to avoid a counted noun ("الأيام المسجلة: 27 من 28").
+   - **Untranslated values on screen:** Hiku usage rows show the raw model id and request status; show the model's display name and a translated status.
+   - **Guard test:** a Jest test that fails if any `ar.ts` value contains Latin `kcal`, ` g`, ` mg` or ` ml`, and one that checks every `*.many` count key in `ar.ts` uses the singular accusative.
+   - **Don't touch** `src/design/**` (Claude's; the Orb's "kcal" label is Claude's to fix there), the Health screens or the stack layouts (PR S).
+8. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header`, and gating every `dev/*` route out of release builds except what the emulator check needs.
