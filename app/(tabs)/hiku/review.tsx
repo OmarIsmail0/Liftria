@@ -5,7 +5,7 @@ import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
 import {MEALS,localDay,type MealKey} from '../../../src/features/eat/foodCatalog';
 import {getHikuDraft,clearHikuDraft,photoReviewReady} from '../../../src/features/hiku/draft';
-import {resolveHikuItem,type HikuReviewedItem,type HikuItem} from '../../../src/features/hiku/mealSchema';
+import type {HikuReviewedItem,HikuItem} from '../../../src/features/hiku/mealSchema';
 import {saveHikuReviewed} from '../../../src/features/hiku/requestRepository';
 import {bundledFoods,snapshot} from '../../../src/features/eat/foodCatalog';
 import {DemoPhotoIllustration} from '../../../src/features/hiku/DemoPhotoIllustration';

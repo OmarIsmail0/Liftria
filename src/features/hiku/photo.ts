@@ -16,11 +16,17 @@ export async function sanitizeHikuPhoto(asset:Pick<ImagePickerAsset,'uri'|'width
  :Promise<CleanHikuPhoto>{
  if(!asset.uri.startsWith('file://'))throw new Error('Photo is not a local file');
  const size=resizeForPhoto(asset.width,asset.height);
- const resized=await ImageManipulator.manipulateAsync(asset.uri,
-  Object.keys(size).length?[{resize:size}]:[],
-  {compress:PHOTO_JPEG_QUALITY,format:ImageManipulator.SaveFormat.JPEG,base64:true});
+ // SDK 57 contextual API renders a fresh bitmap and saveAsync re-encodes it;
+ // the original picker EXIF/location is never retained in the generated JPEG.
+ const context=ImageManipulator.ImageManipulator.manipulate(asset.uri);
+ if(Object.keys(size).length)context.resize(size);
+ const image=await context.renderAsync();
+ const resized=await image.saveAsync({
+  compress:PHOTO_JPEG_QUALITY,format:ImageManipulator.SaveFormat.JPEG,base64:true,
+ });
  if(!resized.base64||!resized.uri||!resized.uri.startsWith('file://')||
   resized.width>PHOTO_LONG_EDGE||resized.height>PHOTO_LONG_EDGE||
   resized.base64.length>12_000_000)throw new Error('Could not sanitize photo');
- return {uri:resized.uri,width:resized.width,height:resized.height,base64:resized.base64,mimeType:'image/jpeg'};
+ return {uri:resized.uri,width:resized.width,height:resized.height,
+  base64:resized.base64,mimeType:'image/jpeg'};
 }

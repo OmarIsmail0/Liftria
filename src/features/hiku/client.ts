@@ -51,7 +51,7 @@ export function hikuPhotoPrompt(note:string,language:'en'|'ar',context:HikuConte
  ].join('\n');
 }
 export function hikuContent(kind:'text'|'photo',prompt:string,jpegBase64?:string)
- :Array<HikuImageBlock|HikuTextBlock>{
+ :(HikuImageBlock|HikuTextBlock)[]{
  if(kind==='photo'){
   if(!jpegBase64||!/^[/+A-Za-z0-9]+={0,2}$/.test(jpegBase64)||
     jpegBase64.length>12_000_000)throw new Error('Invalid JPEG content');
@@ -88,7 +88,7 @@ async function requestHiku(kind:'text'|'photo',description:string,language:'en'|
  const model=choice.value??DEFAULT_HIKU_MODEL;
  const prompt=kind==='photo'?hikuPhotoPrompt(descriptionClean,language,context):
   hikuTextPrompt(descriptionClean,language,context);
- let content:Array<HikuImageBlock|HikuTextBlock>;
+ let content:(HikuImageBlock|HikuTextBlock)[];
  try{content=hikuContent(kind,prompt,jpegBase64);}
  catch{return {ok:false,code:'invalid'};}
  const started=await startHikuRequest(model,kind);
