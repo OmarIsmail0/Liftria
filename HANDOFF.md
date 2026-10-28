@@ -24,9 +24,9 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 - **Builder:** GPT (the owner's ChatGPT) has built everything so far, one draft PR per task.
   The owner relays this line to it after each review:
   > Read PHASE_5_ISSUES.md on main and the latest comments on your open PR, and do the next open task.
-- **Cursor CLI (new, 2026-10-28):** the owner set this environment up so you can run Cursor.
-  See "Cursor" below. The owner has not yet decided whether Cursor replaces GPT as the builder
-  or works alongside it. Ask before handing it a whole task.
+- **Cursor CLI (2026-10-28):** a second builder, run by Claude. The owner decided both builders
+  work in parallel: the owner relays tasks to GPT, and Claude sends tasks to Cursor directly
+  (see "Cursor" below). The task file names which builder owns each task.
 - **Owner:** decides scope and design, tests on their phone, creates secrets. Their phone tests
   no longer block work ("I wanna finish this app").
 
@@ -59,6 +59,8 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 - **Non-interactive use:** `cursor-agent -p "<task>" --output-format text`. Add `--force` only
   when it may write files and run commands. Use `--mode plan` for read-only analysis.
   `--model` picks a model (`--list-models`).
+- **Trust:** pass `--trust` (the repo folder is not trusted by default).
+- **Branch and PR:** Claude commits Cursor's work on Claude's session branch and opens the draft PR.
 - **Treat Cursor like GPT:** its output is a claim. Run the checks yourself, review the diff,
   and keep the same rules.
 
