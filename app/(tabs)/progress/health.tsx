@@ -1,4 +1,5 @@
-import { Linking, RefreshControl, ScrollView, View } from 'react-native';
+import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
+import { Platform, Linking, RefreshControl, ScrollView, View  } from 'react-native';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -17,7 +18,7 @@ const names: Partial<Record<MetricType,TranslationKey>> = {
   'active-calories':'healthOverview.energy',
 };
 
-export default function HealthOverview() {
+function HealthOverviewAndroid() {
   const { theme } = useTheme();
   const { t, language } = useLanguage();
   const [now,setNow]=useState(()=>Date.now());
@@ -129,4 +130,9 @@ export default function HealthOverview() {
       </View>
     </ScrollView>
   </Screen>;
+}
+
+export default function HealthOverview(){
+ return Platform.OS==='android'?<HealthOverviewAndroid/>:
+  <AppleHealthComing backTo='/(tabs)/progress'/>;
 }

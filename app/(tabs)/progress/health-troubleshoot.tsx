@@ -1,12 +1,13 @@
+import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router } from 'expo-router';
-import { RefreshControl, ScrollView } from 'react-native';
+import { Platform, RefreshControl, ScrollView  } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 
-export default function HealthTroubleshoot() {
+function HealthTroubleshootAndroid() {
   const {t}=useLanguage();
   const { theme } = useTheme();
   const { snapshot, refresh, refreshing } = useHealthSnapshot(overviewMetrics);
@@ -54,4 +55,9 @@ export default function HealthTroubleshoot() {
     <Button label={refreshing ? t('healthTr.checking') : t('healthTr.recheck')} disabled={refreshing}
       fullWidth onPress={() => void refresh(true)} />
   </ScrollView></Screen>;
+}
+
+export default function HealthTroubleshoot(){
+ return Platform.OS==='android'?<HealthTroubleshootAndroid/>:
+  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
 }

@@ -1,6 +1,7 @@
+import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, View  } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
@@ -27,7 +28,7 @@ function recordTime(r: HealthValue): string {
     r.kind === 'aggregate' ? r.windowEnd : r.end;
 }
 
-export default function HealthMetricDetail() {
+function HealthMetricDetailAndroid() {
   const { metric: param } = useLocalSearchParams<{ metric: string }>();
   const metric: MetricType = typeof param === 'string' && metricTypes.includes(param as MetricType)
     ? param as MetricType : 'steps';
@@ -214,4 +215,9 @@ export default function HealthMetricDetail() {
         : <Typography tone="secondary">{t('healthMetric.noRecords')}</Typography>}
     </Card>
   </ScrollView></Screen>;
+}
+
+export default function HealthMetricDetail(){
+ return Platform.OS==='android'?<HealthMetricDetailAndroid/>:
+  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
 }

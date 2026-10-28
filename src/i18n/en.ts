@@ -1,5 +1,10 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'iosHealth.title': 'Apple Health',
+  'iosHealth.coming': 'Apple Health support is coming',
+  'iosHealth.description': 'Health Connect is Android-only. Apple Health is not connected on iPhone yet.',
+  'iosHealth.noData': 'No Apple Health data is being read or displayed. Liftria’s food, training, and other local features work without it.',
+  'iosHealth.offline': 'We will ask before accessing Apple Health in a later update.',
   'hikuSettings.keptPhotoCount': 'Kept photos: {count} (≈{mb} MB)',
   'hikuSettings.deletePhotos': 'Delete kept photos',
   'hikuSettings.deletePhotosWarning': 'Delete only the photos kept by Hiku on this phone? The saved requests, food diary, API key and other settings will remain. This cannot be undone.',

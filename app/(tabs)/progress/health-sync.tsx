@@ -1,14 +1,15 @@
+import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { Platform, ScrollView, View  } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { getSetting } from '../../../src/services/database';
 
 const supported = ['Samsung Health','Fitbit','Garmin Connect','Pixel Watch (Fitbit)','Other'] as const;
-export default function HealthSyncGuide() {
+function HealthSyncGuideAndroid() {
  const {t}=useLanguage();
   const { theme } = useTheme();
   const [app, setApp] = useState<string>('');
@@ -51,4 +52,9 @@ export default function HealthSyncGuide() {
         onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
     </View>
   </ScrollView></Screen>;
+}
+
+export default function HealthSyncGuide(){
+ return Platform.OS==='android'?<HealthSyncGuideAndroid/>:
+  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
 }

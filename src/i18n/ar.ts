@@ -1,6 +1,11 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'iosHealth.title': 'صحة Apple',
+  'iosHealth.coming': 'دعم صحة Apple قريبًا',
+  'iosHealth.description': 'Health Connect متاح على أندرويد فقط. لم يتم ربط صحة Apple على آيفون بعد.',
+  'iosHealth.noData': 'لا يقرأ ليفتريا أي بيانات من صحة Apple ولا يعرضها الآن. تظل ميزات الطعام والتمرين والبيانات المحلية متاحة.',
+  'iosHealth.offline': 'سنطلب إذنك قبل الوصول إلى صحة Apple في تحديث لاحق.',
   'hikuSettings.keptPhotoCount': 'الصور المحتفظ بها: {count} (حوالي {mb} ميغابايت)',
   'hikuSettings.deletePhotos': 'حذف الصور المحتفظ بها',
   'hikuSettings.deletePhotosWarning': 'هل تريد حذف صور هيكو المحفوظة فقط من هذا الهاتف؟ ستبقى الطلبات ويوميات الطعام ومفتاح API والإعدادات الأخرى. لا يمكن التراجع.',

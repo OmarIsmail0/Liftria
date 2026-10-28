@@ -1,7 +1,8 @@
+import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Linking, ScrollView } from 'react-native';
+import { Platform, Linking, ScrollView  } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Banner, Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
@@ -10,7 +11,7 @@ import { metricTypes, type MetricType } from '../../../src/services/health/types
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 import { canInstallHealthConnect } from '../../../src/features/health/presentation';
 
-export default function HealthPermissions() {
+function HealthPermissionsAndroid() {
   const {t}=useLanguage();
   const names: Partial<Record<MetricType,string>> = {
     steps:t('healthPerm.steps'), 'heart-rate':t('healthPerm.heart'),
@@ -83,4 +84,9 @@ export default function HealthPermissions() {
         : <Typography tone="secondary">{t('healthPerm.without')}</Typography>}
     {message && <Banner title={t('healthPerm.permissionUpdate')} message={message} />}
   </ScrollView></Screen>;
+}
+
+export default function HealthPermissions(){
+ return Platform.OS==='android'?<HealthPermissionsAndroid/>:
+  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
 }
