@@ -6,7 +6,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**PR L, M and N are done. Next: PR O (Hiku photo, Beta), from `main`.** (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**PR L, M, N and O are done. Next: PR S (iPhone), from `main`.** Claude's design polish (PR #27: card edges, back button, motion) lands in the shared primitives; build on them, don't restyle per screen. (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
@@ -31,7 +31,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **CSV export** of workouts and the food diary for spreadsheets.
    - **Water:** a simple glass counter on Today and Eat (glass size in Settings, 250 ml default). Not logged ≠ 0.
    - **Fiber, sugar and sodium** in the diary and trends. The packs have all three (Claude rebuilt them on 2026-10-26: `sugar` in g and `sodium` in mg per 100 g). Any of them, and protein/carbs/fat too, can be **null** when the source doesn't report it: show "—" and never count it as 0. Snapshot them into diary entries like the macros (additive migration).
-4. **PR O: `Phase 5 / Hiku photo (Beta)`** — owner decision 2026-10-26: build it now, labeled **Beta**; the owner tests it whenever they can.
+4. ~~**PR O: `Phase 5 / Hiku photo (Beta)`**~~ DONE: PR #26 merged (2026-10-28). — owner decision 2026-10-26: build it now, labeled **Beta**; the owner tests it whenever they can.
    - **Take a photo or pick one** with `expo-image-picker` (installed). The camera is approved (owner, 2026-10-26): Claude already enabled the permission and its English/Arabic prompt texts for Android and iPhone. Ask for camera access only when the user taps "Take a photo"; if they decline, explain once and offer the gallery.
    - **Before sending:** downscale with `expo-image-manipulator` (installed) to a 1024 px long edge, JPEG quality 0.7, which also strips EXIF/location. Show the exact image that will be sent, plus the optional text note, before the user taps Send.
    - **Request:** the same client and rules as text (selected model, `effort: 'low'`, `max_tokens: 8000`, JSON schema, 45 s timeout, cost recorded in `hiku_requests` with `kind: 'photo'`). Send the image as a base64 `image` content block before the text block.
@@ -53,6 +53,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - **Wording (from PR #24's screenshots):** the burn card says "smoothed weight change", but the estimate now uses a fitted weight trend; say "weight trend". In Arabic, numbers 11 and above take the singular ("14 يومًا", not "14 أيام"); check every counted phrase through `pluralForm()`.
    - **More from PR #24/#25's screenshots:** "1 weigh-ins" on the burn card (use `pluralForm()`); the restore sheet has both "Keep current data" and "Cancel" (keep one); the Eat ring shows "kcal" in English in Arabic, and the over-target ring draws a dark square behind the circle in Arabic.
+   - **From PR #26's screenshots:** in Arabic, the Hiku review totals line mixes English units into Arabic text and the order comes out scrambled ("924 kcal · 31 بروتين g …"); use translated units and one direction-safe string per value. Hiku review items are pill buttons with long concatenated labels that wrap into two centered lines; make them list rows (name, grams · kcal, trailing status).
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - Remove or hide every `dev/*` route in release builds, except what the emulator check needs (Claude will gate those behind a build flag).
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release. App Store descriptions (English and Arabic) too, for iPhone.

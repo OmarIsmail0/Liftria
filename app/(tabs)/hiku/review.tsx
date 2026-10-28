@@ -4,15 +4,17 @@ import {Button,Card,Chip,Field,Header,Screen,Sheet,Typography} from '../../../sr
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
 import {MEALS,localDay,type MealKey} from '../../../src/features/eat/foodCatalog';
-import {getHikuDraft,clearHikuDraft} from '../../../src/features/hiku/draft';
-import {resolveHikuItem,type HikuReviewedItem} from '../../../src/features/hiku/mealSchema';
+import {getHikuDraft,clearHikuDraft,photoReviewReady} from '../../../src/features/hiku/draft';
+import type {HikuReviewedItem,HikuItem} from '../../../src/features/hiku/mealSchema';
 import {saveHikuReviewed} from '../../../src/features/hiku/requestRepository';
 import {bundledFoods,snapshot} from '../../../src/features/eat/foodCatalog';
+import {DemoPhotoIllustration} from '../../../src/features/hiku/DemoPhotoIllustration';
 
 export default function ReviewEstimate(){
  const {t,language}=useLanguage();
  const draft=getHikuDraft();
  const [items,setItems]=useState<HikuReviewedItem[]>(draft?.items??[]);
+ const [reviewed,setReviewed]=useState<ReadonlySet<HikuItem>>(new Set());
  const [meal,setMeal]=useState<MealKey>('dinner');
  const [selected,setSelected]=useState<number|null>(null),[edited,setEdited]=useState('');
  const [busy,setBusy]=useState(false),[error,setError]=useState(false);
@@ -36,10 +38,13 @@ export default function ReviewEstimate(){
     carbs:item.original.carbs*factor,fat:item.original.fat*factor};
   }
   setItems(prev=>prev.map((entry,index)=>index===selected?updated:entry));
+  setReviewed(prev=>new Set([...prev,item.original]));
   setChanged(true);setSelected(null);
  }
  async function save(){
-  if(!draft||draft.demo||!items.length||busy)return;setBusy(true);
+  if(!draft||draft.demo||!items.length||busy||
+   draft.kind==='photo'&&!photoReviewReady(items,reviewed))return;
+  setBusy(true);
   const r=await saveHikuReviewed(draft.meal,items,draft.requestId,localDay(new Date()),meal);
   if(r.ok){clearHikuDraft();router.replace('/(tabs)/eat');return;}
   setError(true);setBusy(false);
@@ -49,6 +54,7 @@ export default function ReviewEstimate(){
   clearHikuDraft();router.replace('/(tabs)/hiku');
  }
  const fmt=(n:number)=>formatNumber(language,Math.round(n));
+ const photoReady=draft?.kind!=='photo'||photoReviewReady(items,reviewed);
  return <Screen embedded>
   <Header title={t('hikuK.review')} onBack={()=>router.back()}/>
   {!draft?<Card title={t('hikuK.noDraft')}>
@@ -56,8 +62,20 @@ export default function ReviewEstimate(){
   </Card>:<>
    <Card rim="hiku" title={draft.meal.meal_name}>
     <Chip kind="estimate"/>
+    {draft.demo&&draft.kind==='photo'&&<>
+     <Typography tone="secondary">{t('hikuPhoto.sampleNotice')}</Typography>
+     <DemoPhotoIllustration/>
+    </>}
+    {draft.kind==='photo'&&<>
+     <Chip kind="pending" label={t('hikuPhoto.beta')}/>
+     <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>
+    </>}
     {draft.demo&&<Typography tone="secondary">{t('hikuK.demoWarning')}</Typography>}
     <Typography tone="secondary">{t('hikuK.checkItems')}</Typography>
+    {draft.kind==='photo'&&<Typography tone="secondary" size="small">
+     {t('hikuPhoto.reviewProgress',{checked:items.filter(i=>reviewed.has(i.original)).length,
+      total:items.length})}
+    </Typography>}
     <Typography>{t('hikuK.total',{kcal:fmt(sum.kcal),protein:fmt(sum.protein),
       carbs:fmt(sum.carbs),fat:fmt(sum.fat)})}</Typography>
     <Typography tone="secondary" size="small">{t('hikuK.originalReview')}</Typography>
@@ -65,7 +83,10 @@ export default function ReviewEstimate(){
    <Card title={t('hikuK.foodItems')}>
     {items.map((item,index)=><Button key={index} variant="secondary" fullWidth
       label={(language==='ar'?item.name_ar:item.name_en)+' · '+fmt(item.grams)+' g · '+
-       fmt(item.kcal)+' kcal · '+t(item.confidence==='sure'?'hikuK.sure':'hikuK.check')}
+       fmt(item.kcal)+' kcal'+(draft.kind==='photo'?
+        (item.confidence==='check'?' · '+t('hikuK.check'):'')+
+        ' · '+t(reviewed.has(item.original)?'hikuPhoto.checked':'hikuPhoto.toCheck'):
+        ' · '+t(item.confidence==='sure'?'hikuK.sure':'hikuK.check'))}
       onPress={()=>edit(index)}/>)}
    </Card>
    <Card title={t('hikuK.mealChoice')}>
@@ -74,7 +95,7 @@ export default function ReviewEstimate(){
    </Card>
    {error&&<Typography>{t('hikuK.saveError')}</Typography>}
    <Button label={t('hikuK.saveTo',{meal:t(('eatI.'+meal) as 'eatI.dinner')})}
-    onPress={()=>void save()} disabled={busy||Boolean(draft.demo)||items.length===0} fullWidth/>
+    onPress={()=>void save()} disabled={busy||Boolean(draft.demo)||items.length===0||!photoReady} fullWidth/>
    <Button label={t('hikuK.discard')} variant="ghost" onPress={discard}/>
    <Sheet visible={selected!==null} title={t('hikuK.editGrams')} onClose={()=>setSelected(null)}>
     <Field label={t('eatI.gramsLabel')} value={edited} onChangeText={setEdited}
