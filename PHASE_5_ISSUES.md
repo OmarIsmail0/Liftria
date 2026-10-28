@@ -61,7 +61,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Untranslated values on screen:** Hiku usage rows show the raw model id and request status; show the model's display name and a translated status.
    - **Guard test:** a Jest test that fails if any `ar.ts` value contains Latin `kcal`, ` g`, ` mg` or ` ml`, and one that checks every `*.many` count key in `ar.ts` uses the singular accusative.
    - **Don't touch** `src/design/**` (Claude's; the Orb's "kcal" label is Claude's to fix there), the Health screens or the stack layouts (PR S).
-8. **PR U: `Phase 5 / Number fields`** (builder: **Cursor**, branch from `main`) — from PR #30's screenshots
+8. ~~**PR U: `Phase 5 / Number fields`**~~ DONE: PR #31 merged (2026-10-28). (builder: **Cursor**, branch from `main`) — from PR #30's screenshots
    - **Bug:** Eat → Targets fills its fields with raw floats ("23.112000000000002", "240.058"): `app/(tabs)/eat/targets.tsx` uses `String(value)` for the prefill. Find every `Field` in the app whose value is prefilled from a stored or computed number (targets, profile, portion, custom food, water size, plate/bar weights, onboarding) and format it for editing: kcal as a whole number; grams, kg and lb to at most 1 decimal; no trailing zeros; Western digits. Never change what is stored unless the user edits and saves.
    - One shared helper (e.g. `formatEditableNumber(value, kind)`), unit-tested with float noise (0.1+0.2, 23.112000000000002), integers, null (stays empty, never "0") and negative/NaN input.
    - **Arabic gram label:** the portion chip says "جم" while the rest of the app now says "غ". Use "غ" everywhere.
