@@ -121,29 +121,33 @@ export default function ActiveWorkoutScreen() {
   const restLabel=rest.status==='running'?displayRest(deadline,now):rest.status==='over'?t('active.restOver'):t('active.restTimer');
   const stats=view?workoutNumbers(view):null;
   const step=workoutWeightStep(exercise?.type??'weighted',weightUnit,smallPlates);
+  const exerciseId=exercise?.exerciseId,exerciseRowId=exercise?.id,repMax=exercise?.repMax;
+  const expectedRows=exercise?exercise.targetSets*(exercise.unilateral?2:1):undefined;
+  const slotPosition=current?.position,slotSide=current?.side;
   useEffect(()=>{
-    if(!exercise||!current||edit)return;
+    if(exerciseId===undefined||repMax===undefined||expectedRows===undefined||
+      slotPosition===undefined||slotSide===undefined||edit)return;
     let live=true;
-    void previousWorkingSets(exercise.exerciseId).then(result=>{
+    void previousWorkingSets(exerciseId).then(result=>{
       if(!live)return;
-      const next=result.ok?suggestionForSlot(result.value,current.position,current.side,
-        exercise.repMax,exercise.targetSets*(exercise.unilateral?2:1),step):null;
+      const next=result.ok?suggestionForSlot(result.value,slotPosition,slotSide,
+        repMax,expectedRows,step):null;
       setSuggestion(next);
       setKg(next?.weight??0);setReps(next?.reps??0);
     });
     return()=>{live=false;};
-  },[exercise?.exerciseId,current?.position,current?.side,edit,step]);
+  },[exerciseId,repMax,expectedRows,slotPosition,slotSide,edit,step]);
   useEffect(()=>{
-    if(!exercise)return;
+    if(exerciseRowId===undefined||exerciseId===undefined)return;
     let live=true;
-    void Promise.all([readWorkoutExerciseNote(exercise.id),
-      previousExerciseNote(exercise.exerciseId)]).then(([current,previous])=>{
+    void Promise.all([readWorkoutExerciseNote(exerciseRowId),
+      previousExerciseNote(exerciseId)]).then(([current,previous])=>{
       if(!live)return;
       if(current.ok)setExerciseNote(current.value);
       if(previous.ok)setPreviousNote(previous.value);
     });
     return()=>{live=false;};
-  },[exercise?.id,exercise?.exerciseId]);
+  },[exerciseRowId,exerciseId]);
   useEffect(()=>{
     if(!view)return;
     const sub=AppState.addEventListener('change',state=>{
