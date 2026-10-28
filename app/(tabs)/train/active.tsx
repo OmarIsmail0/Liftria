@@ -26,6 +26,7 @@ import { summarizeActiveMuscles } from '../../../src/features/train/activeMuscle
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { formatNumber } from '../../../src/i18n';
+import { formatEditableNumber } from '../../../src/i18n/editableNumber';
 
 function KeepScreenOn() { useKeepAwake('liftria-active-workout'); return null; }
 
@@ -251,7 +252,7 @@ export default function ActiveWorkoutScreen() {
   const choose=(index:number)=>{setSelected(index);setEdit(null);setSuggestion(null);setKg(0);setReps(0);
     setEffortValue('');exerciseScroll.current?.scrollTo({x:Math.max(0,index-1)*145,animated:true});};
   const selectEdit=(s:ActiveSet)=>{setEdit(s);setKg(s.weight);setReps(s.reps);setKind(s.kind);
-    setEffortValue(s.rpe!=null?String(s.rpe):s.rir!=null?String(s.rir):'');};
+    setEffortValue(formatEditableNumber(s.rpe??s.rir,'effort'));};
   if(!view)return <Screen embedded><Header title={t('active.workout')} onBack={()=>router.replace('/(tabs)/train')}/>
     <Typography tone="secondary">{error??t('active.opening')}</Typography></Screen>;
   return <Screen embedded scroll={false}>

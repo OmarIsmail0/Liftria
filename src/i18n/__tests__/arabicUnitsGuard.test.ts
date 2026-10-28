@@ -117,6 +117,24 @@ describe('Arabic units guard', () => {
     }
   });
 
+  test('the gram unit is غ everywhere, never جم', () => {
+    expect(ar['eatI.gramUnit']).toBe('غ');
+    const violations: string[] = [];
+    for (const [key, value] of Object.entries(ar)) {
+      if (typeof value !== 'string') continue;
+      // \b is ASCII-only in JS, so bound the word with Arabic-letter lookarounds:
+      // جم inside a word (المجموعات, حجم) is ordinary Arabic, not a unit.
+      if (/(?<![\u0600-\u06FF])جم(?![\u0600-\u06FF])/.test(value)) {
+        violations.push(`${key}: "${value}"`);
+      }
+    }
+    if (violations.length > 0) {
+      throw new Error(
+        `Found ${violations.length} Arabic translations using "جم" for grams instead of "غ":\n${violations.join('\n')}`
+      );
+    }
+  });
+
   test('placeholders followed by Arabic units use non-breaking space (U+00A0)', () => {
     const violations: string[] = [];
     const arabicUnits = ['سعرة', 'غ', 'ملغ', 'مل'];
