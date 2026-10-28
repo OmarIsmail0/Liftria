@@ -310,7 +310,7 @@ export const ar: Record<TranslationKey, string> = {
   'trend.pipsHint': "آخر 28 يومًا: ممتلئ = تحقق، فارغ = أقل، متقطع = غير مسجل أو ناقص.",
   'trend.macroSplit': "متوسط المغذيات",
   'trend.noMacroData': "لا توجد أيام بمغذيات مكتملة بعد. إضافات السعرات فقط لا تحتوي على قيم مغذيات.",
-  'trend.macroValues': "بروتين {p} غ · كربوهيدرات {c} غ · دهون {f} غ · {count} يوم بقيم مكتملة",
+  'trend.macroValues': "بروتين {p} غ · كربوهيدرات {c} غ · دهون {f} غ · أيام بقيم مكتملة: {count}",
   'trend.daysTitle': "الأيام المسجلة",
   'trend.nutritionEmpty': "سجّل الطعام لعدة أيام لعرض اتجاه التغذية.",
   'trend.body': "الجسم",
