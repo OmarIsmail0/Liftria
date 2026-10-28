@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
-import Reanimated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Reanimated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
@@ -79,16 +79,23 @@ export function CapsuleNav({ active, onSelect }: {
   // The pill slides with a transform, not a growing width: width (a layout prop) animated
   // from the UI thread was not applied on Android, so the pill stayed on the first option.
   // translateX is physical, so it is mirrored for right-to-left layouts.
+  // The measured segment is also a shared value: when the bar first appears on a later tab
+  // (a deep link into Hiku), nothing else changes after layout, so the style must react to it.
+  const segmentWidth = useSharedValue(0);
   const direction = isRTL ? -1 : 1;
   const slide = useAnimatedStyle(() => ({
-    transform: [{ translateX: direction * position.get() * segment }],
-  }), [direction, segment]);
+    transform: [{ translateX: direction * position.get() * segmentWidth.get() }],
+  }), [direction]);
   return <View style={{
     paddingHorizontal: theme.space[4], paddingTop: theme.space[2],
     paddingBottom: Math.max(insets.bottom, theme.space[4]),
     backgroundColor: 'transparent',
   }}>
-    <View accessibilityRole="tablist" onLayout={event => setWidth(event.nativeEvent.layout.width)} style={{
+    <View accessibilityRole="tablist" onLayout={event => {
+      const next = event.nativeEvent.layout.width;
+      setWidth(next);
+      segmentWidth.set(next > 0 ? (next - border * 2 - inset * 2) / capsuleTabs.length : 0);
+    }} style={{
       flexDirection: 'row', alignItems: 'center',
       minHeight: theme.size.touch.nav, borderRadius: theme.radius.pill,
       padding: inset, borderWidth: border,

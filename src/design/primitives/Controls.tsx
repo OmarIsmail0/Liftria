@@ -70,13 +70,20 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   // The pill slides with a transform, not a growing width: width (a layout prop) animated
   // from the UI thread was not applied on Android, so the pill stayed on the first option.
   // translateX is physical, so it is mirrored for right-to-left layouts.
+  // The measured segment is also a shared value: when a control first appears on a later
+  // option, nothing else changes after layout, so the style must react to the width itself.
+  const segmentWidth = useSharedValue(0);
   const direction = isRTL ? -1 : 1;
   const slide = useAnimatedStyle(() => ({
-    transform: [{ translateX: direction * position.get() * segment }],
-  }), [direction, segment]);
+    transform: [{ translateX: direction * position.get() * segmentWidth.get() }],
+  }), [direction]);
   const sliding = !stack && index >= 0 && segment > 0;
   return <View accessibilityRole="radiogroup" accessibilityLabel={label}
-    onLayout={event => setWidth(event.nativeEvent.layout.width)}
+    onLayout={event => {
+      const next = event.nativeEvent.layout.width;
+      setWidth(next);
+      segmentWidth.set(next > 0 ? (next - edge * 2 - inset * 2) / options.length : 0);
+    }}
     style={{
       flexDirection: stack ? 'column' : 'row', alignItems: 'stretch', padding: inset,
       borderRadius: stack ? theme.radius.md : theme.radius.pill,
