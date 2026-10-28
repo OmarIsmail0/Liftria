@@ -220,7 +220,6 @@ export default function DataAndStorage() {
       </>}
       {!isDemo&&<Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}
        value={restoreText} onChangeText={setRestoreText}/>}
-      <Button label={t('backup.cancel')} variant="secondary" disabled={busy} onPress={closePreview}/>
       <Button label={t('backup.replace')} variant="danger"
        disabled={isDemo||busy||restoreText!=='RESTORE'} onPress={()=>void confirmRestore()}/>
     </Sheet>

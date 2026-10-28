@@ -10,6 +10,7 @@ import {getTypedSetting} from '../../../src/services/database/settings';
 import {nutritionTrend,rangeDays,type RangeKey} from '../../../src/features/progress/trendMath';
 import {NutritionGraph,ProteinPips} from '../../../src/features/progress/TrendCharts';
 import {adaptiveExpenditure,checkinWeek,proposedCalories,type BurnResult} from '../../../src/features/progress/adaptiveExpenditure';
+import {adaptiveBurnMethodCopy,adaptiveNeedDataCopy,nutrientsReportedDaysCopy} from '../../../src/features/progress/adaptiveCopy';
 import {answerWeeklyCheckin,ensureWeeklyCheckin,type WeeklyCheckin} from '../../../src/features/progress/adaptiveCheckins';
 import {listLocalWeights,cachedHealthWeights} from '../../../src/features/progress/weightRepository';
 import {getProfile} from '../../../src/services/database/profile';
@@ -90,9 +91,10 @@ export default function NutritionTrends(){
     shownBurn.ready?<>
      <Chip kind="estimate"/>
      <Typography size="head">{hidden?t('trend.hidden'):t('adaptive.burnValue',{count:amount(shownBurn.estimatedBurn)})}</Typography>
-     <Typography tone="secondary" size="small">{t('adaptive.burnMethod',{logged:shownBurn.loggedDays,weights:shownBurn.weighIns,days:Math.round(shownBurn.elapsedDays)})}</Typography>
-    </>:<Typography tone="secondary">{t('adaptive.needData',{logged:shownBurn.needLogged,
-     weights:shownBurn.needWeighIns,days:shownBurn.needHistory})}</Typography>}
+     <Typography tone="secondary" size="small">{adaptiveBurnMethodCopy(t,language,
+      shownBurn.loggedDays,shownBurn.weighIns,Math.round(shownBurn.elapsedDays))}</Typography>
+    </>:<Typography tone="secondary">{adaptiveNeedDataCopy(t,language,shownBurn.needLogged,
+     shownBurn.needWeighIns,shownBurn.needHistory)}</Typography>}
    <Typography tone="secondary" size="small">{t('adaptive.sourceNote')}</Typography>
    {shownBurn?.ready&&!hidden&&shownCheckin&&<>
     <Typography bold>{t('adaptive.weeklyTitle')}</Typography>
@@ -126,7 +128,8 @@ export default function NutritionTrends(){
     {(['fiber','sugar','sodium'] as const).map(key=><ListRow key={key}
       title={t('nutrients.'+key as 'nutrients.fiber'|'nutrients.sugar'|'nutrients.sodium')}
       detail={hidden?t('trend.hidden'):t('nutrients.average',{value:micros[key].value===null?'—':
-        formatNumber(language,Math.round(micros[key].value*10)/10),days:micros[key].days})}/>)}
+        formatNumber(language,Math.round(micros[key].value*10)/10),
+        days:nutrientsReportedDaysCopy(t,language,micros[key].days)})}/>)}
    </Card>
    <Card rim="eat" title={t('trend.proteinGoal')}>
     <Typography tone="secondary">{target?.proteinG===undefined?t('trend.noProteinGoal'):
