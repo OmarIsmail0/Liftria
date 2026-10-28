@@ -33,12 +33,12 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
 }
 
 /** Fixed ambient background; no expensive live blur or animated glows. */
-export function Screen({ children, scroll = true, padded = true, embedded = false }: {
-  children: ReactNode; scroll?: boolean; padded?: boolean; embedded?: boolean;
+export function Screen({ children, scroll = true, padded = true, embedded = false, safeBottom = false }: {
+  children: ReactNode; scroll?: boolean; padded?: boolean; embedded?: boolean; safeBottom?: boolean;
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded ? 0 : insets.bottom };
+  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !(safeBottom && Platform.OS==='ios') ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
   return <View style={[layout, { backgroundColor: embedded ? 'transparent' : theme.background }]}>
     {!embedded && theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}

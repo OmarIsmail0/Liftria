@@ -47,7 +47,7 @@ export default function DescribeMeal(){
   router.push('/(tabs)/hiku/review');
  }
  function cancel(){controller.current?.abort();setBusy(false);setError('cancelled');}
- return <Screen embedded>
+ return <Screen embedded safeBottom>
   <Header title={t('hikuK.beforeSend')} onBack={()=>router.back()}/>
   <Card rim="hiku">
    <Field label={t('hikuK.description')} value={description} multiline

@@ -55,7 +55,7 @@ export default function WorkoutSummaryScreen() {
     if(result.ok&&result.value)router.replace('/(tabs)/train');
     else{setError(t('summary.discardError'));setBusy(false);}
   };
-  if(!workout)return <Screen embedded>
+  if(!workout)return <Screen embedded safeBottom>
     <Header title={t('summary.finish')} onBack={()=>router.back()}/>
     <Typography>{t('summary.loading')}</Typography>
   </Screen>;
@@ -64,7 +64,7 @@ export default function WorkoutSummaryScreen() {
     (stats.volume-previousVolume)/previousVolume*100:null;
   const comparison=change===null||Math.abs(change)<1?t('summary.same'):
     (change>0?'+':'')+t('summary.comparison',{pct:formatNumber(language,Math.round(change))});
-  return <Screen embedded>
+  return <Screen embedded safeBottom>
     <Header title={t('summary.title')} subtitle={workout.title} onBack={()=>router.back()}/>
     <Card rim="train" title={t('summary.complete')}>
       <ListRow title={t('summary.duration')} detail={elapsedLabel(workout.startedAt)}/>

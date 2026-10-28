@@ -55,7 +55,7 @@ export default function ReviewEstimate(){
  }
  const fmt=(n:number)=>formatNumber(language,Math.round(n));
  const photoReady=draft?.kind!=='photo'||photoReviewReady(items,reviewed);
- return <Screen embedded>
+ return <Screen embedded safeBottom>
   <Header title={t('hikuK.review')} onBack={()=>router.back()}/>
   {!draft?<Card title={t('hikuK.noDraft')}>
    <Button label={t('hikuK.describe')} onPress={()=>router.push('/(tabs)/hiku/describe')}/>
