@@ -1458,7 +1458,7 @@ export const ar: Record<TranslationKey, string> = {
   "preview.checkError": "تعذّر التحقق من التمرين الجاري. حاول مجددًا.",
   "preview.discardError": "تعذّر تجاهل التمرين السابق.",
   "preview.subtitle": "راجع قبل البدء",
-  "preview.details": "{count} تمارين · الراحة الافتراضية {seconds} ثانية",
+  "preview.details": "{exercises} · الراحة الافتراضية {seconds} ثانية",
   "preview.noneYet": "لا توجد تمارين بعد. يمكنك إضافتها بعد البدء.",
   "preview.upNext": "التالي",
   "preview.exercise": "تمرين",

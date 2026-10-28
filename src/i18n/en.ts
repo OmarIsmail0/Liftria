@@ -1457,7 +1457,7 @@ export const en = {
   "preview.checkError": "Could not check the active workout. Retry.",
   "preview.discardError": "Could not discard the previous workout.",
   "preview.subtitle": "Review before starting",
-  "preview.details": "{count} exercises · {seconds} sec default rest",
+  "preview.details": "{exercises} · {seconds} sec default rest",
   "preview.noneYet": "No exercises yet. You can add them after starting.",
   "preview.upNext": "Up next",
   "preview.exercise": "Exercise",
