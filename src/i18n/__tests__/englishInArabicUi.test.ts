@@ -77,6 +77,7 @@ describe('scanner',()=>{
   test('catches English returned by plain modules',()=>{
     expect(scan("export const f=(n:number)=>{return n?'Rest over':'No rest timer';};",'sample.ts'))
       .toEqual(['Rest over','No rest timer']);
+    expect(scan("export const h=(n:number)=>n+' kg'+(n>1?' each':'');",'sample.ts')).toEqual(['each']);
     expect(scan("export function g(){const errors:Record<string,string>={};errors.age='Enter an age.';return errors;}",'sample.ts'))
       .toEqual(['Enter an age.']);
   });

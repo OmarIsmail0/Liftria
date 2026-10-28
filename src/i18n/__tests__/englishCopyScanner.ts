@@ -80,10 +80,15 @@ function propName(name: ts.PropertyName | ts.JsxAttributeName): string | null {
   return null;
 }
 
-/** JSX positions read literal letters as copy; plain .ts files only treat sentence-like text as copy. */
+/**
+ * JSX positions read literal letters as copy. Plain .ts files also hold codes and SQL, so there only
+ * sentence-like text counts: several words, a capital first letter, or a word glued to a value
+ * with a space (`' each'`, `' days ago'`).
+ */
 function looksLikeCopy(text: string, strict: boolean): boolean {
   if (!letter.test(text)) return false;
-  return strict || /\s/.test(text.trim()) || /^[A-Z]/.test(text.trim());
+  const trimmed = text.trim();
+  return strict || /\s/.test(trimmed) || /^[A-Z]/.test(trimmed) || trimmed !== text;
 }
 
 export function scanSource(
