@@ -15,6 +15,11 @@ export const HIKU_MODELS=[
 export type HikuModelId=typeof HIKU_MODELS[number]['id'];
 export const DEFAULT_HIKU_MODEL:HikuModelId='claude-haiku-5-5';
 export function hikuModel(id:HikuModelId){return HIKU_MODELS.find(m=>m.id===id)!;}
+export function hikuModelName(id:string,language:'en'|'ar'):string{
+ const model=HIKU_MODELS.find(m=>m.id===id);
+ if(!model)return id;
+ return language==='ar'?model.nameAr:model.nameEn;
+}
 export type HikuCostBand='unknown'|'less-than-cent'|'amount';
 export function estimateHikuCostUsd(model:HikuModelId,inputTokens:number,outputTokens:number):number|null{
  if(!Number.isSafeInteger(inputTokens)||inputTokens<0||
