@@ -83,9 +83,10 @@ export default function ReviewEstimate(){
    <Card title={t('hikuK.foodItems')}>
     {items.map((item,index)=><Button key={index} variant="secondary" fullWidth
       label={(language==='ar'?item.name_ar:item.name_en)+' · '+fmt(item.grams)+' g · '+
-       fmt(item.kcal)+' kcal · '+t(item.confidence==='sure'?'hikuK.sure':'hikuK.check')+
-       (draft.kind==='photo'?' · '+t(reviewed.has(item.original)?
-        'hikuPhoto.checked':'hikuPhoto.toCheck'):'')}
+       fmt(item.kcal)+' kcal'+(draft.kind==='photo'?
+        (item.confidence==='check'?' · '+t('hikuK.check'):'')+
+        ' · '+t(reviewed.has(item.original)?'hikuPhoto.checked':'hikuPhoto.toCheck'):
+        ' · '+t(item.confidence==='sure'?'hikuK.sure':'hikuK.check'))}
       onPress={()=>edit(index)}/>)}
    </Card>
    <Card title={t('hikuK.mealChoice')}>

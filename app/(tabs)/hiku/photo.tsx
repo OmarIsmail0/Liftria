@@ -96,7 +96,7 @@ export default function HikuPhoto(){
  function cancel(){controller.current?.abort();setBusy(false);setError('cancelled');}
  return <Screen embedded>
   <Header title={t('hikuPhoto.title')} onBack={()=>router.back()}/>
-  <Card rim="hiku" title={t('hikuPhoto.title')}>
+  <Card rim="hiku" title={t('hikuPhoto.addMealPhoto')}>
    <Chip kind="pending" label={t('hikuPhoto.beta')}/>
    <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>
    <View style={{gap:12}}>
