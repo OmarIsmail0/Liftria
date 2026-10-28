@@ -65,7 +65,9 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   const inset = theme.space[1];
   const segment = width > 0 ? (width - inset * 2) / options.length : 0;
   // A spacer grows before the thumb inside a logical row, so the slide mirrors in Arabic.
-  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }));
+  // Values measured or derived after render are listed as dependencies, so the worklet
+  // is rebuilt when they change (layout arrives after the first frame).
+  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }), [segment]);
   const sliding = !stack && index >= 0 && segment > 0;
   return <View accessibilityRole="radiogroup" accessibilityLabel={label}
     onLayout={event => setWidth(event.nativeEvent.layout.width)}
@@ -111,7 +113,7 @@ function SegmentLabel({ label, at, position, sliding, selected }: {
     if (!sliding) return { color: selected ? on : off };
     const covered = Math.max(0, 1 - Math.abs(position.get() - at));
     return { color: interpolateColor(covered, [0, 1], [off, on]) };
-  });
+  }, [sliding, selected, on, off, at]);
   return <Animated.Text allowFontScaling style={[{
     fontFamily: fontFamilyFor('Figtree', selected ? '700' : '600'),
     fontSize: theme.type.small.size, textAlign: 'center',
@@ -224,11 +226,11 @@ export function Toggle({ label, detail, value, onChange }: {
   const track = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(progress.get(), [0, 1], [offTrack, onTrack]),
     borderColor: interpolateColor(progress.get(), [0, 1], [offEdge, onTrack]),
-  }));
-  const spacer = useAnimatedStyle(() => ({ width: Math.max(0, progress.get()) * travel }));
+  }), [offTrack, onTrack, offEdge]);
+  const spacer = useAnimatedStyle(() => ({ width: Math.max(0, progress.get()) * travel }), [travel]);
   const knob = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(progress.get(), [0, 1], [offThumb, onThumb]),
-  }));
+  }), [offThumb, onThumb]);
   return <Pressable accessibilityRole="switch" accessibilityLabel={detail ? `${label}. ${detail}` : label}
     accessibilityState={{ checked: value }} onPress={() => onChange(!value)}
     style={{ minHeight: theme.size.touch.min, flexDirection: 'row', gap: theme.space[3],
@@ -312,7 +314,7 @@ export function Sheet({ visible, title, description, children, onClose, destruct
     return () => clearTimeout(timer);
   }, [progress, reduceMotion, theme.motion.base, visible]);
   const backdrop = useAnimatedStyle(() => ({ opacity: progress.get() }));
-  const panel = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.get()) * height }] }));
+  const panel = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.get()) * height }] }), [height]);
   return <Modal transparent visible={mounted} animationType="none" onRequestClose={onClose}
     statusBarTranslucent accessibilityViewIsModal>
     <View style={{ flex: 1, justifyContent: 'flex-end' }}>

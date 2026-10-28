@@ -75,7 +75,9 @@ export function CapsuleNav({ active, onSelect }: {
   const inset = theme.space[1];
   const segment = width > 0 ? (width - inset * 2) / capsuleTabs.length : 0;
   // Logical row + growing spacer: the pill slides the right way in Arabic too.
-  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }));
+  // Values measured or derived after render are listed as dependencies, so the worklet
+  // is rebuilt when they change (layout arrives after the first frame).
+  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }), [segment]);
   return <View style={{
     paddingHorizontal: theme.space[4], paddingTop: theme.space[2],
     paddingBottom: Math.max(insets.bottom, theme.space[4]),
@@ -110,10 +112,10 @@ function CapsuleTabButton({ tab, selected, at, position, sliding, label, onPress
   // Two inks cross-fade as the pill passes under the icon, so it never flashes white on the bar.
   const lit = useAnimatedStyle(() => ({
     opacity: sliding ? Math.max(0, 1 - Math.abs(position.get() - at)) : selected ? 1 : 0,
-  }));
+  }), [sliding, selected, at]);
   const unlit = useAnimatedStyle(() => ({
     opacity: sliding ? Math.min(1, Math.abs(position.get() - at)) : selected ? 0 : 1,
-  }));
+  }), [sliding, selected, at]);
   const icon = (color: string) => <TabIcon name={tab} color={color} size={theme.space[6]} strokeWidth={theme.size.iconStroke} />;
   return <Pressable onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
     accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }}
