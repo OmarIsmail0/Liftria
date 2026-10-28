@@ -74,7 +74,12 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
      - **Restore:** a round trip (export → restore) keeps every table's rows; add a table to the fixture and the test must notice it's missing.
    - Fix any real gap the guards find (a table or file that isn't deleted or backed up), one commit per fix, and list each gap in the PR description.
    - **Don't touch** `src/design/**`, the Health screens or the stack layouts.
-10. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+10. **PR W: `Phase 5 / No English in the Arabic UI`** (builder: **Cursor**, model bake-off: Grok 4.7 vs Sonnet 5.5 on the same task; Claude merges the better PR and closes the other)
+   - **Bug (PR #30/#31 screenshots):** in Arabic the workout mini-bar shows "Resume" and "0 of 9 sets"; spoken labels are English too ("Resume …", "Rest timer, …", "Enter …", "edit with keypad"). `src/i18n/__tests__/screenLiteralCopy.test.ts` only scans `app/` and only catches literal props, so `src/features/**` and concatenated strings slip through.
+   - **Guard:** extend the source guard to `src/features/**` (not `src/design/**`, not `dev`), and to English inside string concatenation and template literals that reach the screen: JSX text, `Typography`/`Text` children, and `accessibilityLabel` / `label` / `title` / `placeholder` / `description` props (e.g. `'Resume '+x`, `` `Enter ${label}` ``, `{a} of {b}`). Keep a short allow-list of real tokens (brand names, units like `kg`). It must fail on today's code.
+   - **Fix** everything it finds: every user-facing string and every spoken label goes through `t()` with English and Arabic. Counts go through `pluralForm()`, and in Arabic a number with its unit uses a no-break space.
+   - **Don't touch** `src/design/**` (Claude's), the Health screens or the stack layouts. List every file you changed in the PR description.
+11. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header`, and gating every `dev/*` route out of release builds except what the emulator check needs.
