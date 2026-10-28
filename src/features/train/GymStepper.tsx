@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
+import { formatEditableNumber } from '../../i18n/editableNumber';
 
 /** 64dp gym stepper: tap, long-press repeat (400/150ms), direct numeric keypad. */
 export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}:{
@@ -11,7 +12,7 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
   const current=useRef(value);
   const repeat=useRef<ReturnType<typeof setInterval>|null>(null);
   const [editing,setEditing]=useState(false);
-  const [typed,setTyped]=useState(String(value));
+  const [typed,setTyped]=useState(formatEditableNumber(value,'load'));
   useEffect(()=>{current.current=value;},[value]);
   useEffect(()=>()=>{if(repeat.current)clearInterval(repeat.current);},[]);
   const change=(direction:number)=>{
@@ -38,12 +39,13 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
           onChange(Math.max(min,Math.min(max,parsed)));setEditing(false);}}
         style={{flex:1,minHeight:64,textAlign:'center',color:theme.color.text.primary,
           fontSize:theme.type.body.size,borderBottomWidth:1,borderColor:theme.controlOutline}}/>:
-        <Pressable accessibilityRole="button" accessibilityLabel={label+', '+value+' '+unit+', edit with keypad'}
-          onPress={()=>{setTyped(String(value));setEditing(true);}}
+        <Pressable accessibilityRole="button"
+          accessibilityLabel={label+', '+formatEditableNumber(value,'load')+' '+unit+', edit with keypad'}
+          onPress={()=>{setTyped(formatEditableNumber(value,'load'));setEditing(true);}}
           style={{flex:1,minHeight:64,justifyContent:'center',alignItems:'center'}}>
           <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}
             style={{color:theme.color.text.primary,fontSize:theme.type.body.size,
-              fontWeight:'700',textAlign:'center'}}>{value}</Text>
+              fontWeight:'700',textAlign:'center'}}>{formatEditableNumber(value,'load')}</Text>
         </Pressable>}
       {control(1,'Increase')}
     </View>

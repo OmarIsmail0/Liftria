@@ -21,6 +21,12 @@ describe('formatEditableNumber', () => {
     expect(formatEditableNumber(7.5, 'effort')).toBe('7.5');
   });
 
+  it('keeps a workout load plate-exact, without the stored unit conversion noise', () => {
+    expect(formatEditableNumber(46.25, 'load')).toBe('46.25');
+    expect(formatEditableNumber(1.25, 'load')).toBe('1.25');
+    expect(formatEditableNumber(45.35924, 'load')).toBe('45.36');
+  });
+
   it('leaves whole values whole, with no trailing zeros', () => {
     expect(formatEditableNumber(1800, 'kcal')).toBe('1800');
     expect(formatEditableNumber(80, 'weight')).toBe('80');
