@@ -97,6 +97,13 @@ describe('Arabic units guard', () => {
       // - تمارين (workouts plural)  
       // - طلبات (requests plural)
       const hasPlural = /أيام|تمارين|طلبات|عناصر/.test(arabicText);
+      // 11-99 take the singular accusative, so the counted noun right after {count} ends in tanwin
+      // fath (e.g. يومًا). A bare singular like "14 يوم" is wrong too, not only a plural.
+      const firstWord = arabicText.split(/\s/)[0] ?? '';
+      if (!firstWord.endsWith('ًا')) {
+        violations.push(`${key}: "${value}" counted noun "${firstWord}" is not singular accusative`);
+        continue;
+      }
       
       if (hasPlural) {
         violations.push(`${key}: "${value}" uses plural form instead of singular accusative`);
@@ -119,7 +126,8 @@ describe('Arabic units guard', () => {
       
       for (const unit of arabicUnits) {
         // Match {placeholder} followed by regular space and unit
-        const regularSpacePattern = new RegExp(`\\{[a-z_]+\\}\\x20${unit}\\b`);
+        // \\b is ASCII-only in JS, so end the unit with an Arabic-letter lookahead.
+        const regularSpacePattern = new RegExp(`\\{[A-Za-z_]+\\}\\x20${unit}(?![\\u0600-\\u06FF])`);
         if (regularSpacePattern.test(value)) {
           violations.push(`${key}: "${value}" has regular space before ${unit}, should use U+00A0`);
         }
