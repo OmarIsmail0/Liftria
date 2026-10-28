@@ -2,7 +2,7 @@
  * it has Android-only native APIs. HealthKit is deliberately not enabled yet.
  * Return unsupported/unknown rather than synthetic or Android-cached readings. */
 import {metricTypes,energyMetrics,type AggregateValue,type HealthDataSource,
- type PermissionState,type EnergyMetric,type DailyEnergyRow} from './types';
+ type PermissionState,type MetricType,type EnergyMetric,type DailyEnergyRow} from './types';
 export {energyMetrics} from './types';
 export type {EnergyMetric,DailyEnergyRow} from './types';
 export const healthConnect:HealthDataSource={
