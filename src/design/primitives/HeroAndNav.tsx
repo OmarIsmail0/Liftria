@@ -66,18 +66,23 @@ export function CapsuleNav({ active, onSelect }: {
   active: CapsuleTab; onSelect: (tab: CapsuleTab) => void;
 }) {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const insets = useSafeAreaInsets();
   const glass = theme.effectiveStyle === 'aurora';
   const index = Math.max(0, capsuleTabs.findIndex(tab => tab.key === active));
   const position = useSpringValue(index);
   const [width, setWidth] = useState(0);
   const inset = theme.space[1];
-  const segment = width > 0 ? (width - inset * 2) / capsuleTabs.length : 0;
-  // Logical row + growing spacer: the pill slides the right way in Arabic too.
-  // Values measured or derived after render are listed as dependencies, so the worklet
-  // is rebuilt when they change (layout arrives after the first frame).
-  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }), [segment]);
+  const border = theme.size.border.thin;
+  // onLayout includes the border; the pill lives inside it.
+  const segment = width > 0 ? (width - border * 2 - inset * 2) / capsuleTabs.length : 0;
+  // The pill slides with a transform, not a growing width: width (a layout prop) animated
+  // from the UI thread was not applied on Android, so the pill stayed on the first option.
+  // translateX is physical, so it is mirrored for right-to-left layouts.
+  const direction = isRTL ? -1 : 1;
+  const slide = useAnimatedStyle(() => ({
+    transform: [{ translateX: direction * position.get() * segment }],
+  }), [direction, segment]);
   return <View style={{
     paddingHorizontal: theme.space[4], paddingTop: theme.space[2],
     paddingBottom: Math.max(insets.bottom, theme.space[4]),
@@ -86,16 +91,14 @@ export function CapsuleNav({ active, onSelect }: {
     <View accessibilityRole="tablist" onLayout={event => setWidth(event.nativeEvent.layout.width)} style={{
       flexDirection: 'row', alignItems: 'center',
       minHeight: theme.size.touch.nav, borderRadius: theme.radius.pill,
-      padding: inset, borderWidth: theme.size.border.thin,
+      padding: inset, borderWidth: border,
       borderColor: glass ? theme.surface.hairline : theme.color.border.strong,
       backgroundColor: glass ? theme.glass.card : theme.color.bg.glass,
       boxShadow: glass ? theme.elevation.card : undefined,
     }}>
-      {segment > 0 && <View pointerEvents="none" style={{ position: 'absolute', top: inset, bottom: inset,
-        start: inset, end: inset, flexDirection: 'row' }}>
-        <Reanimated.View style={spacer} />
-        <View style={{ width: segment, borderRadius: theme.radius.pill, backgroundColor: theme.color.action.primary.bg }} />
-      </View>}
+      {segment > 0 && <Reanimated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
+        start: inset, width: segment, borderRadius: theme.radius.pill,
+        backgroundColor: theme.color.action.primary.bg }, slide]} />}
       {capsuleTabs.map((tab, at) => <CapsuleTabButton key={tab.key} tab={tab.key} selected={tab.key === active}
         at={at} position={position} sliding={segment > 0}
         label={t(`nav.${tab.key}`)} onPress={() => onSelect(tab.key)} />)}

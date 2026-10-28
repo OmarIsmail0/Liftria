@@ -56,6 +56,7 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   value: T | null; onChange: (next: T) => void;
 }) {
   const { theme } = useTheme();
+  const { isRTL } = useLanguage();
   const { fontScale } = useWindowDimensions();
   const stack = fontScale >= 1.6 && options.length > 2;
   const solid = theme.effectiveStyle === 'solid';
@@ -63,11 +64,16 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   const position = useSpringValue(Math.max(0, index));
   const [width, setWidth] = useState(0);
   const inset = theme.space[1];
-  const segment = width > 0 ? (width - inset * 2) / options.length : 0;
-  // A spacer grows before the thumb inside a logical row, so the slide mirrors in Arabic.
-  // Values measured or derived after render are listed as dependencies, so the worklet
-  // is rebuilt when they change (layout arrives after the first frame).
-  const spacer = useAnimatedStyle(() => ({ width: position.get() * segment }), [segment]);
+  // onLayout includes the Solid outline; the thumb lives inside it.
+  const edge = solid ? theme.size.border.thin : 0;
+  const segment = width > 0 ? (width - edge * 2 - inset * 2) / options.length : 0;
+  // The pill slides with a transform, not a growing width: width (a layout prop) animated
+  // from the UI thread was not applied on Android, so the pill stayed on the first option.
+  // translateX is physical, so it is mirrored for right-to-left layouts.
+  const direction = isRTL ? -1 : 1;
+  const slide = useAnimatedStyle(() => ({
+    transform: [{ translateX: direction * position.get() * segment }],
+  }), [direction, segment]);
   const sliding = !stack && index >= 0 && segment > 0;
   return <View accessibilityRole="radiogroup" accessibilityLabel={label}
     onLayout={event => setWidth(event.nativeEvent.layout.width)}
@@ -76,14 +82,11 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
       borderRadius: stack ? theme.radius.md : theme.radius.pill,
       backgroundColor: solid ? theme.color.bg.raised : theme.surface.control,
       // Solid (high contrast) keeps the 3:1 control outline; Aurora uses a filled track.
-      borderWidth: solid ? theme.size.border.thin : 0, borderColor: theme.controlOutline,
+      borderWidth: edge, borderColor: theme.controlOutline,
     }}>
-    {sliding && <View pointerEvents="none" style={{ position: 'absolute', top: inset, bottom: inset,
-      start: inset, end: inset, flexDirection: 'row' }}>
-      <Animated.View style={spacer} />
-      <View style={{ width: segment, borderRadius: theme.radius.pill,
-        backgroundColor: theme.color.action.primary.bg, boxShadow: theme.elevation.thumb }} />
-    </View>}
+    {sliding && <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
+      start: inset, width: segment, borderRadius: theme.radius.pill,
+      backgroundColor: theme.color.action.primary.bg, boxShadow: theme.elevation.thumb }, slide]} />}
     {options.map((option, at) => {
       const selected = option.value === value;
       return <Pressable key={option.value} accessibilityRole="radio"
@@ -219,6 +222,7 @@ export function Toggle({ label, detail, value, onChange }: {
   label: string; detail?: string; value: boolean; onChange: (next: boolean) => void;
 }) {
   const { theme } = useTheme();
+  const { isRTL } = useLanguage();
   const progress = useSpringValue(value ? 1 : 0);
   const thumb = theme.space[5], pad = theme.space[1], travel = theme.size.touch.min - pad * 2 - thumb;
   const offTrack = theme.color.bg.raised, onTrack = theme.color.domain.hiku;
@@ -227,10 +231,12 @@ export function Toggle({ label, detail, value, onChange }: {
     backgroundColor: interpolateColor(progress.get(), [0, 1], [offTrack, onTrack]),
     borderColor: interpolateColor(progress.get(), [0, 1], [offEdge, onTrack]),
   }), [offTrack, onTrack, offEdge]);
-  const spacer = useAnimatedStyle(() => ({ width: Math.max(0, progress.get()) * travel }), [travel]);
+  // translateX is physical, so "on" moves toward the end edge: right in English, left in Arabic.
+  const direction = isRTL ? -1 : 1;
   const knob = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(progress.get(), [0, 1], [offThumb, onThumb]),
-  }), [offThumb, onThumb]);
+    transform: [{ translateX: direction * progress.get() * travel }],
+  }), [offThumb, onThumb, direction, travel]);
   return <Pressable accessibilityRole="switch" accessibilityLabel={detail ? `${label}. ${detail}` : label}
     accessibilityState={{ checked: value }} onPress={() => onChange(!value)}
     style={{ minHeight: theme.size.touch.min, flexDirection: 'row', gap: theme.space[3],
@@ -242,7 +248,6 @@ export function Toggle({ label, detail, value, onChange }: {
       style={[{ width: theme.size.touch.min, height: theme.space[8], paddingHorizontal: pad - theme.size.border.thin,
         borderRadius: theme.radius.pill, flexDirection: 'row', alignItems: 'center',
         borderWidth: theme.size.border.thin }, track]}>
-      <Animated.View style={spacer} />
       <Animated.View style={[{ width: thumb, height: thumb, borderRadius: theme.radius.pill,
         boxShadow: theme.elevation.thumb }, knob]} />
     </Animated.View>
