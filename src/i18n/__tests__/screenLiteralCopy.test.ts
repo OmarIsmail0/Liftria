@@ -1,3 +1,5 @@
+import ts from 'typescript';
+
 type Entry={name:string;isDirectory:()=>boolean;isFile:()=>boolean};
 const {readdirSync,readFileSync}=jest.requireActual('fs') as {
   readdirSync:(dir:string,options:{withFileTypes:true})=>Entry[];
@@ -44,7 +46,6 @@ test('owner-facing routes do not use direct English JSX labels or Typography tex
  * (`'Resume '+name`, `Enter ${label}`, `{done} of {total} sets`). The literal-prop
  * scan above never saw them. dev screens and src/design stay out of this guard.
  */
-const ts=jest.requireActual('typescript') as typeof import('typescript');
 const featureRoots=[appDir,join(process.cwd(),'src','features')];
 const watchedProps=new Set(['accessibilityLabel','label','title','subtitle','description','placeholder','detail']);
 const unitWords=new Set(['kg','lb']);
@@ -145,7 +146,8 @@ function functionName(node:ts.Node):string|null{
     ts.isIdentifier(node.parent.name))return node.parent.name.text;
   return null;
 }
-function displayedParamIndexes(fn:ts.SignatureDeclaration):Set<number>{
+type CallableWithBody=ts.FunctionDeclaration|ts.FunctionExpression|ts.ArrowFunction|ts.MethodDeclaration|ts.ConstructorDeclaration;
+function displayedParamIndexes(fn:CallableWithBody):Set<number>{
   const names=fn.parameters.map(param=>ts.isIdentifier(param.name)?param.name.text:'');
   const params=new Set(names.filter(name=>name.length>0));
   const displayed=new Set<string>();
@@ -175,7 +177,8 @@ test('feature and route copy has no English in screen text or spoken labels',()=
     const fileName=relative(process.cwd(),file).replace(/\\/g,'/');
     const functions=new Map<string,Set<number>>();
     const collect=(node:ts.Node):void=>{
-      if(ts.isFunctionLike(node)&&node.body){
+      if((ts.isFunctionDeclaration(node)||ts.isFunctionExpression(node)||ts.isArrowFunction(node)||
+        ts.isMethodDeclaration(node)||ts.isConstructorDeclaration(node))&&node.body){
         const name=functionName(node);
         if(name)functions.set(name,displayedParamIndexes(node));
       }
