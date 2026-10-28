@@ -87,7 +87,11 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
      - Each guard must fail on a planted example: test the scanner itself with small code strings, as PR W's `englishCopyScanner` tests do.
    - **Lint:** clear the existing ESLint warnings (`npx eslint .` shows 15) by fixing the code, not by disabling rules. If one can't be fixed safely, explain it in the PR.
    - **Don't touch** `src/design/**` (Claude's; leave its warnings and list them in the PR), the Health screens or the stack layouts.
-12. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+12. **PR Y: `Phase 5 / Health charts in Arabic`** (builder: **Cursor**, Sonnet 5.5; starts once PR W #34 is merged, from `main`)
+   - `src/features/health/HealthCharts.tsx` still shows English in Arabic: "No source-backed steps to plot.", "hourly"/"daily", "Midnight · 6 AM · Noon · 6 PM · Midnight", "7 days ago · Today", the heart-rate summary and its accessibility text. Translate all of it (English and Arabic; counts through `pluralForm()`; number+unit with a no-break space; times in the user's locale with Western digits).
+   - Widen PR W's guard (`src/i18n/__tests__/englishInArabicUi.test.ts`) to scan `src/features/health/**`, keeping the exclusion only for the files PR S (#28) edits: `app/(tabs)/progress/health*.tsx`, `src/features/health/AppleHealthComing.tsx`, `src/features/health/useHealthSnapshot.ts`. Fix whatever else it finds in `src/features/health/**` outside those files.
+   - **Don't touch** `src/design/**`, `src/services/health/**` or the files above.
+13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header` (after PR #27). ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
