@@ -10,7 +10,7 @@ import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from 
 import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
-import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, formatLocalDatabaseSize } from '../../src/features/settings/storage';
+import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 import {exportBackup,parseBackup,backupPreview,previewGroups,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
 import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv} from '../../src/features/settings/csvExport';
@@ -79,8 +79,7 @@ export default function DataAndStorage() {
        kind==='workouts'?await workoutCsv():await diaryCsv();
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
-      const date=new Date().toISOString().slice(0,10);
-      await shareFile('liftria-'+kind+'-'+date+'.'+extension,
+      await shareFile(exportFileName(kind),
        typeof result.value==='string'?result.value:JSON.stringify(result.value),extension==='json'?'json':'csv');
       setMessage(t('backup.ready'));
     }catch{setMessage(t('backup.shareFailed'));}
@@ -144,7 +143,8 @@ export default function DataAndStorage() {
     setBusy(true);setMessage(null);
     try{
       const result=await deleteEverythingOnPhone(confirmation,undefined,language);
-      if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':'dataStorage.deleteKeyFailed'));setOpen(false);return;}
+      if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':
+        result.stage==='key'?'dataStorage.deleteKeyFailed':'dataStorage.deleteFilesFailed'));setOpen(false);return;}
       // All app-owned Phase 2 data and the saved key are gone. Return to fresh onboarding.
       setOpen(false);setConfirmation('');
       resetLocalPreferences();

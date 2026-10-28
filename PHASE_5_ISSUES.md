@@ -79,10 +79,18 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Guard:** extend the source guard to `src/features/**` (not `src/design/**`, not `dev`), and to English inside string concatenation and template literals that reach the screen: JSX text, `Typography`/`Text` children, and `accessibilityLabel` / `label` / `title` / `placeholder` / `description` props (e.g. `'Resume '+x`, `` `Enter ${label}` ``, `{a} of {b}`). Keep a short allow-list of real tokens (brand names, units like `kg`). It must fail on today's code.
    - **Fix** everything it finds: every user-facing string and every spoken label goes through `t()` with English and Arabic. Counts go through `pluralForm()`, and in Arabic a number with its unit uses a no-break space.
    - **Don't touch** `src/design/**` (Claude's), the Health screens or the stack layouts. List every file you changed in the PR description.
-11. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+11. **PR X: `Phase 5 / Rule guards`** (builder: **Cursor**, Sonnet 5.5, branch from `main`)
+   - The "never" rules in `HANDOFF.md` → "Technical gotchas" have no tests. Add source guards over `app/**` and `src/**` (tests excluded) that fail when someone breaks them:
+     - **Hermes:** no `Intl.` API other than `NumberFormat`, `DateTimeFormat` and `Collator` (e.g. `Intl.PluralRules`, `Intl.RelativeTimeFormat`, `Intl.ListFormat`); no `crypto.` (use `newGymId()`).
+     - **Reanimated:** no `.value =` / `.value +=` assignment on shared values (use `.set()`).
+     - **Locales:** every key in `locales/en.json` and `locales/ar.json` sits under `"ios"` (Android lint fails otherwise), and both files have the same keys.
+     - Each guard must fail on a planted example: test the scanner itself with small code strings, as PR W's `englishCopyScanner` tests do.
+   - **Lint:** clear the existing ESLint warnings (`npx eslint .` shows 15) by fixing the code, not by disabling rules. If one can't be fixed safely, explain it in the PR.
+   - **Don't touch** `src/design/**` (Claude's; leave its warnings and list them in the PR), the Health screens or the stack layouts.
+12. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
-   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header`, and gating every `dev/*` route out of release builds except what the emulator check needs.
+   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header` (after PR #27). ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 

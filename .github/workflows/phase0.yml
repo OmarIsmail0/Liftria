@@ -154,6 +154,8 @@ jobs:
         # Main releases target both 64-bit and 32-bit Android 9+ phones.
         env:
           RELEASE_ARCHS: ${{ github.event_name == 'pull_request' && 'arm64-v8a,x86_64' || 'arm64-v8a,armeabi-v7a' }}
+          # Demo routes for the emulator check; a properly signed release ships without them.
+          EXPO_PUBLIC_LIFTRIA_DEV_ROUTES: ${{ steps.release_signing.outputs.ready == 'true' && '0' || '1' }}
           LIFTRIA_SIGNING_KEYSTORE: ${{ steps.release_signing.outputs.ready == 'true' && format('{0}/liftria-release.jks', runner.temp) || '' }}
           LIFTRIA_KEYSTORE_PASSWORD: ${{ steps.release_signing.outputs.ready == 'true' && secrets.LIFTRIA_KEYSTORE_PASSWORD || '' }}
           LIFTRIA_KEY_ALIAS: ${{ steps.release_signing.outputs.ready == 'true' && secrets.LIFTRIA_KEY_ALIAS || '' }}

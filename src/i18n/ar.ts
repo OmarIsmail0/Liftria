@@ -1236,6 +1236,7 @@ export const ar: Record<TranslationKey, string> = {
   "dataStorage.deleteFailed": "تعذّر إكمال الحذف. افحص المفتاح في الإعدادات وحاول مجددًا.",
   "dataStorage.deleteDatabaseFailed": "تعذّر حذف قاعدة بيانات ليفتريا. لم يتغير المفتاح. حاول مجددًا.",
   "dataStorage.deleteKeyFailed": "حُذفت قاعدة البيانات المحلية لكن تعذّر حذف مفتاح API. أعد المحاولة من الإعدادات.",
+  "dataStorage.deleteFilesFailed": "حُذفت بياناتك ومفتاح API لكن تعذّر حذف بعض الملفات المؤقتة. حاول مجددًا.",
   "dataStorage.testEntries": "{count} من الإدخالات المحلية التجريبية",
   "profileSettings.title": "الملف الشخصي والأهداف",
   "profileSettings.subtitle": "محفوظ محليًا · الحقول اختيارية",
