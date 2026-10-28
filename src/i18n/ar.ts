@@ -317,6 +317,7 @@ export const ar: Record<TranslationKey, string> = {
   'trend.weightTrend': "الوزن · الاتجاه",
   'trend.weightSource': "قراءات ليفتريا المحفوظة وقراءات هيلث كونيكت المخزنة مؤقتًا، مع بيان المصدر.",
   'trend.kg': "{weight} kg",
+  'trend.axisKcal': "سعرة",
   'trend.weightEmpty': "سجّل وزنك لعرض الاتجاه. قد تتوفر قراءات أيضًا في هيلث كونيكت.",
   'trend.emaDescription': "الاتجاه متوسط متحرك أُسّي ممهد لآخر سبع قراءات، وليس توقعًا يوميًا.",
   'trend.trendChange': "تغير الاتجاه مقارنةً بما لا يقل عن 7 أيام: {change} {unit}",

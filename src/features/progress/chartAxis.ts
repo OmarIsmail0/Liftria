@@ -1,4 +1,4 @@
-import { formatNumber, type AppLanguage } from '../../i18n';
+import { formatNumber, translate, type AppLanguage } from '../../i18n';
 
 type AxisUnit = 'kg' | 'lb' | 'kcal';
 
@@ -43,5 +43,5 @@ export function formatAxisValueLabel(value: number, language: AppLanguage, unit:
   return `${formatNumber(language, rounded, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  })} ${unit}`;
+  })} ${unit === 'kcal' ? translate(language, 'trend.axisKcal') : unit}`;
 }

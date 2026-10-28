@@ -19,6 +19,6 @@ test('value labels use the requested unit and locale formatting',()=>{
   expect(formatAxisValueLabel(173.92,'en','lb')).toBe('173.9 lb');
   expect(formatAxisValueLabel(2123.2,'en','kcal')).toBe('2,123 kcal');
   const ar=formatAxisValueLabel(2123.2,'ar','kcal');
-  expect(ar).toContain('2,123 kcal');
+  expect(ar).toBe('2,123 سعرة');
   expect(ar).not.toMatch(/[٠-٩]/);
 });

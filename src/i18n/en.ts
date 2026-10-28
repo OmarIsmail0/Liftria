@@ -316,6 +316,7 @@ export const en = {
   'trend.weightTrend': "Weight · Trend",
   'trend.weightSource': "Entries saved in Liftria and cached Health Connect readings, kept separate by source.",
   'trend.kg': "{weight} kg",
+  'trend.axisKcal': "kcal",
   'trend.weightEmpty': "Log your weight to see a trend. Health Connect may also have readings.",
   'trend.emaDescription': "Trend is a smoothed seven-observation exponential moving average, not a daily prediction.",
   'trend.trendChange': "Trend change from at least 7 days earlier: {change} {unit}",
