@@ -1,0 +1,97 @@
+name: iPhone visual check (simulator screenshots)
+
+# After an iPhone simulator build on a PR, posts its screenshots on the PR and keeps them on the
+# visual-checks branch under pr-N/<sha7>/ios-*.png, next to the Android ones. The PR's code ran
+# only inside the simulator job; this job just copies PNG files.
+
+on:
+  workflow_run:
+    workflows: ["iPhone build (simulator)"]
+    types: [completed]
+
+concurrency:
+  group: ios-visual-check-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion != 'skipped' &&
+      github.event.workflow_run.conclusion != 'cancelled' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.pull_requests[0].number
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read          # to download the screenshot artifact
+      contents: write        # only to push screenshots to the visual-checks branch
+      pull-requests: write   # to comment on the PR
+    env:
+      PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Download the screenshots
+        id: shots
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: liftria-ios-screenshots
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: shots
+
+      - name: Publish to the visual-checks branch
+        id: publish
+        if: steps.shots.outcome == 'success'
+        run: |
+          set -euo pipefail
+          ls shots/ios-*.png >/dev/null 2>&1 || { echo "No iPhone screenshots in this run."; exit 0; }
+          DIR="pr-$PR/${SHA:0:7}"
+          git config user.name "liftria-visual-check"
+          git config user.email "visual-check@users.noreply.github.com"
+          git fetch -q origin visual-checks
+          git switch -q -c visual-checks origin/visual-checks
+          mkdir -p "$DIR" && cp shots/ios-*.png shots/ios-crashes.txt "$DIR"/ 2>/dev/null || cp shots/ios-*.png "$DIR"/
+          git add "$DIR" && git commit -qm "iPhone visual check PR #$PR at ${SHA:0:7}"
+          # The Android check pushes to the same branch: retry on a race.
+          for i in 1 2 3 4 5; do
+            git push -q origin visual-checks && break
+            sleep $((i * 5)); git pull -q --rebase origin visual-checks
+          done
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on the PR
+        if: steps.publish.outputs.dir != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIR: ${{ steps.publish.outputs.dir }}
+        run: |
+          BASE="https://github.com/${{ github.repository }}/blob/visual-checks/$DIR"
+          {
+            echo "## iPhone visual check · \`${SHA:0:7}\`"
+            echo
+            echo "Release build on the newest iPhone Pro simulator. A real iPhone needs the owner's Apple Developer account."
+            echo
+            for mode in light dark ar-dark; do
+              ls shots/ios-$mode-*.png >/dev/null 2>&1 || continue
+              if [ "$mode" = ar-dark ]; then echo "### Arabic (RTL), dark"; else echo "### ${mode^}"; fi
+              echo
+              echo "| | | |"; echo "|---|---|---|"
+              row=""; n=0
+              for f in shots/ios-$mode-*.png; do
+                name=$(basename "$f" .png); name=${name#ios-$mode-}
+                row="$row| **$name**<br><img src=\"$BASE/ios-$mode-$name.png?raw=true\" width=\"220\"> "
+                n=$((n+1)); if [ $n -eq 3 ]; then echo "$row|"; row=""; n=0; fi
+              done
+              [ -n "$row" ] && echo "$row|"
+              echo
+            done
+            if [ -s shots/ios-crashes.txt ]; then
+              echo "> ⚠️ **The app crashed on the iPhone simulator.** See [ios-crashes.txt]($BASE/ios-crashes.txt)."
+            fi
+          } > comment.md
+          gh pr comment "$PR" --repo "${{ github.repository }}" --body-file comment.md

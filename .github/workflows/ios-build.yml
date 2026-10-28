@@ -1,6 +1,7 @@
 name: iPhone build (simulator)
 
-# Proves the app builds for iPhone and gives an unsigned simulator .app to inspect.
+# Proves the app builds for iPhone, gives an unsigned simulator .app to inspect, and screenshots
+# the iPhone screens on a simulator (ios-visual-check.yml posts them on the PR).
 # A device or TestFlight build needs the owner's Apple Developer account and signing secrets.
 # Runs by hand, or on a PR with the `ios` label.
 
@@ -20,7 +21,7 @@ jobs:
   simulator:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ios')
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 80
     steps:
       - uses: actions/checkout@v6
 
@@ -44,6 +45,9 @@ jobs:
         run: npx expo prebuild --clean --platform ios
 
       - name: Build for the iPhone simulator (unsigned)
+        env:
+          # Not a store build: keep the demo routes the screenshot pass opens.
+          EXPO_PUBLIC_LIFTRIA_DEV_ROUTES: '1'
         run: |
           set -o pipefail
           cd ios
@@ -75,6 +79,24 @@ jobs:
         run: |
           APP=$(find ios/build/Build/Products -maxdepth 2 -name '*.app' | head -n1)
           ditto -c -k --keepParent "$APP" liftria-ios-simulator.zip
+
+      - name: Screenshot the iPhone screens on a simulator
+        # Screenshots are for review; a failed pass must not hide a good build.
+        continue-on-error: true
+        run: |
+          APP=$(find ios/build/Build/Products -maxdepth 2 -name '*.app' | head -n1)
+          bash .github/scripts/ios-visual-check.sh "$APP" ios-shots
+          echo "${{ github.event.pull_request.number }}" > ios-shots/pr.txt
+          echo "${{ github.event.pull_request.head.sha || github.sha }}" > ios-shots/sha.txt
+
+      - name: Keep the iPhone screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: liftria-ios-screenshots
+          path: ios-shots
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Keep the Xcode log
         if: always()
