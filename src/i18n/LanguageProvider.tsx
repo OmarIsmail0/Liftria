@@ -65,7 +65,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setDevice(detected);
       applyLayoutDirection(detected);
     },
-  }), [preference, language, device]);
+  }), [preference, language]);
   return <Context.Provider value={value}>{ready ? children : null}</Context.Provider>;
 }
 export function useLanguage(): LanguageContextValue {
