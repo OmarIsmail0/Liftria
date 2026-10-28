@@ -1,16 +1,18 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, View } from 'react-native';
+import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ensureExercisePack, listExercises, searchExercises, newGymId } from '../../../src/services/database/exerciseLibrary';
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
+import { guardTemplateRemoval } from '../../../src/features/train/templateExitGuard';
 
 export default function TemplateEditor() {
+  const navigation=useNavigation();
   const {theme}=useTheme();
   const {t,language}=useLanguage();
   const {id,exerciseId}=useLocalSearchParams<{id?:string;exerciseId?:string}>();
@@ -28,8 +30,27 @@ export default function TemplateEditor() {
   const [baseline,setBaseline]=useState(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
   const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline;
   const dirtyRef=useRef(dirty);
+  const pendingRemove=useRef<Parameters<typeof navigation.dispatch>[0]|null>(null);
+  const allowRemoval=useRef(false);
   useEffect(()=>{dirtyRef.current=dirty;},[dirty]);
-  const back=()=>{if(dirty)setDiscardSheet(true);else router.back();};
+  useEffect(()=>navigation.addListener('beforeRemove',event=>{
+    if(allowRemoval.current)return;
+    guardTemplateRemoval(event,dirtyRef.current,action=>{
+      pendingRemove.current=action;
+      setDiscardSheet(true);
+    });
+  }),[navigation]);
+  // Both the header button and an iOS swipe reach beforeRemove.
+  const back=()=>{if(router.canGoBack())router.back();else router.replace('/(tabs)/train/plans');};
+  const cancelDiscard=()=>{pendingRemove.current=null;setDiscardSheet(false);};
+  const discard=()=>{
+    allowRemoval.current=true;
+    setDiscardSheet(false);
+    const action=pendingRemove.current;
+    pendingRemove.current=null;
+    if(action)navigation.dispatch(action);
+    else router.replace('/(tabs)/train/plans');
+  };
   useFocusEffect(useCallback(()=>{
     let live=true;
     void (async()=>{
@@ -47,11 +68,7 @@ export default function TemplateEditor() {
         setExercises(entry);
       }
     })();
-    const sub=BackHandler.addEventListener('hardwareBackPress',()=>{
-      if(dirtyRef.current){setDiscardSheet(true);return true;}
-      return false;
-    });
-    return ()=>{live=false;sub.remove();};
+    return ()=>{live=false;};
   },[id,exerciseId]));
   const filtered=useMemo(()=>searchExercises(library,query).slice(0,8),[library,query]);
   const linkGroup=(index:number,size:2|3)=>{
@@ -75,12 +92,13 @@ export default function TemplateEditor() {
     setBusy(true);setError(null);
     const result=await saveTemplate({name:name.trim(),restSec:rest,notes:notes||null,exercises},id);
     setBusy(false);
-    if(result.ok){setSaved(true);router.replace('/(tabs)/train/plans');}
+    if(result.ok){allowRemoval.current=true;setSaved(true);router.replace('/(tabs)/train/plans');}
     else setError(t('template.saveError'));
   };
   const remove=async()=>{
     if(id){const result=await deleteTemplate(id);
       if(!result.ok){setError(t('template.deleteError'));return;}}
+    allowRemoval.current=true;
     router.replace('/(tabs)/train/plans');
   };
   return <Screen embedded>
@@ -154,9 +172,9 @@ export default function TemplateEditor() {
       onPress={()=>void save()}/>
     {id&&<Button label={t('template.delete')} variant="danger" onPress={()=>setDeleteSheet(true)}/>}
     <Sheet visible={discardSheet&&!saved} title={t('template.discardTitle')}
-      description={t('template.discardDescription')} onClose={()=>setDiscardSheet(false)}>
-      <Button label={t('template.keepEditing')} fullWidth onPress={()=>setDiscardSheet(false)}/>
-      <Button label={t('template.discard')} variant="danger" fullWidth onPress={()=>router.back()}/>
+      description={t('template.discardDescription')} onClose={cancelDiscard}>
+      <Button label={t('template.keepEditing')} fullWidth onPress={cancelDiscard}/>
+      <Button label={t('template.discard')} variant="danger" fullWidth onPress={discard}/>
     </Sheet>
     <Sheet visible={deleteSheet} destructive title={t('template.deleteTitle')}
       description={t('template.deleteDescription')} onClose={()=>setDeleteSheet(false)}>

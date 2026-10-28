@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, BackHandler, View } from 'react-native';
 import { Card, Header, Screen, Typography } from '../../src/design/primitives';
@@ -31,6 +31,7 @@ export default function Importing(){
    router.replace('/import/result');});
  },[t]);
  return <Screen>
+  <Stack.Screen options={{gestureEnabled:false}} />
   <Header title={t('im3.title')}/>
   <Card rim="train" title={t('im3.importing')}>
    <Typography>{t('im3.prepared',{count,total})}</Typography>
