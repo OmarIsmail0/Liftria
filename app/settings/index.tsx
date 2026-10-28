@@ -6,6 +6,7 @@ import { useLanguage, systemLanguage } from '../../src/i18n/LanguageProvider';
 import { resolveLanguage, type LanguagePreference } from '../../src/i18n';
 import { Button, Card, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
+import { devRoutesEnabled } from '../../src/navigation/devRoutes';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
 import { localStorageCounts } from '../../src/services/database';
@@ -73,7 +74,7 @@ export default function SettingsHome() {
         onPress={() => {
           const next = advanceVersionTap(taps.current, Date.now());
           taps.current = next.state;
-          if (next.unlocked) router.push('/dev');
+          if (next.unlocked && devRoutesEnabled()) router.push('/dev');
         }}
         style={{ minHeight: theme.size.touch.min, justifyContent: 'center' }}>
         <Typography tone="secondary" size="small">{t('settings.home.version', { version: releaseVersion.name })}</Typography>
