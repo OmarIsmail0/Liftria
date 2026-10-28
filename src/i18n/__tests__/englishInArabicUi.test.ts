@@ -29,12 +29,15 @@ const translationKeys=new Set<string>(Object.keys(en));
  * Out of scope for this guard, and why:
  * - dev and test files: emulator routes and developer-only diagnostics, never shown to users.
  * - the Health screens and their feature module: owned separately, not part of this change.
+ * - hiku/context.ts: the sentences Hiku sends to the model. The privacy preview shows the exact request
+ *   text, so it is the payload and stays in the same language as the rest of the prompt (English).
  */
 const excluded=[
   /(^|\/)dev\//,/(^|\/)__tests__\//,
   /^app\/\(tabs\)\/progress\/health[^/]*\.tsx$/,
   /^src\/features\/health\//,
   /^src\/features\/diagnostics\//,
+  /^src\/features\/hiku\/context\.ts$/,
 ];
 
 function sourceFiles(dir:string):string[]{
@@ -93,6 +96,11 @@ describe('scanner',()=>{
     expect(scan("const a=<B label={ar?'حفظ':'Save'}/>;")).toEqual([]);
     expect(scan("export const f=()=>{return db.run('SELECT id FROM sets');};",'sample.ts')).toEqual([]);
     expect(scan("export const f=()=>{return 'granted';};",'sample.ts')).toEqual([]);
+  });
+  test('a constant marked as stored ids is skipped, an unmarked one is not',()=>{
+    const ids="const options=['No watch','Other'] as const;";
+    expect(scan(ids,'sample.ts')).toEqual(['No watch']);
+    expect(scan('/** i18n-stored-ids: mapped through t() */\n'+ids,'sample.ts')).toEqual([]);
   });
   test('allow-list boundaries are ASCII-only, so Arabic neighbours do not hide English',()=>{
     expect(stripAllowed('80 kg',allowed).trim()).toBe('80');

@@ -75,6 +75,19 @@ export function literalFragments(node: ts.Node | undefined, sf: ts.SourceFile): 
   return [];
 }
 
+function unwrap(node: ts.Expression): ts.Expression {
+  return ts.isAsExpression(node) || ts.isSatisfiesExpression(node) || ts.isParenthesizedExpression(node)
+    ? unwrap(node.expression) : node;
+}
+
+/** Opt-out for a constant whose strings are stored ids that the screen maps through t() before showing. */
+export const STORED_ID_MARKER = 'i18n-stored-ids';
+function hasStoredIdMarker(node: ts.VariableDeclaration, sf: ts.SourceFile): boolean {
+  const statement = node.parent.parent;
+  const ranges = ts.getLeadingCommentRanges(sf.text, statement.getFullStart()) ?? [];
+  return ranges.some(range => sf.text.slice(range.pos, range.end).includes(STORED_ID_MARKER));
+}
+
 function propName(name: ts.PropertyName | ts.JsxAttributeName): string | null {
   if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
   return null;
@@ -138,8 +151,10 @@ export function scanSource(
       if (name && COPY_KEYS.has(name) && !isDiagnosticMessage(node, name)) {
         check(literalFragments(node.initializer, sf), name + ':', isTsx ? 'any' : 'copy');
       }
-    } else if (ts.isVariableDeclaration(node) && node.initializer) {
-      check(literalFragments(node.initializer, sf), 'const', 'sentence');
+    } else if (ts.isVariableDeclaration(node) && node.initializer && !hasStoredIdMarker(node, sf)) {
+      const init = unwrap(node.initializer);
+      const values = ts.isArrayLiteralExpression(init) ? init.elements : [init];
+      check(values.flatMap(value => literalFragments(value, sf)), 'const', 'sentence');
     } else if (ts.isParameter(node) && node.initializer) {
       check(literalFragments(node.initializer, sf), 'default value', 'sentence');
     } else if (!isTsx && ts.isReturnStatement(node)) {
