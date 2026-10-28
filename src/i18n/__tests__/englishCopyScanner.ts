@@ -81,14 +81,29 @@ function propName(name: ts.PropertyName | ts.JsxAttributeName): string | null {
 }
 
 /**
- * JSX positions read literal letters as copy. Plain .ts files also hold codes and SQL, so there only
- * sentence-like text counts: several words, a capital first letter, or a word glued to a value
- * with a space (`' each'`, `' days ago'`).
+ * - 'any': JSX text and copy props, where every literal letter is read by the user.
+ * - 'copy': plain .ts results and copy keys. Codes and SQL live there too, so only text that looks like
+ *   copy counts: several words, a capital first letter, or a word glued to a value (`' each'`).
+ * - 'sentence': constants and default values, where a single capitalised word may be a key (`'Sun'`).
  */
-function looksLikeCopy(text: string, strict: boolean): boolean {
-  if (!letter.test(text)) return false;
+type Mode = 'any' | 'copy' | 'sentence';
+const sql = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|PRAGMA|WITH)\s/;
+
+function looksLikeCopy(text: string, mode: Mode): boolean {
+  if (!letter.test(text) || sql.test(text)) return false;
+  if (mode === 'any') return true;
   const trimmed = text.trim();
-  return strict || /\s/.test(trimmed) || /^[A-Z]/.test(trimmed) || trimmed !== text;
+  const sentence = /\s/.test(trimmed) || trimmed !== text;
+  return mode === 'sentence' ? sentence : sentence || /^[A-Z]/.test(trimmed);
+}
+
+/**
+ * `{ code: 'db-error', message: '...' }` is a developer diagnostic that no screen renders (screens map the
+ * failure to their own `t()` message), so a `message` next to a `code` is not copy.
+ */
+function isDiagnosticMessage(node: ts.PropertyAssignment, name: string): boolean {
+  if (name !== 'message' || !ts.isObjectLiteralExpression(node.parent)) return false;
+  return node.parent.properties.some(p => ts.isPropertyAssignment(p) && propName(p.name) === 'code');
 }
 
 export function scanSource(
@@ -101,11 +116,11 @@ export function scanSource(
   const report = (pos: number, text: string, where: string) => {
     hits.push({ line: sf.getLineAndCharacterOfPosition(pos).line + 1, text: text.trim(), where });
   };
-  const check = (fragments: Fragment[], where: string, strict: boolean) => {
+  const check = (fragments: Fragment[], where: string, mode: Mode) => {
     for (const fragment of fragments) {
       if (translationKeys.has(fragment.text)) continue;
       const rest = stripAllowed(fragment.text, allowed);
-      if (looksLikeCopy(rest, strict)) report(fragment.pos, fragment.text, where);
+      if (looksLikeCopy(rest, mode)) report(fragment.pos, fragment.text, where);
     }
   };
   const visit = (node: ts.Node) => {
@@ -113,21 +128,28 @@ export function scanSource(
       const rest = stripAllowed(node.text, allowed);
       if (letter.test(rest)) report(node.getStart(sf), node.text, 'JSX text');
     } else if (ts.isJsxExpression(node) && (ts.isJsxElement(node.parent) || ts.isJsxFragment(node.parent))) {
-      check(literalFragments(node.expression, sf), 'JSX child', true);
+      check(literalFragments(node.expression, sf), 'JSX child', 'any');
     } else if (ts.isJsxAttribute(node)) {
       const name = propName(node.name);
       const init = node.initializer;
-      if (name && COPY_PROPS.has(name) && init) check(literalFragments(init, sf), '<' + name + '>', true);
+      if (name && COPY_PROPS.has(name) && init) check(literalFragments(init, sf), '<' + name + '>', 'any');
     } else if (ts.isPropertyAssignment(node)) {
       const name = propName(node.name);
-      if (name && COPY_KEYS.has(name)) check(literalFragments(node.initializer, sf), name + ':', isTsx);
+      if (name && COPY_KEYS.has(name) && !isDiagnosticMessage(node, name)) {
+        check(literalFragments(node.initializer, sf), name + ':', isTsx ? 'any' : 'copy');
+      }
+    } else if (ts.isVariableDeclaration(node) && node.initializer) {
+      check(literalFragments(node.initializer, sf), 'const', 'sentence');
+    } else if (ts.isParameter(node) && node.initializer) {
+      check(literalFragments(node.initializer, sf), 'default value', 'sentence');
     } else if (!isTsx && ts.isReturnStatement(node)) {
-      check(literalFragments(node.expression, sf), 'return', false);
+      check(literalFragments(node.expression, sf), 'return', 'copy');
     } else if (!isTsx && ts.isArrowFunction(node) && !ts.isBlock(node.body)) {
-      check(literalFragments(node.body, sf), 'arrow result', false);
+      check(literalFragments(node.body, sf), 'arrow result', 'copy');
     } else if (!isTsx && ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      (ts.isPropertyAccessExpression(node.left) || ts.isElementAccessExpression(node.left))) {
-      check(literalFragments(node.right, sf), 'assignment', false);
+      (ts.isPropertyAccessExpression(node.left) || ts.isElementAccessExpression(node.left)) &&
+      !(ts.isPropertyAccessExpression(node.left) && node.left.name.text === 'name')) {
+      check(literalFragments(node.right, sf), 'assignment', 'copy');
     }
     ts.forEachChild(node, visit);
   };
