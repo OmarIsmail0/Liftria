@@ -29,9 +29,11 @@ export default function HikuHome(){
     onPress={()=>router.push('/(tabs)/hiku/describe')}/>
    <Button label={t('hikuK.apiKey')} variant="secondary" onPress={()=>router.push('/settings/hiku-key')}/>
   </Card>
-  <Card title={t('hikuK.photoTitle')}>
-   <Chip kind="pending" label={t('hikuK.pending')}/>
-   <Typography tone="secondary">{t('hikuK.photoPending')}</Typography>
+  <Card rim="hiku" title={t('hikuPhoto.title')}>
+   <Chip kind="pending" label={t('hikuPhoto.beta')}/>
+   <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>
+   <Button label={t('hikuPhoto.open')} variant="secondary"
+    onPress={()=>router.push('/(tabs)/hiku/photo')}/>
   </Card>
   <Card title={t('hikuK.usageTitle')}>
    <Typography tone="secondary">{requests?t('hikuK.requestCount',{count:requests}):t('hikuK.noRequests')}</Typography>
