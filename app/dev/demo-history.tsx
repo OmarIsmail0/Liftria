@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Card, Header, Screen, Typography } from '../../src/design/primitives';
 import { dbOperation } from '../../src/services/database';
 import { newGymId, ensureExercisePack } from '../../src/services/database/exerciseLibrary';
@@ -9,7 +9,7 @@ export default function DemoHistory(){
  const once=useRef(false);
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState<string|null>(null);
- const create=async()=>{
+ const create=useCallback(async()=>{
   if(busy)return;setBusy(true);setError(null);
   const seeded=await ensureExercisePack();
   if(!seeded.ok){setError('Offline exercise pack unavailable.');setBusy(false);return;}
@@ -51,10 +51,10 @@ export default function DemoHistory(){
   });
   if(result.ok)router.replace('/(tabs)/train/history');
   else{setError('Could not create the demo sessions.');setBusy(false);}
- };
+ },[busy]);
  useEffect(()=>{if(auto!=='1'||once.current)return;once.current=true;void create();
  // Only honor the explicit auto param once when this hidden screen mounts.
- },[auto]);
+ },[auto,create]);
  return <Screen>
   <Header title="Demo history" onBack={()=>router.back()}/>
   <Card rim="train" title="Developer fixture">

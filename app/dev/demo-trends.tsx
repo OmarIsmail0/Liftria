@@ -1,5 +1,5 @@
 import {router,useLocalSearchParams} from 'expo-router';
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {Button,Card,Header,Screen,Typography} from '../../src/design/primitives';
 import {bundledFoods,dayOffset,localDay,type Food} from '../../src/features/eat/foodCatalog';
 import {readDiaryDay,logFood} from '../../src/features/eat/diaryRepository';
@@ -11,7 +11,7 @@ import {listLocalWeights,saveWeight} from '../../src/features/progress/weightRep
 export default function DemoTrends(){
  const {auto,view}=useLocalSearchParams<{auto?:string;view?:'nutrition'|'body'}>();
  const once=useRef(false);const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null);
- async function create(){
+ const create=useCallback(async()=>{
   if(busy)return;
   setBusy(true);setError(null);
   const today=localDay(new Date()),foods=bundledFoods();
@@ -45,12 +45,12 @@ export default function DemoTrends(){
    }
   }
   router.replace(view==='nutrition'?'/(tabs)/progress/nutrition':'/(tabs)/progress/body');
- }
+ },[busy,view]);
  useEffect(()=>{
   if(auto!=='1'||once.current)return;
   once.current=true;void Promise.resolve().then(create);
  // Only the explicit developer auto flag creates screenshot fixtures.
- },[auto]);
+ },[auto,create]);
  return <Screen>
   <Header title="Demo trends" onBack={()=>router.back()}/>
   <Card rim="health" title="Developer screenshot data">
