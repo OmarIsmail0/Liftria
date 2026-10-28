@@ -67,8 +67,9 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 - **Local CLI (fallback):** `~/.local/bin/cursor-agent -p "<task>" --trust --force`. PR #29 (R1) was
   built this way.
 - **Model:** always set `model` when launching. Without it Cursor picks its own default, which missed
-  things on PR T (guessed status names instead of reading the code). Start with
-  `claude-opus-5-thinking-high`; switch (e.g. `gpt-5.6-sol-high`) if an agent keeps missing things.
+  things on PR T (guessed status names instead of reading the code). PR U on
+  `claude-opus-5-thinking-high` was clean. Owner (2026-10-28): prefer Opus 5.5 (`claude-opus-5-5-high`;
+  the CLI lists it, the API's /v0/models list doesn't yet, so check the launch is accepted).
   A running agent can't change model: stop it and launch a new one.
 - **Treat Cursor like GPT (owner, 2026-10-28: "it might be an idiot"):** its output is a claim. Run the
   checks yourself, read the whole diff, verify its assumptions against the code, and keep the same rules.
