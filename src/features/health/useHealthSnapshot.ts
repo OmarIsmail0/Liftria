@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState,Platform } from 'react-native';
 import { healthConnect } from '../../services/health';
 import { listCachedHealth, saveHealthValues } from '../../services/database';
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
@@ -27,6 +27,9 @@ let lastForegroundRead = 0;
 let lastActualReadAt: string | null = null;
 
 export async function loadHealthSnapshot(metrics: readonly MetricType[], readLive = true): Promise<HealthSnapshot> {
+  // An Android backup may contain Health Connect cache rows. Never present them
+  // as live iOS Health data, or attempt any native Health Connect call on iPhone.
+  if(Platform.OS!=='android')return {...empty,availability:'unsupported',loaded:true};
   const availability = await healthConnect.getAvailability();
   const available = availability === 'available';
   const permissions: Partial<Record<MetricType, PermissionState>> = available ? await healthConnect.getPermissionStatus([...metrics]) : {};
