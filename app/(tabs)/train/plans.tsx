@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
+import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -8,7 +9,7 @@ import { listPlans, listTemplates, savePlan, type Plan, type Template } from '..
 import { DAYS, scheduledTemplate } from '../../../src/features/train/weekPlan';
 
 export default function PlansScreen() {
-  const { t: tr } = useLanguage();
+  const { t: tr, language } = useLanguage();
   const {theme}=useTheme();
   const [templates,setTemplates]=useState<Template[]>([]);
   const [plans,setPlans]=useState<Plan[]>([]);
@@ -57,11 +58,11 @@ export default function PlansScreen() {
     <Header title={tr('p4.plans.0')} subtitle={tr('p4.plans.1')} onBack={()=>router.back()}/>
     <Card title={tr('p4.plans.2')}>
       {templates.length===0?<Typography tone="secondary">{tr('p4.plans.10')}</Typography>:
-        templates.map(t=><ListRow key={t.id} title={t.name}
-          detail={t.exercises.length+' exercises'}
-          onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:t.id}})}
+        templates.map(template=><ListRow key={template.id} title={template.name}
+          detail={tr((`plans.exerciseCount.${pluralForm(language,template.exercises.length)}`) as TranslationKey,{count:template.exercises.length})}
+            onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:template.id}})}
           suffix={<Button label={tr('p4.plans.3')} variant="ghost"
-            onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:t.id}})}/>}/>)}
+            onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:template.id}})}/>}/>)}
       <Button label={tr('p4.plans.4')} variant="train" onPress={()=>router.push('/(tabs)/train/template')}/>
     </Card>
     <Card title={tr('p4.plans.5')}>

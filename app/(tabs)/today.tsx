@@ -213,7 +213,7 @@ export default function TodayTab() {
               ? t('today.staleUnverified',{time:age(source.latestAt)})
               : t('today.deviceNotVerified')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
-              <Typography>{formatNumber(language,source.value)} bpm</Typography>
+              <Typography>{t('today.bpmValue',{count:source.value})}</Typography>
               <Chip kind="pending" label={t('today.unverified')} />
               {heartRateTodayStatus(source.latestAt, now).stale &&
                 <Chip kind="stale" label={age(source.latestAt)} />}

@@ -311,8 +311,8 @@ export default function ActiveWorkoutScreen() {
               {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t('active.loggedA11y',{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:weightUnit,reps:slot.logged.reps})}
                 onPress={()=>selectEdit(slot.logged!)}>
                 <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit)} × {slot.logged.reps}
-                {slot.logged.rpe!=null?' · RPE '+slot.logged.rpe:''}
-                {slot.logged.rir!=null?' · RIR '+slot.logged.rir:''} · {t('active.edit')}</Typography>
+                {slot.logged.rpe!=null?' · '+t('session.rpeValue',{count:slot.logged.rpe}):''}
+                {slot.logged.rir!=null?' · '+t('session.rirValue',{count:slot.logged.rir}):''} · {t('active.edit')}</Typography>
               </Pressable>:
                 <Typography tone="tertiary" size="small">{t('active.notLogged')}</Typography>}
             </View>

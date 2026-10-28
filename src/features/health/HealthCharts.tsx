@@ -3,18 +3,39 @@ import { View } from 'react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 import { useTheme } from '../../design/ThemeProvider';
 import { Typography } from '../../design/primitives';
+import { bidiIsolate, formatNumber, pluralForm, type AppLanguage, type TranslationKey } from '../../i18n';
+import { useLanguage } from '../../i18n/LanguageProvider';
 import type { HeartSample, HourlySeries } from './presentation';
+
+type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
+
+function chartSource(t: Translate, label: string): string {
+  if (label === 'Phone') return t('healthMetric.sourcePhone');
+  if (label === 'Unknown source') return t('healthMetric.sourceUnknown');
+  if (label === 'Samsung Health') return t('healthChart.samsung');
+  return label;
+}
+
+function countKey(language: AppLanguage, base: string, count: number): TranslationKey {
+  return `${base}.${pluralForm(language, count)}` as TranslationKey;
+}
 
 /** Read-only chart: each provider gets its own plot, never a blended sum. */
 export function StepsChart({ series, period }: { series: HourlySeries[]; period: 'day' | 'week' }) {
   const { theme } = useTheme();
+  const { t, language } = useLanguage();
   const highest = Math.max(1, ...series.flatMap(v => v.values));
-  if (!series.length) return <Typography tone="secondary">No source-backed steps to plot.</Typography>;
+  if (!series.length) return <Typography tone="secondary">{t('healthChart.noSteps')}</Typography>;
   return <View style={{ gap: theme.space[4] }}>
-    {series.map(source => <View key={source.origin} style={{ gap: theme.space[2] }}
+    {series.map(source => {
+      const total = source.values.reduce((sum, value) => sum + value, 0);
+      const sourceName = chartSource(t, source.label);
+      return <View key={source.origin} style={{ gap: theme.space[2] }}
       accessible accessibilityRole="image"
-      accessibilityLabel={`${source.label}, ${period === 'day' ? 'hourly' : 'daily'} steps: ${source.values.reduce((sum, value) => sum + value, 0)} in charted intervals`}>
-      <Typography size="small" bold>{source.label} · separate source</Typography>
+      accessibilityLabel={t(countKey(language, period === 'day' ? 'healthChart.stepsHourly' : 'healthChart.stepsDaily', total), {
+        source: sourceName, count: total,
+      })}>
+      <Typography size="small" bold>{t('healthChart.separate', { source: sourceName })}</Typography>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end',
         minHeight: 112, gap: theme.space[1] }}>
         {source.values.map((value, hour) =>
@@ -24,16 +45,18 @@ export function StepsChart({ series, period }: { series: HourlySeries[]; period:
             borderRadius: theme.radius.sm }} />)}
       </View>
       <Typography tone="secondary" size="small">{period === 'day'
-        ? 'Midnight · 6 AM · Noon · 6 PM · Midnight'
-        : '7 days ago · Today'}</Typography>
-    </View>)}
+        ? t('healthChart.dayAxis')
+        : t(countKey(language, 'healthChart.weekAxis', 7), { count: 7 })}</Typography>
+    </View>;
+    })}
   </View>;
 }
 
 export function HeartRateChart({ samples }: { samples: HeartSample[] }) {
   const { theme } = useTheme();
+  const { t, language } = useLanguage();
   const [width, setWidth] = useState(300);
-  if (!samples.length) return <Typography tone="secondary">No heart-rate samples to plot.</Typography>;
+  if (!samples.length) return <Typography tone="secondary">{t('healthChart.noHeart')}</Typography>;
   const earliest = Date.parse(samples[0]!.time);
   const latest = Date.parse(samples[samples.length - 1]!.time);
   const min = Math.min(...samples.map(p => p.bpm)) - 4;
@@ -42,7 +65,11 @@ export function HeartRateChart({ samples }: { samples: HeartSample[] }) {
   return <View onLayout={e => setWidth(e.nativeEvent.layout.width)}
     style={{ minHeight: 154, gap: theme.space[2] }}
     accessible accessibilityRole="image"
-    accessibilityLabel={`${samples.length} heart-rate samples. Range ${Math.round(min + 4)} to ${Math.round(max - 4)} beats per minute. App origins do not verify devices.`}>
+    accessibilityLabel={t(countKey(language, 'healthChart.heartA11y', samples.length), {
+      count: samples.length,
+      min: bidiIsolate(language, formatNumber(language, Math.round(min + 4))),
+      max: bidiIsolate(language, formatNumber(language, Math.round(max - 4))),
+    })}>
     <Svg width={plotWidth} height={126} viewBox={`0 0 ${plotWidth} 126`}>
       <Line x1={4} y1={122} x2={plotWidth - 4} y2={122}
         stroke={theme.color.border.subtle} strokeWidth={1} />
@@ -55,6 +82,6 @@ export function HeartRateChart({ samples }: { samples: HeartSample[] }) {
           fill={theme.color.domain.health} />;
       })}
     </Svg>
-    <Typography tone="secondary" size="small">Samples, not an averaged resting heart rate. Device is unverified.</Typography>
+    <Typography tone="secondary" size="small">{t('healthChart.heartCaption')}</Typography>
   </View>;
 }
