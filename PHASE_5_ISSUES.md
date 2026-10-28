@@ -54,14 +54,20 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **From PR #26's screenshots:** in Arabic, the Hiku review totals line mixes English units into Arabic text and the order comes out scrambled ("924 kcal · 31 بروتين g …"); use translated units and one direction-safe string per value. Hiku review items are pill buttons with long concatenated labels that wrap into two centered lines; make them list rows (name, grams · kcal, trailing status).
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - **Don't touch** `src/design/**` (Claude's, PR #27), the Health screens, or the stack layouts (PR S). Build on the existing primitives.
-7. **PR T: `Phase 5 / Arabic copy sweep`** (builder: **Cursor**; started from PR #29's branch, so merge `main` in with a merge commit now that #29 has merged)
+7. ~~**PR T: `Phase 5 / Arabic copy sweep`**~~ DONE: PR #30 merged (2026-10-28). (builder: **Cursor**; started from PR #29's branch, so merge `main` in with a merge commit now that #29 has merged)
    - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. `kg` and `lb` stay Latin (app convention).
    - **One direction-safe value:** every number with its unit is one string with a no-break space (U+00A0) between them, wrapped with `bidiIsolate()` where it sits inside Arabic text, so it never wraps or reorders.
    - **Counted phrases:** every remaining Arabic count goes through `pluralForm()` with correct forms (11–99 take the singular accusative: "14 يومًا"). Where a count sits in "X of Y" phrasing, reword to avoid a counted noun ("الأيام المسجلة: 27 من 28").
    - **Untranslated values on screen:** Hiku usage rows show the raw model id and request status; show the model's display name and a translated status.
    - **Guard test:** a Jest test that fails if any `ar.ts` value contains Latin `kcal`, ` g`, ` mg` or ` ml`, and one that checks every `*.many` count key in `ar.ts` uses the singular accusative.
    - **Don't touch** `src/design/**` (Claude's; the Orb's "kcal" label is Claude's to fix there), the Health screens or the stack layouts (PR S).
-8. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+8. **PR U: `Phase 5 / Number fields`** (builder: **Cursor**, branch from `main`) — from PR #30's screenshots
+   - **Bug:** Eat → Targets fills its fields with raw floats ("23.112000000000002", "240.058"): `app/(tabs)/eat/targets.tsx` uses `String(value)` for the prefill. Find every `Field` in the app whose value is prefilled from a stored or computed number (targets, profile, portion, custom food, water size, plate/bar weights, onboarding) and format it for editing: kcal as a whole number; grams, kg and lb to at most 1 decimal; no trailing zeros; Western digits. Never change what is stored unless the user edits and saves.
+   - One shared helper (e.g. `formatEditableNumber(value, kind)`), unit-tested with float noise (0.1+0.2, 23.112000000000002), integers, null (stays empty, never "0") and negative/NaN input.
+   - **Arabic gram label:** the portion chip says "جم" while the rest of the app now says "غ". Use "غ" everywhere.
+   - **Don't touch** `src/design/**` or the Health screens and stack layouts (PR S).
+   - **Claude (not this PR):** the over-target Eat ring still draws a dark square in Arabic (PR #30 screenshots); R1's `EatRing` wrapper didn't fix it. Claude fixes it in `Orb` after PR #27 merges and removes the wrapper.
+9. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header`, and gating every `dev/*` route out of release builds except what the emulator check needs.
