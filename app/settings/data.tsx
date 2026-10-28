@@ -12,6 +12,7 @@ import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '..
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 import {exportBackup,parseBackup,backupPreview,previewGroups,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv} from '../../src/features/settings/csvExport';
 
 /** In-memory sample never written to SQLite or accepted by restoreBackup. */
@@ -173,7 +174,7 @@ export default function DataAndStorage() {
        detail={t('dataStorage.importDetail')}
        onPress={()=>router.push('/import')}/>
       {imported&&<ListRow title={t('dataStorage.undoImport')}
-       detail={t('dataStorage.undoDetail',{count:imported.count,source:imported.source})}
+       detail={t('dataStorage.undoDetail',{count:imported.count,source:importerLabel(imported.source)})}
        onPress={()=>setUndoVisible(true)}/>}
     </Card>
     <Card title={t('dataStorage.cacheTitle')}>

@@ -1,3 +1,4 @@
+import { importerLabel } from '../../../src/features/import/importCsv';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { formatNumber } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -82,7 +83,7 @@ export default function SessionDetail(){
    <ListRow title={t('sessionDetail.duration')} detail={t('sessionDetail.minute',{count:Math.round(duration/60000)})}/>
    <ListRow title={t('sessionDetail.workingSets')} detail={formatNumber(language,stats.sets)}/>
    <ListRow title={t('sessionDetail.volume')} detail={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+unit}/>
-   {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:data.session.importer})}
+   {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:importerLabel(data.session.importer)})}
     {data.session.importedAt?t('sessionDetail.importedAt',{date:new Date(data.session.importedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}):''}
    </Typography>}
   </Card>

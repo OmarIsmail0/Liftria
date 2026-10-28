@@ -15,6 +15,9 @@ export class ImportParseError extends Error{
  }
 }
 export const MAX_CSV_BYTES=25*1024*1024;
+/** Stored importer ids are lowercase codes; people see the app's own name. */
+export const importerLabel=(importer:string):string=>
+ ({hevy:'Hevy',strong:'Strong',fitnotes:'FitNotes',csv:'CSV'} as Record<string,string>)[importer]??importer;
 const normalized=(s:string)=>s.toLocaleLowerCase('en').replace(/[^a-z0-9]+/g,'');
 /** UTF-8 code points; no Web Crypto / network APIs (Hermes-compatible). */
 export function utf8Bytes(s:string):number[]{

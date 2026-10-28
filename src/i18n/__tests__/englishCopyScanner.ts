@@ -15,7 +15,7 @@ export const COPY_PROPS = new Set([
 ]);
 /** Object-literal keys that carry the same kind of text (option lists, results returned to a screen). */
 export const COPY_KEYS = new Set([
-  ...COPY_PROPS, 'note', 'body', 'text', 'reason', 'summary', 'name',
+  ...COPY_PROPS, 'note', 'body', 'text', 'reason', 'summary', 'name', 'before', 'after',
 ]);
 
 export type Hit = { line: number; text: string; where: string };

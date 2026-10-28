@@ -40,7 +40,7 @@ export default function Records(){
     title={name+(row.side?' · '+sideLabel(row.side,language):'')}
     detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
       row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:t('records.mostReps')+' ' +row.maxReps)+
-      ' · '+new Date(row.latestAt).toLocaleDateString()}
+      ' · '+new Date(row.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:row.exerciseId}})}
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>

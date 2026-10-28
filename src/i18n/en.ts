@@ -1889,5 +1889,8 @@ export const en = {
   "im1.importedWorkout": "Imported workout",
   "today.heartValue": "{value} bpm",
   "strength.thousands": "{count}k",
+  "im3.dateOnlyNote": "Date-only export; sets timestamped at noon local.",
+  "im2.firstRecord": "First record",
+  "im2.repsRecord": "Repetitions record",
 } as const;
 export type TranslationKey = keyof typeof en;

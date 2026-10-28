@@ -1,4 +1,5 @@
 /** Atomic import persistence; never retains source CSV bytes or a file copy. */
+import { translate, type AppLanguage } from '../../i18n';
 import { dbOperation, type DbResult } from '../../services/database';
 import { newGymId, listExercises, bundledExercises } from '../../services/database/exerciseLibrary';
 import { readStrengthObservations } from '../../services/database/historyRepository';
@@ -51,7 +52,7 @@ export async function lastImportBatch():Promise<DbResult<ImportBatch|null>>{
 }
 /** Records, muscle map and history are derived live from the rows this transaction inserts. */
 export async function commitImport(plan:ImportPlan,
-  onProgress?:(completed:number,total:number)=>void):Promise<DbResult<ImportOutcome>>{
+  onProgress?:(completed:number,total:number)=>void,language:AppLanguage='en'):Promise<DbResult<ImportOutcome>>{
  if(!canImportPlan(plan))return {ok:false,error:{code:'db-error',message:'Import needs a nonempty valid plan and explicit units.'}};
  return dbOperation(async db=>{
   const id=newGymId(),made:string[]=[],seededPack:string[]=[],when=new Date().toISOString();
@@ -113,7 +114,7 @@ export async function commitImport(plan:ImportPlan,
     await tx.runAsync('INSERT INTO sessions(id,title,source,importer,import_batch_id,started_at,ended_at,notes,state) '+
      "VALUES(?,?,'imported-file',?,?,?,?,?,'finished')",[
       sessionId,workout.title,plan.parsed.source,id,workout.startedAt,workout.endedAt,
-      workout.dateOnly?'Date-only export; sets timestamped at noon local.':null,
+      workout.dateOnly?translate(language,'im3.dateOnlyNote'):null,
      ]);
     const exerciseIds=new Map<string,string>();let position=0;
     for(const set of workout.sets){

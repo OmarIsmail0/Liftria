@@ -1248,7 +1248,7 @@ export const ar: Record<TranslationKey, string> = {
   "profileSettings.unspecified": "أفضل عدم الإفصاح",
   "profileSettings.birthYear": "سنة الميلاد",
   "profileSettings.yearExample": "مثال: 1996",
-  "profileSettings.heightCm": "الطول (cm)",
+  "profileSettings.heightCm": "الطول (سم)",
   "profileSettings.heightFeet": "الطول (قدم)",
   "profileSettings.heightInches": "الطول (بوصة)",
   "profileSettings.weightKg": "الوزن (kg)",
@@ -1890,4 +1890,7 @@ export const ar: Record<TranslationKey, string> = {
   "im1.importedWorkout": "تمرين مستورد",
   "today.heartValue": "{value} نبضة/د",
   "strength.thousands": "{count} ألف",
+  "im3.dateOnlyNote": "تصدير بالتاريخ فقط؛ سُجّلت المجموعات عند الظهر بالتوقيت المحلي.",
+  "im2.firstRecord": "أول رقم قياسي",
+  "im2.repsRecord": "رقم قياسي في التكرارات",
 };
