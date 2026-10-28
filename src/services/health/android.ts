@@ -2,8 +2,10 @@ import {
   getSdkStatus, SdkAvailabilityStatus, initialize, getGrantedPermissions,
   requestPermission, readRecords, aggregateRecord,
 } from 'react-native-health-connect';
-import type { AggregateValue, HealthDataSource, HealthRecord, MetricType, PermissionState, ReadResult } from './types';
-import { metricTypes } from './types';
+import type { AggregateValue, HealthDataSource, HealthRecord, MetricType, PermissionState, ReadResult, EnergyMetric, DailyEnergyRow } from './types';
+import { metricTypes, energyMetrics } from './types';
+export { energyMetrics } from './types';
+export type { EnergyMetric, DailyEnergyRow } from './types';
 import { normalizeHealthRecord } from './normalize';
 
 const recordType = {
@@ -111,14 +113,6 @@ export async function requestHistoryReadPermission(): Promise<'granted' | 'denie
  * Health Connect aggregate totals describe their query window, NOT necessarily complete daily
  * expenditure. Samsung Health may only contribute exercise intervals to these aggregates.
  */
-export const energyMetrics = ['active-calories', 'total-calories', 'basal-metabolic-rate'] as const;
-export type EnergyMetric = typeof energyMetrics[number];
-export type DailyEnergyRow =
-  | { metric: EnergyMetric; date: string; status: 'ok'; value: AggregateValue }
-  // Health Connect returned a total but no app contributed data (e.g. its default basal estimate).
-  | { metric: EnergyMetric; date: string; status: 'no-source'; value: AggregateValue }
-  | { metric: EnergyMetric; date: string; status: 'empty' | 'unavailable' | 'permission-denied' | 'error'; message?: string };
-
 /** Convert a documented energy aggregate. Missing metric values are NOT zero calories. */
 export function normalizeEnergyAggregate(
   metric: EnergyMetric, raw: unknown, windowStart: string, windowEnd: string,

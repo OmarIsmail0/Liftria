@@ -1,8 +1,10 @@
 /** The iOS Metro entrypoint for Health. Never import react-native-health-connect here:
  * it has Android-only native APIs. HealthKit is deliberately not enabled yet.
  * Return unsupported/unknown rather than synthetic or Android-cached readings. */
-import {metricTypes,type AggregateValue,type HealthDataSource,type MetricType,
- type PermissionState} from './types';
+import {metricTypes,energyMetrics,type AggregateValue,type HealthDataSource,
+ type PermissionState,type EnergyMetric,type DailyEnergyRow} from './types';
+export {energyMetrics} from './types';
+export type {EnergyMetric,DailyEnergyRow} from './types';
 export const healthConnect:HealthDataSource={
  id:'health-connect',
  async getAvailability(){return 'unsupported';},
@@ -17,12 +19,14 @@ export const healthConnect:HealthDataSource={
 export async function requestHistoryReadPermission():Promise<'unavailable'>{
  return 'unavailable';
 }
-export const energyMetrics=['active-calories','total-calories','basal-metabolic-rate'] as const;
-export type EnergyMetric=typeof energyMetrics[number];
-export type DailyEnergyRow=
- |{metric:EnergyMetric;date:string;status:'ok'|'no-source';value:AggregateValue}
- |{metric:EnergyMetric;date:string;status:'empty'|'unavailable'|'permission-denied'|'error';message?:string};
 /** No data is sourced from HealthKit until a separately approved integration. */
 export function normalizeEnergyAggregate(_metric:EnergyMetric,_raw:unknown,
  _windowStart:string,_windowEnd:string):AggregateValue|null{return null;}
 export async function readDailyEnergy(_days=7):Promise<DailyEnergyRow[]>{return [];}
+
+/** Compile-time export parity: adding a runtime export on Android must also update
+ * the iOS adapter or tsc fails. The type-only import does not load native code. */
+const _parity:Record<keyof typeof import('./android'),unknown>={
+ healthConnect,requestHistoryReadPermission,energyMetrics,normalizeEnergyAggregate,readDailyEnergy,
+};
+void _parity;
