@@ -1,4 +1,4 @@
-import {DEFAULT_HIKU_MODEL,HIKU_MODELS,HIKU_PRICE_VERSION,estimateHikuCostUsd} from '../models';
+import {DEFAULT_HIKU_MODEL,HIKU_MODELS,HIKU_PRICE_VERSION,classifyHikuCostUsd,estimateHikuCostUsd,formatHikuUsd} from '../models';
 import {hikuMealSchema,parseHikuBody,resolveHikuItem,type HikuItem} from '../mealSchema';
 import type {Food} from '../../eat/foodCatalog';
 test('model selection has two explicit values and token cost stays an estimate',()=>{
@@ -9,6 +9,15 @@ test('model selection has two explicit values and token cost stays an estimate',
  expect(estimateHikuCostUsd('claude-sonnet-5-5',1000,1000)).toBeCloseTo(0.012,8);
  expect(estimateHikuCostUsd('claude-haiku-5-5',100001,1000)).toBeGreaterThan(0.05);
  expect(estimateHikuCostUsd('claude-haiku-5-5',-1,10)).toBeNull();
+});
+test('usage cost labels keep cents readable and preserve unknown costs',()=>{
+ expect(classifyHikuCostUsd(null)).toBe('unknown');
+ expect(classifyHikuCostUsd(-0.1)).toBe('unknown');
+ expect(classifyHikuCostUsd(0)).toBe('amount');
+ expect(classifyHikuCostUsd(0.0099)).toBe('less-than-cent');
+ expect(classifyHikuCostUsd(0.01)).toBe('amount');
+ expect(formatHikuUsd(0)).toBe('$0.00');
+ expect(formatHikuUsd(0.0349)).toBe('$0.03');
 });
 const item:HikuItem={name_en:'Koshari',name_ar:'كشري',grams:200,kcal:333,
  protein:10,carbs:45,fat:12,confidence:'check'};
