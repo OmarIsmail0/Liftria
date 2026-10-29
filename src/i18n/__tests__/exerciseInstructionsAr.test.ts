@@ -13,6 +13,7 @@ const listFiles = [
   'arabic-instructions-top100.txt',
   'arabic-instructions-next120.txt',
   'arabic-instructions-batch3.txt',
+  'arabic-instructions-batch4.txt',
 ];
 const ids = listFiles.flatMap(file =>
   readFileSync(join(process.cwd(), 'docs', 'phase5', file), 'utf8')
@@ -44,14 +45,15 @@ function invalidSteps(translations: Translations) {
 }
 
 describe('Arabic common-exercise instructions guards', () => {
-  it('covers exactly the listed pack IDs from the three lists, with no duplicates', () => {
+  it('covers exactly the listed pack IDs from the four lists, with no duplicates', () => {
     expect(listFiles).toEqual([
       'arabic-instructions-top100.txt',
       'arabic-instructions-next120.txt',
       'arabic-instructions-batch3.txt',
+      'arabic-instructions-batch4.txt',
     ]);
-    expect(new Set(ids).size).toBe(370);
-    expect(ids).toHaveLength(370);
+    expect(new Set(ids).size).toBe(520);
+    expect(ids).toHaveLength(520);
     expect(ids.every(id => englishById.has(id))).toBe(true);
     expect(coverage(EXERCISE_INSTRUCTIONS_AR, ids)).toEqual({ missing: [], extra: [] });
   });
@@ -89,7 +91,7 @@ describe('localizedExerciseInstructions', () => {
       .toEqual({ steps: squat.instructions, untranslated: false });
   });
   it('keeps English steps with a note for an unlisted pack exercise in Arabic', () => {
-    const exercise = { id: 'Ab_Roller', source: 'pack' as const, instructions: ['Original English'] };
+    const exercise = { id: 'Adductor', source: 'pack' as const, instructions: ['Original English'] };
     expect(localizedExerciseInstructions('ar', exercise))
       .toEqual({ steps: ['Original English'], untranslated: true });
   });
