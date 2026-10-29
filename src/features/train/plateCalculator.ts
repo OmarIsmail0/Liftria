@@ -56,7 +56,7 @@ export function isPlateLoadedBarbell(type:ExerciseType,equipment:string|null|und
 
 /** Dumbbells and machines get rounded percentages, never a fictional bar/plate breakdown. */
 export function suggestedUnplatedWarmups(targetKg:number,unit:WeightUnit,stepUnit:number):
- Array<{weightKg:number;actual:number;reps:number}>{
+ {weightKg:number;actual:number;reps:number}[]{
  if(!Number.isFinite(targetKg)||targetKg<=0||!Number.isFinite(stepUnit)||stepUnit<=0)return [];
  const target=fromKg(targetKg,unit);
  const candidates=[{fraction:0.4,reps:5},{fraction:0.6,reps:3},{fraction:0.8,reps:1}]

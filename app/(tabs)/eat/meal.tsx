@@ -3,6 +3,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Snackbar,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {MEALS,entryName,localDay,type MealKey,type Food} from '../../../src/features/eat/foodCatalog';
 import {deleteEntry,foodById,moveEntry,readDiaryDay,removeMeal,restoreEntries,saveMeal,
   summarizeEntries,updateEntryGrams,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
@@ -33,7 +34,7 @@ export default function MealDetail(){
   const summary=summarizeEntries(entries),format=(v:number)=>formatNumber(language,v);
   const displayName=t(`eatI.${meal}`);
   async function choose(entry:DiaryEntry){
-    setSelected(entry);setEdited(String(entry.grams??''));
+    setSelected(entry);setEdited(formatEditableNumber(entry.grams,'grams'));
     if(entry.foodId){
       const result=await foodById(entry.foodId);
       setFood(result.ok?result.value:null);

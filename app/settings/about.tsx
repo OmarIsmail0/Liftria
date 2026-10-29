@@ -30,6 +30,8 @@ export default function AboutHelp() {
         onPress={()=>router.push('/(tabs)/progress/health-troubleshoot')} />
       <ListRow title={tr('p4.about.13')} detail={tr('p4.about.14')}
         onPress={()=>router.push('/settings/hiku-key')} />
+      <ListRow title={tr('p4.about.29')} detail={tr('p4.about.30')}
+        onPress={()=>router.push('/settings/privacy')} />
     </Card>
     <Card title={tr('p4.about.15')}>
       <Typography>{tr('p4.about.22')}</Typography>

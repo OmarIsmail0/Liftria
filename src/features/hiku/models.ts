@@ -15,10 +15,24 @@ export const HIKU_MODELS=[
 export type HikuModelId=typeof HIKU_MODELS[number]['id'];
 export const DEFAULT_HIKU_MODEL:HikuModelId='claude-haiku-5-5';
 export function hikuModel(id:HikuModelId){return HIKU_MODELS.find(m=>m.id===id)!;}
+export function hikuModelName(id:string,language:'en'|'ar'):string{
+ const model=HIKU_MODELS.find(m=>m.id===id);
+ if(!model)return id;
+ return language==='ar'?model.nameAr:model.nameEn;
+}
+export type HikuCostBand='unknown'|'less-than-cent'|'amount';
 export function estimateHikuCostUsd(model:HikuModelId,inputTokens:number,outputTokens:number):number|null{
  if(!Number.isSafeInteger(inputTokens)||inputTokens<0||
     !Number.isSafeInteger(outputTokens)||outputTokens<0)return null;
  const rate=hikuModel(model),long=model==='claude-haiku-5-5'&&inputTokens>100000;
  return (inputTokens*(long?rate.longInputPerMillion:rate.inputPerMillion)+
    outputTokens*(long?rate.longOutputPerMillion:rate.outputPerMillion))/1000000;
+}
+export function classifyHikuCostUsd(cost:number|null):HikuCostBand{
+ if(cost===null||!Number.isFinite(cost)||cost<0)return 'unknown';
+ if(cost>0&&cost<0.01)return 'less-than-cent';
+ return 'amount';
+}
+export function formatHikuUsd(cost:number):string{
+ return '$'+cost.toFixed(2);
 }

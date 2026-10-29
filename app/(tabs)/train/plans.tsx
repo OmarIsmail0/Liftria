@@ -1,5 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, Typography } from '../../../src/design/primitives';
@@ -8,7 +9,7 @@ import { listPlans, listTemplates, savePlan, type Plan, type Template } from '..
 import { DAYS, scheduledTemplate } from '../../../src/features/train/weekPlan';
 
 export default function PlansScreen() {
-  const { t: tr } = useLanguage();
+  const { t: tr, language } = useLanguage();
   const {theme}=useTheme();
   const [templates,setTemplates]=useState<Template[]>([]);
   const [plans,setPlans]=useState<Plan[]>([]);
@@ -58,7 +59,7 @@ export default function PlansScreen() {
     <Card title={tr('p4.plans.2')}>
       {templates.length===0?<Typography tone="secondary">{tr('p4.plans.10')}</Typography>:
         templates.map(t=><ListRow key={t.id} title={t.name}
-          detail={t.exercises.length+' exercises'}
+          detail={tr(('count.exercises.'+pluralForm(language,t.exercises.length)) as TranslationKey,{count:t.exercises.length})}
           onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:t.id}})}
           suffix={<Button label={tr('p4.plans.3')} variant="ghost"
             onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:t.id}})}/>}/>)}

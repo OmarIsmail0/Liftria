@@ -88,7 +88,7 @@ export default function TemplateEditor() {
     <Card title={t('template.details')}>
       <Field label={t('template.name')} value={name} onChangeText={setName} placeholder={t('template.nameExample')}/>
       <Field label={t('template.notes')} value={notes} onChangeText={setNotes} multiline/>
-      <Stepper label={t('template.rest')} value={rest} onChange={setRest} min={0} max={600} step={15} unit="sec"/>
+      <Stepper label={t('template.rest')} value={rest} onChange={setRest} min={0} max={600} step={15} unit={t('units.sec')}/>
     </Card>
     <Card title={t('template.exerciseCount',{count:exercises.length})}>
       {(!name.trim()||exercises.length===0)&&<Typography tone="secondary">
@@ -127,7 +127,7 @@ export default function TemplateEditor() {
             </View>
           </View>
           <Stepper label={t('template.exerciseRest')} value={e.restSec??rest} min={0} max={600} step={15}
-            unit="sec" onChange={v=>update(i,{restSec:v})}/>
+            unit={t('units.sec')} onChange={v=>update(i,{restSec:v})}/>
           <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
             <Button label={t('template.moveUp')} variant="secondary" disabled={i===0}
               onPress={()=>setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[i-1],b=next[i];

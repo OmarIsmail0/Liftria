@@ -3,18 +3,23 @@ import { View } from 'react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 import { useTheme } from '../../design/ThemeProvider';
 import { Typography } from '../../design/primitives';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { heartChartLabel, heartChartNote, noHeartText, noStepsText, stepsAxisText, stepsChartLabel,
+  stepsSourceTitle } from './chartCopy';
 import type { HeartSample, HourlySeries } from './presentation';
 
 /** Read-only chart: each provider gets its own plot, never a blended sum. */
 export function StepsChart({ series, period }: { series: HourlySeries[]; period: 'day' | 'week' }) {
   const { theme } = useTheme();
+  const { language } = useLanguage();
   const highest = Math.max(1, ...series.flatMap(v => v.values));
-  if (!series.length) return <Typography tone="secondary">No source-backed steps to plot.</Typography>;
+  if (!series.length) return <Typography tone="secondary">{noStepsText(language)}</Typography>;
   return <View style={{ gap: theme.space[4] }}>
     {series.map(source => <View key={source.origin} style={{ gap: theme.space[2] }}
       accessible accessibilityRole="image"
-      accessibilityLabel={`${source.label}, ${period === 'day' ? 'hourly' : 'daily'} steps: ${source.values.reduce((sum, value) => sum + value, 0)} in charted intervals`}>
-      <Typography size="small" bold>{source.label} · separate source</Typography>
+      accessibilityLabel={stepsChartLabel(language, source.label, period,
+        source.values.reduce((sum, value) => sum + value, 0))}>
+      <Typography size="small" bold>{stepsSourceTitle(language, source.label)}</Typography>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end',
         minHeight: 112, gap: theme.space[1] }}>
         {source.values.map((value, hour) =>
@@ -23,17 +28,16 @@ export function StepsChart({ series, period }: { series: HourlySeries[]; period:
             backgroundColor: theme.color.domain.health, opacity: value === 0 ? 0.15 : 0.95,
             borderRadius: theme.radius.sm }} />)}
       </View>
-      <Typography tone="secondary" size="small">{period === 'day'
-        ? 'Midnight · 6 AM · Noon · 6 PM · Midnight'
-        : '7 days ago · Today'}</Typography>
+      <Typography tone="secondary" size="small">{stepsAxisText(language, period, source.values.length)}</Typography>
     </View>)}
   </View>;
 }
 
 export function HeartRateChart({ samples }: { samples: HeartSample[] }) {
   const { theme } = useTheme();
+  const { language } = useLanguage();
   const [width, setWidth] = useState(300);
-  if (!samples.length) return <Typography tone="secondary">No heart-rate samples to plot.</Typography>;
+  if (!samples.length) return <Typography tone="secondary">{noHeartText(language)}</Typography>;
   const earliest = Date.parse(samples[0]!.time);
   const latest = Date.parse(samples[samples.length - 1]!.time);
   const min = Math.min(...samples.map(p => p.bpm)) - 4;
@@ -42,7 +46,7 @@ export function HeartRateChart({ samples }: { samples: HeartSample[] }) {
   return <View onLayout={e => setWidth(e.nativeEvent.layout.width)}
     style={{ minHeight: 154, gap: theme.space[2] }}
     accessible accessibilityRole="image"
-    accessibilityLabel={`${samples.length} heart-rate samples. Range ${Math.round(min + 4)} to ${Math.round(max - 4)} beats per minute. App origins do not verify devices.`}>
+    accessibilityLabel={heartChartLabel(language, samples.length, Math.round(min + 4), Math.round(max - 4))}>
     <Svg width={plotWidth} height={126} viewBox={`0 0 ${plotWidth} 126`}>
       <Line x1={4} y1={122} x2={plotWidth - 4} y2={122}
         stroke={theme.color.border.subtle} strokeWidth={1} />
@@ -55,6 +59,6 @@ export function HeartRateChart({ samples }: { samples: HeartSample[] }) {
           fill={theme.color.domain.health} />;
       })}
     </Svg>
-    <Typography tone="secondary" size="small">Samples, not an averaged resting heart rate. Device is unverified.</Typography>
+    <Typography tone="secondary" size="small">{heartChartNote(language)}</Typography>
   </View>;
 }

@@ -1,5 +1,5 @@
 import {router,useLocalSearchParams} from 'expo-router';
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {Button,Card,Header,Screen,Sheet,Typography} from '../../src/design/primitives';
 import {useLanguage} from '../../src/i18n/LanguageProvider';
 import {ensureExercisePack,listExercises} from '../../src/services/database/exerciseLibrary';
@@ -12,7 +12,7 @@ export default function DemoSuperset(){
  const {t}=useLanguage(),{auto}=useLocalSearchParams<{auto?:string}>();
  const started=useRef(false),[busy,setBusy]=useState(false),[error,setError]=useState(false);
  const [existing,setExisting]=useState<ActiveWorkout|null>(null);
- async function createDemo(){
+ const createDemo=useCallback(async()=>{
   const pack=await ensureExercisePack(),all=await listExercises();
   if(!pack.ok||!all.ok){setError(true);return;}
   const examples=all.value.filter(e=>e.type==='weighted'&&e.source==='pack').slice(0,3);
@@ -26,8 +26,8 @@ export default function DemoSuperset(){
   const group=await updateActiveSuperset(session.value,0,3);
   if(!group.ok||!group.value){setError(true);return;}
   router.replace({pathname:'/(tabs)/train/active',params:{id:session.value}});
- }
- async function begin(){
+ },[]);
+ const begin=useCallback(async()=>{
   if(busy)return;setBusy(true);setError(false);
   try{
    const open=await readInProgressWorkout();
@@ -43,7 +43,7 @@ export default function DemoSuperset(){
    }
    await createDemo();
   }catch{setError(true);}finally{setBusy(false);}
- }
+ },[busy,createDemo]);
  async function finishAndBegin(){
   if(!existing||busy)return;
   setBusy(true);setError(false);
@@ -57,7 +57,7 @@ export default function DemoSuperset(){
  useEffect(()=>{
   if(auto!=='1'||started.current)return;
   started.current=true;void Promise.resolve().then(begin);
- },[auto]);
+ },[auto,begin]);
  return <Screen>
    <Header title={t('gymParity.demoSuperset')} onBack={()=>router.back()}/>
    <Card rim="train">

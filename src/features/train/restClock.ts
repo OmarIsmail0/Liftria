@@ -1,3 +1,4 @@
+import { translate, type AppLanguage } from '../../i18n';
 /** The countdown is always derived from a persisted absolute deadline, never an interval counter. */
 export type RestState = { status: 'idle' | 'running' | 'over'; remainingMs: number };
 export function restDeadline(loggedAt: string, seconds: number): string {
@@ -18,10 +19,10 @@ export function shiftRest(deadline: string | null, deltaSeconds: number, nowMs: 
   if (!deadline || !Number.isFinite(Date.parse(deadline)) || !Number.isFinite(deltaSeconds)) return null;
   return new Date(Math.max(nowMs, Date.parse(deadline) + deltaSeconds * 1000)).toISOString();
 }
-export function displayRest(deadline: string | null, nowMs: number = Date.now()): string {
+export function displayRest(deadline: string | null, nowMs: number = Date.now(), language: AppLanguage = 'en'): string {
   const state = restAt(deadline, nowMs);
-  if (state.status === 'idle') return 'No rest timer';
-  if (state.status === 'over') return 'Rest over';
+  if (state.status === 'idle') return translate(language, 'active.noRestTimer');
+  if (state.status === 'over') return translate(language, 'active.restOver');
   const seconds = Math.ceil(state.remainingMs / 1000);
   const minutes = Math.floor(seconds / 60);
   return minutes + ':' + String(seconds % 60).padStart(2, '0');
@@ -32,9 +33,9 @@ export function elapsedLabel(startedAt: string, nowMs: number = Date.now()): str
   return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
 }
 /** Only four TalkBack announcements per rest, not once per second. */
-export function restAnnouncement(previousMs: number, currentMs: number): string | null {
-  for (const [threshold, description] of [[30000,'30 seconds'],[10000,'10 seconds'],[0,'Rest over']] as const) {
-    if (previousMs > threshold && currentMs <= threshold) return description;
+export function restAnnouncement(previousMs: number, currentMs: number, language: AppLanguage = 'en'): string | null {
+  for (const [threshold, key] of [[30000,'active.30seconds'],[10000,'active.10seconds'],[0,'active.restOver']] as const) {
+    if (previousMs > threshold && currentMs <= threshold) return translate(language, key);
   }
   return null;
 }

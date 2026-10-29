@@ -6,7 +6,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 5 candidates)".
 
-**PR L, M, N and O are done. Next: PR S (iPhone), from `main`.** Claude's design polish (PR #27: card edges, back button, motion) lands in the shared primitives; build on them, don't restyle per screen. (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
+**PR L, M, N and O are done. Two builders now work in parallel (owner, 2026-10-28): GPT does PR S (iPhone, #28), then PR R2. Cursor (run by Claude) does PR R1.** Each takes only its own task; neither edits the other's files beyond what its task needs. If both touch `src/i18n/en.ts` / `ar.ts`, the later PR merges `main` in with a merge commit. Claude's design polish (PR #27: card edges, back button, motion) lands in the shared primitives; build on them, don't restyle per screen. (it doesn't depend on PR K #22, which only waits on Claude's screenshots). Each later PR starts from `main` once the previous PR's `verify` is green; stack on the previous branch only if it hasn't merged yet (merge `main` in later with a merge commit, never rebase).
 
 ---
 
@@ -46,17 +46,55 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Rest notifications, Hiku, backup/restore (share sheet and document picker) and the camera must work on iPhone too.
    - Screenshots: Claude adds an iPhone simulator screenshot pass once the build is green.
    - **Owner:** an Apple Developer account (US$99/year) is needed to install on a real iPhone or ship on the App Store; the simulator build needs nothing.
-6. **PR R: `Phase 5 / Release readiness`**
-   - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), and screenshot routes for the store images.
-   - **Long titles:** screen headers wrap long names mid-word ("Demo · Superset s / creenshot"). Use at most two lines with an ellipsis, breaking between words.
+6. ~~**PR R1: `Phase 5 / Release polish: text, Hiku and charts`**~~ DONE: PR #29 merged (2026-10-28). (builder: **Cursor**)
    - **Hiku polish (from PR #22's screenshots):** show costs as "less than $0.01" / "$0.03" (not "$0.00000"), and the price source as a tappable link, not a raw URL.
    - **Chart polish (from PR #21's screenshots):** axis labels (dates and values in the user's unit), larger nutrition dots or bars, and a Health Connect chip without a check mark when there are 0 Health Connect entries.
    - **Wording (from PR #24's screenshots):** the burn card says "smoothed weight change", but the estimate now uses a fitted weight trend; say "weight trend". In Arabic, numbers 11 and above take the singular ("14 يومًا", not "14 أيام"); check every counted phrase through `pluralForm()`.
    - **More from PR #24/#25's screenshots:** "1 weigh-ins" on the burn card (use `pluralForm()`); the restore sheet has both "Keep current data" and "Cancel" (keep one); the Eat ring shows "kcal" in English in Arabic, and the over-target ring draws a dark square behind the circle in Arabic.
    - **From PR #26's screenshots:** in Arabic, the Hiku review totals line mixes English units into Arabic text and the order comes out scrambled ("924 kcal · 31 بروتين g …"); use translated units and one direction-safe string per value. Hiku review items are pill buttons with long concatenated labels that wrap into two centered lines; make them list rows (name, grams · kcal, trailing status).
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
-   - Remove or hide every `dev/*` route in release builds, except what the emulator check needs (Claude will gate those behind a build flag).
-   - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release. App Store descriptions (English and Arabic) too, for iPhone.
+   - **Don't touch** `src/design/**` (Claude's, PR #27), the Health screens, or the stack layouts (PR S). Build on the existing primitives.
+7. ~~**PR T: `Phase 5 / Arabic copy sweep`**~~ DONE: PR #30 merged (2026-10-28). (builder: **Cursor**; started from PR #29's branch, so merge `main` in with a merge commit now that #29 has merged)
+   - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. `kg` and `lb` stay Latin (app convention).
+   - **One direction-safe value:** every number with its unit is one string with a no-break space (U+00A0) between them, wrapped with `bidiIsolate()` where it sits inside Arabic text, so it never wraps or reorders.
+   - **Counted phrases:** every remaining Arabic count goes through `pluralForm()` with correct forms (11–99 take the singular accusative: "14 يومًا"). Where a count sits in "X of Y" phrasing, reword to avoid a counted noun ("الأيام المسجلة: 27 من 28").
+   - **Untranslated values on screen:** Hiku usage rows show the raw model id and request status; show the model's display name and a translated status.
+   - **Guard test:** a Jest test that fails if any `ar.ts` value contains Latin `kcal`, ` g`, ` mg` or ` ml`, and one that checks every `*.many` count key in `ar.ts` uses the singular accusative.
+   - **Don't touch** `src/design/**` (Claude's; the Orb's "kcal" label is Claude's to fix there), the Health screens or the stack layouts (PR S).
+8. ~~**PR U: `Phase 5 / Number fields`**~~ DONE: PR #31 merged (2026-10-28). (builder: **Cursor**, branch from `main`) — from PR #30's screenshots
+   - **Bug:** Eat → Targets fills its fields with raw floats ("23.112000000000002", "240.058"): `app/(tabs)/eat/targets.tsx` uses `String(value)` for the prefill. Find every `Field` in the app whose value is prefilled from a stored or computed number (targets, profile, portion, custom food, water size, plate/bar weights, onboarding) and format it for editing: kcal as a whole number; grams, kg and lb to at most 1 decimal; no trailing zeros; Western digits. Never change what is stored unless the user edits and saves.
+   - One shared helper (e.g. `formatEditableNumber(value, kind)`), unit-tested with float noise (0.1+0.2, 23.112000000000002), integers, null (stays empty, never "0") and negative/NaN input.
+   - **Arabic gram label:** the portion chip says "جم" while the rest of the app now says "غ". Use "غ" everywhere.
+   - **Don't touch** `src/design/**` or the Health screens and stack layouts (PR S).
+   - **Claude (not this PR):** the over-target Eat ring still draws a dark square in Arabic (PR #30 screenshots); R1's `EatRing` wrapper didn't fix it. Claude fixes it in `Orb` after PR #27 merges and removes the wrapper.
+9. ~~**PR V: `Phase 5 / Data coverage guards`**~~ DONE: PR #33 merged (2026-10-28). (builder: **Cursor**, branch from `main`)
+   - The rule "every new table is covered by Delete all and by the backup" has no test. Add guards that fail when it breaks:
+     - **Backup:** every table the migrations create (read the `CREATE TABLE` statements in `src/services/database/index.ts`) is in `BACKUP_TABLES`, and every `BACKUP_TABLES` entry exists in the schema. A test that adds a fake table must make the guard fail.
+     - **Delete all:** `app/settings/data.tsx` → Delete all removes every row of every table (except what the code documents it must keep, if anything: say why), the Anthropic key in SecureStore, and kept Hiku photo files on disk. Move the delete logic into a testable function in `src/features/settings/` if it lives in the screen, and test it against an in-memory or mocked database that lists every table.
+     - **Restore:** a round trip (export → restore) keeps every table's rows; add a table to the fixture and the test must notice it's missing.
+   - Fix any real gap the guards find (a table or file that isn't deleted or backed up), one commit per fix, and list each gap in the PR description.
+   - **Don't touch** `src/design/**`, the Health screens or the stack layouts.
+10. ~~**PR W: `Phase 5 / No English in the Arabic UI`**~~ DONE: PR #34 merged (2026-10-29). (builder: **Cursor**; bake-off won by Sonnet 5.5, PR #34; Grok 4.7's #35 closed).
+   - **Bug (PR #30/#31 screenshots):** in Arabic the workout mini-bar shows "Resume" and "0 of 9 sets"; spoken labels are English too ("Resume …", "Rest timer, …", "Enter …", "edit with keypad"). `src/i18n/__tests__/screenLiteralCopy.test.ts` only scans `app/` and only catches literal props, so `src/features/**` and concatenated strings slip through.
+   - **Guard:** extend the source guard to `src/features/**` (not `src/design/**`, not `dev`), and to English inside string concatenation and template literals that reach the screen: JSX text, `Typography`/`Text` children, and `accessibilityLabel` / `label` / `title` / `placeholder` / `description` props (e.g. `'Resume '+x`, `` `Enter ${label}` ``, `{a} of {b}`). Keep a short allow-list of real tokens (brand names, units like `kg`). It must fail on today's code.
+   - **Fix** everything it finds: every user-facing string and every spoken label goes through `t()` with English and Arabic. Counts go through `pluralForm()`, and in Arabic a number with its unit uses a no-break space.
+   - **Don't touch** `src/design/**` (Claude's), the Health screens or the stack layouts. List every file you changed in the PR description.
+11. ~~**PR X: `Phase 5 / Rule guards`**~~ DONE: PR #36 merged (2026-10-29); ESLint now has no warnings. (builder: **Cursor**, Sonnet 5.5, branch from `main`)
+   - The "never" rules in `HANDOFF.md` → "Technical gotchas" have no tests. Add source guards over `app/**` and `src/**` (tests excluded) that fail when someone breaks them:
+     - **Hermes:** no `Intl.` API other than `NumberFormat`, `DateTimeFormat` and `Collator` (e.g. `Intl.PluralRules`, `Intl.RelativeTimeFormat`, `Intl.ListFormat`); no `crypto.` (use `newGymId()`).
+     - **Reanimated:** no `.value =` / `.value +=` assignment on shared values (use `.set()`).
+     - **Locales:** every key in `locales/en.json` and `locales/ar.json` sits under `"ios"` (Android lint fails otherwise), and both files have the same keys.
+     - Each guard must fail on a planted example: test the scanner itself with small code strings, as PR W's `englishCopyScanner` tests do.
+   - **Lint:** clear the existing ESLint warnings (`npx eslint .` shows 15) by fixing the code, not by disabling rules. If one can't be fixed safely, explain it in the PR.
+   - **Don't touch** `src/design/**` (Claude's; leave its warnings and list them in the PR), the Health screens or the stack layouts.
+12. ~~**PR Y: `Phase 5 / Health charts in Arabic`**~~ DONE: PR #38 merged (2026-10-29). (builder: **Cursor**, Sonnet 5.5; starts once PR W #34 is merged, from `main`)
+   - `src/features/health/HealthCharts.tsx` still shows English in Arabic: "No source-backed steps to plot.", "hourly"/"daily", "Midnight · 6 AM · Noon · 6 PM · Midnight", "7 days ago · Today", the heart-rate summary and its accessibility text. Translate all of it (English and Arabic; counts through `pluralForm()`; number+unit with a no-break space; times in the user's locale with Western digits).
+   - Widen PR W's guard (`src/i18n/__tests__/englishInArabicUi.test.ts`) to scan `src/features/health/**`, keeping the exclusion only for the files PR S (#28) edits: `app/(tabs)/progress/health*.tsx`, `src/features/health/AppleHealthComing.tsx`, `src/features/health/useHealthSnapshot.ts`. Fix whatever else it finds in `src/features/health/**` outside those files.
+   - **Don't touch** `src/design/**`, `src/services/health/**` or the files above.
+13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+   - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
+   - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
+   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header` (after PR #27). ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 

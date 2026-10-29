@@ -6,7 +6,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { SettingsIcon } from '../../src/design/primitives/TabIcon';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { formatNumber } from '../../src/i18n';
-import { Banner, Button, Card, Chip, Header, ListRow, Orb, Screen, Skeleton, Typography } from '../../src/design/primitives';
+import { Banner, Button, Card, Chip, Header, ListRow, Screen, Skeleton, Typography } from '../../src/design/primitives';
 import { getProfile, type Profile } from '../../src/services/database/profile';
 import { getCurrentTarget, type Target } from '../../src/services/database/targets';
 import { getTypedSetting } from '../../src/services/database/settings';
@@ -16,6 +16,7 @@ import { heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/he
 import { listPlans, listSessions, listTemplates } from '../../src/services/database/gymRepositories';
 import { scheduledTemplate, isLocalDate } from '../../src/features/train/weekPlan';
 import { readDiaryDay, summarizeEntries, type DaySummary } from '../../src/features/eat/diaryRepository';
+import {EatRing} from '../../src/features/eat/EatRing';
 import {WaterCounterCard} from '../../src/features/eat/WaterCounterCard';
 
 type TrainingToday = { title: string; detail: string } | null;
@@ -135,8 +136,8 @@ export default function TodayTab() {
         </Pressable>} />
       {local.offline && <Banner variant="offline" title={t('today.offline')}
         message={t('today.offlineDescription')} />}
-      <Orb eaten={diary.kcal} target={local.target?.kcal ?? null} hidden={local.hideNumbers}
-        active onPress={() => router.push('/(tabs)/eat')} />
+      <EatRing eaten={diary.kcal} target={local.target?.kcal ?? null} hidden={local.hideNumbers}
+        onPress={() => router.push('/(tabs)/eat')} />
       <View style={{ gap: theme.space[2], alignItems: 'center' }}>
         {hasTarget ? <>
           {local.target?.source === 'estimate'
@@ -212,7 +213,7 @@ export default function TodayTab() {
               ? t('today.staleUnverified',{time:age(source.latestAt)})
               : t('today.deviceNotVerified')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
-              <Typography>{formatNumber(language,source.value)} bpm</Typography>
+              <Typography>{t('today.heartValue',{value:formatNumber(language,source.value)})}</Typography>
               <Chip kind="pending" label={t('today.unverified')} />
               {heartRateTodayStatus(source.latestAt, now).stale &&
                 <Chip kind="stale" label={age(source.latestAt)} />}
@@ -225,7 +226,7 @@ export default function TodayTab() {
         <Button label={t('today.healthDetails')} variant="ghost" fullWidth
           onPress={() => router.push('/(tabs)/progress/health')} />
       </Card>
-      <Card rim="hiku" title="Hiku">
+      <Card rim="hiku" title={t('nav.hiku')}>
         <Typography tone="secondary">{local.offline ? t('today.hikuNeedsInternet') :
           local.key === 'ready' ? t('today.keyReady') :
           local.key === 'missing' ? t('today.keyMissing') :

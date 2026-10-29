@@ -1,3 +1,4 @@
+import { translate, type AppLanguage } from '../../i18n';
 /** Explicit user-initiated API key test; does not transmit profile/diary/health records. */
 export type KeyTestOutcome = 'works' | 'unauthorized' | 'offline' | 'unavailable' | 'model-unavailable';
 export async function testAnthropicKey(
@@ -19,10 +20,10 @@ export async function testAnthropicKey(
     return 'unavailable';
   }
 }
-export function keyTestMessage(outcome: KeyTestOutcome): string {
-  if (outcome === 'works') return 'Key works.';
-  if (outcome === 'model-unavailable') return 'Key works, but this model is unavailable on your account.';
-  if (outcome === 'unauthorized') return 'Anthropic did not accept this key. Check the key and replace it.';
-  if (outcome === 'offline') return "Saved. Test it when you're online.";
-  return 'Could not verify the key right now. Try again later.';
+export function keyTestMessage(outcome: KeyTestOutcome, language: AppLanguage = 'en'): string {
+  if (outcome === 'works') return translate(language, 'hikuSettings.testWorks');
+  if (outcome === 'model-unavailable') return translate(language, 'hikuK.modelUnavailable');
+  if (outcome === 'unauthorized') return translate(language, 'hikuSettings.testUnauthorized');
+  if (outcome === 'offline') return translate(language, 'hikuSettings.testOffline');
+  return translate(language, 'hikuSettings.testUnavailable');
 }

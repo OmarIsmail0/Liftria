@@ -3,6 +3,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {ScrollView,View} from 'react-native';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,
  Sheet,Snackbar,Stepper,Typography} from '../../../src/design/primitives';
@@ -55,7 +56,7 @@ export default function BodyTrends(){
   {minimumFractionDigits:digits,maximumFractionDigits:digits}));
  function open(entry?:LocalWeight){
   setCurrent(entry??null);setDay(entry?localDay(new Date(entry.at)):today);
-  setEntered(entry?fromKg(entry.kg,weightUnit).toFixed(1):'');setNote(entry?.note??'');
+  setEntered(entry?formatEditableNumber(fromKg(entry.kg,weightUnit),'weight'):'');setNote(entry?.note??'');
   setWarning(false);setEditing(true);
  }
  async function save(confirmed=false){
@@ -100,10 +101,10 @@ export default function BodyTrends(){
    <Typography tone="secondary" size="small">{t('trend.emaDescription')}</Typography>
    {result.change!==null&&!hidden&&<Typography tone="secondary">{t('trend.trendChange',{
     change:fmt(fromKg(result.change,weightUnit)),unit:weightUnit})}</Typography>}
-   {result.points.length>0&&<WeightGraph trend={result} hidden={hidden}/>}
+   {result.points.length>0&&<WeightGraph trend={result} hidden={hidden} unit={weightUnit}/>}
    <View style={{flexDirection:'row',gap:theme.space[3],flexWrap:'wrap'}}>
     <Chip kind="phone" label={t('trend.myWeight')}/>
-    <Chip kind="measured" label={t('trend.healthConnect')}/>
+    <Chip kind={counts.health===0?'off':'measured'} label={t('trend.healthConnect')}/>
    </View>
    <Typography tone="secondary" size="small">{t('trend.sourceCounts',{
     local:counts.local,health:counts.health})}</Typography>
@@ -139,7 +140,7 @@ export default function BodyTrends(){
      label={t('trend.weightAdjust',{step:step.toFixed(1),unit:weightUnit})}
      value={Math.round(inputValue*10)/10} min={step}
      max={weightUnit==='lb'?1102.3:500} step={step} unit={weightUnit}
-     onChange={v=>{setEntered((Math.round(v*10)/10).toFixed(1));setWarning(false);}}/>}
+     onChange={v=>{setEntered(formatEditableNumber(v,'weight'));setWarning(false);}}/>}
    <Field label={t('trend.date')} value={day} onChangeText={setDay} placeholder={t('trend.datePlaceholder')}/>
    <Field label={t('trend.note')} value={note} onChangeText={setNote} multiline/>
    {warning&&<Card title={t('trend.unusualWeight')}>
