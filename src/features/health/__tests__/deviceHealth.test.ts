@@ -143,7 +143,7 @@ describe('Apple Health amounts', () => {
     expect(formatAppleAmount('ar', 1, 'steps')).toBe('خطوة واحدة');
     expect(formatAppleAmount('ar', 2, 'steps')).toBe('خطوتان');
     expect(formatAppleAmount('ar', 3, 'steps')).toBe('3 خطوات');
-    expect(formatAppleAmount('ar', 11, 'steps')).toBe('11 قياسًا للخطوات');
+    expect(formatAppleAmount('ar', 11, 'steps')).toBe('11 خطوةً');
     expect(formatAppleAmount('ar', 1200, 'steps')).toMatch(/1.200|1200/);
     expect(formatAppleAmount('ar', 1200, 'steps')).not.toMatch(/[٠-٩]/);
     expect(formatAppleAmount('ar', 80.5, 'kcal')).toContain('\u00A0سعرة');
