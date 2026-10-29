@@ -11,6 +11,7 @@ import { strengthWeeks, strengthWindowSummary } from '../../../src/features/trai
 import type { ExerciseRecord } from '../../../src/services/database/gymMath';
 import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getTypedSetting } from '../../../src/services/database/settings';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 type Range='4w'|'3m'|'1y';
 export default function Strength(){
@@ -36,7 +37,7 @@ export default function Strength(){
  const peak=Math.max(1,...bars.map(w=>w.volume));
  const top=records.filter(r=>r.bestEstimatedOneRepMax!==null)
   .sort((a,b)=>(b.bestEstimatedOneRepMax??0)-(a.bestEstimatedOneRepMax??0)).slice(0,4);
- const names=new Map(rows.map(r=>[r.exerciseId,r.name]));
+ const names=new Map(rows.map(r=>[r.exerciseId,exerciseName(language,r.exerciseId,r.name)]));
  return <Screen embedded>
   <Header title={tr('p4.strength.0')} subtitle={tr('p4.strength.1')} onBack={()=>router.back()}/>
   <SegmentedControl label={tr('p4.strength.2')} value={range} onChange={setRange}

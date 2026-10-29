@@ -27,6 +27,7 @@ import { BodyMap } from '../../../src/features/train/BodyMap';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { formatNumber } from '../../../src/i18n';
 import { formatEditableNumber } from '../../../src/i18n/editableNumber';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 function KeepScreenOn() { useKeepAwake('liftria-active-workout'); return null; }
 
@@ -156,7 +157,7 @@ export default function ActiveWorkoutScreen() {
       const latest=view.sets.filter(row=>row.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0];
       if(latest?.restDeadline&&restAt(latest.restDeadline).status==='running'){
         const active=view.exercises.find(e=>e.id===latest.sessionExerciseId);
-        void scheduleRestOver(latest.restDeadline,view.id,active?.name??view.title,latest.id,language)
+        void scheduleRestOver(latest.restDeadline,view.id,(active?exerciseName(language,active.exerciseId,active.name):view.title),latest.id,language)
           .catch(()=>setError(t('active.scheduleError')));
       }
     });
@@ -216,7 +217,7 @@ export default function ActiveWorkoutScreen() {
     if(saved.value.restDeadline){
       const asked=await getSetting('rest.permissionPromptSeen');
       if(asked.ok&&asked.value!=='yes'){setAskVisible(true);}
-      else {setRestVisible(true);void armNotification(saved.value,exercise.name);}
+      else {setRestVisible(true);void armNotification(saved.value,exerciseName(language,exercise.exerciseId,exercise.name));}
     }
   };
   const armNotification=async(set:ActiveSet,name:string)=>{
@@ -229,7 +230,7 @@ export default function ActiveWorkoutScreen() {
     await setSetting('rest.permissionPromptSeen','yes');
     if(grant){const approved=await askRestPermission(language).catch(()=>false);
       setDenied(!approved);
-      if(approved&&restSet&&exercise)void armNotification(restSet,exercise.name);
+      if(approved&&restSet&&exercise)void armNotification(restSet,exerciseName(language,exercise.exerciseId,exercise.name));
     }else setDenied(true);
     setRestVisible(true);
   };
@@ -250,7 +251,7 @@ export default function ActiveWorkoutScreen() {
     if(saved.ok&&saved.value){
       const updated={...visibleRest,restDeadline:next};
       setRestSet(updated);await refresh();
-      if(next&&restAt(next).status==='running'&&exercise)void armNotification(updated,exercise.name);
+      if(next&&restAt(next).status==='running'&&exercise)void armNotification(updated,exerciseName(language,exercise.exerciseId,exercise.name));
     }
   };
   const choose=(index:number)=>{setSelected(index);setEdit(null);setSuggestion(null);setKg(0);setReps(0);
@@ -289,10 +290,10 @@ export default function ActiveWorkoutScreen() {
     </View>
     <ScrollView contentContainerStyle={{padding:theme.layout.gutter,gap:theme.layout.cardGap,paddingBottom:theme.space[3]}}>
       <ScrollView ref={exerciseScroll} horizontal contentContainerStyle={{gap:theme.space[2]}} showsHorizontalScrollIndicator={false}>
-        {view.exercises.map((e,index)=><Button key={e.id} label={e.name}
+        {view.exercises.map((e,index)=><Button key={e.id} label={exerciseName(language,e.exerciseId,e.name)}
           variant={selected===index?'train':'secondary'} onPress={()=>choose(index)}/>)}
       </ScrollView>
-      {exercise?<Card title={exercise.name} rim="train">
+      {exercise?<Card title={exerciseName(language,exercise.exerciseId,exercise.name)} rim="train">
         <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
           <Button label={t('active.exerciseOptions')} variant="secondary" onPress={()=>setMenuOpen(true)}/>
         </View>
@@ -335,7 +336,7 @@ export default function ActiveWorkoutScreen() {
           onPress={()=>router.push('/(tabs)/train/library')}/>
       </Card>}
       {view.exercises[selected+1]&&<Card title={t('active.upNext')}>
-        <ListRow title={view.exercises[selected+1]?.name ?? t('active.upNext')}
+        <ListRow title={view.exercises[selected+1]?exerciseName(language,view.exercises[selected+1]!.exerciseId,view.exercises[selected+1]!.name):t('active.upNext')}
           onPress={()=>choose(selected+1)}/>
       </Card>}
       {denied&&<Typography tone="secondary">{t('active.alertsOff')}</Typography>}
@@ -384,7 +385,7 @@ export default function ActiveWorkoutScreen() {
       <RestOrb remainingMs={rest.remainingMs} totalMs={(view.exercises.find(e=>e.id===visibleRest?.sessionExerciseId)?.restSec??120)*1000}
         label={restLabel} />
       <Chip kind="pending" label={t('active.devicePending')}/>
-      <Typography tone="secondary" size="small">{t('active.nextSet',{name:exercise?.name??t('active.nextExercise'),set:current?t('active.set',{count:current.position+1}):t('active.chooseExercise')})}</Typography>
+      <Typography tone="secondary" size="small">{t('active.nextSet',{name:exercise?exerciseName(language,exercise.exerciseId,exercise.name):t('active.nextExercise'),set:current?t('active.set',{count:current.position+1}):t('active.chooseExercise')})}</Typography>
       <Typography tone="secondary">{lastLogged?
         t('active.recentLogged',{name:lastLogged.kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:lastLogged.position+1}),weight:displayWeight(lastLogged.weight,exercise?.type??'weighted',weightUnit,language),reps:lastLogged.reps}):t('active.restContinues')}</Typography>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
@@ -397,7 +398,7 @@ export default function ActiveWorkoutScreen() {
         onPress={()=>void undo(lastLogged)}/>}
       <Button label={t('active.backToWorkout')} variant="train" fullWidth onPress={()=>setRestVisible(false)}/>
     </Sheet>
-    <Sheet visible={menuOpen} title={t('active.exerciseOptions')} description={exercise?.name}
+    <Sheet visible={menuOpen} title={t('active.exerciseOptions')} description={exercise?exerciseName(language,exercise.exerciseId,exercise.name):undefined}
       onClose={()=>setMenuOpen(false)}>
       <Button label={t('active.history')} fullWidth variant="secondary" onPress={()=>{
         setMenuOpen(false);if(exercise)router.push({

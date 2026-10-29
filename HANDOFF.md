@@ -71,6 +71,10 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   `claude-opus-5-thinking-high` was clean. Owner (2026-10-28): prefer Opus 5.5 (`claude-opus-5-5-high`;
   the CLI lists it, the API's /v0/models list doesn't yet, so check the launch is accepted).
   A running agent can't change model: stop it and launch a new one.
+  **Quota (owner, 2026-10-29):** the Pro plan's "Other Models" quota is used up; launches beyond
+  the included "Cursor Models" (Cursor Grok `cursor-grok-4.5-high`, Composer) can fail mid-run with
+  "On-demand usage is required" and lose unpushed work. Owner's current pick: **Grok 4.7**
+  (`grok-4.7-high`). Tell agents to commit and push after every step.
 - **Treat Cursor like GPT (owner, 2026-10-28: "it might be an idiot"):** its output is a claim. Run the
   checks yourself, read the whole diff, verify its assumptions against the code, and keep the same rules.
 

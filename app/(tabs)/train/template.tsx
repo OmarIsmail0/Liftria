@@ -10,6 +10,7 @@ import { ensureExercisePack, listExercises, searchExercises, newGymId } from '..
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function TemplateEditor() {
   const navigation=useNavigation();
@@ -69,7 +70,7 @@ export default function TemplateEditor() {
     })();
     return ()=>{live=false;};
   },[id,exerciseId]));
-  const filtered=useMemo(()=>searchExercises(library,query).slice(0,8),[library,query]);
+  const filtered=useMemo(()=>searchExercises(library,query,null,language).slice(0,8),[library,query,language]);
   const linkGroup=(index:number,size:2|3)=>{
     setExercises(old=>{
       if(old.slice(index,index+size).length!==size||
@@ -159,7 +160,7 @@ export default function TemplateEditor() {
     <Card title={t('template.addExercise')}>
       <Field label={t('template.searchLibrary')} value={query} onChangeText={setQuery} placeholder={t('template.searchExample')}/>
       {filtered.filter(e=>!exercises.some(row=>row.exerciseId===e.id)).map(e=>
-        <ListRow key={e.id} title={e.name} detail={equipmentLabel(language,e.equipment,t('template.bodyweight'))}
+        <ListRow key={e.id} title={exerciseName(language,e.id,e.name)} detail={equipmentLabel(language,e.equipment,t('template.bodyweight'))}
           leading={<ExerciseThumbnail exercise={e} />} onPress={()=>add(e)}/>)}
       <Button label={t('template.browseMap')} variant="secondary"
         onPress={()=>router.push('/(tabs)/train/muscles')}/>

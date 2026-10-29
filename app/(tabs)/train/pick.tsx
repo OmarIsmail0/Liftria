@@ -8,6 +8,7 @@ import { appendExerciseToActiveSession } from '../../../src/services/database/gy
 import { replaceActiveExercise } from '../../../src/features/train/workoutData';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function AddWorkoutExercise() {
  const {t,language}=useLanguage();
@@ -27,7 +28,7 @@ export default function AddWorkoutExercise() {
     })();
     return()=>{live=false;};
   },[t]));
-  const matches=useMemo(()=>searchExercises(all,query).slice(0,60),[all,query]);
+  const matches=useMemo(()=>searchExercises(all,query,null,language).slice(0,60),[all,query,language]);
   const add=async(exerciseId:string)=>{
     if(busy)return;
     setBusy(true);
@@ -40,7 +41,7 @@ export default function AddWorkoutExercise() {
     <Header title={replaceId?t('pick.replace'):t('pick.add')} onBack={()=>router.back()}/>
     <Card title={t('pick.offlineLibrary')}>
       <Field label={t('pick.search')} value={query} onChangeText={setQuery}/>
-      {matches.map(e=><ListRow key={e.id} title={e.name}
+      {matches.map(e=><ListRow key={e.id} title={exerciseName(language,e.id,e.name)}
         leading={<ExerciseThumbnail exercise={e} />}
         detail={equipmentLabel(language,e.equipment,t('pick.noEquipment'))} onPress={()=>void add(e.id)}/>)}
       {matches.length===0&&<Typography tone="secondary">{t('pick.noMatch')}</Typography>}

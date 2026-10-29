@@ -41,7 +41,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Screenshots: a `dev/demo-hiku-photo?auto=1` route using a bundled sample image and pack values, with Save disabled and no API call.
 5. **PR S: `Phase 5 / iPhone`** (owner, 2026-10-26: "don't forget about iPhone")
    - The app must run on iPhone from the same code. Claude added the iPhone config (bundle id `com.liftria.app`, permission texts in English and Arabic, right to left from the first launch) and a CI job that builds it for the iPhone simulator (`ios-build.yml`; label a PR `ios` to run it). **It builds green on `main` (2026-10-26)**; it selects the newest Xcode on the runner because Expo needs Swift 6.2.
-   - **Health:** Health Connect is Android-only. On iPhone, every Health Connect screen and call must be behind `Platform.OS === 'android'`; on iPhone show an honest "Apple Health support is coming" state, never fake data. Apple Health (HealthKit) is a separate later PR: Claude picks the library and asks the owner.
+   - **Health:** Health Connect is Android-only. On iPhone, every Health Connect screen and call must be behind `Platform.OS === 'android'`; on iPhone show an honest "Apple Health support is coming" state, never fake data. Apple Health (HealthKit) is a separate later PR: **PR AA** (library chosen and approved 2026-10-29).
    - Check every Android-only call (Health Connect, the Android notification channel, back-button handling) and every screen in the iPhone layout: safe areas (notch and home bar), the keyboard on Field screens, and swipe-back on stack screens.
    - Rest notifications, Hiku, backup/restore (share sheet and document picker) and the camera must work on iPhone too.
    - Screenshots: Claude adds an iPhone simulator screenshot pass once the build is green.
@@ -91,16 +91,68 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - `src/features/health/HealthCharts.tsx` still shows English in Arabic: "No source-backed steps to plot.", "hourly"/"daily", "Midnight · 6 AM · Noon · 6 PM · Midnight", "7 days ago · Today", the heart-rate summary and its accessibility text. Translate all of it (English and Arabic; counts through `pluralForm()`; number+unit with a no-break space; times in the user's locale with Western digits).
    - Widen PR W's guard (`src/i18n/__tests__/englishInArabicUi.test.ts`) to scan `src/features/health/**`, keeping the exclusion only for the files PR S (#28) edits: `app/(tabs)/progress/health*.tsx`, `src/features/health/AppleHealthComing.tsx`, `src/features/health/useHealthSnapshot.ts`. Fix whatever else it finds in `src/features/health/**` outside those files.
    - **Don't touch** `src/design/**`, `src/services/health/**` or the files above.
-13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**; owner 2026-10-29: start now from `main` on a new branch, without waiting for PR S. Don't touch the Health files or `src/services/health/**`; PR S and PR AA own them)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
-   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header` (after PR #27). ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
+   - ~~**Claude does these in the shared code:** long screen titles in `Header`~~ DONE: PR #40 merged (2026-10-29), with the Orb fixes and Western digits on iPhone. ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
+
+14. ~~**PR Z: `Phase 5 / Arabic exercise names`**~~ DONE: PR #43 merged (2026-10-29). Built by Claude: Cursor's run crashed at the usage limit. The Arabic library sorts with one shared `Intl.Collator('ar')`; `localeCompare(x, 'ar')` per comparison froze it on Hermes.
+   - In Arabic, every exercise name is English: the 876 bundled exercises come from `assets/data/exercises/free-exercise-db.json` (English data). Give each bundled exercise an Arabic display name.
+   - **Data:** one file, `src/i18n/exerciseNamesAr.ts`, mapping the pack exercise `id` to its Arabic name. Don't edit the pack JSON, the database rows or the stored `name`: the English name stays the stored and imported (Hevy CSV matching) name, and backups don't change.
+   - **Display:** one helper (e.g. `exerciseName(language, exercise)` in `src/i18n/`) returns the Arabic name for `source: 'pack'` exercises in Arabic, otherwise `exercise.name`. Custom exercises always show what the person typed. Use it everywhere an exercise name reaches the screen, a spoken label or the rest notification. Find every place (library, pick, muscles, template, active workout and its mini-bar, session, history, records, exercise detail, preview, strength progress, import preview, plans, notifications), and list each file in the PR description.
+   - **Search:** in Arabic, the library and pick search match the Arabic name *and* the English name, so people can type either. Normalize Arabic before matching: strip diacritics and tatweel; treat أ إ آ as ا, ى as ي and ة as ه. Unit-test it, including partial words.
+   - **Names: what people say in an Egyptian gym, written in Arabic letters.** Keep one term per concept across all 876. Start from this glossary and extend it consistently:
+
+     | English | Arabic |
+     |---|---|
+     | Bench Press | بنش برس |
+     | Squat | سكوات |
+     | Deadlift | ديدليفت |
+     | Curl | كيرل |
+     | Row | سحب (e.g. Barbell Row: سحب بالبار) |
+     | Pulldown / Pull-Up / Chin-Up | سحب أمامي / عقلة / عقلة بقبضة عكسية |
+     | Press (shoulder) | ضغط كتف |
+     | Fly | تفتيح |
+     | Lunge | لانج |
+     | Raise (lateral / front) | رفرفة جانبي / أمامي |
+     | Extension / Kickback | تمديد / كيك باك |
+     | Crunch / Sit-Up / Plank | كرانش / بطن / بلانك |
+     | Stretch | إطالة |
+     | Barbell / Dumbbell / Cable / Machine / Kettlebell / Smith | بالبار / بالدمبل / بالكابل / على الجهاز / بالكيتل بيل / على السميث |
+     | Incline / Decline / Seated / Standing / Lying | مائل / مائل لأسفل / جالس / واقف / نائم |
+     | Alternate / One-Arm / Single-Leg | بالتبادل / بذراع واحدة / برجل واحدة |
+
+     Equipment words match `src/i18n/equipment.ts`. Proper names are transliterated (Arnold Press: ضغط أرنولد; Zottman Curl: كيرل زوتمان). Don't invent a muscle or a movement the English name doesn't say.
+   - **Guards (tests):** every pack `id` has an Arabic name and every key is a real pack `id`; no name is empty or contains Latin letters (allow-list only real tokens such as `EZ`, `T`, `V`, `W`, `Y`); no two different exercises share the same Arabic name; glossary terms are used consistently (e.g. any English name containing "Bench Press" maps to an Arabic name containing "بنش برس"). Each guard must fail on a planted bad example.
+   - Instructions stay English for now (out of scope).
+   - **Don't touch** `src/design/**`, the Health screens or the stack layouts (PR S, #28), or the import matching.
+
+15. **PR AA: `Phase 5 / Apple Health`** (owner approved 2026-10-29). Split into two parts:
+   - **Part 1, library + adapter + config + tests:** PR #44 (Cursor, Grok 4.7), based on PR S's branch. Claude fixed body fat (HealthKit's `%` is a 0–1 fraction) and made the iPhone build require the read text and forbid a write prompt. Merge after #28.
+   - **Part 2, the iPhone screens:** after #28 and #44 merge. The spec below covers both parts.
+   - **Library (owner approved):** `@kingstinct/react-native-healthkit` (MIT, maintained, New Architecture via Nitro) plus its peer `react-native-nitro-modules`. Install with `npx expo install`; Claude regenerates the lockfile if it needs to. No other new dependency.
+   - **Config:** add its Expo config plugin in `app.json`, with read-only usage text in English (`NSHealthShareUsageDescription`, plus the Arabic string in `locales/ar.json` under `"ios"`). No write access: no `NSHealthUpdateUsageDescription`, and the app never writes to Apple Health. No background delivery.
+   - **Adapter:** `src/services/health/appleHealth.ts` implements the existing `HealthDataSource` for every `MetricType` HealthKit has (steps, heart rate, active and basal energy, workouts, sleep, weight, body fat, lean body mass). Add `'apple-health'` to `SourceMeta['adapter']`. Fill `recordId` (HealthKit UUID), `dataOrigin` (source bundle id) and `device` from the sample. Normalize units to the existing ones (kg, %, kcal, bpm, count). Pick the adapter by `Platform.OS`; Health Connect stays Android-only.
+   - **Honesty rules:** HealthKit never says whether *read* access was denied. `getPermissionStatus` returns `'unknown'` for reads after the request, never `'granted'`. An empty read shows the existing "no data" state with one line pointing to Settings → Health → Liftria, never a 0. No total is summed across sources that overlap (iPhone and Apple Watch steps): use HealthKit's statistics query (deduplicated) for daily totals, labeled as Apple Health's total.
+   - **Screens:** replace PR S's "Apple Health support is coming" state with the real flow on iPhone: onboarding step 6, the Health tab, the metric screens and troubleshooting, with copy for iPhone ("Apple Health", "Settings → Health"). English and Arabic for every string.
+   - **Tests:** the adapter's mapping and unit normalization run against recorded sample objects (mock the library), including the read permission staying `'unknown'`, an empty result and an error. The coverage guards (backup, Delete all) still pass. Nothing is stored that the guards don't cover.
+   - **Checks:** the CI iPhone simulator (label `ios`) has little or no health data, so the shots show the empty and permission states. A real iPhone needs the owner's Apple Developer account. Say in the PR what couldn't be checked.
+   - **Don't touch** `src/design/**`, the Android Health Connect adapter's behavior, or workflows.
+
+16. **PR AB: `Phase 5 / Accessibility guards`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - Add `src/i18n/__tests__/accessibility.test.ts`, a **TypeScript-AST** scanner (use the `typescript` package already in devDependencies; not regexes, because props span lines). It scans `app/**` and `src/features/**` (not `app/dev/**`, not tests) and fails when:
+     1. a `Pressable`, `TouchableOpacity` or `TouchableHighlight` has no `accessibilityRole`, or has neither an `accessibilityLabel` nor a direct `Text`/`Typography` child with visible text;
+     2. an `Image` has neither an `accessibilityLabel` nor `accessible={false}`;
+     3. a `TextInput` has no `accessibilityLabel` (a placeholder isn't a label).
+   - Test the scanner itself on small planted code strings: each rule must fail on a bad example and pass on a good one.
+   - Fix every offender it finds: labels come from `t()` with English and Arabic strings. Don't change behavior or layout.
+   - Don't touch `src/design/**` (the shared primitives already label themselves), the Health screens, `src/services/health/**`, or `app.config.ts`.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 **Rules (same as Phase 4):**
 - Every push runs `verify`. Claude adds `build` for emulator screenshots and merges when `verify` is green and the screenshots are clean.
 - One commit per sub-step. Batch your pushes. Run nothing you can't check; Claude runs the checks.
-- **New dependencies:** `expo-sharing` approved and installed by Claude (2026-10-27) for backup/CSV export on Android and iPhone. `expo-document-picker`, `expo-file-system` and `expo-notifications` are already installed. Ask in the PR before adding anything else; Claude regenerates the lockfile.
+- **New dependencies:** `expo-sharing` approved and installed by Claude (2026-10-27) for backup/CSV export on Android and iPhone. `expo-document-picker`, `expo-file-system` and `expo-notifications` are already installed. `@kingstinct/react-native-healthkit` and `react-native-nitro-modules` approved for PR AA (owner, 2026-10-29). Ask in the PR before adding anything else; Claude regenerates the lockfile.
 - **Never:** workflow edits, fabricated results, invented nutrition numbers, `crypto.*` (use `newGymId()`), suggested values saved as data, anything from openGym (AGPL), `Intl` APIs other than `NumberFormat` / `DateTimeFormat` / `Collator`.
 - Every new string in English and Arabic. Every new table is covered by Delete all and by the backup.

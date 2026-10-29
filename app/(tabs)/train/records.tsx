@@ -9,6 +9,7 @@ import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { ExerciseRecord } from '../../../src/services/database/gymMath';
 import { fromKg, sideLabel, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getTypedSetting } from '../../../src/services/database/settings';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 type Named={row:ExerciseRecord;name:string};
 export default function Records(){
  const {t,language}=useLanguage();
@@ -25,10 +26,10 @@ export default function Records(){
    const names=await Promise.all(result.value.map(r=>getExercise(r.exerciseId)));
    if(!live)return;
    setRows(result.value.map((row,i)=>({row,name:names[i]?.ok&&names[i]?.value?
-    names[i].value.name:row.exerciseId})).sort((a,b)=>b.row.latestAt.localeCompare(a.row.latestAt)));
+    exerciseName(language,row.exerciseId,names[i].value.name):row.exerciseId})).sort((a,b)=>b.row.latestAt.localeCompare(a.row.latestAt)));
   })();
   return()=>{live=false;};
- },[]));
+ },[language]));
  return <Screen embedded>
   <Header title={t('train.records')} subtitle={t('records.subtitle')} onBack={()=>router.back()}/>
   <Card rim="train" title={t('records.bestSets')}>

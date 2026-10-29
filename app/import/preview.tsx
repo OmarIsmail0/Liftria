@@ -12,6 +12,7 @@ import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
 import { formatNumber, bidiIsolate, latinDigits } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
+import { exerciseName } from '../../src/i18n/exerciseNames';
 export default function ImportPreview(){
  const {theme}=useTheme();
  const {t,language}=useLanguage();
@@ -104,9 +105,9 @@ export default function ImportPreview(){
        onPress={()=>setDecisions(old=>({...old,[m.name]:
         suggestions.find(s=>s.name===m.name)!.resolvedId!}))}/>}
      {suggestions.find(s=>s.name===m.name)?.suggestedId&&
-      <Typography tone="secondary">{t("im2.suggested",{name:suggestions.find(s=>s.name===m.name)?.suggestedName??""})}</Typography>}
+      <Typography tone="secondary">{t("im2.suggested",{name:exerciseName(language,suggestions.find(s=>s.name===m.name)?.suggestedId,suggestions.find(s=>s.name===m.name)?.suggestedName??"")})}</Typography>}
      {suggestions.find(s=>s.name===m.name)?.suggestedId&&
-      <Button label={t("im2.useSuggested",{name:suggestions.find(s=>s.name===m.name)?.suggestedName??""})}
+      <Button label={t("im2.useSuggested",{name:exerciseName(language,suggestions.find(s=>s.name===m.name)?.suggestedId,suggestions.find(s=>s.name===m.name)?.suggestedName??"")})}
        variant="secondary" onPress={()=>setDecisions(old=>({...old,[m.name]:
         suggestions.find(s=>s.name===m.name)!.suggestedId!}))}/>}
      <Button label={t("im2.keepOwn")} variant="secondary"
