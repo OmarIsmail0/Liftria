@@ -15,7 +15,7 @@ export default function NutritionHistory(){
  const [entries,setEntries]=useState<DiaryEntry[]>([]);
  const [target,setTarget]=useState<Target|null>(null);
  const [hidden,setHidden]=useState(false),[error,setError]=useState(false);
- const today=localDay(new Date()),first=dayOffset(today,-7),last=dayOffset(today,-1);
+ const today=localDay(new Date());
  const load=useCallback(async()=>{
   const day=localDay(new Date());
   const [diary,goal,hide]=await Promise.all([
