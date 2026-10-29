@@ -1,0 +1,66 @@
+--------- beginning of system
+--------- beginning of kernel
+10-29 05:41:31.522   500  2105 E PackageDexUsage: Unsupported context?
+10-29 05:41:31.688  4454  4454 E ActivityThread: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@9bbc0c7 that was originally bound here
+10-29 05:41:31.688  4454  4454 E ActivityThread: android.app.ServiceConnectionLeaked: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@9bbc0c7 that was originally bound here
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.app.LoadedApk$ServiceDispatcher.<init>(LoadedApk.java:1811)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcherCommon(LoadedApk.java:1683)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcher(LoadedApk.java:1662)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.app.ContextImpl.bindServiceCommon(ContextImpl.java:1819)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.app.ContextImpl.bindService(ContextImpl.java:1749)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.content.ContextWrapper.bindService(ContextWrapper.java:756)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at bdu.run(Unknown Source:1)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.os.Handler.handleCallback(Handler.java:938)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.os.Looper.loop(Looper.java:223)
+10-29 05:41:31.688  4454  4454 E ActivityThread: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-29 05:41:53.741   500  1790 E PackageDexUsage: Unsupported context?
+--------- beginning of main
+10-29 05:48:51.867   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:48:56.972  2000  2345 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:02.008   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:04.455  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:09.473   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:11.628  2000  2386 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:16.748   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:18.869  2000  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:23.758   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:25.908  2000  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:31.066   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:33.200  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:38.003   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:40.296  2000  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:45.481   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:47.601  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:51.866   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:49:54.894  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:49:59.846   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:02.178  2000  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:07.051   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:07.342  1206  5161 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-29 05:50:07.345  1206  5179 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-29 05:50:07.413  2899  2915 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-29 05:50:07.414  2899  2915 E libc    : Access denied finding property "service.adb.tls.port"
+10-29 05:50:09.271  2000  2386 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:14.353   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:16.754  2000  2345 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:17.312   442   626 E IPCThreadState: binder thread pool (1 threads) starved for 139 ms
+10-29 05:50:21.612   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:23.844  2000  2386 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:28.834   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:31.004  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:36.085   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:38.322  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:43.224   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:45.467  2000  2345 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:50.590   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:50:53.101  2000  2387 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 05:50:57.775   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:51:01.105 11493 11493 E OverlaySController: Calling with an invalid UID, the interface will not work
+10-29 05:51:01.280  1773  1773 E HwDetectorWithState: a: 3
+10-29 05:51:05.174   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:51:07.253 11493 11493 E OverlaySController: Calling with an invalid UID, the interface will not work
+10-29 05:51:08.482 11493 11579 E GeofenceHelper: Failed: remove geofences by PendingIntent
+10-29 05:51:12.512   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:51:19.754   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 05:51:27.041   434   434 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
