@@ -1894,4 +1894,9 @@ export const ar: Record<TranslationKey, string> = {
   "im3.dateOnlyNote": "تصدير بالتاريخ فقط؛ سُجّلت المجموعات عند الظهر بالتوقيت المحلي.",
   "im2.firstRecord": "أول رقم قياسي",
   "im2.repsRecord": "رقم قياسي في التكرارات",
+  "healthChart.yesterdayAt": "أمس {time}",
+  "healthHistory.granted": "السجلات الأقدم مسموح بها",
+  "healthHistory.denied": "السجلات الأقدم غير مسموح بها",
+  "healthHistory.unverified": "تعذّر التأكد من إتاحة الوصول إلى السجلات الأقدم",
+  "healthHistory.unavailable": "لا يمكن طلب الوصول إلى السجلات الأقدم على هذا الجهاز",
 };

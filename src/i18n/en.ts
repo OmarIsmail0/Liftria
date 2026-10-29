@@ -1893,5 +1893,10 @@ export const en = {
   "im3.dateOnlyNote": "Date-only export; sets timestamped at noon local.",
   "im2.firstRecord": "First record",
   "im2.repsRecord": "Repetitions record",
+  "healthChart.yesterdayAt": "yesterday {time}",
+  "healthHistory.granted": "Older records allowed",
+  "healthHistory.denied": "Older records not allowed",
+  "healthHistory.unverified": "Older-record access could not be confirmed",
+  "healthHistory.unavailable": "Older-record access cannot be requested on this device",
 } as const;
 export type TranslationKey = keyof typeof en;
