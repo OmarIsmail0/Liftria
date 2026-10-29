@@ -66,7 +66,8 @@ export function orbSummary(eaten: number, target: number | null, hidden = false,
   return {
     metric: left >= 0
       ? orbMetric(language, formatNumber(language, left), 'orb.caption.left')
-      : orbMetric(language, '+' + formatNumber(language, Math.abs(left)), 'orb.caption.over'),
+      // LRM keeps the sign before the number in an RTL line ("+225", not "225+").
+      : orbMetric(language, (language === 'ar' ? '\u200E' : '') + '+' + formatNumber(language, Math.abs(left)), 'orb.caption.over'),
     label,
     progress: Math.min(1, safeEaten / target),
     accessibilityLabel: language === 'en' ? (left >= 0

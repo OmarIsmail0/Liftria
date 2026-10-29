@@ -14,12 +14,10 @@ import { useEnterAnimation, usePressScale } from './Motion';
 export type TypographySize = 'display' | 'title' | 'head' | 'metric-xl' | 'metric-l' |
   'metric-m' | 'body' | 'small' | 'label' | 'button';
 
-export function Typography({ children, tone = 'primary', size = 'body', bold = false, lines, fit = false }: {
+export function Typography({ children, tone = 'primary', size = 'body', bold = false, lines }: {
   children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: TypographySize; bold?: boolean;
   /** Cap the line count; the last line ends with an ellipsis. */
   lines?: number;
-  /** Shrink (to 75%) before wrapping a long word across lines. Needs `lines`. */
-  fit?: boolean;
 }) {
   const { theme } = useTheme();
   const { language } = useLanguage();
@@ -31,7 +29,6 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
   const metric = size === 'metric-xl' || size === 'metric-l' || size === 'metric-m';
   const arabic = language === 'ar';
   return <Text allowFontScaling numberOfLines={lines} ellipsizeMode="tail"
-    adjustsFontSizeToFit={fit && lines !== undefined} minimumFontScale={fit ? 0.75 : undefined}
     textBreakStrategy="balanced" lineBreakStrategyIOS="standard" style={{
     fontFamily: fontFamilyFor(face.face, face.weight, arabic), fontSize: face.size, lineHeight: face.line,
     fontVariant: metric ? ['tabular-nums'] : undefined,
@@ -65,32 +62,36 @@ export function Header({ title, subtitle, onBack, right }: {
   const { t, isRTL } = useLanguage();
   const press = usePressScale();
   const solid = theme.effectiveStyle === 'solid';
-  return <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3], minHeight: theme.size.touch.primary }}>
-    {/* A 40dp filled disc inside the 48dp touch target. Solid (high contrast) keeps a 3:1 outline. */}
-    {onBack && <Pressable onPress={onBack} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
-      accessibilityRole="button" accessibilityLabel={t('common.back')}
-      style={{ width: theme.size.touch.min, height: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
-        marginStart: -theme.space[1] }}>
-      {({ pressed }) => <Animated.View style={[{ width: theme.space[10], height: theme.space[10],
-        borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: 'center',
-        backgroundColor: theme.mode === 'light' && !solid
-          ? (pressed ? theme.color.bg.raised : theme.glass.card)
-          : (pressed ? theme.surface.hairline : theme.surface.control),
-        borderWidth: theme.size.border.thin,
-        borderColor: solid ? theme.controlOutline : theme.surface.hairline,
-        boxShadow: theme.mode === 'light' && !solid ? theme.elevation.thumb : undefined }, press.style]}>
-        <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
-          size={theme.space[5]} strokeWidth={2.2} />
-      </Animated.View>}
-    </Pressable>}
-    {/* Long titles: shrink a little, then at most two lines with an ellipsis, never a word
-        split across lines next to the back button and the right-hand actions. */}
-    <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
-      <Typography size="title" lines={2} fit>{title}</Typography>
-      {subtitle && <Typography tone="secondary" size="small" lines={2}>{subtitle}</Typography>}
-    </View>
-    {right}
+  // A 40dp filled disc inside the 48dp touch target. Solid (high contrast) keeps a 3:1 outline.
+  const back = onBack && <Pressable onPress={onBack} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+    accessibilityRole="button" accessibilityLabel={t('common.back')}
+    style={{ width: theme.size.touch.min, height: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
+      marginStart: -theme.space[1] }}>
+    {({ pressed }) => <Animated.View style={[{ width: theme.space[10], height: theme.space[10],
+      borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: 'center',
+      backgroundColor: theme.mode === 'light' && !solid
+        ? (pressed ? theme.color.bg.raised : theme.glass.card)
+        : (pressed ? theme.surface.hairline : theme.surface.control),
+      borderWidth: theme.size.border.thin,
+      borderColor: solid ? theme.controlOutline : theme.surface.hairline,
+      boxShadow: theme.mode === 'light' && !solid ? theme.elevation.thumb : undefined }, press.style]}>
+      <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
+        size={theme.space[5]} strokeWidth={2.2} />
+    </Animated.View>}
+  </Pressable>;
+  // At most two lines with an ellipsis, at full size.
+  const titles = <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
+    <Typography size="title" lines={2}>{title}</Typography>
+    {subtitle && <Typography tone="secondary" size="small" lines={2}>{subtitle}</Typography>}
   </View>;
+  const row = { flexDirection: 'row', alignItems: 'center', gap: theme.space[3], minHeight: theme.size.touch.primary } as const;
+  // Back and actions together leave the title too narrow ("Supers/et"), so the title gets
+  // its own full-width line under them.
+  if (back && right) return <View style={{ gap: theme.space[2] }}>
+    <View style={row}>{back}<View style={{ flex: 1 }} />{right}</View>
+    <View style={{ flexDirection: 'row' }}>{titles}</View>
+  </View>;
+  return <View style={row}>{back}{titles}{right}</View>;
 }
 
 export function Card({ children, rim = 'none', title, flat = false }: {

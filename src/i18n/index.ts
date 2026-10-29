@@ -16,10 +16,28 @@ export function resolveLanguage(preference: LanguagePreference, deviceLanguage: 
   return preference === 'system' ? deviceLanguage : preference;
 }
 
+/**
+ * Western digits everywhere (owner rule). Hermes on iOS ignores `numberingSystem` and the
+ * `-u-nu-latn` locale extension, so map Arabic-Indic digits and separators back explicitly.
+ */
+export function latinDigits(value: string): string {
+  return value
+    .replace(/[\u0660-\u0669]/g, digit => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[\u06F0-\u06F9]/g, digit => String(digit.charCodeAt(0) - 0x06F0))
+    .replace(/\u066C/g, ',').replace(/\u066B/g, '.');
+}
+
 export function formatNumber(language: AppLanguage, number: number, options?: Intl.NumberFormatOptions): string {
-  return new Intl.NumberFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
+  return latinDigits(new Intl.NumberFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
     ...options, numberingSystem: 'latn',
-  }).format(number);
+  }).format(number));
+}
+
+/** Dates in the app language with Western digits on every platform. */
+export function formatDate(language: AppLanguage, date: Date, options?: Intl.DateTimeFormatOptions): string {
+  return latinDigits(new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US', {
+    ...options, numberingSystem: 'latn',
+  }).format(date));
 }
 
 export function translate(language: AppLanguage, key: TranslationKey, params?: TranslationParams): string {

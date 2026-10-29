@@ -10,7 +10,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
 import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
-import { formatNumber, bidiIsolate } from '../../src/i18n';
+import { formatNumber, bidiIsolate, latinDigits } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 export default function ImportPreview(){
  const {theme}=useTheme();
@@ -64,8 +64,8 @@ export default function ImportPreview(){
   </Card>:<>
    <Card rim="train" title={t("im2.summary",{workouts:plan.workouts.length,sets:plan.setCount})}>
     <Typography tone="secondary" size="small">{t("im2.fromSource",{source:importerLabel(draft.source)})}</Typography>
-    <Typography tone="secondary">{bidiIsolate(language,new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))+
-     ' – '+bidiIsolate(language,new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}</Typography>
+    <Typography tone="secondary">{bidiIsolate(language,latinDigits(new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))+
+     ' – '+bidiIsolate(language,latinDigits(new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))}</Typography>
     <ListRow title={t("im2.warmups")} detail={formatNumber(language,plan.warmupCount)}/>
     {!plan.parsed.warmupMarked&&<Typography tone="secondary" size="small">{t("im2.warmupsNotMarked")}</Typography>}
     <ListRow title={t("im2.skipped")} detail={formatNumber(language,plan.skippedDays.length)}/>

@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { latinDigits } from '../../../src/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -40,7 +41,7 @@ export default function Records(){
     title={name+(row.side?' · '+sideLabel(row.side,language):'')}
     detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
       row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:t('records.mostReps')+' ' +row.maxReps)+
-      ' · '+new Date(row.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}
+      ' · '+latinDigits(new Date(row.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:row.exerciseId}})}
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>

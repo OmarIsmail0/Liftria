@@ -5,6 +5,7 @@ import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../
 import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { muscleLabel } from '../../i18n/muscles';
+import { formatDate } from '../../i18n';
 import { listPlans, listSessions, listTemplates, saveTemplate, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
 import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
@@ -133,7 +134,7 @@ export default function TrainHome() {
             justifyContent:'center',padding:theme.space[1],borderRadius:theme.radius.md,
             borderColor:day.today?theme.color.domain.train:theme.color.border.subtle,
             borderWidth:day.today?2:1}}>
-            <Typography size="small">{new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US', { weekday: 'short' }).format(day.date)}</Typography>
+            <Typography size="small">{formatDate(language, day.date, { weekday: 'short' })}</Typography>
             <Typography tone="secondary" size="small">{done?'✓':day.today?t('nav.today'):next?'●':'—'}</Typography>
           </View>;
         })}
@@ -150,7 +151,7 @@ export default function TrainHome() {
     <Card title={t('train.recent')}>
       {logged.length===0?<Typography tone="secondary">{t('train.noCompleted')}</Typography>:
         logged.slice(0,4).map(s=><ListRow key={s.id} title={s.title}
-          detail={new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US').format(new Date(s.startedAt))}
+          detail={formatDate(language, new Date(s.startedAt))}
           onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}/>)}
     </Card>
     <Typography tone="tertiary" size="small">{t('train.offline')}</Typography>

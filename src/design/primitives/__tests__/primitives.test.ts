@@ -75,7 +75,7 @@ describe('honest Pulse Orb states', () => {
   });
   it('shows the same big number and caption in Arabic, with Western digits', () => {
     expect(orbSummary(1420, 2650, false, 'ar').metric).toEqual({ value: '1,230', caption: 'سعرات متبقية' });
-    expect(orbSummary(2830, 2650, false, 'ar').metric).toEqual({ value: '+180', caption: 'سعرات زائدة' });
+    expect(orbSummary(2830, 2650, false, 'ar').metric).toEqual({ value: '\u200E+180', caption: 'سعرات زائدة' });
     expect(orbSummary(1536, null, false, 'ar').metric).toEqual({ value: '1,536', caption: 'سعرات متناولة' });
   });
 });

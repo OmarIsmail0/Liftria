@@ -5,7 +5,7 @@ import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { SettingsIcon } from '../../src/design/primitives/TabIcon';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { formatNumber } from '../../src/i18n';
+import { formatDate, formatNumber } from '../../src/i18n';
 import { Banner, Button, Card, Chip, Header, ListRow, Orb, Screen, Skeleton, Typography } from '../../src/design/primitives';
 import { getProfile, type Profile } from '../../src/services/database/profile';
 import { getCurrentTarget, type Target } from '../../src/services/database/targets';
@@ -78,7 +78,7 @@ export default function TodayTab() {
     void loadLocal().catch(() => setLocalLoading(false));
     void loadTraining();
   }, [loadLocal,loadTraining]));
-  const date = new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date());
+  const date = formatDate(language, new Date(), { weekday: 'short', day: 'numeric', month: 'short' });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t('today.morning') : hour < 17 ? t('today.afternoon') : t('today.evening');
   const steps = snapshot.readings.steps;

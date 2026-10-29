@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import {formatDate} from '../../src/i18n';
 import { router,useLocalSearchParams } from 'expo-router';
 import {View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
@@ -43,8 +44,8 @@ export default function DataAndStorage() {
   const [restoreText,setRestoreText]=useState('');
   const previewBackup=isDemo?DEMO_BACKUP:pendingRestore;
   const groups=previewBackup?previewGroups(previewBackup).filter(g=>g.count>0):[];
-  const date=previewBackup?new Intl.DateTimeFormat(language==='ar'?'ar-EG-u-nu-latn':'en-US',
-   {dateStyle:'medium',timeStyle:'short'}).format(new Date(previewBackup.exportedAt)):'';
+  const date=previewBackup?formatDate(language,new Date(previewBackup.exportedAt),
+   {dateStyle:'medium',timeStyle:'short'}):'';
   const closePreview=()=>{
    if(busy)return;
    if(isDemo)router.replace('/settings/data');
