@@ -1,5 +1,5 @@
 import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
-import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
@@ -40,17 +40,17 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
 }
 
 /** Fixed ambient background; no expensive live blur or animated glows. */
-export function Screen({ children, scroll = true, padded = true, embedded = false }: {
-  children: ReactNode; scroll?: boolean; padded?: boolean; embedded?: boolean;
+export function Screen({ children, scroll = true, padded = true, embedded = false, safeBottom = false }: {
+  children: ReactNode; scroll?: boolean; padded?: boolean; embedded?: boolean; safeBottom?: boolean;
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded ? 0 : insets.bottom };
+  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !(safeBottom && Platform.OS==='ios') ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
   return <View style={[layout, { backgroundColor: embedded ? 'transparent' : theme.background }]}>
     {!embedded && theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     {scroll
-      ? <ScrollView contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+      ? <ScrollView automaticallyAdjustKeyboardInsets={Platform.OS==='ios'} contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}
   </View>;
 }

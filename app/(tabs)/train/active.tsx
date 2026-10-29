@@ -258,9 +258,9 @@ export default function ActiveWorkoutScreen() {
     setEffortValue('');exerciseScroll.current?.scrollTo({x:Math.max(0,index-1)*145,animated:true});};
   const selectEdit=(s:ActiveSet)=>{setEdit(s);setKg(s.weight);setReps(s.reps);setKind(s.kind);
     setEffortValue(formatEditableNumber(s.rpe??s.rir,'effort'));};
-  if(!view)return <Screen embedded><Header title={t('active.workout')} onBack={()=>router.replace('/(tabs)/train')}/>
+  if(!view)return <Screen embedded safeBottom><Header title={t('active.workout')} onBack={()=>router.replace('/(tabs)/train')}/>
     <Typography tone="secondary">{error??t('active.opening')}</Typography></Screen>;
-  return <Screen embedded scroll={false}>
+  return <Screen embedded safeBottom scroll={false}>
     {screenOn&&focused&&<KeepScreenOn/>}
     <View style={{paddingHorizontal:theme.layout.gutter,paddingTop:theme.space[2],gap:theme.space[2]}}>
       <Header title={view.title} subtitle={t('active.elapsed',{time:elapsedLabel(view.startedAt,now),count:stats?.sets??0})}

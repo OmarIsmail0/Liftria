@@ -1,3 +1,5 @@
+import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
+import {Platform} from 'react-native';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { formatNumber, latinDigits } from '../../../src/i18n';
 import { useEffect, useState } from 'react';
@@ -11,7 +13,7 @@ import { sourceName } from '../../../src/features/health/presentation';
 function recordAt(value: HealthRecord): string {
   return value.kind === 'instant' || value.kind === 'rate' ? value.time : value.end;
 }
-export default function HealthRecordDetail() {
+function HealthRecordDetailAndroid() {
   const {t,language}=useLanguage();
   const dateLocale=language==='ar'?'ar-EG-u-nu-latn':'en-US';
   const measuredValue=(value: HealthRecord):string=>{
@@ -73,4 +75,9 @@ export default function HealthRecordDetail() {
         </Card>
       </>}
   </Screen>;
+}
+
+export default function HealthRecordDetail(){
+ return Platform.OS==='android'?<HealthRecordDetailAndroid/>:
+  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
 }

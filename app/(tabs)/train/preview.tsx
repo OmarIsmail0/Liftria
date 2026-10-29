@@ -67,7 +67,7 @@ export default function WorkoutPreview() {
     await create();
   };
   const muscles=[...new Set((template?.exercises??[]).flatMap(e=>lookup[e.exerciseId]?.primaryMuscles??[]))] as Muscle[];
-  return <Screen embedded>
+  return <Screen embedded safeBottom>
     <Header title={template?.name??t('preview.emptyWorkout')} subtitle={t('preview.subtitle')} onBack={()=>router.back()}/>
     <Card rim="train">
       {muscles.length>0&&<BodyMap primary={muscles}/>}

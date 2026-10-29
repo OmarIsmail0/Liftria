@@ -1,4 +1,4 @@
-import { healthConnect, normalizeEnergyAggregate, readDailyEnergy } from '../index';
+import { healthConnect, normalizeEnergyAggregate, readDailyEnergy } from '../android';
 import * as HC from 'react-native-health-connect';
 
 jest.mock('react-native-health-connect', () => ({

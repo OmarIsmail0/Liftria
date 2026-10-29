@@ -42,6 +42,15 @@ export type AggregateValue = {
   value: number; unit: 'kcal' | 'count'; dataOrigin?: string;
   dataOrigins?: string[]; // An aggregate may include multiple apps; never misattribute it.
 };
+/** Energy totals describe a time window, not necessarily complete daily expenditure. */
+export const energyMetrics = ['active-calories', 'total-calories', 'basal-metabolic-rate'] as const satisfies readonly MetricType[];
+export type EnergyMetric = typeof energyMetrics[number];
+export type DailyEnergyRow =
+  | { metric: EnergyMetric; date: string; status: 'ok'; value: AggregateValue }
+  // Health Connect can return a total even when no connected app contributed data.
+  | { metric: EnergyMetric; date: string; status: 'no-source'; value: AggregateValue }
+  | { metric: EnergyMetric; date: string; status: 'empty' | 'unavailable' | 'permission-denied' | 'error'; message?: string };
+
 export type HealthRecord =
   | InstantSample | RateSample | IntervalSample | SeriesSample | ExerciseSession | SleepSession;
 export type HealthValue = HealthRecord | AggregateValue;

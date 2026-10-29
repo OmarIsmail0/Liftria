@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  Modal, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
+  Modal, Platform, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
 } from 'react-native';
 import Animated, { Easing, interpolateColor, useAnimatedStyle, useSharedValue, withTiming,
   type SharedValue } from 'react-native-reanimated';
@@ -351,7 +351,8 @@ export function Sheet({ visible, title, description, children, onClose, destruct
         </View>
         <Typography size="title">{title}</Typography>
         {description && <Typography tone="secondary">{description}</Typography>}
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
+        <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={Platform.OS==='ios'}
+          contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
         <Button label={t('common.cancel')} fullWidth onPress={onClose} />
       </Animated.View>
     </View>

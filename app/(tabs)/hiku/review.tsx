@@ -68,7 +68,7 @@ export default function ReviewEstimate(){
   return t(item.confidence==='check'?'hikuK.check':'hikuPhoto.toCheck');
  };
  const photoReady=draft?.kind!=='photo'||photoReviewReady(items,reviewed);
- return <Screen embedded>
+ return <Screen embedded safeBottom>
   <Header title={t('hikuK.review')} onBack={()=>router.back()}/>
   {!draft?<Card title={t('hikuK.noDraft')}>
    <Button label={t('hikuK.describe')} onPress={()=>router.push('/(tabs)/hiku/describe')}/>

@@ -1,8 +1,9 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, View } from 'react-native';
+import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ensureExercisePack, listExercises, searchExercises, newGymId } from '../../../src/services/database/exerciseLibrary';
@@ -12,6 +13,7 @@ import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function TemplateEditor() {
+  const navigation=useNavigation();
   const {theme}=useTheme();
   const {t,language}=useLanguage();
   const {id,exerciseId}=useLocalSearchParams<{id?:string;exerciseId?:string}>();
@@ -28,9 +30,27 @@ export default function TemplateEditor() {
   const [busy,setBusy]=useState(false);
   const [baseline,setBaseline]=useState(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
   const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline;
-  const dirtyRef=useRef(dirty);
-  useEffect(()=>{dirtyRef.current=dirty;},[dirty]);
-  const back=()=>{if(dirty)setDiscardSheet(true);else router.back();};
+  const pendingRemove=useRef<Parameters<typeof navigation.dispatch>[0]|null>(null);
+  // Set after save, delete or discard; the replace runs on the next render, once removal
+  // is no longer prevented.
+  const [exiting,setExiting]=useState(false);
+  // usePreventRemove (not a bare beforeRemove listener) also blocks the native iOS
+  // swipe-back and Android hardware back while there are unsaved changes.
+  usePreventRemove(dirty&&!exiting,({data})=>{
+    pendingRemove.current=data.action;
+    setDiscardSheet(true);
+  });
+  useEffect(()=>{if(exiting)router.replace('/(tabs)/train/plans');},[exiting]);
+  const back=()=>{if(router.canGoBack())router.back();else router.replace('/(tabs)/train/plans');};
+  const cancelDiscard=()=>{pendingRemove.current=null;setDiscardSheet(false);};
+  const discard=()=>{
+    setDiscardSheet(false);
+    const action=pendingRemove.current;
+    pendingRemove.current=null;
+    // A blocked action is marked as already checked, so dispatching it again goes through.
+    if(action)navigation.dispatch(action);
+    else setExiting(true);
+  };
   useFocusEffect(useCallback(()=>{
     let live=true;
     void (async()=>{
@@ -48,11 +68,7 @@ export default function TemplateEditor() {
         setExercises(entry);
       }
     })();
-    const sub=BackHandler.addEventListener('hardwareBackPress',()=>{
-      if(dirtyRef.current){setDiscardSheet(true);return true;}
-      return false;
-    });
-    return ()=>{live=false;sub.remove();};
+    return ()=>{live=false;};
   },[id,exerciseId]));
   const filtered=useMemo(()=>searchExercises(library,query,null,language).slice(0,8),[library,query,language]);
   const linkGroup=(index:number,size:2|3)=>{
@@ -76,13 +92,13 @@ export default function TemplateEditor() {
     setBusy(true);setError(null);
     const result=await saveTemplate({name:name.trim(),restSec:rest,notes:notes||null,exercises},id);
     setBusy(false);
-    if(result.ok){setSaved(true);router.replace('/(tabs)/train/plans');}
+    if(result.ok){setSaved(true);setExiting(true);}
     else setError(t('template.saveError'));
   };
   const remove=async()=>{
     if(id){const result=await deleteTemplate(id);
       if(!result.ok){setError(t('template.deleteError'));return;}}
-    router.replace('/(tabs)/train/plans');
+    setExiting(true);
   };
   return <Screen embedded>
     <Header title={id?t('template.edit'):t('template.new')} onBack={back}/>
@@ -155,9 +171,9 @@ export default function TemplateEditor() {
       onPress={()=>void save()}/>
     {id&&<Button label={t('template.delete')} variant="danger" onPress={()=>setDeleteSheet(true)}/>}
     <Sheet visible={discardSheet&&!saved} title={t('template.discardTitle')}
-      description={t('template.discardDescription')} onClose={()=>setDiscardSheet(false)}>
-      <Button label={t('template.keepEditing')} fullWidth onPress={()=>setDiscardSheet(false)}/>
-      <Button label={t('template.discard')} variant="danger" fullWidth onPress={()=>router.back()}/>
+      description={t('template.discardDescription')} onClose={cancelDiscard}>
+      <Button label={t('template.keepEditing')} fullWidth onPress={cancelDiscard}/>
+      <Button label={t('template.discard')} variant="danger" fullWidth onPress={discard}/>
     </Sheet>
     <Sheet visible={deleteSheet} destructive title={t('template.deleteTitle')}
       description={t('template.deleteDescription')} onClose={()=>setDeleteSheet(false)}>
