@@ -13,6 +13,7 @@ import { readHistoryDetail, historyNumbers, recordsChangedIfDeleted,
 import { storeUndo } from '../../../src/features/train/historyUndo';
 import { readRecords } from '../../../src/services/database/gymRepositories';
 import { estimatedOneRepMax, type ExerciseRecord } from '../../../src/services/database/gymMath';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 export default function SessionDetail(){
  const {t,language}=useLanguage();
  const {id}=useLocalSearchParams<{id:string}>();
@@ -87,7 +88,7 @@ export default function SessionDetail(){
     {data.session.importedAt?t('sessionDetail.importedAt',{date:latinDigits(new Date(data.session.importedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):''}
    </Typography>}
   </Card>
-  {data.exercises.map(e=><Card key={e.id} title={e.name}>
+  {data.exercises.map(e=><Card key={e.id} title={exerciseName(language,e.exerciseId,e.name)}>
    {e.note&&<Typography tone="secondary" size="small">{t('gymParity.notesHistory',{note:e.note})}</Typography>}
    {e.supersetGroup&&<Typography tone="secondary" size="small">{t('gymParity.superset')}</Typography>}
    {editing?draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{

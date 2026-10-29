@@ -13,6 +13,7 @@ import { appendExerciseToActiveSession, exerciseSessions, listTemplates, readRec
   type Template } from '../../../../src/services/database/gymRepositories';
 import { readInProgressWorkout } from '../../../../src/features/train/workoutData';
 import type { ExerciseRecord } from '../../../../src/services/database/gymMath';
+import { exerciseName } from '../../../../src/i18n/exerciseNames';
 
 export default function ExerciseDetail(){
   const {id}=useLocalSearchParams<{id:string}>();
@@ -76,7 +77,7 @@ export default function ExerciseDetail(){
   const volume=records.reduce((n,r)=>Math.max(n,r.bestSessionVolume),0);
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
-      <Header title={exercise.name} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
+      <Header title={exerciseName(language,exercise.id,exercise.name)} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
         onBack={()=>router.back()}/>
       <Card rim="train">
         <BodyMap primary={exercise.primaryMuscles} secondary={exercise.secondaryMuscles}/>
