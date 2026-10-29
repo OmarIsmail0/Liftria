@@ -12,6 +12,7 @@ const { join } = jest.requireActual('path') as {
 const listFiles = [
   'arabic-instructions-top100.txt',
   'arabic-instructions-next120.txt',
+  'arabic-instructions-batch3.txt',
 ];
 const ids = listFiles.flatMap(file =>
   readFileSync(join(process.cwd(), 'docs', 'phase5', file), 'utf8')
@@ -43,13 +44,14 @@ function invalidSteps(translations: Translations) {
 }
 
 describe('Arabic common-exercise instructions guards', () => {
-  it('covers exactly the listed pack IDs from both lists, with no duplicates', () => {
+  it('covers exactly the listed pack IDs from the three lists, with no duplicates', () => {
     expect(listFiles).toEqual([
       'arabic-instructions-top100.txt',
       'arabic-instructions-next120.txt',
+      'arabic-instructions-batch3.txt',
     ]);
-    expect(new Set(ids).size).toBe(220);
-    expect(ids).toHaveLength(220);
+    expect(new Set(ids).size).toBe(370);
+    expect(ids).toHaveLength(370);
     expect(ids.every(id => englishById.has(id))).toBe(true);
     expect(coverage(EXERCISE_INSTRUCTIONS_AR, ids)).toEqual({ missing: [], extra: [] });
   });
