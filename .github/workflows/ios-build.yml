@@ -62,6 +62,19 @@ jobs:
           fi
           tail -n 20 ../xcodebuild.log
 
+      - name: Sign the simulator app ad hoc with its entitlements
+        # The build above is unsigned, so the app has no HealthKit entitlement and
+        # every HealthKit call fails on the simulator. An ad hoc signature carries
+        # the entitlements; the simulator accepts it, no Apple account needed.
+        run: |
+          APP=$(find ios/build/Build/Products -maxdepth 2 -name '*.app' -path '*iphonesimulator*' | head -n1)
+          ENT=$(find ios -maxdepth 2 -name '*.entitlements' | head -n1)
+          echo "app=$APP entitlements=$ENT"
+          cat "$ENT"
+          codesign --force --sign - --entitlements "$ENT" --timestamp=none "$APP"
+          codesign -d --entitlements - "$APP" 2>&1 | grep -q 'com.apple.developer.healthkit' \
+            || { echo "::error::HealthKit entitlement missing after signing"; exit 1; }
+
       - name: Check the iPhone permission texts
         run: |
           PLIST=$(find ios/build/Build/Products -name Info.plist -path '*.app/Info.plist' | head -n1)
