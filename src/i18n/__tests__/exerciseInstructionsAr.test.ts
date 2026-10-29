@@ -14,6 +14,7 @@ const listFiles = [
   'arabic-instructions-next120.txt',
   'arabic-instructions-batch3.txt',
   'arabic-instructions-batch4.txt',
+  'arabic-instructions-batch5.txt',
 ];
 const ids = listFiles.flatMap(file =>
   readFileSync(join(process.cwd(), 'docs', 'phase5', file), 'utf8')
@@ -45,15 +46,16 @@ function invalidSteps(translations: Translations) {
 }
 
 describe('Arabic common-exercise instructions guards', () => {
-  it('covers exactly the listed pack IDs from the four lists, with no duplicates', () => {
+  it('covers exactly the listed pack IDs from the five lists, with no duplicates', () => {
     expect(listFiles).toEqual([
       'arabic-instructions-top100.txt',
       'arabic-instructions-next120.txt',
       'arabic-instructions-batch3.txt',
       'arabic-instructions-batch4.txt',
+      'arabic-instructions-batch5.txt',
     ]);
-    expect(new Set(ids).size).toBe(520);
-    expect(ids).toHaveLength(520);
+    expect(new Set(ids).size).toBe(698);
+    expect(ids).toHaveLength(698);
     expect(ids.every(id => englishById.has(id))).toBe(true);
     expect(coverage(EXERCISE_INSTRUCTIONS_AR, ids)).toEqual({ missing: [], extra: [] });
   });
