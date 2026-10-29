@@ -6,7 +6,7 @@ export const metricTypes = [
 export type MetricType = typeof metricTypes[number];
 export type PermissionState = 'granted' | 'denied' | 'unknown';
 export type SourceMeta = {
-  adapter: 'health-connect' | 'samsung-health';
+  adapter: 'health-connect' | 'samsung-health' | 'apple-health';
   recordId: string;
   dataOrigin: string;
   device?: { manufacturer?: string; model?: string; type?: string };
