@@ -96,7 +96,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - ~~**Claude does these in the shared code:** long screen titles in `Header`~~ DONE: PR #40 merged (2026-10-29), with the Orb fixes and Western digits on iPhone. ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
 
-14. **PR Z: `Phase 5 / Arabic exercise names`** (builder: **Cursor**, branch from `main`; owner approved 2026-10-29)
+14. ~~**PR Z: `Phase 5 / Arabic exercise names`**~~ DONE: PR #43 merged (2026-10-29). Built by Claude: Cursor's run crashed at the usage limit. The Arabic library sorts with one shared `Intl.Collator('ar')`; `localeCompare(x, 'ar')` per comparison froze it on Hermes.
    - In Arabic, every exercise name is English: the 876 bundled exercises come from `assets/data/exercises/free-exercise-db.json` (English data). Give each bundled exercise an Arabic display name.
    - **Data:** one file, `src/i18n/exerciseNamesAr.ts`, mapping the pack exercise `id` to its Arabic name. Don't edit the pack JSON, the database rows or the stored `name`: the English name stays the stored and imported (Hevy CSV matching) name, and backups don't change.
    - **Display:** one helper (e.g. `exerciseName(language, exercise)` in `src/i18n/`) returns the Arabic name for `source: 'pack'` exercises in Arabic, otherwise `exercise.name`. Custom exercises always show what the person typed. Use it everywhere an exercise name reaches the screen, a spoken label or the rest notification. Find every place (library, pick, muscles, template, active workout and its mini-bar, session, history, records, exercise detail, preview, strength progress, import preview, plans, notifications), and list each file in the PR description.
@@ -127,7 +127,9 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Instructions stay English for now (out of scope).
    - **Don't touch** `src/design/**`, the Health screens or the stack layouts (PR S, #28), or the import matching.
 
-15. **PR AA: `Phase 5 / Apple Health`** (builder: **Cursor**; starts after PR S #28 merges, from `main`; owner approved 2026-10-29)
+15. **PR AA: `Phase 5 / Apple Health`** (owner approved 2026-10-29). Split into two parts:
+   - **Part 1, library + adapter + config + tests:** PR #44 (Cursor, Grok 4.7), based on PR S's branch. Claude fixed body fat (HealthKit's `%` is a 0–1 fraction) and made the iPhone build require the read text and forbid a write prompt. Merge after #28.
+   - **Part 2, the iPhone screens:** after #28 and #44 merge. The spec below covers both parts.
    - **Library (owner approved):** `@kingstinct/react-native-healthkit` (MIT, maintained, New Architecture via Nitro) plus its peer `react-native-nitro-modules`. Install with `npx expo install`; Claude regenerates the lockfile if it needs to. No other new dependency.
    - **Config:** add its Expo config plugin in `app.json`, with read-only usage text in English (`NSHealthShareUsageDescription`, plus the Arabic string in `locales/ar.json` under `"ios"`). No write access: no `NSHealthUpdateUsageDescription`, and the app never writes to Apple Health. No background delivery.
    - **Adapter:** `src/services/health/appleHealth.ts` implements the existing `HealthDataSource` for every `MetricType` HealthKit has (steps, heart rate, active and basal energy, workouts, sleep, weight, body fat, lean body mass). Add `'apple-health'` to `SourceMeta['adapter']`. Fill `recordId` (HealthKit UUID), `dataOrigin` (source bundle id) and `device` from the sample. Normalize units to the existing ones (kg, %, kcal, bpm, count). Pick the adapter by `Platform.OS`; Health Connect stays Android-only.
