@@ -3,7 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import type { LiftriaTheme } from '../tokens';
 import type { CardRim } from './contracts';
-import { ambientGlows, cssLinearGradient, ringGeometry, shouldShowOrbHighlight, stopProps, withOpacity } from './VisualGeometry';
+import { ambientGlows, cssLinearGradient, ringGeometry, shouldShowOrbHighlight, stopProps } from './VisualGeometry';
 
 export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme: LiftriaTheme }) {
   return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
@@ -84,14 +84,11 @@ export function OrbArtwork({ theme, size, progress }: {
   const half = diameter / 2;
   const center = size / 2;
   const arc = ringGeometry(size, theme.orbSize.ringStroke, progress ?? 0);
-  const sphereShadow: ViewStyle = empty || solid ? {} : {
-    boxShadow: [
-      { offsetX: 0, offsetY: 0, blurRadius: theme.visual.orbGlowInnerBlur, spreadDistance: 0,
-        color: withOpacity(theme.orb[2], 0.45) },
-      { offsetX: 0, offsetY: 0, blurRadius: theme.visual.orbGlowOuterBlur, spreadDistance: 0,
-        color: withOpacity(theme.orb[3], 0.35) },
-    ],
-  };
+  // The glow is drawn, not a native boxShadow: on Android in RTL, a boxShadow under the
+  // breathing scale transform rendered as a dark square behind the full ring.
+  const glow = !empty && !solid;
+  const glowReach = half + theme.visual.orbGlowOuterBlur;
+  const glowStop = (distance: number) => (Math.min(1, distance / glowReach) * 100) + '%';
   return <View pointerEvents="none" importantForAccessibility="no-hide-descendants"
     style={{ position: 'absolute', width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
     {empty && !solid && <Svg pointerEvents="none" width={diameter * 1.3} height={diameter * 1.3}
@@ -106,7 +103,25 @@ export function OrbArtwork({ theme, size, progress }: {
       <Circle cx={diameter * 0.65} cy={diameter * 0.65} r={diameter * 0.65}
         fill="url(#empty-orb-halo)" />
     </Svg>}
-    <View style={[{ width: diameter, height: diameter, borderRadius: theme.radius.pill }, sphereShadow]}>
+    {glow && <Svg pointerEvents="none" width={glowReach * 2} height={glowReach * 2}
+      style={{ position: 'absolute', left: center - glowReach, top: center - glowReach }}>
+      <Defs>
+        <RadialGradient id="orb-glow-inner" cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
+          <Stop offset={glowStop(half * 0.9)} {...stopProps(theme.orb[2], 0.45)} />
+          <Stop offset={glowStop(half + theme.visual.orbGlowInnerBlur * 0.25)} {...stopProps(theme.orb[2], 0.2)} />
+          <Stop offset={glowStop(half + theme.visual.orbGlowInnerBlur)} {...stopProps(theme.orb[2], 0)} />
+          <Stop offset="100%" {...stopProps(theme.orb[2], 0)} />
+        </RadialGradient>
+        <RadialGradient id="orb-glow-outer" cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
+          <Stop offset={glowStop(half * 0.9)} {...stopProps(theme.orb[3], 0.35)} />
+          <Stop offset={glowStop(half + theme.visual.orbGlowOuterBlur * 0.3)} {...stopProps(theme.orb[3], 0.14)} />
+          <Stop offset="100%" {...stopProps(theme.orb[3], 0)} />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={glowReach} cy={glowReach} r={glowReach} fill="url(#orb-glow-outer)" />
+      <Circle cx={glowReach} cy={glowReach} r={glowReach} fill="url(#orb-glow-inner)" />
+    </Svg>}
+    <View style={{ width: diameter, height: diameter, borderRadius: theme.radius.pill }}>
       <Svg width={diameter} height={diameter}>
         <Defs>
           <RadialGradient id="sphere" cx="50%" cy="62%" rx="65%" ry="65%" fx="50%" fy="62%">

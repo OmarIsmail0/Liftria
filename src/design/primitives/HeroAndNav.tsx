@@ -31,7 +31,8 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   }, [active, reduceMotion, scale, theme.motion.breathe.duration, theme.motion.breathe.scale]);
 
   const size = theme.orbSize.today;
-  const parts = !hidden ? /^([+]?[\d,]+)\s+(kcal .+)$/.exec(summary.label) : null;
+  const metric = summary.metric;
+  const arabic = language === 'ar';
   const ink = (summary.progress === null || theme.effectiveStyle === 'solid') ? theme.color.text.primary : theme.orb.ink;
   return <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'}
     accessibilityLabel={summary.accessibilityLabel}
@@ -42,18 +43,19 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
         transform: [{ scale }] }}>
       <OrbArtwork theme={theme} size={size} progress={summary.progress} />
       <View style={{ alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.space[3] }}>
-        {parts ? <>
+        {metric ? <>
           <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={1}
             style={{ color: ink, fontFamily: fontFamilyFor(theme.type.metric.xl.face, theme.type.metric.xl.weight),
               fontSize: theme.type.metric.xl.size, lineHeight: theme.type.metric.xl.line,
-              fontVariant: ['tabular-nums'], textAlign: 'center' }}>{parts[1]}</Text>
+              fontVariant: ['tabular-nums'], textAlign: 'center' }}>{metric.value}</Text>
           <Text allowFontScaling numberOfLines={1} style={{
-            color: ink, fontFamily: fontFamilyFor(theme.type.label.face, theme.type.label.weight),
+            color: ink, fontFamily: fontFamilyFor(theme.type.label.face, theme.type.label.weight, arabic),
             fontSize: theme.type.label.size, lineHeight: theme.type.label.line,
-            letterSpacing: theme.type.label.letterSpacingEm * theme.type.label.size,
-            textAlign: 'center' }}>{(parts[2] ?? '').toUpperCase()}</Text>
+            // Letter spacing breaks Arabic letter joining; English keeps the tracked caps label.
+            letterSpacing: arabic ? 0 : theme.type.label.letterSpacingEm * theme.type.label.size,
+            textAlign: 'center' }}>{arabic ? metric.caption : metric.caption.toUpperCase()}</Text>
         </> : <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2}
-          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight, language === 'ar'),
+          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight, arabic),
             fontSize: theme.type.head.size, lineHeight: theme.type.head.line,
             textAlign: 'center' }}>{summary.label}</Text>}
       </View>

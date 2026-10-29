@@ -14,8 +14,12 @@ import { useEnterAnimation, usePressScale } from './Motion';
 export type TypographySize = 'display' | 'title' | 'head' | 'metric-xl' | 'metric-l' |
   'metric-m' | 'body' | 'small' | 'label' | 'button';
 
-export function Typography({ children, tone = 'primary', size = 'body', bold = false }: {
+export function Typography({ children, tone = 'primary', size = 'body', bold = false, lines, fit = false }: {
   children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: TypographySize; bold?: boolean;
+  /** Cap the line count; the last line ends with an ellipsis. */
+  lines?: number;
+  /** Shrink (to 75%) before wrapping a long word across lines. Needs `lines`. */
+  fit?: boolean;
 }) {
   const { theme } = useTheme();
   const { language } = useLanguage();
@@ -25,10 +29,14 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
     size === 'small' ? theme.type.small : size === 'label' ? theme.type.label :
     size === 'button' ? theme.type.button : bold ? theme.type.body.strong : theme.type.body;
   const metric = size === 'metric-xl' || size === 'metric-l' || size === 'metric-m';
-  return <Text allowFontScaling style={{
-    fontFamily: fontFamilyFor(face.face, face.weight, language === 'ar'), fontSize: face.size, lineHeight: face.line,
+  const arabic = language === 'ar';
+  return <Text allowFontScaling numberOfLines={lines} ellipsizeMode="tail"
+    adjustsFontSizeToFit={fit && lines !== undefined} minimumFontScale={fit ? 0.75 : undefined}
+    textBreakStrategy="balanced" lineBreakStrategyIOS="standard" style={{
+    fontFamily: fontFamilyFor(face.face, face.weight, arabic), fontSize: face.size, lineHeight: face.line,
     fontVariant: metric ? ['tabular-nums'] : undefined,
-    letterSpacing: size === 'label' ? theme.type.label.letterSpacingEm * theme.type.label.size : undefined,
+    // Letter spacing breaks Arabic letter joining.
+    letterSpacing: size === 'label' && !arabic ? theme.type.label.letterSpacingEm * theme.type.label.size : undefined,
     textTransform: size === 'label' ? 'uppercase' : undefined,
     color: theme.color.text[tone], flexShrink: 1, textAlign: 'auto',
   }}>{children}</Text>;
@@ -75,9 +83,11 @@ export function Header({ title, subtitle, onBack, right }: {
           size={theme.space[5]} strokeWidth={2.2} />
       </Animated.View>}
     </Pressable>}
-    <View style={{ flex: 1, gap: theme.space[1] }}>
-      <Typography size="title">{title}</Typography>
-      {subtitle && <Typography tone="secondary" size="small">{subtitle}</Typography>}
+    {/* Long titles: shrink a little, then at most two lines with an ellipsis, never a word
+        split across lines next to the back button and the right-hand actions. */}
+    <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
+      <Typography size="title" lines={2} fit>{title}</Typography>
+      {subtitle && <Typography tone="secondary" size="small" lines={2}>{subtitle}</Typography>}
     </View>
     {right}
   </View>;
