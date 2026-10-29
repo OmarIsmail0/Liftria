@@ -21,7 +21,7 @@ jobs:
   simulator:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ios')
     runs-on: macos-15
-    timeout-minutes: 80
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v6
 

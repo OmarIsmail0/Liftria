@@ -1,6 +1,7 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
@@ -9,7 +10,6 @@ import { ensureExercisePack, listExercises, searchExercises, newGymId } from '..
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
 import type { Exercise } from '../../../src/services/database/gymTypes';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
-import { guardTemplateRemoval } from '../../../src/features/train/templateExitGuard';
 
 export default function TemplateEditor() {
   const navigation=useNavigation();
@@ -29,27 +29,26 @@ export default function TemplateEditor() {
   const [busy,setBusy]=useState(false);
   const [baseline,setBaseline]=useState(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
   const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline;
-  const dirtyRef=useRef(dirty);
   const pendingRemove=useRef<Parameters<typeof navigation.dispatch>[0]|null>(null);
-  const allowRemoval=useRef(false);
-  useEffect(()=>{dirtyRef.current=dirty;},[dirty]);
-  useEffect(()=>navigation.addListener('beforeRemove',event=>{
-    if(allowRemoval.current)return;
-    guardTemplateRemoval(event,dirtyRef.current,action=>{
-      pendingRemove.current=action;
-      setDiscardSheet(true);
-    });
-  }),[navigation]);
-  // Both the header button and an iOS swipe reach beforeRemove.
+  // Set after save, delete or discard; the replace runs on the next render, once removal
+  // is no longer prevented.
+  const [exiting,setExiting]=useState(false);
+  // usePreventRemove (not a bare beforeRemove listener) also blocks the native iOS
+  // swipe-back and Android hardware back while there are unsaved changes.
+  usePreventRemove(dirty&&!exiting,({data})=>{
+    pendingRemove.current=data.action;
+    setDiscardSheet(true);
+  });
+  useEffect(()=>{if(exiting)router.replace('/(tabs)/train/plans');},[exiting]);
   const back=()=>{if(router.canGoBack())router.back();else router.replace('/(tabs)/train/plans');};
   const cancelDiscard=()=>{pendingRemove.current=null;setDiscardSheet(false);};
   const discard=()=>{
-    allowRemoval.current=true;
     setDiscardSheet(false);
     const action=pendingRemove.current;
     pendingRemove.current=null;
+    // A blocked action is marked as already checked, so dispatching it again goes through.
     if(action)navigation.dispatch(action);
-    else router.replace('/(tabs)/train/plans');
+    else setExiting(true);
   };
   useFocusEffect(useCallback(()=>{
     let live=true;
@@ -92,14 +91,13 @@ export default function TemplateEditor() {
     setBusy(true);setError(null);
     const result=await saveTemplate({name:name.trim(),restSec:rest,notes:notes||null,exercises},id);
     setBusy(false);
-    if(result.ok){allowRemoval.current=true;setSaved(true);router.replace('/(tabs)/train/plans');}
+    if(result.ok){setSaved(true);setExiting(true);}
     else setError(t('template.saveError'));
   };
   const remove=async()=>{
     if(id){const result=await deleteTemplate(id);
       if(!result.ok){setError(t('template.deleteError'));return;}}
-    allowRemoval.current=true;
-    router.replace('/(tabs)/train/plans');
+    setExiting(true);
   };
   return <Screen embedded>
     <Header title={id?t('template.edit'):t('template.new')} onBack={back}/>
