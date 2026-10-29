@@ -1,11 +1,5 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
-  'iosHealth.watch': 'Watch health syncing is not yet available on iPhone. Your choice is saved locally, but no health records are read.',
-  'iosHealth.title': 'Apple Health',
-  'iosHealth.coming': 'Apple Health support is coming',
-  'iosHealth.description': 'Health Connect is Android-only. Apple Health is not connected on iPhone yet.',
-  'iosHealth.noData': 'No Apple Health data is being read or displayed. Liftria’s food, training, and other local features work without it.',
-  'iosHealth.askFirst': 'We will ask before accessing Apple Health in a later update.',
   'hikuSettings.keptPhotoCount': 'Kept photos: {count} (≈{mb} MB)',
   'hikuSettings.deletePhotos': 'Delete kept photos',
   'hikuSettings.deletePhotosWarning': 'Delete only the photos kept by Hiku on this phone? The saved requests, food diary, API key and other settings will remain. This cannot be undone.',
@@ -2039,6 +2033,7 @@ export const en = {
   "appleHealth.trend.empty": "Log your weight to see a trend. Apple Health may also have readings.",
   "appleHealth.trend.privacy": "Apple Health entries can only be edited in the Health app. Liftria never writes health measurements.",
   "appleHealth.trend.localPrivacy": "Saved only on this phone. Never written to Apple Health.",
+  "appleHealth.trend.bodyFat": "Shown when Apple Health provides it. No reading assumed.",
   "appleHealth.count.steps.zero": "{count} steps",
   "appleHealth.count.steps.one": "{count} step",
   "appleHealth.count.steps.two": "{count} steps",

@@ -1,8 +1,8 @@
-import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Platform, Linking, ScrollView  } from 'react-native';
+import { Linking, ScrollView  } from 'react-native';
+import { appleHealthPhone, healthCopy, offerProviderInstall, readAccessIsReported, requestsHistoryRead } from '../../../src/features/health/deviceHealth';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Banner, Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
@@ -25,7 +25,9 @@ function HealthPermissionsAndroid() {
     weight:t('healthPerm.hiddenWeight'),'body-fat':t('healthPerm.hiddenBodyFat'),
     'active-calories':t('healthPerm.hiddenEnergy'),
   };
-  const availabilityText=(status:string|null):string => status==='available'?t('healthPerm.available')
+  const availabilityText=(status:string|null):string => appleHealthPhone()
+    ? (status==='available'?t('appleHealth.perm.available'):t('appleHealth.perm.unavailable'))
+    : status==='available'?t('healthPerm.available')
     :status==='unavailable'?t('healthPerm.unavailable')
     :canInstallHealthConnect(status as Parameters<typeof canInstallHealthConnect>[0])?t('healthPerm.install')
     :t('healthPerm.other');
@@ -41,52 +43,63 @@ function HealthPermissionsAndroid() {
     setWorking(true);
     try {
       const updated = await healthConnect.requestPermissions([...metricTypes]);
+      if (!requestsHistoryRead()) {
+        setMessage(t('appleHealth.perm.afterRequest'));
+        await refresh(true);
+        return;
+      }
       const history = await requestHistoryReadPermission();
       const allowed = Object.values(updated).filter(v => v === 'granted').length;
       setMessage(t('healthPerm.success',{allowed,total:metricTypes.length,history:history==='granted'?t('healthPerm.historyGranted'):history==='denied'?t('healthPerm.historyDenied'):history==='unavailable'?t('healthPerm.historyUnavailable'):t('healthPerm.historyUnknown')}));
       await refresh(true);
-    } catch { setMessage(t('healthPerm.error')); }
+    } catch { setMessage(appleHealthPhone()?t('appleHealth.perm.error'):t('healthPerm.error')); }
     finally { setWorking(false); }
   }
 
   if (!snapshot.loaded) return <Screen embedded>
-    <Header title={t('healthPerm.loadingTitle')} subtitle={t('healthPerm.loading')} />
-    <Typography tone="secondary">{t('healthPerm.loadingDetails')}</Typography>
+    <Header title={t('healthPerm.loadingTitle')} subtitle={t(healthCopy('perm.loading'))} />
+    <Typography tone="secondary">{t(healthCopy('perm.loadingDetails'))}</Typography>
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title={t('healthPerm.loadingTitle')} subtitle={t('healthPerm.subtitle')}
+    <Header title={t('healthPerm.loadingTitle')} subtitle={t(healthCopy('perm.subtitle'))}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title={t('healthPerm.status')} rim="health">
+    <Card title={t(healthCopy('perm.status'))} rim="health">
       <Typography>{availabilityText(snapshot.availability)}</Typography>
       <Typography tone="secondary">{available
-        ? t('healthPerm.allowedCount',{count,total:overviewMetrics.length})
+        ? (readAccessIsReported()
+          ? t('healthPerm.allowedCount',{count,total:overviewMetrics.length})
+          : t('appleHealth.overview.accessUnknown'))
         : t('healthPerm.hidden')}</Typography>
-      {available && count === 0 && <Typography tone="secondary">{t('healthPerm.works')}</Typography>}
-      <Typography tone="secondary">{t('healthPerm.readOnly')}</Typography>
+      {available && readAccessIsReported() && count === 0 && <Typography tone="secondary">{t('healthPerm.works')}</Typography>}
+      <Typography tone="secondary">{t(healthCopy('perm.readOnly'))}</Typography>
+      {!readAccessIsReported() && <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>}
     </Card>
     <Card title={t('healthPerm.list')}>
       {overviewMetrics.map(type => {
         const state = snapshot.permissions[type] ?? 'unknown';
-        const value = state === 'granted' ? t('healthPerm.allowed') : state === 'denied' ? t('healthPerm.denied') : t('healthPerm.unverified');
+        const value = !readAccessIsReported()
+          ? t('appleHealth.perm.unknown')
+          : state === 'granted' ? t('healthPerm.allowed') : state === 'denied' ? t('healthPerm.denied') : t('healthPerm.unverified');
         return <ListRow key={type} title={names[type] ?? type}
-          accessibilityLabel={t('healthPerm.openHint',{name:names[type]??type,state:value})}
-          detail={state === 'granted' ? t('healthPerm.androidManaged') : consequences[type] ?? t('healthPerm.hiddenUntil')}
+          accessibilityLabel={t(readAccessIsReported()?'healthPerm.openHint':'appleHealth.perm.openHint',{name:names[type]??type,state:value})}
+          detail={!readAccessIsReported()
+            ? t('appleHealth.perm.managed')
+            : state === 'granted' ? t('healthPerm.androidManaged') : consequences[type] ?? t('healthPerm.hiddenUntil')}
           suffix={<Chip kind="off" label={value} />}
           onPress={available ? () => void openPermissions() : undefined} />;
       })}
     </Card>
-    {available ? <Button label={working ? t('healthPerm.opening') : t('healthPerm.openPermissions')}
+    {available ? <Button label={working ? t(healthCopy('perm.opening')) : t(healthCopy('perm.request'))}
       disabled={working || refreshing} fullWidth onPress={() => void openPermissions()} />
-      : canInstallHealthConnect(snapshot.availability) ?
+      : offerProviderInstall() && canInstallHealthConnect(snapshot.availability) ?
         <Button label={t('healthPerm.get')} fullWidth onPress={() =>
           void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />
-        : <Typography tone="secondary">{t('healthPerm.without')}</Typography>}
+        : <Typography tone="secondary">{t(healthCopy('perm.without'))}</Typography>}
     {message && <Banner title={t('healthPerm.permissionUpdate')} message={message} />}
   </ScrollView></Screen>;
 }
 
 export default function HealthPermissions(){
- return Platform.OS==='android'?<HealthPermissionsAndroid/>:
-  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
+ return <HealthPermissionsAndroid/>;
 }

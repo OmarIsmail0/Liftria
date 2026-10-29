@@ -1,5 +1,6 @@
 import { emptyMetricState, phase2EnergyMessage, sourceName, sourceStale, summarizeRecords, onlyLocalDayRecords, ageLabel, hourlyStepsBySource, heartRateSamples, earliestCachedRecordAt, dailyStepsBySource, healthAvailabilityText, canInstallHealthConnect,
-  recordsInWindow, heartRateTodayStatus, historyPermissionMessage } from '../presentation';
+  recordsInWindow, heartRateTodayStatus, historyPermissionMessage, summarizeAppleTotal, aggregateForWindow,
+  appleWindowSummary, NOTE_APPLE_TOTAL, NOTE_NO_DATA, SOURCE_APPLE } from '../presentation';
 import type { HealthValue, AggregateValue, IntervalSample } from '../../../services/health/types';
 
 const end = '2026-10-24T12:30:00.000Z';
@@ -161,6 +162,48 @@ test('read-error source summaries cannot use yesterday steps, old HR samples or 
     end:new Date(2026,9,25,8,1).toISOString(),points:[{time:new Date(2026,9,25,8).toISOString(),value:75}] };
   const filtered = recordsInWindow('heart-rate',[oldHr,todayHr],day,now);
   expect(summarizeRecords('heart-rate',filtered,'granted',true).total).toBe(75);
+});
+test('Apple Health daily total is one deduplicated number, and zero is no data', () => {
+  const windowStart = '2026-10-24T00:00:00.000Z';
+  const windowEnd = '2026-10-24T15:00:00.000Z';
+  const total: AggregateValue = {
+    kind: 'aggregate', metric: 'steps', adapter: 'apple-health', operation: 'cumulativeSum',
+    windowStart, windowEnd, value: 4200, unit: 'count', dataOrigin: 'com.apple.Health',
+    dataOrigins: ['com.apple.Health', 'com.apple.health.watch'],
+  };
+  const summary = summarizeAppleTotal('steps', total, now);
+  expect(summary.total).toBe(4200);
+  expect(summary.sources).toHaveLength(1);
+  expect(summary.sources[0]?.label).toBe(SOURCE_APPLE);
+  expect(summary.note).toBe(NOTE_APPLE_TOTAL);
+  expect(summarizeAppleTotal('steps', { ...total, value: 0 }, now)).toMatchObject({
+    state: 'no-data', total: null, note: NOTE_NO_DATA,
+  });
+  const phone = steps('phone', 'com.apple.Health', 9000);
+  const combined = appleWindowSummary('steps', [phone, total], new Date(windowStart), new Date(windowEnd), true, now);
+  expect(combined.total).toBe(4200);
+  expect(combined.sources.map(source => source.value)).toEqual([4200]);
+});
+test('a week statistics window is not reused as today, and a foreign aggregate is ignored', () => {
+  const start = new Date('2026-10-24T00:00:00.000Z');
+  const end = new Date('2026-10-24T15:00:00.000Z');
+  const day: AggregateValue = {
+    kind: 'aggregate', metric: 'steps', adapter: 'apple-health', operation: 'cumulativeSum',
+    windowStart: start.toISOString(), windowEnd: end.toISOString(), value: 100, unit: 'count',
+  };
+  const week: AggregateValue = {
+    ...day, value: 9000, windowStart: '2026-10-18T00:00:00.000Z',
+  };
+  const foreign: AggregateValue = { ...day, adapter: 'health-connect', value: 50 };
+  expect(aggregateForWindow('steps', [week, foreign, day], start, end)?.value).toBe(100);
+  expect(aggregateForWindow('steps', [week, foreign], start, end)).toBeNull();
+  const sample: HealthValue = {
+    kind: 'series', metric: 'heart-rate', adapter: 'apple-health', recordId: 'hr',
+    dataOrigin: 'com.apple.Health', start: start.toISOString(), end: end.toISOString(), unit: 'bpm',
+    points: [{ time: end.toISOString(), value: 71 }],
+  };
+  expect(appleWindowSummary('heart-rate', [sample], start, end, true, now).total).toBe(71);
+  expect(appleWindowSummary('heart-rate', [sample], start, end, false, now).state).toBe('not-available');
 });
 test('history statuses are plain language and device status has unknown initial state', () => {
   expect(healthAvailabilityText(null)).toMatch(/Checking/);

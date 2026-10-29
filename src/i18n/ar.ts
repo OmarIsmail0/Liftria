@@ -1,12 +1,6 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
-  'iosHealth.watch': 'مزامنة بيانات الساعة الصحية غير متاحة على آيفون بعد. سيُحفظ اختيارك على الجهاز لكن لن نقرأ أي سجلات صحية.',
-  'iosHealth.title': 'صحة Apple',
-  'iosHealth.coming': 'دعم صحة Apple قريبًا',
-  'iosHealth.description': 'Health Connect متاح على أندرويد فقط. لم يتم ربط صحة Apple على آيفون بعد.',
-  'iosHealth.noData': 'لا يقرأ ليفتريا أي بيانات من صحة Apple ولا يعرضها الآن. تظل ميزات الطعام والتمرين والبيانات المحلية متاحة.',
-  'iosHealth.askFirst': 'سنطلب إذنك قبل الوصول إلى صحة Apple في تحديث لاحق.',
   'hikuSettings.keptPhotoCount': 'الصور المحتفظ بها: {count} (حوالي {mb} ميغابايت)',
   'hikuSettings.deletePhotos': 'حذف الصور المحتفظ بها',
   'hikuSettings.deletePhotosWarning': 'هل تريد حذف صور هيكو المحفوظة فقط من هذا الهاتف؟ ستبقى الطلبات ويوميات الطعام ومفتاح API والإعدادات الأخرى. لا يمكن التراجع.',
@@ -2040,6 +2034,7 @@ export const ar: Record<TranslationKey, string> = {
   "appleHealth.trend.empty": "سجّل وزنك لترى الاتجاه. قد تتوفر قراءات في صحة Apple أيضًا.",
   "appleHealth.trend.privacy": "لا يمكن تعديل إدخالات صحة Apple إلا في تطبيق الصحة. لا يكتب ليفتريا قياسات صحية.",
   "appleHealth.trend.localPrivacy": "يُحفظ على هذا الهاتف فقط. لا يُكتب في صحة Apple.",
+  "appleHealth.trend.bodyFat": "تظهر عندما توفرها صحة Apple. لا يُفترض وجود قراءة.",
   "appleHealth.count.steps.zero": "لا خطوات",
   "appleHealth.count.steps.one": "خطوة واحدة",
   "appleHealth.count.steps.two": "خطوتان",
