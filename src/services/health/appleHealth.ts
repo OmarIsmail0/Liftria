@@ -6,16 +6,6 @@
  * stays 'unknown'. Daily totals come from HKStatistics (cumulativeSum), which
  * deduplicates iPhone and Watch samples. A missing total is empty, never 0.
  */
-import {
-  isHealthDataAvailableAsync,
-  queryCategorySamples,
-  queryQuantitySamples,
-  queryStatisticsForQuantity,
-  queryWorkoutSamples,
-  requestAuthorization,
-  WorkoutActivityType,
-  WorkoutTypeIdentifier,
-} from '@kingstinct/react-native-healthkit';
 import type { ObjectTypeIdentifier, QueryStatisticsResponse } from '@kingstinct/react-native-healthkit';
 import type {
   AggregateValue, DailyEnergyRow, EnergyMetric, HealthDataSource, HealthRecord,
@@ -33,8 +23,24 @@ const sleepStageName: Record<number, string> = {
   5: 'asleepREM',
 };
 
+type HealthKit = typeof import('@kingstinct/react-native-healthkit');
 type CumulativeMetric = 'steps' | 'active-calories' | 'basal-metabolic-rate';
 type SampleMetric = 'heart-rate' | 'exercise-session' | 'sleep-session' | 'weight' | 'body-fat' | 'lean-body-mass';
+
+/** Loaded on first use so Jest (and Android, which never imports this file) does not
+ * evaluate the native Nitro module at import time. A failed load means HealthKit is absent. */
+let healthKitModule: Promise<HealthKit | null> | undefined;
+let activityNames: Record<number, string> | undefined;
+
+function loadHealthKit(): Promise<HealthKit | null> {
+  if (!healthKitModule) {
+    healthKitModule = import('@kingstinct/react-native-healthkit').then(mod => {
+      activityNames = mod.WorkoutActivityType as unknown as Record<number, string>;
+      return mod;
+    }, () => null);
+  }
+  return healthKitModule;
+}
 
 type StatRead =
   | { status: 'ok'; value: AggregateValue }
@@ -70,13 +76,14 @@ function codedError(code: string, message: string): Error {
 
 async function healthKitAvailable(): Promise<boolean> {
   try {
-    return await isHealthDataAvailableAsync();
+    const mod = await loadHealthKit();
+    return mod ? await mod.isHealthDataAvailableAsync() : false;
   } catch {
     return false;
   }
 }
 
-function readIdentifiers(types: readonly MetricType[]): ObjectTypeIdentifier[] {
+function readIdentifiers(types: readonly MetricType[], workoutType: ObjectTypeIdentifier): ObjectTypeIdentifier[] {
   const identifiers: ObjectTypeIdentifier[] = [];
   for (const metric of types) {
     switch (metric) {
@@ -84,7 +91,7 @@ function readIdentifiers(types: readonly MetricType[]): ObjectTypeIdentifier[] {
       case 'heart-rate': identifiers.push('HKQuantityTypeIdentifierHeartRate'); break;
       case 'active-calories': identifiers.push('HKQuantityTypeIdentifierActiveEnergyBurned'); break;
       case 'basal-metabolic-rate': identifiers.push('HKQuantityTypeIdentifierBasalEnergyBurned'); break;
-      case 'exercise-session': identifiers.push(WorkoutTypeIdentifier); break;
+      case 'exercise-session': identifiers.push(workoutType); break;
       case 'sleep-session': identifiers.push('HKCategoryTypeIdentifierSleepAnalysis'); break;
       case 'weight': identifiers.push('HKQuantityTypeIdentifierBodyMass'); break;
       case 'body-fat': identifiers.push('HKQuantityTypeIdentifierBodyFatPercentage'); break;
@@ -234,8 +241,7 @@ function bodyFatPercent(unit: unknown, quantity: unknown): number | null {
 function exerciseName(activity: unknown): string | null {
   if (typeof activity === 'string' && activity.length > 0) return activity;
   if (typeof activity === 'number' && Number.isInteger(activity)) {
-    const table = WorkoutActivityType as unknown as Record<number, string | undefined> | undefined;
-    const name = table?.[activity];
+    const name = activityNames?.[activity];
     return typeof name === 'string' ? name : String(activity);
   }
   return null;
@@ -349,33 +355,35 @@ function dateFilter(range: { start: Date; end: Date }) {
   return { date: { startDate: range.start, endDate: range.end } };
 }
 
-async function queryCumulativeSum(metric: CumulativeMetric, range: { start: Date; end: Date }): Promise<QueryStatisticsResponse> {
+async function queryCumulativeSum(
+  mod: HealthKit, metric: CumulativeMetric, range: { start: Date; end: Date },
+): Promise<QueryStatisticsResponse> {
   const filter = dateFilter(range);
   if (metric === 'steps') {
-    return queryStatisticsForQuantity('HKQuantityTypeIdentifierStepCount', ['cumulativeSum'], { unit: 'count', filter });
+    return mod.queryStatisticsForQuantity('HKQuantityTypeIdentifierStepCount', ['cumulativeSum'], { unit: 'count', filter });
   }
   if (metric === 'active-calories') {
-    return queryStatisticsForQuantity('HKQuantityTypeIdentifierActiveEnergyBurned', ['cumulativeSum'], { unit: 'kcal', filter });
+    return mod.queryStatisticsForQuantity('HKQuantityTypeIdentifierActiveEnergyBurned', ['cumulativeSum'], { unit: 'kcal', filter });
   }
-  return queryStatisticsForQuantity('HKQuantityTypeIdentifierBasalEnergyBurned', ['cumulativeSum'], { unit: 'kcal', filter });
+  return mod.queryStatisticsForQuantity('HKQuantityTypeIdentifierBasalEnergyBurned', ['cumulativeSum'], { unit: 'kcal', filter });
 }
 
-async function mappedSamples(metric: SampleMetric, range: { start: Date; end: Date }): Promise<HealthRecord[]> {
+async function mappedSamples(mod: HealthKit, metric: SampleMetric, range: { start: Date; end: Date }): Promise<HealthRecord[]> {
   const filter = dateFilter(range);
   const limit = 0;
   let samples: readonly unknown[];
   if (metric === 'heart-rate') {
-    samples = await queryQuantitySamples('HKQuantityTypeIdentifierHeartRate', { limit, ascending: true, unit: 'count/min', filter });
+    samples = await mod.queryQuantitySamples('HKQuantityTypeIdentifierHeartRate', { limit, ascending: true, unit: 'count/min', filter });
   } else if (metric === 'weight') {
-    samples = await queryQuantitySamples('HKQuantityTypeIdentifierBodyMass', { limit, ascending: true, unit: 'kg', filter });
+    samples = await mod.queryQuantitySamples('HKQuantityTypeIdentifierBodyMass', { limit, ascending: true, unit: 'kg', filter });
   } else if (metric === 'body-fat') {
-    samples = await queryQuantitySamples('HKQuantityTypeIdentifierBodyFatPercentage', { limit, ascending: true, unit: '%', filter });
+    samples = await mod.queryQuantitySamples('HKQuantityTypeIdentifierBodyFatPercentage', { limit, ascending: true, unit: '%', filter });
   } else if (metric === 'lean-body-mass') {
-    samples = await queryQuantitySamples('HKQuantityTypeIdentifierLeanBodyMass', { limit, ascending: true, unit: 'kg', filter });
+    samples = await mod.queryQuantitySamples('HKQuantityTypeIdentifierLeanBodyMass', { limit, ascending: true, unit: 'kg', filter });
   } else if (metric === 'sleep-session') {
-    samples = await queryCategorySamples('HKCategoryTypeIdentifierSleepAnalysis', { limit, ascending: true, filter });
+    samples = await mod.queryCategorySamples('HKCategoryTypeIdentifierSleepAnalysis', { limit, ascending: true, filter });
   } else {
-    samples = await queryWorkoutSamples({ limit, ascending: true, filter });
+    samples = await mod.queryWorkoutSamples({ limit, ascending: true, filter });
   }
   const records: HealthRecord[] = [];
   let dropped = 0;
@@ -403,10 +411,11 @@ export const appleHealth: HealthDataSource = {
   },
   async requestPermissions(types) {
     try {
-      if (await healthKitAvailable()) {
-        const toRead = readIdentifiers(types);
+      const mod = await loadHealthKit();
+      if (mod && await mod.isHealthDataAvailableAsync()) {
+        const toRead = readIdentifiers(types, mod.WorkoutTypeIdentifier);
         // Read access only. Omitting toShare does not ask HealthKit for write permission.
-        if (toRead.length > 0) await requestAuthorization({ toRead });
+        if (toRead.length > 0) await mod.requestAuthorization({ toRead });
       }
     } catch {
       // The prompt failing still does not reveal whether read access was denied.
@@ -418,17 +427,18 @@ export const appleHealth: HealthDataSource = {
   async read(metric, range): Promise<ReadResult> {
     if (metric === 'total-calories') return { status: 'unsupported' };
     try {
-      if (!(await healthKitAvailable())) return { status: 'unavailable' };
+      const mod = await loadHealthKit();
+      if (!mod || !(await mod.isHealthDataAvailableAsync())) return { status: 'unavailable' };
       const windowStart = range.start.toISOString();
       const windowEnd = range.end.toISOString();
       if (metric === 'steps' || metric === 'active-calories' || metric === 'basal-metabolic-rate') {
-        const stats = await queryCumulativeSum(metric, range);
+        const stats = await queryCumulativeSum(mod, metric, range);
         const interpreted = interpretAppleStatistics(metric, stats, windowStart, windowEnd);
         if (interpreted.status === 'empty') return { status: 'empty' };
         if (interpreted.status === 'error') return interpreted;
         return { status: 'ok', records: [interpreted.value] };
       }
-      const records = await mappedSamples(metric, range);
+      const records = await mappedSamples(mod, metric, range);
       return records.length ? { status: 'ok', records } : { status: 'empty' };
     } catch (err: unknown) {
       return readError(err);
@@ -438,7 +448,8 @@ export const appleHealth: HealthDataSource = {
 
 /** Local days, including today's partial day. Totals are statistics, never summed samples. */
 export async function readAppleDailyEnergy(days = 7): Promise<DailyEnergyRow[]> {
-  if ((await appleHealth.getAvailability()) !== 'available') return [];
+  const mod = await loadHealthKit();
+  if (!mod || !(await mod.isHealthDataAvailableAsync())) return [];
   const result: DailyEnergyRow[] = [];
   const today = new Date();
   const count = Math.max(1, Math.min(Math.floor(days), 30));
@@ -456,7 +467,7 @@ export async function readAppleDailyEnergy(days = 7): Promise<DailyEnergyRow[]> 
       }
       try {
         const interpreted = interpretAppleStatistics(
-          metric, await queryCumulativeSum(metric, { start, end }), start.toISOString(), end.toISOString(),
+          metric, await queryCumulativeSum(mod, metric, { start, end }), start.toISOString(), end.toISOString(),
         );
         if (interpreted.status === 'ok') {
           const origins = interpreted.value.dataOrigins ?? [];
