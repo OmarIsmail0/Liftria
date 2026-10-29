@@ -4,9 +4,10 @@ import {
 } from 'react-native-health-connect';
 import type { AggregateValue, HealthDataSource, HealthRecord, MetricType, PermissionState, ReadResult, EnergyMetric, DailyEnergyRow } from './types';
 import { metricTypes, energyMetrics } from './types';
+import { normalizeHealthRecord } from './normalize';
+
 export { energyMetrics } from './types';
 export type { EnergyMetric, DailyEnergyRow } from './types';
-import { normalizeHealthRecord } from './normalize';
 
 const recordType = {
   steps: 'Steps',
