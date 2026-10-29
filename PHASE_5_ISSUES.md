@@ -171,9 +171,15 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Commits:** one commit per 30 ids, pushed right after each one, so nothing is lost if the run stops.
    - Don't touch `src/i18n/exerciseInstructions.ts` (the display helper), `app/**`, `src/design/**`, the pack JSON, or workflows.
 
-20. **PR AF: `Phase 5 / Arabic instructions, batch 3`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+20. ~~**PR AF: `Phase 5 / Arabic instructions, batch 3`**~~ DONE: PR #61 merged (2026-10-29). Claude fixed one slip.
    - Same task as PR AE for the 150 pack ids in `docs/phase5/arabic-instructions-batch3.txt`: the remaining barbell, dumbbell, cable, machine and EZ-bar strength exercises, beginner level first, 766 steps.
    - Same rules as PR AD and PR AE. Add the third list file to the id guard's `listFiles`, and expect 370 ids.
+   - Commit after every 30 ids and push right away.
+   - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
+
+21. **PR AG: `Phase 5 / Arabic instructions, batch 4`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - Same task as PR AF for the 150 pack ids in `docs/phase5/arabic-instructions-batch4.txt`: the remaining strength exercises (bodyweight, kettlebell, bands, other), beginner level first, 620 steps.
+   - Same rules as PR AD to PR AF. Add the fourth list file to `listFiles`, and expect 520 ids.
    - Commit after every 30 ids and push right away.
    - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
 
