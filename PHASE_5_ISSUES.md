@@ -148,6 +148,22 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Fix every offender it finds: labels come from `t()` with English and Arabic strings. Don't change behavior or layout.
    - Don't touch `src/design/**` (the shared primitives already label themselves), the Health screens, `src/services/health/**`, or `app.config.ts`.
 
+17. **PR AC: `Phase 5 / Browse every exercise`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - The library shows only the first 60 of 876 exercises ("search to find more"), the muscle screen 50, and the picker 60. People can't browse the pack.
+   - Make `app/(tabs)/train/library.tsx`, `pick.tsx` and `muscles.tsx` list **every** match with a virtualized list (`FlatList` / `SectionList`, keyed by exercise id, `getItemLayout` if rows have a fixed height). Keep the current look: the same `ListRow`s, card styling, headers, filters, the recent list and the empty state. Remove the "limited" message and its strings when nothing uses them.
+   - The library in A–Z order gets section headers by first letter in English and in Arabic (Arabic order follows the Arabic names from PR Z: `searchExercises(..., language)` already sorts them).
+   - Screen readers: the list stays navigable and the section headers are headers (`accessibilityRole="header"`).
+   - Tests: the list data covers all 876 with no cap; section grouping in English and Arabic; the accessibility, English-in-Arabic and rule guards still pass.
+   - Don't touch `src/design/**` (if `ListRow` can't sit inside a `FlatList` cleanly, say why in the PR instead), the Health screens, `src/services/health/**`, or `app.config.ts`.
+
+18. **PR AD: `Phase 5 / Arabic instructions for the common exercises`** (builder: **GPT**, after R2 #47's fixes; branch from `main`)
+   - Exercise detail shows the pack's English instructions in Arabic too. Translate the instructions of the **100 most common gym exercises** listed in `docs/phase5/arabic-instructions-top100.txt` (pack ids, about 470 steps). The other 776 keep English, with a one-line note in Arabic ("التعليمات بالإنجليزية لهذا التمرين").
+   - **Data:** `src/i18n/exerciseInstructionsAr.ts`, pack id → array of Arabic steps, **the same number of steps as the English**, in the same order. Don't change the pack JSON, the database or backups.
+   - **Display:** `app/(tabs)/train/exercise/[id].tsx` shows the Arabic steps in Arabic when the id has them, otherwise the English steps plus the note. Custom exercises unchanged.
+   - **Style:** plain Modern Standard Arabic a gym-goer understands, consistent with the Arabic exercise names (PR Z: بنش برس، سكوات، الخلفية…). Keep the safety meaning exact: never drop or soften a caution ("لا تقفل ركبتيك", "حافظ على استقامة ظهرك"). Western digits; number+unit with a no-break space.
+   - **Guards (tests):** every listed id has a translation and no other ids; step counts match the English; no Latin letters except real tokens (EZ, V); each guard fails on a planted bad example.
+   - Don't touch `src/design/**`, the Health screens, `src/services/health/**`, `app.config.ts`, or the library/pick/muscles screens (PR AC).
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 **Rules (same as Phase 4):**
