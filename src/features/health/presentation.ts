@@ -1,4 +1,5 @@
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
+import { bidiIsolate, translate, type AppLanguage } from '../../i18n';
 
 export type HealthReadingState = 'value' | 'no-data' | 'not-allowed' | 'not-available' | 'error';
 export type OriginSummary = { origin: string; label: string; value: number; unit: string; latestAt: string; stale: boolean };
@@ -7,12 +8,29 @@ export type HealthSummary = {
   total: number | null; latestAt: string | null; unverified: boolean; note: string;
 };
 
+/**
+ * i18n-stored-ids: status codes, not copy. The Health screens compare these exact strings and show
+ * `t()` text instead (today.tsx `note()`, health.tsx `readingNote()`, health-detail.tsx `displayNote()`);
+ * `chartCopy.ts` does the same for the source labels. Changing a value would break those comparisons.
+ * 'Samsung Health' is an app name and stays as it is.
+ */
+export const SOURCE_PHONE = 'Phone',
+  SOURCE_SAMSUNG = 'Samsung Health',
+  SOURCE_UNKNOWN = 'Unknown source',
+  NOTE_NOT_ALLOWED = 'Not allowed',
+  NOTE_NOT_AVAILABLE = 'Not available',
+  NOTE_PERMISSION_UNCONFIRMED = 'Permission not confirmed',
+  NOTE_NO_DATA = 'No data',
+  NOTE_NO_MEASURED_SOURCE = 'No measured source',
+  NOTE_UNVERIFIED_DEVICE = 'Unverified device. The data origin does not prove this came from a watch.',
+  NOTE_SEPARATE_SOURCES = 'Separate sources; no combined total.';
+
 /** App package is provenance, NOT proof that a connected watch supplied the record. */
 export function sourceName(origin: string): string {
   if (origin === 'com.android.healthconnect.phone' ||
-      origin.startsWith('com.android.healthconnect.phone.')) return 'Phone';
-  if (origin === 'com.sec.android.app.shealth') return 'Samsung Health';
-  return origin.trim() || 'Unknown source';
+      origin.startsWith('com.android.healthconnect.phone.')) return SOURCE_PHONE;
+  if (origin === 'com.sec.android.app.shealth') return SOURCE_SAMSUNG;
+  return origin.trim() || SOURCE_UNKNOWN;
 }
 
 export function sourceStale(metric: MetricType, at: string, nowMs: number): boolean {
@@ -26,9 +44,9 @@ export function sourceStale(metric: MetricType, at: string, nowMs: number): bool
 export function emptyMetricState(metric: MetricType, permission: PermissionState, available: boolean): HealthSummary {
   const state = !available ? 'not-available' : permission === 'denied' ? 'not-allowed' : 'no-data';
   return { metric, state, sources: [], total: null, latestAt: null, unverified: false,
-    note: state === 'not-allowed' ? 'Not allowed' :
-      state === 'not-available' ? 'Not available' :
-        permission === 'unknown' ? 'Permission not confirmed' : 'No data' };
+    note: state === 'not-allowed' ? NOTE_NOT_ALLOWED :
+      state === 'not-available' ? NOTE_NOT_AVAILABLE :
+        permission === 'unknown' ? NOTE_PERMISSION_UNCONFIRMED : NOTE_NO_DATA };
 }
 
 /** Group a metric by contributing app. Only one-origin steps expose a single total. */
@@ -84,17 +102,17 @@ export function summarizeRecords(
   return {
     metric, state: 'value', sources, total, latestAt,
     unverified: metric === 'heart-rate',
-    note: metric === 'heart-rate' ? 'Unverified device. The data origin does not prove this came from a watch.' :
-      sources.length > 1 ? 'Separate sources; no combined total.' : '',
+    note: metric === 'heart-rate' ? NOTE_UNVERIFIED_DEVICE :
+      sources.length > 1 ? NOTE_SEPARATE_SOURCES : '',
   };
 }
 
 /** The daily-energy gate remains NOT READY: no HC aggregate is measured Phase-2 energy. */
 export function phase2EnergyMessage(permission: PermissionState, available: boolean): string {
-  if (!available) return 'Not available';
-  if (permission === 'denied') return 'Not allowed';
-  if (permission === 'unknown') return 'Permission not confirmed';
-  return 'No measured source';
+  if (!available) return NOTE_NOT_AVAILABLE;
+  if (permission === 'denied') return NOTE_NOT_ALLOWED;
+  if (permission === 'unknown') return NOTE_PERMISSION_UNCONFIRMED;
+  return NOTE_NO_MEASURED_SOURCE;
 }
 
 /** Daily steps that straddle midnight are clipped proportionally, not silently discarded.
@@ -183,23 +201,26 @@ export function earliestCachedRecordAt(records: HealthValue[]): string | null {
 }
 
 /** Freshness labels use the record timestamp, never the time a cached row was re-read. */
-export function ageLabel(timestamp: string, nowMs = Date.now()): string {
+export function ageLabel(timestamp: string, nowMs = Date.now(), language: AppLanguage = 'en'): string {
   const time = Date.parse(timestamp);
-  if (!Number.isFinite(time)) return 'Time unknown';
+  if (!Number.isFinite(time)) return translate(language, 'healthOverview.timeUnknown');
   const elapsedMinutes = Math.max(0, Math.floor((nowMs - time) / 60000));
-  if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
+  if (elapsedMinutes < 60) return translate(language, 'healthOverview.minutesAgo', { count: elapsedMinutes });
   const hours = Math.floor(elapsedMinutes / 60);
-  if (hours < 24) return `${hours} h ago`;
-  return `${Math.floor(hours / 24)} d ago`;
+  if (hours < 24) return translate(language, 'healthOverview.hoursAgo', { count: hours });
+  return translate(language, 'healthOverview.daysAgo', { count: Math.floor(hours / 24) });
 }
 
-export function healthAvailabilityText(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null): string {
+export function healthAvailabilityText(
+  availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null,
+  language: AppLanguage = 'en',
+): string {
   switch(availability) {
-    case null: return 'Checking Health Connect status…';
-    case 'available': return 'Health Connect is available.';
-    case 'not-installed': return 'Health Connect is not installed. Liftria works without it.';
-    case 'needs-update': return 'Health Connect needs an update. Liftria works without it.';
-    default: return 'Health Connect is not supported on this device. Liftria works without it.';
+    case null: return translate(language, 'healthOverview.checkingStatus');
+    case 'available': return translate(language, 'healthOverview.available');
+    case 'not-installed': return translate(language, 'healthOverview.missing');
+    case 'needs-update': return translate(language, 'healthOverview.update');
+    default: return translate(language, 'healthOverview.unsupported');
   }
 }
 export function canInstallHealthConnect(availability: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null): boolean {
@@ -235,12 +256,14 @@ export function dailyStepsBySource(records: HealthValue[], start: Date, end: Dat
 
 
 // Each permission state is presented as an Android-owned setting, never as device provenance.
-export function historyPermissionMessage(status: 'granted' | 'denied' | 'unverified' | 'unavailable'): string {
+export function historyPermissionMessage(
+  status: 'granted' | 'denied' | 'unverified' | 'unavailable', language: AppLanguage = 'en',
+): string {
   switch (status) {
-    case 'granted': return 'Older records allowed';
-    case 'denied': return 'Older records not allowed';
-    case 'unverified': return 'Older-record access could not be confirmed';
-    case 'unavailable': return 'Older-record access cannot be requested on this device';
+    case 'granted': return translate(language, 'healthHistory.granted');
+    case 'denied': return translate(language, 'healthHistory.denied');
+    case 'unverified': return translate(language, 'healthHistory.unverified');
+    case 'unavailable': return translate(language, 'healthHistory.unavailable');
   }
 }
 
@@ -270,14 +293,20 @@ export function recordsInWindow(metric: MetricType, values: HealthValue[], start
 }
 
 /** Today intentionally preserves yesterday's newest HR as stale instead of showing it as current. */
-export function heartRateTodayStatus(latestAt: string, now: Date): { stale: boolean; age: string } {
+export function heartRateTodayStatus(
+  latestAt: string, now: Date, language: AppLanguage = 'en',
+): { stale: boolean; age: string } {
   const at = new Date(latestAt);
-  if (!Number.isFinite(at.getTime())) return { stale: true, age: 'Time unknown' };
+  if (!Number.isFinite(at.getTime())) return { stale: true, age: translate(language, 'healthOverview.timeUnknown') };
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  if (at.getTime() >= midnight && at.getTime() <= now.getTime()) return { stale: false, age: ageLabel(latestAt, now.getTime()) };
+  if (at.getTime() >= midnight && at.getTime() <= now.getTime()) {
+    return { stale: false, age: ageLabel(latestAt, now.getTime(), language) };
+  }
   const yesterday = new Date(midnight); yesterday.setDate(yesterday.getDate() - 1);
-  const time = at.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const locale = language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB';
+  const time = bidiIsolate(language, at.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }));
   const label = at.getTime() >= yesterday.getTime() && at.getTime() < midnight
-    ? `yesterday ${time}` : at.toLocaleDateString();
-  return { stale: true, age: `${label} · ${ageLabel(latestAt, now.getTime())}` };
+    ? translate(language, 'healthChart.yesterdayAt', { time })
+    : at.toLocaleDateString(language === 'ar' ? locale : undefined);
+  return { stale: true, age: `${label} · ${ageLabel(latestAt, now.getTime(), language)}` };
 }
