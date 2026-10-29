@@ -41,7 +41,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Screenshots: a `dev/demo-hiku-photo?auto=1` route using a bundled sample image and pack values, with Save disabled and no API call.
 5. **PR S: `Phase 5 / iPhone`** (owner, 2026-10-26: "don't forget about iPhone")
    - The app must run on iPhone from the same code. Claude added the iPhone config (bundle id `com.liftria.app`, permission texts in English and Arabic, right to left from the first launch) and a CI job that builds it for the iPhone simulator (`ios-build.yml`; label a PR `ios` to run it). **It builds green on `main` (2026-10-26)**; it selects the newest Xcode on the runner because Expo needs Swift 6.2.
-   - **Health:** Health Connect is Android-only. On iPhone, every Health Connect screen and call must be behind `Platform.OS === 'android'`; on iPhone show an honest "Apple Health support is coming" state, never fake data. Apple Health (HealthKit) is a separate later PR: Claude picks the library and asks the owner.
+   - **Health:** Health Connect is Android-only. On iPhone, every Health Connect screen and call must be behind `Platform.OS === 'android'`; on iPhone show an honest "Apple Health support is coming" state, never fake data. Apple Health (HealthKit) is a separate later PR: **PR AA** (library chosen and approved 2026-10-29).
    - Check every Android-only call (Health Connect, the Android notification channel, back-button handling) and every screen in the iPhone layout: safe areas (notch and home bar), the keyboard on Field screens, and swipe-back on stack screens.
    - Rest notifications, Hiku, backup/restore (share sheet and document picker) and the camera must work on iPhone too.
    - Screenshots: Claude adds an iPhone simulator screenshot pass once the build is green.
@@ -127,11 +127,21 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Instructions stay English for now (out of scope).
    - **Don't touch** `src/design/**`, the Health screens or the stack layouts (PR S, #28), or the import matching.
 
+15. **PR AA: `Phase 5 / Apple Health`** (builder: **Cursor**; starts after PR S #28 merges, from `main`; owner approved 2026-10-29)
+   - **Library (owner approved):** `@kingstinct/react-native-healthkit` (MIT, maintained, New Architecture via Nitro) plus its peer `react-native-nitro-modules`. Install with `npx expo install`; Claude regenerates the lockfile if it needs to. No other new dependency.
+   - **Config:** add its Expo config plugin in `app.json`, with read-only usage text in English (`NSHealthShareUsageDescription`, plus the Arabic string in `locales/ar.json` under `"ios"`). No write access: no `NSHealthUpdateUsageDescription`, and the app never writes to Apple Health. No background delivery.
+   - **Adapter:** `src/services/health/appleHealth.ts` implements the existing `HealthDataSource` for every `MetricType` HealthKit has (steps, heart rate, active and basal energy, workouts, sleep, weight, body fat, lean body mass). Add `'apple-health'` to `SourceMeta['adapter']`. Fill `recordId` (HealthKit UUID), `dataOrigin` (source bundle id) and `device` from the sample. Normalize units to the existing ones (kg, %, kcal, bpm, count). Pick the adapter by `Platform.OS`; Health Connect stays Android-only.
+   - **Honesty rules:** HealthKit never says whether *read* access was denied. `getPermissionStatus` returns `'unknown'` for reads after the request, never `'granted'`. An empty read shows the existing "no data" state with one line pointing to Settings → Health → Liftria, never a 0. No total is summed across sources that overlap (iPhone and Apple Watch steps): use HealthKit's statistics query (deduplicated) for daily totals, labeled as Apple Health's total.
+   - **Screens:** replace PR S's "Apple Health support is coming" state with the real flow on iPhone: onboarding step 6, the Health tab, the metric screens and troubleshooting, with copy for iPhone ("Apple Health", "Settings → Health"). English and Arabic for every string.
+   - **Tests:** the adapter's mapping and unit normalization run against recorded sample objects (mock the library), including the read permission staying `'unknown'`, an empty result and an error. The coverage guards (backup, Delete all) still pass. Nothing is stored that the guards don't cover.
+   - **Checks:** the CI iPhone simulator (label `ios`) has little or no health data, so the shots show the empty and permission states. A real iPhone needs the owner's Apple Developer account. Say in the PR what couldn't be checked.
+   - **Don't touch** `src/design/**`, the Android Health Connect adapter's behavior, or workflows.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 **Rules (same as Phase 4):**
 - Every push runs `verify`. Claude adds `build` for emulator screenshots and merges when `verify` is green and the screenshots are clean.
 - One commit per sub-step. Batch your pushes. Run nothing you can't check; Claude runs the checks.
-- **New dependencies:** `expo-sharing` approved and installed by Claude (2026-10-27) for backup/CSV export on Android and iPhone. `expo-document-picker`, `expo-file-system` and `expo-notifications` are already installed. Ask in the PR before adding anything else; Claude regenerates the lockfile.
+- **New dependencies:** `expo-sharing` approved and installed by Claude (2026-10-27) for backup/CSV export on Android and iPhone. `expo-document-picker`, `expo-file-system` and `expo-notifications` are already installed. `@kingstinct/react-native-healthkit` and `react-native-nitro-modules` approved for PR AA (owner, 2026-10-29). Ask in the PR before adding anything else; Claude regenerates the lockfile.
 - **Never:** workflow edits, fabricated results, invented nutrition numbers, `crypto.*` (use `newGymId()`), suggested values saved as data, anything from openGym (AGPL), `Intl` APIs other than `NumberFormat` / `DateTimeFormat` / `Collator`.
 - Every new string in English and Arabic. Every new table is covered by Delete all and by the backup.
