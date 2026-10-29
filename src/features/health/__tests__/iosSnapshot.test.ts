@@ -109,3 +109,14 @@ test('Android still waits for a granted permission and still shows its own cache
   await loadHealthSnapshot(overviewMetrics, true);
   expect(read.mock.calls.map(call => call[0])).toEqual(['steps']);
 });
+
+test('before the read prompt, iPhone shows access not confirmed, not a read error', async () => {
+  setOs('ios');
+  listCached.mockResolvedValue({ ok: true, value: [] });
+  read.mockResolvedValue({ status: 'error', code: 'not-requested', message: 'not requested' });
+  const snapshot = await loadHealthSnapshot(overviewMetrics);
+  expect(snapshot.readings.steps?.state).toBe('no-data');
+  expect(snapshot.readings.steps?.note).toBe(NOTE_PERMISSION_UNCONFIRMED);
+  expect(snapshot.readings['heart-rate']?.note).toBe(NOTE_PERMISSION_UNCONFIRMED);
+  expect(snapshot.readings.steps?.total).toBeNull();
+});

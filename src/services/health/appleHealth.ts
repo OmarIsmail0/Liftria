@@ -7,6 +7,7 @@
  * deduplicates iPhone and Watch samples. A missing total is empty, never 0.
  */
 import {
+  getRequestStatusForAuthorization,
   isHealthDataAvailableAsync,
   queryCategorySamples,
   queryQuantitySamples,
@@ -21,7 +22,7 @@ import type {
   AggregateValue, DailyEnergyRow, EnergyMetric, HealthDataSource, HealthRecord,
   MetricType, PermissionState, ReadResult, SourceMeta,
 } from './types';
-import { energyMetrics, metricTypes } from './types';
+import { APPLE_NOT_REQUESTED, energyMetrics, metricTypes } from './types';
 
 const sleepStageName: Record<number, string> = {
   // CategoryValueSleepAnalysis. asleep and asleepUnspecified are both 1; use the current name.
@@ -97,6 +98,20 @@ function readIdentifiers(types: readonly MetricType[]): ObjectTypeIdentifier[] {
     }
   }
   return identifiers;
+}
+
+/** AuthorizationRequestStatus.shouldRequest: the read prompt has never been shown.
+ * HealthKit then fails every query, which is not a read error. */
+const SHOULD_REQUEST = 1;
+
+async function readNotRequested(metric: MetricType): Promise<boolean> {
+  const toRead = readIdentifiers([metric]);
+  if (toRead.length === 0) return false;
+  try {
+    return (await getRequestStatusForAuthorization({ toRead })) === SHOULD_REQUEST;
+  } catch {
+    return false;
+  }
 }
 
 function text(value: unknown): string | undefined {
@@ -422,6 +437,9 @@ export const appleHealth: HealthDataSource = {
     if (metric === 'total-calories') return { status: 'unsupported' };
     try {
       if (!(await healthKitAvailable())) return { status: 'unavailable' };
+      if (await readNotRequested(metric)) {
+        return { status: 'error', code: APPLE_NOT_REQUESTED, message: 'Apple Health read access has not been requested yet.' };
+      }
       const windowStart = range.start.toISOString();
       const windowEnd = range.end.toISOString();
       if (metric === 'steps' || metric === 'active-calories' || metric === 'basal-metabolic-rate') {
@@ -445,6 +463,11 @@ export async function readAppleDailyEnergy(days = 7): Promise<DailyEnergyRow[]> 
   const result: DailyEnergyRow[] = [];
   const today = new Date();
   const count = Math.max(1, Math.min(Math.floor(days), 30));
+  // Before the read prompt every query fails; that is no data yet, not a read error.
+  const notRequested = new Set<EnergyMetric>();
+  for (const metric of energyMetrics) {
+    if (metric !== 'total-calories' && await readNotRequested(metric)) notRequested.add(metric);
+  }
   for (let index = count - 1; index >= 0; index -= 1) {
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - index);
     const end = index === 0 ? today : new Date(today.getFullYear(), today.getMonth(), today.getDate() - index + 1);
@@ -455,6 +478,10 @@ export async function readAppleDailyEnergy(days = 7): Promise<DailyEnergyRow[]> 
           metric, date, status: 'unavailable',
           message: 'Apple Health has no total-calories type.',
         });
+        continue;
+      }
+      if (notRequested.has(metric)) {
+        result.push({ metric, date, status: 'empty', message: APPLE_NOT_REQUESTED });
         continue;
       }
       try {

@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { healthConnect } from '../../services/health';
 import { listCachedHealth, saveHealthValues } from '../../services/database';
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
+import { APPLE_NOT_REQUESTED } from '../../services/health/types';
 import { appleHealthPhone, healthAdapterVisible } from './deviceHealth';
 import {
   appleWindowSummary, emptyMetricState, NOTE_APPLE_READ_ERROR, NOTE_NO_DATA, onlyLocalDayRecords,
@@ -74,6 +75,8 @@ export async function loadHealthSnapshot(metrics: readonly MetricType[], readLiv
             readings[metric] = noDataReading(metric);
           }
         }
+      } else if (ios && result.status === 'error' && result.code === APPLE_NOT_REQUESTED) {
+        readings[metric] = emptyMetricState(metric, 'unknown', true);
       } else if (result.status === 'error') {
         const prior = ios
           ? appleWindowSummary(metric, all, localStart, now, true)
