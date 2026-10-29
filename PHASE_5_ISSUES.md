@@ -148,6 +148,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Fix every offender it finds: labels come from `t()` with English and Arabic strings. Don't change behavior or layout.
    - Don't touch `src/design/**` (the shared primitives already label themselves), the Health screens, `src/services/health/**`, or `app.config.ts`.
 
+17. **PR AC: `Phase 5 / Browse every exercise`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - The library shows only the first 60 of 876 exercises ("search to find more"), the muscle screen 50, and the picker 60. People can't browse the pack.
+   - Make `app/(tabs)/train/library.tsx`, `pick.tsx` and `muscles.tsx` list **every** match with a virtualized list (`FlatList` / `SectionList`, keyed by exercise id, `getItemLayout` if rows have a fixed height). Keep the current look: the same `ListRow`s, card styling, headers, filters, the recent list and the empty state. Remove the "limited" message and its strings when nothing uses them.
+   - The library in A–Z order gets section headers by first letter in English and in Arabic (Arabic order follows the Arabic names from PR Z: `searchExercises(..., language)` already sorts them).
+   - Screen readers: the list stays navigable and the section headers are headers (`accessibilityRole="header"`).
+   - Tests: the list data covers all 876 with no cap; section grouping in English and Arabic; the accessibility, English-in-Arabic and rule guards still pass.
+   - Don't touch `src/design/**` (if `ListRow` can't sit inside a `FlatList` cleanly, say why in the PR instead), the Health screens, `src/services/health/**`, or `app.config.ts`.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 **Rules (same as Phase 4):**
