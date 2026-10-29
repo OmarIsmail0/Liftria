@@ -1398,7 +1398,6 @@ export const en = {
   "library.results": "Results · {count}",
   "library.allResults": "All · A–Z · {count}",
   "library.groupResults": "{name} · {count}",
-  "library.limited": "Showing 60 of {count}. Refine your search to see more.",
   "library.noMatch": "No matches for “{query}”",
   "library.noGroup": "No exercises in this group",
   "library.emptyHint": "Try another spelling or create an exercise of your own.",

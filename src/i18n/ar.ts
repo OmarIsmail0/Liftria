@@ -1399,7 +1399,6 @@ export const ar: Record<TranslationKey, string> = {
   "library.results": "النتائج · {count}",
   "library.allResults": "الكل · حسب الحروف · {count}",
   "library.groupResults": "{name} · {count}",
-  "library.limited": "يُعرض 60 من أصل {count}. حدّد بحثك لعرض المزيد.",
   "library.noMatch": "لا نتائج لـ «{query}»",
   "library.noGroup": "لا تمارين في هذه المجموعة",
   "library.emptyHint": "جرّب كتابة مختلفة أو أنشئ تمرينًا خاصًا بك.",

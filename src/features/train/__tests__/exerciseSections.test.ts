@@ -48,7 +48,7 @@ test('a repeated letter stays repeated when the list is not alphabetical', () =>
 
 test('a ranked search is one untitled section; an empty query is A–Z', () => {
   const items = [{ id: '1', name: 'Squat' }, { id: '2', name: 'Press' }];
-  expect(librarySections([], item => item.name, true)).toEqual([]);
+  expect(librarySections<{ id: string; name: string }>([], item => item.name, true)).toEqual([]);
   expect(librarySections(items, item => item.name, false)).toEqual([{ letter: '', data: items }]);
   expect(librarySections(items, item => item.name, true).map(section => section.letter)).toEqual(['S', 'P']);
 });
