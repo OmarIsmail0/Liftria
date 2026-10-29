@@ -1,8 +1,8 @@
-import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { appleHealthPhone } from '../../../src/features/health/deviceHealth';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { Platform, ScrollView, View  } from 'react-native';
+import { ScrollView, View  } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
@@ -54,7 +54,26 @@ function HealthSyncGuideAndroid() {
   </ScrollView></Screen>;
 }
 
+function HealthSyncGuideIos() {
+  const { t } = useLanguage();
+  const { theme } = useTheme();
+  return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
+    gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
+    <Header title={t('appleHealth.sync.title')} subtitle={t('appleHealth.sync.subtitle')}
+      onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
+    <Card title={t('appleHealth.overview.watchTitle')} rim="health">
+      <Typography>{t('appleHealth.sync.body')}</Typography>
+      <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>
+    </Card>
+    <View style={{ gap: theme.space[2] }}>
+      <Button label={t('appleHealth.sync.permissions')} variant="secondary" fullWidth
+        onPress={() => router.push('/(tabs)/progress/health-permissions')} />
+      <Button label={t('appleHealth.sync.recheck')} fullWidth
+        onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
+    </View>
+  </ScrollView></Screen>;
+}
+
 export default function HealthSyncGuide(){
- return Platform.OS==='android'?<HealthSyncGuideAndroid/>:
-  <AppleHealthComing backTo='/(tabs)/progress/health'/>;
+ return appleHealthPhone() ? <HealthSyncGuideIos/> : <HealthSyncGuideAndroid/>;
 }

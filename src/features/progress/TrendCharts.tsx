@@ -115,7 +115,7 @@ export function WeightGraph({trend,hidden,unit}:{
       x={x(day.day)} y={y(day.trend)}
       prev={i>0&&days[i-1]?{x:x(days[i-1]!.day),y:y(days[i-1]!.trend)}:null}
       stroke={theme.color.domain.health}/>)}
-    {days.flatMap(day=>day.entries.map(entry=>entry.source==='health-connect'?
+    {days.flatMap(day=>day.entries.map(entry=>entry.source!=='liftria'?
       <Path key={entry.id} d={'M '+x(day.day)+' '+(y(entry.kg)-5)+' l 5 5 l -5 5 l -5 -5 Z'}
        fill={theme.color.bg.raised} stroke={theme.color.domain.health} strokeWidth={1.5}/>:
       <Circle key={entry.id} cx={x(day.day)} cy={y(entry.kg)} r={4}

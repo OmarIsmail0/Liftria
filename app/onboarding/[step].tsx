@@ -16,6 +16,7 @@ import { canEstimateTarget, estimateTarget, profileAge, targetSafety } from '../
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
 import { metricTypes } from '../../src/services/health/types';
 import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstall } from '../../src/features/onboarding/healthPermissionCopy';
+import { appleHealthPhone, listsAndroidWatchApps, onboardingDescriptionKey, onboardingTitleKey } from '../../src/features/health/deviceHealth';
 import { getKey, saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
@@ -83,13 +84,13 @@ function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, prima
   const caption = step === 'done' ? null : t('onboarding.stepOf8', { number: onboardingSteps.indexOf(step) + 1 });
   return <Screen scroll={false}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <Header title={t(titles[step])} onBack={onBack} right={onSkip
+      <Header title={t(onboardingTitleKey(step) ?? titles[step])} onBack={onBack} right={onSkip
         ? <Button label={t('onboarding.skip')} size="sm" variant="ghost" onPress={onSkip} /> : undefined} />
       {caption && <Typography size="small" tone="secondary">{caption}</Typography>}
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{
         paddingVertical: theme.space[4], gap: theme.space[4], flexGrow: 1,
       }}>
-        <Typography tone="secondary">{t(descriptions[step])}</Typography>
+        <Typography tone="secondary">{t(onboardingDescriptionKey(step) ?? descriptions[step])}</Typography>
         {children}
       </ScrollView>
       {footer}
@@ -112,11 +113,10 @@ export default function OnboardingStepScreen() {
   const [floorOpen, setFloorOpen] = useState(false);
   const [editManual, setEditManual] = useState(false);
   const [manualWarning, setManualWarning] = useState(false);
-  const [healthStatus, setHealthStatus] = useState(Platform.OS==='ios'?
-    t('iosHealth.coming'):t('onboarding.notConnected'));
+  const [healthStatus, setHealthStatus] = useState(appleHealthPhone()?
+    t('appleHealth.onboarding.notConnected'):t('onboarding.notConnected'));
 
-  const [healthAvailability, setHealthAvailability] = useState<'available' | 'not-installed' | 'needs-update' | 'unsupported' | null>(
-    Platform.OS==='ios'?'unsupported':null);
+  const [healthAvailability, setHealthAvailability] = useState<'available' | 'not-installed' | 'needs-update' | 'unsupported' | null>(null);
   const [healthMissing, setHealthMissing] = useState<string[]>([]);
   const [keyInput, setKeyInput] = useState('');
   const [keySaved, setKeySaved] = useState(false);
@@ -130,10 +130,12 @@ export default function OnboardingStepScreen() {
       setAge(d.birthYear ? formatEditableNumber(profileAge(Number(d.birthYear)), 'count') : '');
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError(t('onboarding.localSettingsCouldNotBe')); } });
-    if(Platform.OS==='android')void healthConnect.getAvailability().then(availability => {
+    if(Platform.OS==='android'||appleHealthPhone())void healthConnect.getAvailability().then(availability => {
       if (mounted) {
         setHealthAvailability(availability);
-        if (availability !== 'available') setHealthStatus(availabilityMessage(availability, language));
+        if (availability !== 'available') setHealthStatus(appleHealthPhone()
+          ? t('appleHealth.onboarding.unavailable')
+          : availabilityMessage(availability, language));
       }
     }).catch(() => { if (mounted) setHealthAvailability('unsupported'); });
     return () => { mounted = false; };
@@ -200,7 +202,20 @@ export default function OnboardingStepScreen() {
   }
 
   async function requestHealth() {
-    if(Platform.OS!=='android')return; // Never access Health Connect on iPhone.
+    if(appleHealthPhone()){
+      setBusy(true); setError(null);
+      try {
+        const availability = await healthConnect.getAvailability();
+        setHealthAvailability(availability);
+        if (availability !== 'available') { setHealthStatus(t('appleHealth.onboarding.unavailable')); return; }
+        await healthConnect.requestPermissions([...metricTypes]);
+        setHealthMissing([]);
+        setHealthStatus(t('appleHealth.onboarding.afterConnect'));
+      } catch { setHealthStatus(t('appleHealth.onboarding.error')); }
+      finally { setBusy(false); }
+      return;
+    }
+    if(Platform.OS!=='android')return;
     setBusy(true); setError(null);
     try {
       const availability = await healthConnect.getAvailability();
@@ -307,7 +322,7 @@ export default function OnboardingStepScreen() {
     </Card>
     : step === 'privacy'
       ? <Card title={t('onboarding.privacyByDesign')}>
-        <Typography>{Platform.OS==='ios'?t('iosHealth.description'):
+        <Typography>{appleHealthPhone()?t('appleHealth.onboarding.privacy'):
           t('onboarding.healthConnectReadOnlyWith')}</Typography>
         <Typography>{t('onboarding.profileGoalsAndHistoryStored')}</Typography>
         <Typography>{t('onboarding.hikuUsesYourOwnAnthropic')}</Typography>
@@ -366,10 +381,11 @@ export default function OnboardingStepScreen() {
           <InlineError message={error} />
             </Card>
             : step === 'health'
-              ? Platform.OS==='ios'
-                ? <Card rim="health" title={t('iosHealth.coming')}>
-                  <Typography>{t('iosHealth.description')}</Typography>
-                  <Typography tone="secondary">{t('iosHealth.noData')}</Typography>
+              ? appleHealthPhone()
+                ? <Card rim="health" title={t('appleHealth.onboarding.healthCard')}>
+                  <Typography>{t('appleHealth.onboarding.healthBody')}</Typography>
+                  <Button label={t('appleHealth.onboarding.connect')} onPress={() => void requestHealth()} />
+                  <Typography tone="secondary">{healthStatus}</Typography>
                   <InlineError message={error} />
                 </Card>
                 : <Card rim="health" title={t('onboarding.connectOnDeviceHealthData')}>
@@ -384,12 +400,12 @@ export default function OnboardingStepScreen() {
                     void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
               </Card>
               : step === 'watch'
-                ? <Card title={t('onboarding.watchDataGuidance')}>
-                  <ChoiceGroup label={t('onboarding.whichAppDoesYourWatch')} selected={draft.selectedWatch}
+                ? <Card title={appleHealthPhone()?t('appleHealth.onboarding.watchCard'):t('onboarding.watchDataGuidance')}>
+                  {listsAndroidWatchApps() && <ChoiceGroup label={t('onboarding.whichAppDoesYourWatch')} selected={draft.selectedWatch}
                     choices={watchOptions.map(v => ({ value: v, label: v === 'Other' ? t('onboarding.other') : v === 'No watch' ? t('onboarding.noWatch') : v }))}
-                    onChange={v => patch('selectedWatch', v)} />
-                  {Platform.OS==='ios'?
-                    <Typography tone="secondary">{t('iosHealth.watch')}</Typography>:
+                    onChange={v => patch('selectedWatch', v)} />}
+                  {appleHealthPhone()?
+                    <Typography>{t('appleHealth.onboarding.watchBody')}</Typography>:
                     draft.selectedWatch !== 'No watch' && <>
                     <Typography>{t('onboarding.1OpenAndLetIt', { app: draft.selectedWatch })}</Typography>
                     <Typography>{t('onboarding.2InHealthConnectGrant')}</Typography>

@@ -1,10 +1,11 @@
 import { bidiIsolate, pluralForm, translate, type AppLanguage, type TranslationKey } from '../../i18n';
-import { SOURCE_PHONE, SOURCE_UNKNOWN } from './presentation';
+import { SOURCE_APPLE, SOURCE_PHONE, SOURCE_UNKNOWN } from './presentation';
 
 /** Source labels come from `sourceName()`; the two it invents itself are translated, app names stay as they are. */
 export function sourceDisplayName(language: AppLanguage, label: string): string {
   if (label === SOURCE_PHONE) return translate(language, 'chips.phone');
   if (label === SOURCE_UNKNOWN) return translate(language, 'healthOverview.unknownSource');
+  if (label === SOURCE_APPLE) return translate(language, 'appleHealth.name');
   return label;
 }
 
