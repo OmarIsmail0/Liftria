@@ -1,4 +1,4 @@
-import { formatNumber, translate, type AppLanguage } from '../../i18n';
+import { formatNumber, latinDigits, translate, type AppLanguage } from '../../i18n';
 
 type AxisUnit = 'kg' | 'lb' | 'kcal';
 
@@ -29,12 +29,12 @@ export function formatAxisDayLabel(day: string, language: AppLanguage): string {
   const [year, month, date] = day.split('-').map(Number);
   if (!year || !month || !date) return day;
   const value = new Date(Date.UTC(year, month - 1, date, 12));
-  return new Intl.DateTimeFormat(locale(language), {
+  return latinDigits(new Intl.DateTimeFormat(locale(language), {
     month: 'short',
     day: 'numeric',
     numberingSystem: 'latn',
     timeZone: 'UTC',
-  }).format(value);
+  }).format(value));
 }
 
 export function formatAxisValueLabel(value: number, language: AppLanguage, unit: AxisUnit): string {

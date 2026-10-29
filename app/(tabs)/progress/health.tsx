@@ -7,7 +7,7 @@ import { backOrReplace } from '../../../src/navigation/back';
 import { type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 import { canInstallHealthConnect, earliestCachedRecordAt } from '../../../src/features/health/presentation';
-import { formatNumber, type TranslationKey } from '../../../src/i18n';
+import { formatNumber, type TranslationKey, latinDigits } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 
 const names: Partial<Record<MetricType,TranslationKey>> = {
@@ -73,7 +73,7 @@ export default function HealthOverview() {
           ? t('healthOverview.allowed',{allowed,total:overviewMetrics.length})
           : t('healthOverview.hidden')}</Typography>
         <Typography tone="secondary" size="small">{firstSeen
-          ? t('healthOverview.fromDate',{date:new Date(firstSeen).toLocaleDateString(locale)})
+          ? t('healthOverview.fromDate',{date:latinDigits(new Date(firstSeen).toLocaleDateString(locale))})
           : t('healthOverview.noCached')}</Typography>
         <Button label={available ? t('healthOverview.review') : t('healthOverview.permissions')} variant="secondary"
           onPress={() => router.push('/(tabs)/progress/health-permissions')} />
@@ -81,7 +81,7 @@ export default function HealthOverview() {
           <Button label={t("healthOverview.get")} onPress={() =>
             void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
         {!available && <Typography tone="secondary">{t('healthOverview.worksWithout')}</Typography>}
-        {snapshot.readAt && <Typography tone="secondary" size="small">{t('healthOverview.lastChecked',{time:new Date(snapshot.readAt).toLocaleTimeString(locale)})}</Typography>}
+        {snapshot.readAt && <Typography tone="secondary" size="small">{t('healthOverview.lastChecked',{time:latinDigits(new Date(snapshot.readAt).toLocaleTimeString(locale))})}</Typography>}
       </Card>
       <Card title={t("healthOverview.measurements")} rim="health">
         {overviewMetrics.map(metric => {

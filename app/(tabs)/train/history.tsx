@@ -1,4 +1,4 @@
-import { translateWorkoutCount, formatNumber } from '../../../src/i18n';
+import { translateWorkoutCount, formatNumber, latinDigits } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { importerLabel } from '../../../src/features/import/importCsv';
 import { router, useFocusEffect } from 'expo-router';
@@ -63,7 +63,7 @@ export default function History(){
   <Card title={t('train.recent')}>
    {sessions.length===0?<Typography tone="secondary">{t('history.empty')}</Typography>:
     sessions.map(s=><ListRow key={s.id} title={s.title}
-      detail={new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')+(s.importer?' · '+t('history.importedFrom',{name:importerLabel(s.importer)}):'')}
+      detail={latinDigits(new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))+(s.importer?' · '+t('history.importedFrom',{name:importerLabel(s.importer)}):'')}
       onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}
       suffix={<Button label={t('history.delete')} variant="ghost" onPress={()=>setSelected(s)}/>}/>)}
    {sessions.length===0&&<>

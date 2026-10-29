@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { pluralForm, type TranslationKey } from '../../../src/i18n';
+import { pluralForm, type TranslationKey, latinDigits } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -79,7 +79,7 @@ export default function WorkoutPreview() {
         leading={lookup[e.exerciseId]?<ExerciseThumbnail exercise={lookup[e.exerciseId]!} />:undefined}
         title={lookup[e.exerciseId]?.name??t('preview.exercise')}
         detail={t('preview.sets',{count:e.targetSets,min:e.repMin,max:e.repMax})+
-          (last[e.exerciseId]?t('preview.last',{date:new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}):t('preview.noLast'))}/>):
+          (last[e.exerciseId]?t('preview.last',{date:latinDigits(new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):t('preview.noLast'))}/>):
         <Typography tone="secondary">{t('preview.startEmptyHint')}</Typography>}
     </Card>
     {error&&<Typography>{error}</Typography>}

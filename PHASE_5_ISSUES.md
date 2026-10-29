@@ -66,7 +66,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - One shared helper (e.g. `formatEditableNumber(value, kind)`), unit-tested with float noise (0.1+0.2, 23.112000000000002), integers, null (stays empty, never "0") and negative/NaN input.
    - **Arabic gram label:** the portion chip says "جم" while the rest of the app now says "غ". Use "غ" everywhere.
    - **Don't touch** `src/design/**` or the Health screens and stack layouts (PR S).
-   - **Claude (not this PR):** the over-target Eat ring still draws a dark square in Arabic (PR #30 screenshots); R1's `EatRing` wrapper didn't fix it. Claude fixes it in `Orb` after PR #27 merges and removes the wrapper.
+   - ~~**Claude (not this PR):** the over-target Eat ring draws a dark square in Arabic.~~ Claude's PR (2026-10-29): the Orb's glow is drawn in SVG instead of a native `boxShadow`, the `EatRing` wrapper is gone, the Orb shows the same big number and caption in Arabic, and long `Header` titles shrink, then wrap to two lines with an ellipsis.
 9. ~~**PR V: `Phase 5 / Data coverage guards`**~~ DONE: PR #33 merged (2026-10-28). (builder: **Cursor**, branch from `main`)
    - The rule "every new table is covered by Delete all and by the backup" has no test. Add guards that fail when it breaks:
      - **Backup:** every table the migrations create (read the `CREATE TABLE` statements in `src/services/database/index.ts`) is in `BACKUP_TABLES`, and every `BACKUP_TABLES` entry exists in the schema. A test that adds a fake table must make the guard fail.

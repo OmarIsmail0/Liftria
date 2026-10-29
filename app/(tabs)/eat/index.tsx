@@ -1,11 +1,10 @@
 import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useEffect,useState} from 'react';
 import {ScrollView,View} from 'react-native';
-import {Button,Card,Chip,Header,ListRow,Screen,Snackbar,Typography} from '../../../src/design/primitives';
+import {Button,Card,Chip,Header,ListRow,Orb,Screen,Snackbar,Typography} from '../../../src/design/primitives';
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatNumber} from '../../../src/i18n';
-import {EatRing} from '../../../src/features/eat/EatRing';
 import {WaterCounterCard} from '../../../src/features/eat/WaterCounterCard';
 import {getCurrentTarget,type Target} from '../../../src/services/database/targets';
 import {getTypedSetting} from '../../../src/services/database/settings';
@@ -72,7 +71,7 @@ export default function EatHome(){
         <Button label={t('eatI.next')} variant="ghost" disabled={day>=today}
           onPress={()=>setDay(dayOffset(day,1))}/>
       </View>
-      <EatRing eaten={summary.kcal} target={target?.kcal??null} hidden={hidden} onPress={()=>
+      <Orb eaten={summary.kcal} target={target?.kcal??null} hidden={hidden} onPress={()=>
         router.push('/(tabs)/eat/targets')}/>
       <View style={{alignItems:'center',gap:theme.space[2]}}>
         {target?.source==='estimate'&&<Chip kind="estimate"/>}

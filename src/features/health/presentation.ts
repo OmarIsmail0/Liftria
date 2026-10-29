@@ -1,5 +1,5 @@
 import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
-import { bidiIsolate, translate, type AppLanguage } from '../../i18n';
+import { bidiIsolate, latinDigits, translate, type AppLanguage } from '../../i18n';
 
 export type HealthReadingState = 'value' | 'no-data' | 'not-allowed' | 'not-available' | 'error';
 export type OriginSummary = { origin: string; label: string; value: number; unit: string; latestAt: string; stale: boolean };
@@ -304,9 +304,9 @@ export function heartRateTodayStatus(
   }
   const yesterday = new Date(midnight); yesterday.setDate(yesterday.getDate() - 1);
   const locale = language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB';
-  const time = bidiIsolate(language, at.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }));
+  const time = bidiIsolate(language, latinDigits(at.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })));
   const label = at.getTime() >= yesterday.getTime() && at.getTime() < midnight
     ? translate(language, 'healthChart.yesterdayAt', { time })
-    : at.toLocaleDateString(language === 'ar' ? locale : undefined);
+    : latinDigits(at.toLocaleDateString(language === 'ar' ? locale : undefined));
   return { stale: true, age: `${label} · ${ageLabel(latestAt, now.getTime(), language)}` };
 }
