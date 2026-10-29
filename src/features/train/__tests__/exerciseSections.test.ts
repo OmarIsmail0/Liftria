@@ -96,3 +96,34 @@ test('every bundled exercise is listed, in English and Arabic, with no cap', () 
   expect(searchExercises(all, '', 'chest', 'en').length).toBeGreaterThan(50);
   expect(searchExercises(all, 'press', null, 'en').length).toBeGreaterThan(60);
 });
+
+test('the browse screens virtualize every match and do not cap the pack', () => {
+  const files = [
+    'app/(tabs)/train/library.tsx',
+    'app/(tabs)/train/pick.tsx',
+    'app/(tabs)/train/muscles.tsx',
+  ];
+  const sources = files.map(file => readFileSync(join(process.cwd(), file), 'utf8'));
+  for (const source of sources) {
+    expect(source).not.toMatch(/\.slice\s*\(/);
+    expect(source).not.toContain('library.limited');
+    expect(source).not.toContain('muscle.browserMore');
+    expect(source).toContain('keyExtractor');
+    expect(source).toContain('scroll={false}');
+    expect(source).toContain('useMemo');
+    expect(source).toContain('exerciseName');
+  }
+  const [library, pick, muscles] = sources;
+  expect(library).toContain('<SectionList');
+  expect(library).toContain('accessibilityRole="header"');
+  expect(library).not.toMatch(/<ScrollView(?![^>]*horizontal)/);
+  expect(pick).toContain('<FlatList');
+  expect(pick).not.toContain('ScrollView');
+  expect(muscles).toContain('<FlatList');
+  expect(muscles).not.toContain('ScrollView');
+  for (const file of ['src/i18n/en.ts', 'src/i18n/ar.ts']) {
+    const copy = readFileSync(join(process.cwd(), file), 'utf8');
+    expect(copy).not.toContain('library.limited');
+    expect(copy).not.toContain('muscle.browserMore');
+  }
+});

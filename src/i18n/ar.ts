@@ -877,7 +877,6 @@ export const ar: Record<TranslationKey, string> = {
   "muscle.browserEmpty": "لا توجد تمارين بعد",
   "muscle.browserEmptyDescription": "أنشئ تمرينًا يستهدف هذه العضلة ليظهر هنا.",
   "muscle.notSpecified": "غير محدد",
-  "muscle.browserMore": "عرض 50 من {count}. استعرض الكل عبر البحث.",
   "muscle.browserData": "{count} منطقة محددة في خريطة العضلات من مكتبة التمارين المرفقة.",
   "pick.libraryError": "تعذّر فتح مكتبة التمارين المحلية.",
   "pick.addError": "تعذّرت إضافة التمرين.",

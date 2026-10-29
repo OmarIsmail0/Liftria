@@ -876,7 +876,6 @@ export const en = {
   "muscle.browserEmpty": "No exercises yet",
   "muscle.browserEmptyDescription": "Create an exercise with this muscle to see it here.",
   "muscle.notSpecified": "Not specified",
-  "muscle.browserMore": "Showing 50 of {count}. Browse all in Search.",
   "muscle.browserData": "{count} mapped regions, from the bundled free-exercise-db categories.",
   "pick.libraryError": "Could not open the local exercise library.",
   "pick.addError": "Could not add this exercise.",
