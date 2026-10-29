@@ -3,7 +3,7 @@ import {dayOffset} from '../../eat/foodCatalog';
 import type {WeightPoint} from '../trendMath';
 const TODAY='2026-10-27';
 const diary=(days:number[],kcal:number)=>days.map(i=>({day:dayOffset(TODAY,-i),kcal}));
-const weights=(entries:Array<[number,number]>):WeightPoint[]=>
+const weights=(entries:[number,number][]):WeightPoint[]=>
  entries.map(([days,kg],index)=>({id:String(index),at:dayOffset(TODAY,-days)+'T12:00:00Z',kg,source:'liftria'}));
 
 test('plateau over 14+ days estimates average logged intake, not zero for gaps',()=>{
