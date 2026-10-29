@@ -1,5 +1,5 @@
 import type { LiftriaTheme } from '../tokens';
-import { translate, type AppLanguage } from '../../i18n';
+import { formatNumber, translate, type AppLanguage } from '../../i18n';
 
 export const buttonVariants = ['primary', 'secondary', 'ghost', 'train', 'hiku', 'danger'] as const;
 export type ButtonVariant = typeof buttonVariants[number];
@@ -45,10 +45,18 @@ export function provenancePresentation(theme: LiftriaTheme, kind: ProvenanceKind
   }
 }
 
+/** The Orb's big number and its caption, the same layout in every language. */
+export type OrbMetric = { value: string; caption: string };
+
+function orbMetric(language: AppLanguage, value: string, caption: 'orb.caption.eaten' | 'orb.caption.left' | 'orb.caption.over'): OrbMetric {
+  return { value, caption: translate(language, caption) };
+}
+
 export function orbSummary(eaten: number, target: number | null, hidden = false, language: AppLanguage = 'en') {
   const safeEaten = Math.max(0, Math.round(eaten));
-  if (hidden) return { label: target === null ? translate(language, 'orb.hidden') : safeEaten > target ? translate(language, 'orb.over') : translate(language, 'orb.onTrack'), progress: target === null ? null : Math.min(1, target > 0 ? safeEaten / target : 0), accessibilityLabel: translate(language, 'orb.hidden') };
+  if (hidden) return { metric: null, label: target === null ? translate(language, 'orb.hidden') : safeEaten > target ? translate(language, 'orb.over') : translate(language, 'orb.onTrack'), progress: target === null ? null : Math.min(1, target > 0 ? safeEaten / target : 0), accessibilityLabel: translate(language, 'orb.hidden') };
   if (target === null || target <= 0) return {
+    metric: orbMetric(language, formatNumber(language, safeEaten), 'orb.caption.eaten'),
     label: translate(language, 'orb.eaten', { count: safeEaten }),
     progress: null,
     accessibilityLabel: language === 'en' ? `${safeEaten.toLocaleString('en-US')} kilocalories eaten, no target set` : translate(language, 'orb.noTargetA11y', { count: safeEaten }),
@@ -56,6 +64,10 @@ export function orbSummary(eaten: number, target: number | null, hidden = false,
   const left = target - safeEaten;
   const label = left >= 0 ? translate(language, 'orb.left', { count: left }) : translate(language, 'orb.overTarget', { count: Math.abs(left) });
   return {
+    metric: left >= 0
+      ? orbMetric(language, formatNumber(language, left), 'orb.caption.left')
+      // LRM keeps the sign before the number in an RTL line ("+225", not "225+").
+      : orbMetric(language, (language === 'ar' ? '\u200E' : '') + '+' + formatNumber(language, Math.abs(left)), 'orb.caption.over'),
     label,
     progress: Math.min(1, safeEaten / target),
     accessibilityLabel: language === 'en' ? (left >= 0

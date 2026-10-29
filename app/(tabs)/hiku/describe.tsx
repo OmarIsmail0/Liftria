@@ -3,7 +3,7 @@ import {useCallback,useRef,useState} from 'react';
 import {Button,Card,Chip,Field,Header,Screen,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {getTypedSetting} from '../../../src/services/database/settings';
-import {DEFAULT_HIKU_MODEL,estimateHikuCostUsd,hikuModel,type HikuModelId} from '../../../src/features/hiku/models';
+import {DEFAULT_HIKU_MODEL,classifyHikuCostUsd,estimateHikuCostUsd,formatHikuUsd,hikuModel,type HikuModelId} from '../../../src/features/hiku/models';
 import {requestHikuText,hikuTextPrompt,type HikuFailure} from '../../../src/features/hiku/client';
 import {getHikuDescription,rememberHikuDescription,setHikuDraft} from '../../../src/features/hiku/draft';
 import {readAvailableHikuContext,contextForSend} from '../../../src/features/hiku/context';
@@ -32,6 +32,7 @@ export default function DescribeMeal(){
  const context=available?contextForSend(available,shareToday,shareTraining):{};
  const prompt=hikuTextPrompt(description,language,context);
  const approximate=estimateHikuCostUsd(model,Math.ceil(prompt.length/3.5)+350,650);
+ const approximateBand=classifyHikuCostUsd(approximate);
  async function send(){
   if(busy||!contextLoaded||!description.trim()||description.length>2500||!available)return;
   setBusy(true);setError(null);
@@ -68,8 +69,9 @@ export default function DescribeMeal(){
   </Card>
   <Card title={t('hikuK.costTitle')}>
    <Chip kind="estimate"/>
-   <Typography tone="secondary">{approximate===null?'—':
-    t('hikuK.estimatedCost',{cost:approximate.toFixed(5)})}</Typography>
+   <Typography tone="secondary">{approximateBand==='unknown'?'—':
+    t('hikuK.estimatedCost',{cost:approximateBand==='less-than-cent'
+     ?t('hikuK.costLessThanCent'):formatHikuUsd(approximate??0)})}</Typography>
   </Card>
   {busy&&<Card rim="hiku" title={t('hikuK.analyzing')}>
    <Typography tone="secondary">{t('hikuK.timeoutHint')}</Typography>

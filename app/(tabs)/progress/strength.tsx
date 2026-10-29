@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { bidiIsolate, formatNumber } from '../../../src/i18n';
+import { bidiIsolate, formatNumber, latinDigits } from '../../../src/i18n';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -53,7 +53,7 @@ export default function Strength(){
     <Typography tone="tertiary" size="small">{tr('p4.strength.15')}</Typography>
     <View style={{flexDirection:'row',alignItems:'flex-end',gap:theme.space[1],height:170}}>
      {bars.map(w=><View key={w.label} style={{flex:1,minWidth:20,alignItems:'center',gap:theme.space[1]}}>
-      <Typography size="small">{w.logged?Math.round(fromKg(w.volume,unit)/1000)+'k':'—'}</Typography>
+      <Typography size="small">{w.logged?tr('strength.thousands',{count:Math.round(fromKg(w.volume,unit)/1000)}):'—'}</Typography>
       <View style={{height:120,width:'90%',justifyContent:'flex-end',borderBottomWidth:1,
        borderBottomColor:theme.color.border.subtle}}>
        <View style={{height:w.logged?Math.max(4,Math.round(115*w.volume/peak)):4,
@@ -63,7 +63,7 @@ export default function Strength(){
       <Text numberOfLines={1} adjustsFontSizeToFit
         accessibilityLabel={tr('p4.strength.21')+' '+w.label}
         style={{color:theme.color.text.tertiary,fontSize:theme.type.small.size,textAlign:'center'}}>
-        {bidiIsolate(language,w.start.toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US',{month:'numeric',day:'numeric'}))}
+        {bidiIsolate(language,latinDigits(w.start.toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US',{month:'numeric',day:'numeric'})))}
       </Text>
      </View>)}
     </View>
@@ -71,7 +71,7 @@ export default function Strength(){
    <Card title={tr('p4.strength.7')}>
     {top.length===0?<Typography tone="secondary">{tr('p4.strength.16')}</Typography>:
      top.map(r=><ListRow key={r.exerciseId+':'+r.side} title={names.get(r.exerciseId)??r.exerciseId}
-      detail={bidiIsolate(language,formatNumber(language,Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit)))+' '+unit)+' '+tr('p4.strength.20')+' · '+bidiIsolate(language,new Date(r.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}
+      detail={bidiIsolate(language,formatNumber(language,Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit)))+' '+unit)+' '+tr('p4.strength.20')+' · '+bidiIsolate(language,latinDigits(new Date(r.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))}
       suffix={<Chip kind="estimate" label={tr('p4.strength.8')}/>}
       onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:r.exerciseId}})}/>)}
     <Typography tone="secondary" size="small">{tr('p4.strength.17')}</Typography>

@@ -2,6 +2,7 @@ import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {Button,Card,Chip,Field,Header,Screen,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {getCurrentTarget,addTarget,type Target} from '../../../src/services/database/targets';
 import {getProfile,type Profile} from '../../../src/services/database/profile';
 import {getTypedSetting,setTypedSetting} from '../../../src/services/database/settings';
@@ -28,8 +29,10 @@ export default function EatTargets(){
     if(!live)return;
     if(goal.ok){setCurrent(goal.value);if(goal.value){
       setUseCalculated(goal.value.source==='estimate');
-      setKcal(String(goal.value.kcal));setProtein(String(goal.value.proteinG));
-      setCarbs(String(goal.value.carbsG));setFat(String(goal.value.fatG));
+      setKcal(formatEditableNumber(goal.value.kcal,'kcal'));
+      setProtein(formatEditableNumber(goal.value.proteinG,'grams'));
+      setCarbs(formatEditableNumber(goal.value.carbsG,'grams'));
+      setFat(formatEditableNumber(goal.value.fatG,'grams'));
     }}
     if(p.ok)setProfile(p.value);
     if(h.ok)setHide(h.value);if(r.ok)setRamadan(r.value);
@@ -85,8 +88,10 @@ export default function EatTargets(){
    <Typography tone="secondary">{t('eatI.targetExplain')}</Typography>
    {estimated&&<Button label={t('eatI.useEstimate',{count:estimated.kcal})}
      variant="secondary" onPress={()=>{
-       setKcal(String(estimated.kcal));setProtein(String(estimated.proteinG));
-       setCarbs(String(estimated.carbsG));setFat(String(estimated.fatG));setUseCalculated(true);
+       setKcal(formatEditableNumber(estimated.kcal,'kcal'));
+       setProtein(formatEditableNumber(estimated.proteinG,'grams'));
+       setCarbs(formatEditableNumber(estimated.carbsG,'grams'));
+       setFat(formatEditableNumber(estimated.fatG,'grams'));setUseCalculated(true);
      }}/>}
    <Field label={t('eatI.calories')} value={kcal} onChangeText={v=>{setKcal(v);setUseCalculated(false);}} keyboardType="decimal-pad"/>
    <Field label={t('eatI.protein')} value={protein} onChangeText={v=>{setProtein(v);setUseCalculated(false);}} keyboardType="decimal-pad"/>
@@ -122,7 +127,7 @@ export default function EatTargets(){
     description={t('eatI.targetWarning')} onClose={()=>setWarning(false)}>
    <Toggle label={t('eatI.guidance')} value={guidance} onChange={setGuidance}/>
    <Button label={t('eatI.use1200')} fullWidth onPress={()=>{
-     setKcal(String(Math.max(1200,Math.ceil((estimated?.kcal??0)*0.75/50)*50)));
+     setKcal(formatEditableNumber(Math.max(1200,Math.ceil((estimated?.kcal??0)*0.75/50)*50),'kcal'));
      setUseCalculated(false);
      setWarning(false);
    }}/>

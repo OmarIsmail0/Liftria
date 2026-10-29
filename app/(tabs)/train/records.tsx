@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { latinDigits } from '../../../src/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -6,11 +7,11 @@ import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../.
 import { readRecords } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { ExerciseRecord } from '../../../src/services/database/gymMath';
-import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
+import { fromKg, sideLabel, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getTypedSetting } from '../../../src/services/database/settings';
 type Named={row:ExerciseRecord;name:string};
 export default function Records(){
- const {t}=useLanguage();
+ const {t,language}=useLanguage();
  const [rows,setRows]=useState<Named[]>([]);
  const [unit,setUnit]=useState<WeightUnit>('kg');
  const [error,setError]=useState(false);
@@ -37,10 +38,10 @@ export default function Records(){
     <Typography tone="secondary">{t('records.empty')}</Typography>
     <Button label={t('records.start')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
    </View>:rows.map(({row,name})=><ListRow key={row.exerciseId+':'+row.side}
-    title={name+(row.side?' · '+row.side:'')}
+    title={name+(row.side?' · '+sideLabel(row.side,language):'')}
     detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
       row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:t('records.mostReps')+' ' +row.maxReps)+
-      ' · '+new Date(row.latestAt).toLocaleDateString()}
+      ' · '+latinDigits(new Date(row.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:row.exerciseId}})}
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>

@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../../src/i18n/LanguageProvider';
+import { latinDigits } from '../../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -104,7 +105,7 @@ export default function ExerciseDetail(){
       <Card title={t('exerciseDetail.recentTitle')}>
         {sessions.length===0?<Typography tone="secondary">{t('exerciseDetail.noSession')}</Typography>:
           sessions.slice(0,5).map(s=><ListRow key={s.id} title={s.title}
-            detail={new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}/>)}
+            detail={latinDigits(new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>)}
       </Card>
       <Card title={t('exerciseDetail.howTo')}>
         {exercise.instructions.length?exercise.instructions.map((step,index)=>

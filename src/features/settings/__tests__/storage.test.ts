@@ -11,7 +11,7 @@ test('ST-6 delete retry after key failure still clears the key even when the dat
   const removeDatabase = jest.fn(async () => ({ok:true as const,value:undefined}));
   const removeKey = jest.fn().mockResolvedValueOnce({status:'storage-error'})
     .mockResolvedValueOnce({status:'missing'});
-  const ops: DeletionOps = {removeDatabase,removeKey};
+  const ops: DeletionOps = {removeDatabase,removeKey,removeTemporaryFiles:jest.fn(async () => true)};
   const first = await deleteEverythingOnPhone('DELETE', ops);
   expect(first).toMatchObject({ok:false,stage:'key'});
   expect(await deleteEverythingOnPhone('DELETE',ops)).toEqual({ok:true});
@@ -38,8 +38,20 @@ test('Delete all also clears transient IM-2 import draft; v3 imports live only i
  const ops:DeletionOps={
   removeDatabase:jest.fn(async()=>({ok:true as const,value:undefined})),
   removeKey:jest.fn(async()=>({status:'missing' as const})),
+  removeTemporaryFiles:jest.fn(async()=>true),
  };
  expect(await deleteEverythingOnPhone('DELETE',ops)).toEqual({ok:true});
  expect(getImportDraft()).toBeNull();
  expect(deletionIncludesAppFiles()).toBe(false);
+});
+test('Delete all reports leftover temporary files instead of claiming success, and a retry finishes',async()=>{
+ const removeTemporaryFiles=jest.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+ const ops:DeletionOps={
+  removeDatabase:jest.fn(async()=>({ok:true as const,value:undefined})),
+  removeKey:jest.fn(async()=>({status:'missing' as const})),
+  removeTemporaryFiles,
+ };
+ expect(await deleteEverythingOnPhone('DELETE',ops)).toMatchObject({ok:false,stage:'files'});
+ expect(await deleteEverythingOnPhone('DELETE',ops)).toEqual({ok:true});
+ expect(removeTemporaryFiles).toHaveBeenCalledTimes(2);
 });

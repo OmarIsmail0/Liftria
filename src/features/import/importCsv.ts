@@ -1,4 +1,5 @@
 /** Offline CSV import. Column assumptions must be checked against actual app exports. */
+import { translate, type AppLanguage } from '../../i18n';
 export type Importer='hevy'|'strong'|'fitnotes'|'csv';
 export type WeightUnit='kg'|'lb';
 export type ParsedSet={exercise:string;position:number;kind:'working'|'warm-up';
@@ -14,6 +15,9 @@ export class ImportParseError extends Error{
  }
 }
 export const MAX_CSV_BYTES=25*1024*1024;
+/** Stored importer ids are lowercase codes; people see the app's own name. */
+export const importerLabel=(importer:string):string=>
+ ({hevy:'Hevy',strong:'Strong',fitnotes:'FitNotes',csv:'CSV'} as Record<string,string>)[importer]??importer;
 const normalized=(s:string)=>s.toLocaleLowerCase('en').replace(/[^a-z0-9]+/g,'');
 /** UTF-8 code points; no Web Crypto / network APIs (Hermes-compatible). */
 export function utf8Bytes(s:string):number[]{
@@ -142,7 +146,7 @@ export function localDayFromIso(iso:string):string{
  const d=new Date(iso);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),
   String(d.getDate()).padStart(2,'0')].join('-');
 }
-export function parseImportCsv(source:Importer,fileName:string,raw:string):ParsedImport{
+export function parseImportCsv(source:Importer,fileName:string,raw:string,language:AppLanguage='en'):ParsedImport{
  if(utf8Bytes(raw).length>MAX_CSV_BYTES)throw new ImportParseError('too-large','This file is too large to import.');
  const {columns,rows}=readCsv(raw);
  const indexes=new Map(columns.map((name,i)=>[normalized(name),i]));
@@ -192,7 +196,7 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
     'Invalid workout date on row '+(index+2)+'.',
     expectedColumns(source),columns);
   }
-  const sessionTitle=v(title)||'Imported workout';
+  const sessionTitle=v(title)||translate(language,'im1.importedWorkout');
   const key=date.iso+'|'+sessionTitle;
   let workout=sessions.get(key);
   if(!workout){workout={key,title:sessionTitle,startedAt:date.iso,endedAt:date.iso,
@@ -228,11 +232,9 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string):Parse
   nonStrengthRows,warmupMarked:marked,needsUnit};
 }
 /** Reject spreadsheet copies before trying to decode them as CSV. */
-export function csvFileTypeError(fileName:string,source:Importer):string|null{
+export function csvFileTypeError(fileName:string,source:Importer,language:AppLanguage='en'):string|null{
  if(/\.csv$/i.test(fileName.trim()))return null;
- return source==='hevy'
-  ? 'Liftria reads CSV. In Hevy, use Settings → Export data → CSV, and pick that file without opening it in Excel.'
-  : 'Liftria reads CSV files only. Export a CSV from your workout app and choose that original file.';
+ return translate(language,source==='hevy'?'im1.wrongFileHevy':'im1.wrongFile');
 }
 export function fromImportWeight(value:number,unit:WeightUnit):number{
  return unit==='kg'?value:value/2.2046226218;

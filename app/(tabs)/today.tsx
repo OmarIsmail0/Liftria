@@ -5,7 +5,7 @@ import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { SettingsIcon } from '../../src/design/primitives/TabIcon';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { formatNumber } from '../../src/i18n';
+import { formatDate, formatNumber } from '../../src/i18n';
 import { Banner, Button, Card, Chip, Header, ListRow, Orb, Screen, Skeleton, Typography } from '../../src/design/primitives';
 import { getProfile, type Profile } from '../../src/services/database/profile';
 import { getCurrentTarget, type Target } from '../../src/services/database/targets';
@@ -78,7 +78,7 @@ export default function TodayTab() {
     void loadLocal().catch(() => setLocalLoading(false));
     void loadTraining();
   }, [loadLocal,loadTraining]));
-  const date = new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date());
+  const date = formatDate(language, new Date(), { weekday: 'short', day: 'numeric', month: 'short' });
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t('today.morning') : hour < 17 ? t('today.afternoon') : t('today.evening');
   const steps = snapshot.readings.steps;
@@ -136,7 +136,7 @@ export default function TodayTab() {
       {local.offline && <Banner variant="offline" title={t('today.offline')}
         message={t('today.offlineDescription')} />}
       <Orb eaten={diary.kcal} target={local.target?.kcal ?? null} hidden={local.hideNumbers}
-        active onPress={() => router.push('/(tabs)/eat')} />
+        onPress={() => router.push('/(tabs)/eat')} />
       <View style={{ gap: theme.space[2], alignItems: 'center' }}>
         {hasTarget ? <>
           {local.target?.source === 'estimate'
@@ -212,7 +212,7 @@ export default function TodayTab() {
               ? t('today.staleUnverified',{time:age(source.latestAt)})
               : t('today.deviceNotVerified')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
-              <Typography>{formatNumber(language,source.value)} bpm</Typography>
+              <Typography>{t('today.heartValue',{value:formatNumber(language,source.value)})}</Typography>
               <Chip kind="pending" label={t('today.unverified')} />
               {heartRateTodayStatus(source.latestAt, now).stale &&
                 <Chip kind="stale" label={age(source.latestAt)} />}
@@ -225,7 +225,7 @@ export default function TodayTab() {
         <Button label={t('today.healthDetails')} variant="ghost" fullWidth
           onPress={() => router.push('/(tabs)/progress/health')} />
       </Card>
-      <Card rim="hiku" title="Hiku">
+      <Card rim="hiku" title={t('nav.hiku')}>
         <Typography tone="secondary">{local.offline ? t('today.hikuNeedsInternet') :
           local.key === 'ready' ? t('today.keyReady') :
           local.key === 'missing' ? t('today.keyMissing') :

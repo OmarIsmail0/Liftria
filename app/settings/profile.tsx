@@ -5,6 +5,7 @@ import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, OptionR
 import { backOrReplace } from '../../src/navigation/back';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
+import { formatEditableNumber } from '../../src/i18n/editableNumber';
 import { getProfile, profileSchema, saveProfile, type ProfileInput } from '../../src/services/database/profile';
 import { addTarget, getCurrentTarget, targetSchema, type TargetInput, type Target } from '../../src/services/database/targets';
 import { getTypedSetting } from '../../src/services/database/settings';
@@ -18,7 +19,6 @@ type Form = {
 };
 const empty: Form = { name:'',birthYear:'',heightCm:'',feet:'',inches:'',weight:'',
   sexForFormula:null,activity:null,goal:null };
-const fmt = (n:number|null, decimal=false):string => n === null ? '' : decimal ? n.toFixed(1) : String(n);
 
 export default function ProfileAndGoals() {
   const {t}=useLanguage();
@@ -47,19 +47,20 @@ export default function ProfileAndGoals() {
       const savedTarget = current.ok ? current.value : null;
       setTarget(savedTarget);
       if (savedTarget) {
-        setManualKcal(String(savedTarget.kcal));
-        setManualProtein(String(savedTarget.proteinG));
-        setManualFat(String(savedTarget.fatG));
-        setManualCarbs(String(savedTarget.carbsG));
+        setManualKcal(formatEditableNumber(savedTarget.kcal,'kcal'));
+        setManualProtein(formatEditableNumber(savedTarget.proteinG,'grams'));
+        setManualFat(formatEditableNumber(savedTarget.fatG,'grams'));
+        setManualCarbs(formatEditableNumber(savedTarget.carbsG,'grams'));
       }
       if (!value) return;
       const heightInches = value.heightCm !== null ? Math.round(value.heightCm / CM_PER_IN) : null;
       setForm({
-        name:value.name ?? '',birthYear:fmt(value.birthYear),
-        heightCm:fmt(value.heightCm,true),
-        feet:heightInches === null ? '' : String(Math.floor(heightInches / 12)),
-        inches:heightInches === null ? '' : String(heightInches % 12),
-        weight:value.weightKg === null ? '' : fmt(wu === 'lb' ? value.weightKg * LB_PER_KG : value.weightKg,true),
+        name:value.name ?? '',birthYear:formatEditableNumber(value.birthYear,'count'),
+        heightCm:formatEditableNumber(value.heightCm,'length'),
+        feet:heightInches === null ? '' : formatEditableNumber(Math.floor(heightInches / 12),'count'),
+        inches:heightInches === null ? '' : formatEditableNumber(heightInches % 12,'count'),
+        weight:value.weightKg === null ? '' :
+          formatEditableNumber(wu === 'lb' ? value.weightKg * LB_PER_KG : value.weightKg,'weight'),
         sexForFormula:value.sexForFormula,activity:value.activity,goal:value.goal,
       });
     }).catch(() => { if (mounted) setMessage(t('profileSettings.readError')); })
@@ -185,7 +186,7 @@ export default function ProfileAndGoals() {
         options={[{value:'lose',label:t('profileSettings.lose'),description:t('polish.goalLose')},
           {value:'maintain',label:t('profileSettings.maintain'),description:t('polish.goalMaintain')},
           {value:'build',label:t('profileSettings.build'),description:t('polish.goalBuild')}] as const} />
-      <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${target.kcal} kcal · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
+      <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${t('eatI.kcal',{count:target.kcal})} · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
         onPress={()=>{setTargetEditor(true);setMessage(null)}} />
       <Typography tone="secondary" size="small">{t('profileSettings.editNote')}</Typography>
       {target?.source==='manual' && <Typography tone="secondary">{t('profileSettings.manualNote')}</Typography>}

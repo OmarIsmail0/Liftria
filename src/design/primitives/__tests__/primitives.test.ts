@@ -54,6 +54,7 @@ describe('honest Pulse Orb states', () => {
   });
   it('does not invent a target or render a progress ring without one', () => {
     expect(orbSummary(0, null)).toEqual({
+      metric: { value: '0', caption: 'kcal eaten' },
       label: '0 kcal eaten', progress: null,
       accessibilityLabel: '0 kilocalories eaten, no target set',
     });
@@ -62,6 +63,7 @@ describe('honest Pulse Orb states', () => {
   it('keeps an over-target state nonjudgmental and caps the ring at full', () => {
     const result = orbSummary(2830, 2650);
     expect(result.label).toBe('+180 kcal over');
+    expect(result.metric).toEqual({ value: '+180', caption: 'kcal over' });
     expect(result.progress).toBe(1);
     expect(result.accessibilityLabel).not.toMatch(/bad|fail|cheat/i);
   });
@@ -69,6 +71,12 @@ describe('honest Pulse Orb states', () => {
     expect(orbSummary(1420, 2650, true).label).toBe('On track');
     expect(orbSummary(2830, 2650, true).label).toBe('A bit over');
     expect(orbSummary(1420, null, true).progress).toBeNull();
+    expect(orbSummary(1420, 2650, true).metric).toBeNull();
+  });
+  it('shows the same big number and caption in Arabic, with Western digits', () => {
+    expect(orbSummary(1420, 2650, false, 'ar').metric).toEqual({ value: '1,230', caption: 'سعرات متبقية' });
+    expect(orbSummary(2830, 2650, false, 'ar').metric).toEqual({ value: '\u200E+180', caption: 'سعرات زائدة' });
+    expect(orbSummary(1536, null, false, 'ar').metric).toEqual({ value: '1,536', caption: 'سعرات متناولة' });
   });
 });
 

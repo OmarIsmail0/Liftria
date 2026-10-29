@@ -17,7 +17,7 @@ import { RestOrb } from '../../../src/features/train/RestOrb';
 import { PlateCalculatorCard } from '../../../src/features/train/PlateCalculatorCard';
 import { isPlateLoadedBarbell } from '../../../src/features/train/plateCalculator';
 import { supersetAfterSet } from '../../../src/features/train/superset';
-import { displayWeight, fromKg, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
+import { displayWeight, fromKg, sideLabel, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { getSetting, setSetting } from '../../../src/services/database';
 import { getTypedSetting } from '../../../src/services/database/settings';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
@@ -26,6 +26,7 @@ import { summarizeActiveMuscles } from '../../../src/features/train/activeMuscle
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { formatNumber } from '../../../src/i18n';
+import { formatEditableNumber } from '../../../src/i18n/editableNumber';
 
 function KeepScreenOn() { useKeepAwake('liftria-active-workout'); return null; }
 
@@ -117,32 +118,36 @@ export default function ActiveWorkoutScreen() {
   const visibleRest=restSet??latestRest;
   const deadline=visibleRest?.restDeadline??null;
   const rest=restAt(deadline,now);
-  const restLabel=rest.status==='running'?displayRest(deadline,now):rest.status==='over'?t('active.restOver'):t('active.restTimer');
+  const restLabel=rest.status==='running'?displayRest(deadline,now,language):rest.status==='over'?t('active.restOver'):t('active.restTimer');
   const stats=view?workoutNumbers(view):null;
   const step=workoutWeightStep(exercise?.type??'weighted',weightUnit,smallPlates);
+  const exerciseId=exercise?.exerciseId,exerciseRowId=exercise?.id,repMax=exercise?.repMax;
+  const expectedRows=exercise?exercise.targetSets*(exercise.unilateral?2:1):undefined;
+  const slotPosition=current?.position,slotSide=current?.side;
   useEffect(()=>{
-    if(!exercise||!current||edit)return;
+    if(exerciseId===undefined||repMax===undefined||expectedRows===undefined||
+      slotPosition===undefined||slotSide===undefined||edit)return;
     let live=true;
-    void previousWorkingSets(exercise.exerciseId).then(result=>{
+    void previousWorkingSets(exerciseId).then(result=>{
       if(!live)return;
-      const next=result.ok?suggestionForSlot(result.value,current.position,current.side,
-        exercise.repMax,exercise.targetSets*(exercise.unilateral?2:1),step):null;
+      const next=result.ok?suggestionForSlot(result.value,slotPosition,slotSide,
+        repMax,expectedRows,step):null;
       setSuggestion(next);
       setKg(next?.weight??0);setReps(next?.reps??0);
     });
     return()=>{live=false;};
-  },[exercise?.exerciseId,current?.position,current?.side,edit,step]);
+  },[exerciseId,repMax,expectedRows,slotPosition,slotSide,edit,step]);
   useEffect(()=>{
-    if(!exercise)return;
+    if(exerciseRowId===undefined||exerciseId===undefined)return;
     let live=true;
-    void Promise.all([readWorkoutExerciseNote(exercise.id),
-      previousExerciseNote(exercise.exerciseId)]).then(([current,previous])=>{
+    void Promise.all([readWorkoutExerciseNote(exerciseRowId),
+      previousExerciseNote(exerciseId)]).then(([current,previous])=>{
       if(!live)return;
       if(current.ok)setExerciseNote(current.value);
       if(previous.ok)setPreviousNote(previous.value);
     });
     return()=>{live=false;};
-  },[exercise?.id,exercise?.exerciseId]);
+  },[exerciseRowId,exerciseId]);
   useEffect(()=>{
     if(!view)return;
     const sub=AppState.addEventListener('change',state=>{
@@ -151,22 +156,22 @@ export default function ActiveWorkoutScreen() {
       const latest=view.sets.filter(row=>row.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0];
       if(latest?.restDeadline&&restAt(latest.restDeadline).status==='running'){
         const active=view.exercises.find(e=>e.id===latest.sessionExerciseId);
-        void scheduleRestOver(latest.restDeadline,view.id,active?.name??view.title,latest.id)
+        void scheduleRestOver(latest.restDeadline,view.id,active?.name??view.title,latest.id,language)
           .catch(()=>setError(t('active.scheduleError')));
       }
     });
     return()=>sub.remove();
-  },[view,t]);
+  },[view,t,language]);
   useEffect(()=>{
     if(!focused||rest.status==='idle')return;
     const remaining=rest.remainingMs;
     const prior=previousRestMs.current;
     if(prior!==null){
-      const message=restAnnouncement(prior,remaining);
-      if(message)void AccessibilityInfo.announceForAccessibility(message==='30 seconds'?t('active.30seconds'):message==='10 seconds'?t('active.10seconds'):t('active.restOver'));
+      const message=restAnnouncement(prior,remaining,language);
+      if(message)void AccessibilityInfo.announceForAccessibility(message);
     }
     previousRestMs.current=remaining;
-  },[rest.remainingMs,rest.status,focused,t]);
+  },[rest.remainingMs,rest.status,focused,language]);
   const log=async()=>{
     if(!view||!exercise||busy)return;
     if(edit){
@@ -216,13 +221,13 @@ export default function ActiveWorkoutScreen() {
   };
   const armNotification=async(set:ActiveSet,name:string)=>{
     if(!set.restDeadline||!view||AppState.currentState==='active')return;
-    try{await scheduleRestOver(set.restDeadline,view.id,name,set.id);}
+    try{await scheduleRestOver(set.restDeadline,view.id,name,set.id,language);}
     catch{setError(t('active.scheduleError'));}
   };
   const allow=async(grant:boolean)=>{
     setAskVisible(false);
     await setSetting('rest.permissionPromptSeen','yes');
-    if(grant){const approved=await askRestPermission().catch(()=>false);
+    if(grant){const approved=await askRestPermission(language).catch(()=>false);
       setDenied(!approved);
       if(approved&&restSet&&exercise)void armNotification(restSet,exercise.name);
     }else setDenied(true);
@@ -251,7 +256,7 @@ export default function ActiveWorkoutScreen() {
   const choose=(index:number)=>{setSelected(index);setEdit(null);setSuggestion(null);setKg(0);setReps(0);
     setEffortValue('');exerciseScroll.current?.scrollTo({x:Math.max(0,index-1)*145,animated:true});};
   const selectEdit=(s:ActiveSet)=>{setEdit(s);setKg(s.weight);setReps(s.reps);setKind(s.kind);
-    setEffortValue(s.rpe!=null?String(s.rpe):s.rir!=null?String(s.rir):'');};
+    setEffortValue(formatEditableNumber(s.rpe??s.rir,'effort'));};
   if(!view)return <Screen embedded safeBottom><Header title={t('active.workout')} onBack={()=>router.replace('/(tabs)/train')}/>
     <Typography tone="secondary">{error??t('active.opening')}</Typography></Screen>;
   return <Screen embedded safeBottom scroll={false}>
@@ -295,23 +300,23 @@ export default function ActiveWorkoutScreen() {
         {view.sets.filter(s=>s.sessionExerciseId===exercise.id&&s.kind==='warm-up')
           .sort((a,b)=>a.position-b.position).map((s,index)=>
             <ListRow key={s.id} title={t('active.warmupRow',{count:index+1})}
-              detail={displayWeight(s.weight,exercise.type,weightUnit)+' × '+t('active.repsCount',{count:s.reps})}
+              detail={displayWeight(s.weight,exercise.type,weightUnit,language)+' × '+t('active.repsCount',{count:s.reps})}
               suffix={<Button label={t('active.undo')} variant="secondary" onPress={()=>setPendingUndo(s)}/>}
               onPress={()=>selectEdit(s)}/>)}
         <Typography tone="secondary" size="small">{exercise.unilateral?t('active.bothSides'):''}
           {exercise.type==='dumbbell'?t('active.perHand'):exercise.type==='assisted'?t('active.assistance'):exercise.type==='bodyweight'?t('active.addedWeight'):t('active.usedWeight')}</Typography>
         {slots.map((slot,index)=>{
           const active=!slot.logged&&current===slot;
-          const label=t('active.set',{count:slot.position+1})+(slot.side?' '+slot.side:'');
+          const label=t('active.set',{count:slot.position+1})+(slot.side?' '+sideLabel(slot.side,language):'');
           return <View key={index} style={{flexDirection:'row',alignItems:'center',gap:theme.space[2],
             minHeight:64,paddingVertical:theme.space[2],borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
             <View style={{flex:1,gap:theme.space[1]}}>
               <Typography bold>{label}{active?' · '+t('active.current'):''}</Typography>
               {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t('active.loggedA11y',{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:weightUnit,reps:slot.logged.reps})}
                 onPress={()=>selectEdit(slot.logged!)}>
-                <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit)} × {slot.logged.reps}
-                {slot.logged.rpe!=null?' · RPE '+slot.logged.rpe:''}
-                {slot.logged.rir!=null?' · RIR '+slot.logged.rir:''} · {t('active.edit')}</Typography>
+                <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit,language)} × {slot.logged.reps}
+                {slot.logged.rpe!=null?' · '+t('effort.rpeValue',{value:slot.logged.rpe}):''}
+                {slot.logged.rir!=null?' · '+t('effort.rirValue',{value:slot.logged.rir}):''} · {t('active.edit')}</Typography>
               </Pressable>:
                 <Typography tone="tertiary" size="small">{t('active.notLogged')}</Typography>}
             </View>
@@ -341,7 +346,7 @@ export default function ActiveWorkoutScreen() {
       {edit&&<Typography bold>{t('active.editingSet',{name:edit.kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:edit.position+1})})}</Typography>}
       {!edit&&suggestion&&<Text style={{fontStyle:'italic',color:theme.color.text.tertiary,fontSize:theme.type.small.size}}>
         {suggestion.progressed?t('active.progressed',{weight:fromKg(step,weightUnit).toFixed(2).replace(/\.?0+$/,''),unit:weightUnit}):t('active.suggested')}
-        {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit)} × {t('active.suggestedReps',{count:suggestion.reps})}
+        {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit,language)} × {t('active.suggestedReps',{count:suggestion.reps})}
       </Text>}
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
         <GymStepper label={exercise?.type==='assisted'?t('active.assistanceUnit',{unit:weightUnit}):exercise?.type==='dumbbell'?t('active.eachUnit',{unit:weightUnit}):t('active.weightUnit',{unit:weightUnit})}
@@ -381,11 +386,11 @@ export default function ActiveWorkoutScreen() {
       <Chip kind="pending" label={t('active.devicePending')}/>
       <Typography tone="secondary" size="small">{t('active.nextSet',{name:exercise?.name??t('active.nextExercise'),set:current?t('active.set',{count:current.position+1}):t('active.chooseExercise')})}</Typography>
       <Typography tone="secondary">{lastLogged?
-        t('active.recentLogged',{name:lastLogged.kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:lastLogged.position+1}),weight:displayWeight(lastLogged.weight,exercise?.type??'weighted',weightUnit),reps:lastLogged.reps}):t('active.restContinues')}</Typography>
+        t('active.recentLogged',{name:lastLogged.kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:lastLogged.position+1}),weight:displayWeight(lastLogged.weight,exercise?.type??'weighted',weightUnit,language),reps:lastLogged.reps}):t('active.restContinues')}</Typography>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-        <Button label="−15 s" variant="secondary" onPress={()=>void adjust(-15)}/>
-        <Button label="+15 s" variant="secondary" onPress={()=>void adjust(15)}/>
-        <Button label="+30 s" variant="secondary" onPress={()=>void adjust(30)}/>
+        <Button label={t('active.restMinus15')} variant="secondary" onPress={()=>void adjust(-15)}/>
+        <Button label={t('active.restPlus15')} variant="secondary" onPress={()=>void adjust(15)}/>
+        <Button label={t('active.restPlus30')} variant="secondary" onPress={()=>void adjust(30)}/>
       </View>
       <Button label={t('active.skipRest')} variant="secondary" fullWidth onPress={()=>void adjust(-3600)}/>
       {lastLogged&&<Button label={t('active.undoLogged')} variant="secondary" fullWidth

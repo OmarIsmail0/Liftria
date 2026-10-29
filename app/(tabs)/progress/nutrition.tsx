@@ -2,6 +2,7 @@ import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {dayOffset,localDay} from '../../../src/features/eat/foodCatalog';
 import {readDiaryRange,summarizeEntries,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
@@ -10,6 +11,7 @@ import {getTypedSetting} from '../../../src/services/database/settings';
 import {nutritionTrend,rangeDays,type RangeKey} from '../../../src/features/progress/trendMath';
 import {NutritionGraph,ProteinPips} from '../../../src/features/progress/TrendCharts';
 import {adaptiveExpenditure,checkinWeek,proposedCalories,type BurnResult} from '../../../src/features/progress/adaptiveExpenditure';
+import {adaptiveBurnMethodCopy,adaptiveNeedDataCopy,nutrientsReportedDaysCopy} from '../../../src/features/progress/adaptiveCopy';
 import {answerWeeklyCheckin,ensureWeeklyCheckin,type WeeklyCheckin} from '../../../src/features/progress/adaptiveCheckins';
 import {listLocalWeights,cachedHealthWeights} from '../../../src/features/progress/weightRepository';
 import {getProfile} from '../../../src/services/database/profile';
@@ -90,9 +92,10 @@ export default function NutritionTrends(){
     shownBurn.ready?<>
      <Chip kind="estimate"/>
      <Typography size="head">{hidden?t('trend.hidden'):t('adaptive.burnValue',{count:amount(shownBurn.estimatedBurn)})}</Typography>
-     <Typography tone="secondary" size="small">{t('adaptive.burnMethod',{logged:shownBurn.loggedDays,weights:shownBurn.weighIns,days:Math.round(shownBurn.elapsedDays)})}</Typography>
-    </>:<Typography tone="secondary">{t('adaptive.needData',{logged:shownBurn.needLogged,
-     weights:shownBurn.needWeighIns,days:shownBurn.needHistory})}</Typography>}
+     <Typography tone="secondary" size="small">{adaptiveBurnMethodCopy(t,language,
+      shownBurn.loggedDays,shownBurn.weighIns,Math.round(shownBurn.elapsedDays))}</Typography>
+    </>:<Typography tone="secondary">{adaptiveNeedDataCopy(t,language,shownBurn.needLogged,
+     shownBurn.needWeighIns,shownBurn.needHistory)}</Typography>}
    <Typography tone="secondary" size="small">{t('adaptive.sourceNote')}</Typography>
    {shownBurn?.ready&&!hidden&&shownCheckin&&<>
     <Typography bold>{t('adaptive.weeklyTitle')}</Typography>
@@ -126,7 +129,8 @@ export default function NutritionTrends(){
     {(['fiber','sugar','sodium'] as const).map(key=><ListRow key={key}
       title={t('nutrients.'+key as 'nutrients.fiber'|'nutrients.sugar'|'nutrients.sodium')}
       detail={hidden?t('trend.hidden'):t('nutrients.average',{value:micros[key].value===null?'—':
-        formatNumber(language,Math.round(micros[key].value*10)/10),days:micros[key].days})}/>)}
+        formatNumber(language,Math.round(micros[key].value*10)/10),
+        days:nutrientsReportedDaysCopy(t,language,micros[key].days)})}/>)}
    </Card>
    <Card rim="eat" title={t('trend.proteinGoal')}>
     <Typography tone="secondary">{target?.proteinG===undefined?t('trend.noProteinGoal'):
@@ -156,7 +160,7 @@ export default function NutritionTrends(){
      onPress={()=>void answer('accept')}/>
     <Button label={t('adaptive.edit')} variant="secondary" fullWidth disabled={busy}
      onPress={()=>{
-      setProposedInput(String(shownCheckin?.proposedKcal??''));
+      setProposedInput(formatEditableNumber(shownCheckin?.proposedKcal,'kcal'));
       setReviewVisible(false);setEditing(true);
      }}/>
     <Button label={t('adaptive.dismiss')} variant="ghost" fullWidth disabled={busy}
@@ -175,7 +179,7 @@ export default function NutritionTrends(){
     <Toggle label={t('eatI.guidance')} value={guidance} onChange={setGuidance}/>
     <Button label={t('eatI.use1200')} onPress={()=>{
      const safe=Math.max(1200,Math.ceil((checkin?.estimatedBurn??0)*.75/50)*50);
-     setProposedInput(String(safe));setPendingAnswer(null);setEditing(true);
+     setProposedInput(formatEditableNumber(safe,'kcal'));setPendingAnswer(null);setEditing(true);
     }}/>
     <Button label={t('eatI.keepTarget')} variant="secondary" fullWidth
      disabled={!guidance||busy} onPress={()=>{

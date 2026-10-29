@@ -1,8 +1,9 @@
 import {router} from 'expo-router';
 import {useState} from 'react';
-import {Button,Card,Chip,Field,Header,Screen,Sheet,Typography} from '../../../src/design/primitives';
+import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {formatNumber} from '../../../src/i18n';
+import {bidiIsolate,formatNumber} from '../../../src/i18n';
+import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {MEALS,localDay,type MealKey} from '../../../src/features/eat/foodCatalog';
 import {getHikuDraft,clearHikuDraft,photoReviewReady} from '../../../src/features/hiku/draft';
 import type {HikuReviewedItem,HikuItem} from '../../../src/features/hiku/mealSchema';
@@ -21,7 +22,8 @@ export default function ReviewEstimate(){
  const [discardConfirm,setDiscardConfirm]=useState(false),[changed,setChanged]=useState(false);
  const sum=items.reduce((s,item)=>({kcal:s.kcal+item.kcal,protein:s.protein+item.protein,
   carbs:s.carbs+item.carbs,fat:s.fat+item.fat}),{kcal:0,protein:0,carbs:0,fat:0});
- function edit(index:number){setSelected(index);setEdited(String(items[index]?.grams??''));}
+ function edit(index:number){setSelected(index);
+  setEdited(formatEditableNumber(items[index]?.grams,'grams'));}
  function apply(){
   if(selected===null)return;
   const item=items[selected],grams=Number(edited);
@@ -54,6 +56,17 @@ export default function ReviewEstimate(){
   clearHikuDraft();router.replace('/(tabs)/hiku');
  }
  const fmt=(n:number)=>formatNumber(language,Math.round(n));
+ const gramsValue=(n:number)=>bidiIsolate(language,t('hikuK.valueGrams',{count:fmt(n)}));
+ const kcalValue=(n:number)=>bidiIsolate(language,t('hikuK.valueKcal',{count:fmt(n)}));
+ const totalKcal=bidiIsolate(language,t('hikuK.totalKcalValue',{count:fmt(sum.kcal)}));
+ const totalProtein=bidiIsolate(language,t('hikuK.totalProteinValue',{count:fmt(sum.protein)}));
+ const totalCarbs=bidiIsolate(language,t('hikuK.totalCarbsValue',{count:fmt(sum.carbs)}));
+ const totalFat=bidiIsolate(language,t('hikuK.totalFatValue',{count:fmt(sum.fat)}));
+ const statusLabel=(item:HikuReviewedItem)=>{
+  if(draft?.kind!=='photo')return t(item.confidence==='sure'?'hikuK.sure':'hikuK.check');
+  if(reviewed.has(item.original))return t('hikuPhoto.checked');
+  return t(item.confidence==='check'?'hikuK.check':'hikuPhoto.toCheck');
+ };
  const photoReady=draft?.kind!=='photo'||photoReviewReady(items,reviewed);
  return <Screen embedded safeBottom>
   <Header title={t('hikuK.review')} onBack={()=>router.back()}/>
@@ -76,18 +89,15 @@ export default function ReviewEstimate(){
      {t('hikuPhoto.reviewProgress',{checked:items.filter(i=>reviewed.has(i.original)).length,
       total:items.length})}
     </Typography>}
-    <Typography>{t('hikuK.total',{kcal:fmt(sum.kcal),protein:fmt(sum.protein),
-      carbs:fmt(sum.carbs),fat:fmt(sum.fat)})}</Typography>
+    <Typography>{t('hikuK.total',{kcal:totalKcal,protein:totalProtein,
+      carbs:totalCarbs,fat:totalFat})}</Typography>
     <Typography tone="secondary" size="small">{t('hikuK.originalReview')}</Typography>
    </Card>
    <Card title={t('hikuK.foodItems')}>
-    {items.map((item,index)=><Button key={index} variant="secondary" fullWidth
-      label={(language==='ar'?item.name_ar:item.name_en)+' · '+fmt(item.grams)+' g · '+
-       fmt(item.kcal)+' kcal'+(draft.kind==='photo'?
-        (item.confidence==='check'?' · '+t('hikuK.check'):'')+
-        ' · '+t(reviewed.has(item.original)?'hikuPhoto.checked':'hikuPhoto.toCheck'):
-        ' · '+t(item.confidence==='sure'?'hikuK.sure':'hikuK.check'))}
-      onPress={()=>edit(index)}/>)}
+    {items.map((item,index)=><ListRow key={index} onPress={()=>edit(index)}
+      title={language==='ar'?item.name_ar:item.name_en}
+      detail={t('hikuK.itemDetail',{grams:gramsValue(item.grams),kcal:kcalValue(item.kcal)})}
+      suffix={<Typography tone="secondary" size="small">{statusLabel(item)}</Typography>}/>)}
    </Card>
    <Card title={t('hikuK.mealChoice')}>
     {MEALS.map(key=><Button key={key} label={t(('eatI.'+key) as 'eatI.dinner')}

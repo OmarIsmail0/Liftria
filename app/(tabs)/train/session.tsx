@@ -1,12 +1,13 @@
+import { importerLabel } from '../../../src/features/import/importCsv';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber } from '../../../src/i18n';
+import { formatNumber, latinDigits } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { getTypedSetting } from '../../../src/services/database/settings';
 import { GymStepper } from '../../../src/features/train/GymStepper';
-import { displayWeight, fromKg, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
+import { displayWeight, fromKg, sideLabel, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
 import { readHistoryDetail, historyNumbers, recordsChangedIfDeleted,
  saveFinishedWorkout, deleteFinishedWorkout, type HistoryDetail, type SetEdit } from '../../../src/services/database/historyRepository';
 import { storeUndo } from '../../../src/features/train/historyUndo';
@@ -78,12 +79,12 @@ export default function SessionDetail(){
    <Field label={t('sessionDetail.notes')} value={notes} onChangeText={setNotes} multiline/>
   </Card>}
   <Card rim="train" title={t('sessionDetail.statistics')}>
-   <ListRow title={t('sessionDetail.start')} detail={new Date(data.session.startedAt).toLocaleTimeString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}/>
+   <ListRow title={t('sessionDetail.start')} detail={latinDigits(new Date(data.session.startedAt).toLocaleTimeString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>
    <ListRow title={t('sessionDetail.duration')} detail={t('sessionDetail.minute',{count:Math.round(duration/60000)})}/>
    <ListRow title={t('sessionDetail.workingSets')} detail={formatNumber(language,stats.sets)}/>
    <ListRow title={t('sessionDetail.volume')} detail={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+unit}/>
-   {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:data.session.importer})}
-    {data.session.importedAt?t('sessionDetail.importedAt',{date:new Date(data.session.importedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}):''}
+   {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:importerLabel(data.session.importer)})}
+    {data.session.importedAt?t('sessionDetail.importedAt',{date:latinDigits(new Date(data.session.importedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):''}
    </Typography>}
   </Card>
   {data.exercises.map(e=><Card key={e.id} title={e.name}>
@@ -92,13 +93,13 @@ export default function SessionDetail(){
    {editing?draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{
     const i=draft.indexOf(s);
     return <View key={s.id??e.id+':'+i} style={{gap:8,paddingBottom:12}}>
-     <Typography tone="secondary" size="small">{s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}{s.side?' '+s.side:''}</Typography>
+     <Typography tone="secondary" size="small">{s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}{s.side?' '+sideLabel(s.side,language):''}</Typography>
      <GymStepper label={t('sessionDetail.weight')} value={fromKg(s.weight,unit)} unit={unit}
        step={fromKg(workoutWeightStep(e.type,unit,smallPlates),unit)}
        onChange={v=>change(i,{weight:toKg(v,unit)})}/>
      <GymStepper label={t('sessionDetail.reps')} value={s.reps} onChange={v=>change(i,{reps:v})}/>
      {(s.rpe!=null||s.rir!=null)&&<Typography tone="secondary" size="small">
-       {s.rpe!=null?'RPE '+s.rpe:'RIR '+s.rir}</Typography>}
+       {s.rpe!=null?t('effort.rpeValue',{value:s.rpe}):t('effort.rirValue',{value:s.rir??0})}</Typography>}
      <Button label={t('sessionDetail.removeSet')} variant="secondary" onPress={()=>setDraft(rows=>rows.filter((_,n)=>n!==i))}/>
     </View>;
    }):e.sets.map(s=>{
@@ -110,8 +111,8 @@ export default function SessionDetail(){
       (r.bestEstimatedOneRepMaxSessionId===id&&r.bestEstimatedOneRepMax!==null&&
         estimatedOneRepMax(e.type,s)===r.bestEstimatedOneRepMax));
     return <ListRow key={s.id} title={s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}
-      detail={displayWeight(s.weight,e.type,unit)+' × '+s.reps+(s.side?' · '+s.side:'')+
-       (s.rpe!=null?' · RPE '+s.rpe:'')+(s.rir!=null?' · RIR '+s.rir:'')}
+      detail={displayWeight(s.weight,e.type,unit,language)+' × '+s.reps+(s.side?' · '+sideLabel(s.side,language):'')+
+       (s.rpe!=null?' · '+t('effort.rpeValue',{value:s.rpe}):'')+(s.rir!=null?' · '+t('effort.rirValue',{value:s.rir}):'')}
       suffix={pr?<Typography bold size="small" tone="secondary">{t('sessionDetail.record')}</Typography>:undefined}/>;
    })}
    {editing&&<Button label={t('sessionDetail.addSet')} variant="secondary" onPress={()=>{

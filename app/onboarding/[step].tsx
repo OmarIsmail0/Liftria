@@ -6,6 +6,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { fontFamilyFor } from '../../src/design/fonts';
 import type { TranslationKey } from '../../src/i18n';
+import { formatEditableNumber } from '../../src/i18n/editableNumber';
 import { Button, Card, Field, Header, Orb, Screen, OptionRows, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
@@ -20,6 +21,7 @@ import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
 
+/** i18n-stored-ids: persisted selection ids; the choices below map them through t() before display. */
 const watchOptions = ['Samsung Health', 'Fitbit', 'Garmin Connect', 'Pixel Watch (Fitbit)', 'Other', 'No watch'] as const;
 const titles: Record<OnboardingStep, TranslationKey> = {
   welcome: 'onboarding.welcomeToLiftria', privacy: 'onboarding.yourDataStaysWithYou',
@@ -125,7 +127,7 @@ export default function OnboardingStepScreen() {
     void readDraft().then(d => {
       if (!mounted) return;
       setDraft(d);
-      setAge(d.birthYear ? String(profileAge(Number(d.birthYear))) : '');
+      setAge(d.birthYear ? formatEditableNumber(profileAge(Number(d.birthYear)), 'count') : '');
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError(t('onboarding.localSettingsCouldNotBe')); } });
     if(Platform.OS==='android')void healthConnect.getAvailability().then(availability => {
@@ -353,7 +355,11 @@ export default function OnboardingStepScreen() {
                 {estimate.lessPrecise && <Typography tone="secondary">{t('onboarding.estimateLessPreciseSexFor')}</Typography>}
                 {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{t('onboarding.thisIsLowerThanLiftria')}</Typography>}
                 <Button variant="secondary" label={t('onboarding.setMyOwnNumbers')} onPress={() => {
-                  setDraft(current => ({ ...current, manualKcal: String(estimate.kcal), manualProtein: String(estimate.proteinG), manualFat: String(estimate.fatG), manualCarbs: String(estimate.carbsG) })); setEditManual(true);
+                  setDraft(current => ({ ...current,
+                    manualKcal: formatEditableNumber(estimate.kcal, 'kcal'),
+                    manualProtein: formatEditableNumber(estimate.proteinG, 'grams'),
+                    manualFat: formatEditableNumber(estimate.fatG, 'grams'),
+                    manualCarbs: formatEditableNumber(estimate.carbsG, 'grams') })); setEditManual(true);
                 }} />
               </> : <Typography tone="secondary">{t('onboarding.noEstimateWithoutCompleteAge')}</Typography>}
               {!estimate && <Button variant="secondary" label={t('onboarding.setMyOwnNumbers')} onPress={() => setEditManual(true)} />}

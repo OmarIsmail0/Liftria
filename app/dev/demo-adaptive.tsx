@@ -1,5 +1,5 @@
 import {router,useLocalSearchParams} from 'expo-router';
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {Button,Card,Header,Screen,Typography} from '../../src/design/primitives';
 import {bundledFoods,dayOffset,localDay,snapshot,type Food} from '../../src/features/eat/foodCatalog';
 import {logFood,readDiaryDay,readDiaryRange} from '../../src/features/eat/diaryRepository';
@@ -19,7 +19,7 @@ const KEY='demo.adaptive.';
 export default function DemoAdaptive(){
  const {auto,state}=useLocalSearchParams<{auto?:string;state?:'early'|'ready'}>();
  const once=useRef(false),[busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null);
- async function seed(){
+ const seed=useCallback(async()=>{
   if(busy)return;setBusy(true);setError(null);
   try{
    const today=localDay(new Date()),pack=bundledFoods();
@@ -100,7 +100,7 @@ export default function DemoAdaptive(){
    router.replace({pathname:'/(tabs)/progress/nutrition',params:{demoAdaptive:'ready'}});
   }catch(e){setError(e instanceof Error?e.message:'Demo setup failed');}
   finally{setBusy(false);}
- }
+ },[busy]);
  async function clear(){
   if(busy)return;setBusy(true);setError(null);
   const done=await dbOperation(async db=>{
@@ -140,7 +140,7 @@ export default function DemoAdaptive(){
   void Promise.resolve().then(()=>{if(state==='early')
    router.replace({pathname:'/(tabs)/progress/nutrition',params:{demoAdaptive:'early'}});
    else void seed();});
- },[auto,state]);
+ },[auto,state,seed]);
  return <Screen>
   <Header title="Demo adaptive expenditure" onBack={()=>router.back()}/>
   <Card rim="eat" title="Developer screenshot fixture">

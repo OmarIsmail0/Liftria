@@ -1,7 +1,7 @@
 import {AppleHealthComing} from '../../../src/features/health/AppleHealthComing';
 import {Platform} from 'react-native';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber } from '../../../src/i18n';
+import { formatNumber, latinDigits } from '../../../src/i18n';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -66,7 +66,7 @@ function HealthRecordDetailAndroid() {
           <ListRow title={t('healthRecord.device')} detail={record.device?.model
             ? `${record.device.manufacturer ?? ''} ${record.device.model}`
             : t('healthRecord.noDevice')} />
-          <ListRow title={t('healthRecord.recordedRead')} detail={t('healthRecord.recordedAt',{time:new Date(recordAt(record)).toLocaleTimeString(dateLocale)})+' · '+(query.readAt?t('healthRecord.checked',{time:new Date(query.readAt).toLocaleTimeString(dateLocale)}):t('healthRecord.noReadTime'))} />
+          <ListRow title={t('healthRecord.recordedRead')} detail={t('healthRecord.recordedAt',{time:latinDigits(new Date(recordAt(record)).toLocaleTimeString(dateLocale))})+' · '+(query.readAt?t('healthRecord.checked',{time:latinDigits(new Date(query.readAt).toLocaleTimeString(dateLocale))}):t('healthRecord.noReadTime'))} />
           <ListRow title={t('healthRecord.permission')} detail={t('healthRecord.allowed')} />
         </Card>
         <Card title={t('healthRecord.aboutFields')}>

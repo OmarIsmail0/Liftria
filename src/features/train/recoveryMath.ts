@@ -1,6 +1,7 @@
 import { MUSCLES, type Muscle } from '../../services/database/gymTypes';
 import { setVolume } from '../../services/database/gymMath';
 import type { StrengthObservation } from '../../services/database/historyRepository';
+import { formatNumber, translate, type AppLanguage } from '../../i18n';
 
 export const RECOVERY={
   primaryCredit:1,secondaryCredit:0.5,
@@ -101,27 +102,33 @@ export function strengthWindowSummary(weeks:StrengthWeek[],rangeWeeks=4){
   const previous=prior.reduce((n,w)=>n+w.volume,0);
   return {total,previous,changePct:previous>0?(total-previous)/previous*100:null};
 }
-export function relativeTrainingDay(iso:string|null,now:Date):string{
-  if(!iso)return 'Not trained yet';
+export function relativeTrainingDay(iso:string|null,now:Date,language:AppLanguage='en'):string{
+  if(!iso)return translate(language,'recovery.notTrained');
   const d=new Date(iso);
   const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const trained=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const diff=Math.round((today.valueOf()-trained.valueOf())/86400000);
-  return diff<=0?'Trained today':diff===1?'Trained yesterday':'Last trained '+diff+' days ago';
+  return diff<=0?translate(language,'recovery.today'):diff===1?translate(language,'recovery.yesterday'):
+    translate(language,'recovery.daysAgo',{days:diff});
 }
 
 /** Row copy describes logged set credit, not physiological recovery. */
-export function recoveryRowText(row:MuscleRecovery,mode:'recent'|'volume'|'untrained',now:Date):string {
-  const counted=(value:number)=>Number(value.toFixed(1)).toString()+' '+(value===1?'set':'sets');
+export function recoveryRowText(row:MuscleRecovery,mode:'recent'|'volume'|'untrained',now:Date,
+  language:AppLanguage='en'):string {
+  const counted=(value:number)=>{
+    const rounded=Number(value.toFixed(1));
+    return translate(language,rounded===1?'recovery.oneSet':'recovery.sets',{count:formatNumber(language,rounded)});
+  };
+  const inSentence=(text:string)=>language==='en'?text.toLowerCase():text;
+  const day=(iso:string|null)=>inSentence(relativeTrainingDay(iso,now,language));
   if(mode==='recent'){
-    const level=row.band==='higher'?'Higher load':row.band==='some'?'Some load':'Ready';
-    return counted(row.recentCredit)+' · '+relativeTrainingDay(row.lastCredit,now).toLowerCase()+' · '+level;
+    const load=translate(language,row.band==='higher'?'recovery.high':row.band==='some'?'recovery.some':'recovery.ready');
+    return translate(language,'recovery.rowRecent',{sets:counted(row.recentCredit),day:day(row.lastCredit),load});
   }
-  if(mode==='volume')return counted(row.weeklyCredit)+' this week · '+
-    relativeTrainingDay(row.lastCredit,now).toLowerCase();
+  if(mode==='volume')return translate(language,'recovery.rowVolume',{sets:counted(row.weeklyCredit),day:day(row.lastCredit)});
   if(!row.lastPrimary)return row.lastCredit?
-    'No direct sets yet · helper '+relativeTrainingDay(row.lastCredit,now).toLowerCase()
-      .replace(/^trained /,'').replace(/^last trained /,''):
-    'Not trained yet';
-  return relativeTrainingDay(row.lastPrimary,now);
+    translate(language,'recovery.helper',{day:language==='en'?day(row.lastCredit).replace(/^trained /,'').replace(/^last trained /,''):
+      relativeTrainingDay(row.lastCredit,now,language)}):
+    translate(language,'recovery.notTrained');
+  return relativeTrainingDay(row.lastPrimary,now,language);
 }

@@ -1,7 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   Modal, Platform, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
 } from 'react-native';
+import Animated, { Easing, interpolateColor, useAnimatedStyle, useSharedValue, withTiming,
+  type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
@@ -10,6 +12,7 @@ import { TrainGradient } from './VisualEffects';
 import { buttonColors, buttonHeight, provenancePresentation, type ButtonSize, type ButtonVariant,
   type ProvenanceKind } from './contracts';
 import { Typography } from './Surfaces';
+import { usePressScale, useSpringValue } from './Motion';
 
 export function Button({ label, onPress, variant = 'primary', size = 'md', disabled = false, fullWidth = false, accessibilityLabel }: {
   label: string; onPress: () => void; variant?: ButtonVariant; size?: ButtonSize; disabled?: boolean;
@@ -20,23 +23,29 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
   const colors = buttonColors(theme, variant);
   const gradient = variant === 'train' && theme.effectiveStyle === 'aurora';
   const [box, setBox] = useState({ width: 0, height: 0 });
-  return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
-    accessibilityState={{ disabled }} disabled={disabled} onPress={onPress}
-    onLayout={gradient ? e => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }) : undefined}
-    style={({ pressed }) => ({
-      minHeight: buttonHeight(theme, size), minWidth: theme.size.touch.min,
-      alignItems: 'center', justifyContent: 'center', alignSelf: fullWidth ? 'stretch' : 'flex-start',
-      flexShrink: 1,
-      paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
-      paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
-      borderWidth: variant === 'ghost' || gradient
-        ? 0 : theme.size.border.thin, borderColor: colors.border,
-      backgroundColor: colors.bg, overflow: 'hidden', opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
-    })}>
-    {gradient && <TrainGradient theme={theme} width={box.width} height={box.height} />}
-    <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
-      fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
-  </Pressable>;
+  const press = usePressScale();
+  // The outer view owns placement and the press scale; the Pressable owns the visible pill.
+  return <Animated.View style={[{ alignSelf: fullWidth ? 'stretch' : 'flex-start', flexShrink: 1,
+    minWidth: theme.size.touch.min }, press.style]}>
+    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled }} disabled={disabled} onPress={onPress}
+      onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+      onLayout={gradient ? e => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }) : undefined}
+      style={({ pressed }) => ({
+        minHeight: buttonHeight(theme, size),
+        alignItems: 'center', justifyContent: 'center',
+        paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
+        paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
+        borderWidth: variant === 'ghost' || gradient
+          ? 0 : theme.size.border.thin, borderColor: colors.border,
+        backgroundColor: variant === 'ghost' && pressed ? theme.surface.pressed : colors.bg,
+        overflow: 'hidden', opacity: disabled ? 0.45 : pressed ? 0.9 : 1,
+      })}>
+      {gradient && <TrainGradient theme={theme} width={box.width} height={box.height} />}
+      <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
+        fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
+    </Pressable>
+  </Animated.View>;
 }
 
 /** Provenance chips are informative, never independent tap targets. */
@@ -47,38 +56,79 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   value: T | null; onChange: (next: T) => void;
 }) {
   const { theme } = useTheme();
+  const { isRTL } = useLanguage();
   const { fontScale } = useWindowDimensions();
   const stack = fontScale >= 1.6 && options.length > 2;
+  const solid = theme.effectiveStyle === 'solid';
+  const index = options.findIndex(option => option.value === value);
+  const position = useSpringValue(Math.max(0, index));
+  const [width, setWidth] = useState(0);
+  const inset = theme.space[1];
+  // onLayout includes the Solid outline; the thumb lives inside it.
+  const edge = solid ? theme.size.border.thin : 0;
+  const segment = width > 0 ? (width - edge * 2 - inset * 2) / options.length : 0;
+  // The pill slides with a transform, not a growing width: width (a layout prop) animated
+  // from the UI thread was not applied on Android, so the pill stayed on the first option.
+  // translateX is physical, so it is mirrored for right-to-left layouts.
+  // The measured segment is also a shared value: when a control first appears on a later
+  // option, nothing else changes after layout, so the style must react to the width itself.
+  const segmentWidth = useSharedValue(0);
+  const direction = isRTL ? -1 : 1;
+  const slide = useAnimatedStyle(() => ({
+    transform: [{ translateX: direction * position.get() * segmentWidth.get() }],
+  }), [direction]);
+  const sliding = !stack && index >= 0 && segment > 0;
   return <View accessibilityRole="radiogroup" accessibilityLabel={label}
+    onLayout={event => {
+      const next = event.nativeEvent.layout.width;
+      setWidth(next);
+      segmentWidth.set(next > 0 ? (next - edge * 2 - inset * 2) / options.length : 0);
+    }}
     style={{
-      flexDirection: stack ? 'column' : 'row', alignItems: 'stretch',
-      borderColor: theme.controlOutline, borderWidth: theme.size.border.thin,
-      borderRadius: theme.radius.pill, overflow: 'hidden',
-      backgroundColor: theme.color.bg.raised,
+      flexDirection: stack ? 'column' : 'row', alignItems: 'stretch', padding: inset,
+      borderRadius: stack ? theme.radius.md : theme.radius.pill,
+      backgroundColor: solid ? theme.color.bg.raised : theme.surface.control,
+      // Solid (high contrast) keeps the 3:1 control outline; Aurora uses a filled track.
+      borderWidth: edge, borderColor: theme.controlOutline,
     }}>
-    {options.map((option, index) => {
+    {/* Mounted before layout (zero width until measured), so the measured width moves it into place. */}
+    {!stack && index >= 0 && <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
+      start: inset, width: segment, borderRadius: theme.radius.pill,
+      backgroundColor: theme.color.action.primary.bg, boxShadow: theme.elevation.thumb }, slide]} />}
+    {options.map((option, at) => {
       const selected = option.value === value;
       return <Pressable key={option.value} accessibilityRole="radio"
         accessibilityLabel={option.label} accessibilityState={{ selected, checked: selected }}
-        onPress={() => onChange(option.value)}
+        onPress={() => onChange(option.value)} hitSlop={{ top: inset, bottom: inset }}
         style={({ pressed }) => ({
-          minWidth: theme.size.touch.min, minHeight: theme.size.touch.min,
+          minWidth: theme.size.touch.min, minHeight: theme.size.touch.min - inset * 2,
           flex: 1, alignItems: 'center', justifyContent: 'center',
           paddingVertical: theme.space[2], paddingHorizontal: theme.space[2],
-          backgroundColor: selected ? theme.color.action.primary.bg : theme.color.bg.raised,
-          borderStartWidth: stack ? 0 : index === 0 ? 0 : theme.size.border.thin,
-          borderTopWidth: stack && index > 0 ? theme.size.border.thin : 0,
-          borderColor: theme.controlOutline, opacity: pressed ? 0.8 : 1,
+          borderRadius: stack ? theme.radius.sm : theme.radius.pill,
+          backgroundColor: !sliding && selected ? theme.color.action.primary.bg : 'transparent',
+          opacity: pressed && !selected ? 0.7 : 1,
         })}>
-        <Text allowFontScaling style={{
-          fontFamily: fontFamilyFor('Figtree', selected ? '700' : '600'),
-          fontSize: theme.type.small.size,
-          color: selected ? theme.color.action.primary.fg : theme.color.text.primary,
-          textAlign: 'center',
-        }}>{option.label}</Text>
+        <SegmentLabel label={option.label} at={at} position={position} sliding={sliding} selected={selected} />
       </Pressable>;
     })}
   </View>;
+}
+
+/** The label ink follows the thumb, so text never sits white-on-track mid-slide. */
+function SegmentLabel({ label, at, position, sliding, selected }: {
+  label: string; at: number; position: SharedValue<number>; sliding: boolean; selected: boolean;
+}) {
+  const { theme } = useTheme();
+  const on = theme.color.action.primary.fg, off = theme.color.text.primary;
+  const ink = useAnimatedStyle(() => {
+    if (!sliding) return { color: selected ? on : off };
+    const covered = Math.max(0, 1 - Math.abs(position.get() - at));
+    return { color: interpolateColor(covered, [0, 1], [off, on]) };
+  }, [sliding, selected, on, off, at]);
+  return <Animated.Text allowFontScaling style={[{
+    fontFamily: fontFamilyFor('Figtree', selected ? '700' : '600'),
+    fontSize: theme.type.small.size, textAlign: 'center',
+  }, ink]}>{label}</Animated.Text>;
 }
 
 /** Use radio rows when choices are described, rather than crowding a segmented pill. */
@@ -180,6 +230,21 @@ export function Toggle({ label, detail, value, onChange }: {
   label: string; detail?: string; value: boolean; onChange: (next: boolean) => void;
 }) {
   const { theme } = useTheme();
+  const { isRTL } = useLanguage();
+  const progress = useSpringValue(value ? 1 : 0);
+  const thumb = theme.space[5], pad = theme.space[1], travel = theme.size.touch.min - pad * 2 - thumb;
+  const offTrack = theme.color.bg.raised, onTrack = theme.color.domain.hiku;
+  const offEdge = theme.controlOutline, offThumb = theme.color.text.tertiary, onThumb = theme.color.text.inverse;
+  const track = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(progress.get(), [0, 1], [offTrack, onTrack]),
+    borderColor: interpolateColor(progress.get(), [0, 1], [offEdge, onTrack]),
+  }), [offTrack, onTrack, offEdge]);
+  // translateX is physical, so "on" moves toward the end edge: right in English, left in Arabic.
+  const direction = isRTL ? -1 : 1;
+  const knob = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(progress.get(), [0, 1], [offThumb, onThumb]),
+    transform: [{ translateX: direction * progress.get() * travel }],
+  }), [offThumb, onThumb, direction, travel]);
   return <Pressable accessibilityRole="switch" accessibilityLabel={detail ? `${label}. ${detail}` : label}
     accessibilityState={{ checked: value }} onPress={() => onChange(!value)}
     style={{ minHeight: theme.size.touch.min, flexDirection: 'row', gap: theme.space[3],
@@ -187,14 +252,13 @@ export function Toggle({ label, detail, value, onChange }: {
     <View style={{ flex: 1, gap: theme.space[1] }}><Typography bold>{label}</Typography>
       {detail && <Typography size="small" tone="secondary">{detail}</Typography>}
     </View>
-    <View importantForAccessibility="no-hide-descendants"
-      style={{ width: theme.size.touch.min, height: theme.space[8], padding: theme.space[1],
-        borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: value ? 'flex-end' : 'flex-start',
-        borderColor: theme.controlOutline, borderWidth: value ? 0 : theme.size.border.thin,
-        backgroundColor: value ? theme.color.domain.hiku : theme.color.bg.raised }}>
-      <View style={{ width: theme.space[5], height: theme.space[5], borderRadius: theme.radius.pill,
-        backgroundColor: value ? theme.color.text.inverse : theme.color.text.tertiary }} />
-    </View>
+    <Animated.View importantForAccessibility="no-hide-descendants"
+      style={[{ width: theme.size.touch.min, height: theme.space[8], paddingHorizontal: pad - theme.size.border.thin,
+        borderRadius: theme.radius.pill, flexDirection: 'row', alignItems: 'center',
+        borderWidth: theme.size.border.thin }, track]}>
+      <Animated.View style={[{ width: thumb, height: thumb, borderRadius: theme.radius.pill,
+        boxShadow: theme.elevation.thumb }, knob]} />
+    </Animated.View>
   </Pressable>;
 }
 
@@ -244,33 +308,53 @@ export function Snackbar({ message, onUndo, onDismiss }: {
 export function Sheet({ visible, title, description, children, onClose, destructive = false }: {
   visible: boolean; title: string; description?: string; children?: ReactNode; onClose: () => void; destructive?: boolean;
 }) {
-  const { theme } = useTheme();
+  const { theme, reduceMotion } = useTheme();
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
-  return <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}
+  const { height } = useWindowDimensions();
+  // Stay mounted through the closing slide; a hidden sheet unmounts once it is off screen.
+  const [mounted, setMounted] = useState(visible);
+  if (visible && !mounted) setMounted(true);
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    const { duration } = theme.motion.base;
+    if (visible) {
+      progress.set(reduceMotion ? 1 : withTiming(1, { duration: duration + 80, easing: Easing.out(Easing.cubic) }));
+      return;
+    }
+    progress.set(reduceMotion ? 0 : withTiming(0, { duration, easing: Easing.in(Easing.cubic) }));
+    const timer = setTimeout(() => setMounted(false), reduceMotion ? 0 : duration);
+    return () => clearTimeout(timer);
+  }, [progress, reduceMotion, theme.motion.base, visible]);
+  const backdrop = useAnimatedStyle(() => ({ opacity: progress.get() }));
+  const panel = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.get()) * height }] }), [height]);
+  return <Modal transparent visible={mounted} animationType="none" onRequestClose={onClose}
     statusBarTranslucent accessibilityViewIsModal>
     <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-      <Pressable accessible={false} accessibilityRole="button" accessibilityLabel={t('common.close')}
-        style={{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0,
-          backgroundColor: theme.color.bg.base, opacity: theme.rim.strength + theme.rim.glow }}
-        onPress={onClose} />
-      <View accessibilityViewIsModal style={{
+      <Animated.View style={[{ position: 'absolute', top: 0, bottom: 0, start: 0, end: 0,
+        backgroundColor: theme.sheet.scrim }, backdrop]}>
+        <Pressable accessible={false} accessibilityRole="button" accessibilityLabel={t('common.close')}
+          style={{ flex: 1 }} onPress={onClose} />
+      </Animated.View>
+      <Animated.View accessibilityViewIsModal style={[{
         borderTopLeftRadius: theme.radius.lg, borderTopRightRadius: theme.radius.lg,
         paddingBottom: Math.max(insets.bottom, theme.space[4]),
-        paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[4],
-        borderWidth: theme.size.border.thin, borderColor: destructive ? theme.color.status.danger : theme.color.border.subtle,
+        paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[3],
+        borderWidth: theme.size.border.thin, borderBottomWidth: 0,
+        borderColor: destructive ? theme.color.status.danger : theme.surface.hairline,
         backgroundColor: theme.sheetFill, maxHeight: theme.layout.sheetMaxHeight, gap: theme.space[4],
-      }}>
+        boxShadow: theme.elevation.card,
+      }, panel]}>
         <View style={{ alignItems: 'center' }}>
           <View style={{ width: theme.space[10], height: theme.space[1], borderRadius: theme.radius.pill,
-            backgroundColor: theme.color.text.tertiary }} />
+            backgroundColor: theme.color.border.strong }} />
         </View>
         <Typography size="title">{title}</Typography>
         {description && <Typography tone="secondary">{description}</Typography>}
         <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={Platform.OS==='ios'}
           contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
         <Button label={t('common.cancel')} fullWidth onPress={onClose} />
-      </View>
+      </Animated.View>
     </View>
   </Modal>;
 }
