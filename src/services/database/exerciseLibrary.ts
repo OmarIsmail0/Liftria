@@ -1,6 +1,8 @@
 import rawPack from '../../../assets/data/exercises/free-exercise-db.json';
 import { z } from 'zod';
 import { dbOperation, type DbResult } from './index';
+import type { AppLanguage } from '../../i18n';
+import { exerciseName, normalizeArabicSearch } from '../../i18n/exerciseNames';
 import { MUSCLES, type Exercise, type ExerciseType, type Muscle, type PackExercise } from './gymTypes';
 
 export const PACK_ID = 'free-exercise-db:f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5';
@@ -111,11 +113,33 @@ function editDistance(a: string, b: string): number {
   }
   return previous[b.length] ?? 3;
 }
-export function searchExercises(all: Exercise[], query: string, muscle?: Muscle | null): Exercise[] {
-  const text = normalizedName(query);
+const ARABIC_LETTER = /[\u0600-\u06FF]/;
+/**
+ * Library search. In Arabic, an Arabic query matches the Arabic display name of pack
+ * exercises (and custom names); a Latin query still matches the English names.
+ */
+export function searchExercises(all: Exercise[], query: string, muscle?: Muscle | null,
+  language: AppLanguage = 'en'): Exercise[] {
   const filtered = all.filter(e => !e.retired && (!muscle ||
     e.primaryMuscles.includes(muscle) || e.secondaryMuscles.includes(muscle)));
-  if (!text) return filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  const display = (e: Exercise) => exerciseName(language, e.id, e.name);
+  const byName = (a: Exercise, b: Exercise) => language === 'ar'
+    ? display(a).localeCompare(display(b), 'ar') : a.name.localeCompare(b.name);
+  if (ARABIC_LETTER.test(query)) {
+    const text = normalizeArabicSearch(query);
+    if (!text) return filtered.sort(byName);
+    const score = (exercise: Exercise): number => {
+      const name = normalizeArabicSearch(display(exercise));
+      if (name === text) return 0;
+      if (name.startsWith(text)) return 1;
+      if (name.includes(text)) return 3;
+      return Infinity;
+    };
+    return filtered.map(e=>({e,rank:score(e)})).filter(x=>Number.isFinite(x.rank))
+      .sort((a,b)=>a.rank-b.rank || byName(a.e,b.e)).map(x=>x.e);
+  }
+  const text = normalizedName(query);
+  if (!text) return filtered.sort(byName);
   const score = (exercise: Exercise): number => {
     const name = normalizedName(exercise.name);
     const aliases = exercise.aliases.map(normalizedName);
