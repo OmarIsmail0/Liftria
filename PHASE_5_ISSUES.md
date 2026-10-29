@@ -156,13 +156,20 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Tests: the list data covers all 876 with no cap; section grouping in English and Arabic; the accessibility, English-in-Arabic and rule guards still pass.
    - Don't touch `src/design/**` (if `ListRow` can't sit inside a `FlatList` cleanly, say why in the PR instead), the Health screens, `src/services/health/**`, or `app.config.ts`.
 
-18. **PR AD: `Phase 5 / Arabic instructions for the common exercises`** (builder: **GPT**, after R2 #47's fixes; branch from `main`)
+18. ~~**PR AD: `Phase 5 / Arabic instructions for the common exercises`**~~ DONE: PR #55 merged (2026-10-29). GPT opened it twice; #51 closed as a duplicate. Claude replaced four "يحذّر المصدر" ("the source warns") phrasings with plain advice.
    - Exercise detail shows the pack's English instructions in Arabic too. Translate the instructions of the **100 most common gym exercises** listed in `docs/phase5/arabic-instructions-top100.txt` (pack ids, about 470 steps). The other 776 keep English, with a one-line note in Arabic ("التعليمات بالإنجليزية لهذا التمرين").
    - **Data:** `src/i18n/exerciseInstructionsAr.ts`, pack id → array of Arabic steps, **the same number of steps as the English**, in the same order. Don't change the pack JSON, the database or backups.
    - **Display:** `app/(tabs)/train/exercise/[id].tsx` shows the Arabic steps in Arabic when the id has them, otherwise the English steps plus the note. Custom exercises unchanged.
    - **Style:** plain Modern Standard Arabic a gym-goer understands, consistent with the Arabic exercise names (PR Z: بنش برس، سكوات، الخلفية…). Keep the safety meaning exact: never drop or soften a caution ("لا تقفل ركبتيك", "حافظ على استقامة ظهرك"). Western digits; number+unit with a no-break space.
    - **Guards (tests):** every listed id has a translation and no other ids; step counts match the English; no Latin letters except real tokens (EZ, V); each guard fails on a planted bad example.
    - Don't touch `src/design/**`, the Health screens, `src/services/health/**`, `app.config.ts`, or the library/pick/muscles screens (PR AC).
+
+19. **PR AE: `Phase 5 / Arabic instructions, next 120`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - Translate the instructions of the 120 pack ids in `docs/phase5/arabic-instructions-next120.txt`: dumbbell, cable and machine strength exercises, beginner level first, 618 steps. Add them to `EXERCISE_INSTRUCTIONS_AR` in `src/i18n/exerciseInstructionsAr.ts`, next to PR AD's 100. Don't change PR AD's entries.
+   - **Same rules as PR AD:** the same number of steps as the English, in the same order; plain Modern Standard Arabic consistent with the Arabic exercise names; keep every caution exact and never soften it; Western digits; number+unit with a no-break space. Say what the step says; never write "the source says" (المصدر).
+   - **Guards:** the existing test in `src/i18n/__tests__/exerciseInstructionsAr.test.ts` checks the ids against the top-100 list. Make it check against both lists together: every listed id has a translation and there are no other ids. The step-count, Latin-letter and empty-step guards then cover the new 120 with no other change.
+   - **Commits:** one commit per 30 ids, pushed right after each one, so nothing is lost if the run stops.
+   - Don't touch `src/i18n/exerciseInstructions.ts` (the display helper), `app/**`, `src/design/**`, the pack JSON, or workflows.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
