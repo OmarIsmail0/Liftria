@@ -1612,6 +1612,7 @@ export const en = {
   "exerciseDetail.manySessions": "{count} workouts logged · trend history will appear here.",
   "exerciseDetail.noSession": "No sessions for this exercise yet.",
   "exerciseDetail.noInstructions": "No instructions were provided for this exercise.",
+  "exerciseDetail.instructionsEnglish": "Instructions for this exercise are available in English.",
   "exerciseDetail.license": "Instructions from free-exercise-db (Unlicense). No third-party images.",
   "sessionDetail.loadError": "Could not load this finished workout.",
   "sessionDetail.saveError": "Could not save changes; the previous workout is unchanged.",

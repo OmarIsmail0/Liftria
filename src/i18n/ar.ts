@@ -1613,6 +1613,7 @@ export const ar: Record<TranslationKey, string> = {
   "exerciseDetail.manySessions": "{count} تمارين مسجلة · سيظهر اتجاه تقدمك هنا.",
   "exerciseDetail.noSession": "لم تسجل جلسات لهذا التمرين بعد.",
   "exerciseDetail.noInstructions": "لا توجد تعليمات لهذا التمرين.",
+  "exerciseDetail.instructionsEnglish": "التعليمات بالإنجليزية لهذا التمرين",
   "exerciseDetail.license": "تعليمات التمارين من free-exercise-db (ترخيص Unlicense). لا توجد صور خارجية.",
   "sessionDetail.loadError": "تعذّر تحميل هذا التمرين المكتمل.",
   "sessionDetail.saveError": "تعذّر حفظ التعديلات. يبقى التمرين السابق دون تغيير.",
