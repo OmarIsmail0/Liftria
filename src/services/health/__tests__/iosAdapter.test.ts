@@ -2,6 +2,18 @@ import {healthConnect,readDailyEnergy,requestHistoryReadPermission,
  normalizeEnergyAggregate} from '../index.ios';
 import {metricTypes} from '../types';
 
+// Jest has no Nitro binary. Unavailable HealthKit must not invent readings.
+jest.mock('@kingstinct/react-native-healthkit', () => ({
+ isHealthDataAvailableAsync: jest.fn(async () => false),
+ requestAuthorization: jest.fn(async () => false),
+ queryQuantitySamples: jest.fn(async () => []),
+ queryCategorySamples: jest.fn(async () => []),
+ queryWorkoutSamples: jest.fn(async () => []),
+ queryStatisticsForQuantity: jest.fn(async () => ({ sources: [] })),
+ WorkoutTypeIdentifier: 'HKWorkoutTypeIdentifier',
+ WorkoutActivityType: {},
+}));
+
 test('iOS health adapter provides no Health Connect status, permission or fake records',async()=>{
  expect(await healthConnect.getAvailability()).toBe('unsupported');
  const permissions=await healthConnect.getPermissionStatus([...metricTypes]);
