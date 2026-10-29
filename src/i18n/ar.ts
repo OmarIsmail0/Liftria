@@ -1,6 +1,7 @@
 import type { TranslationKey } from './en';
 /** Modern Standard Arabic; Egyptian-market friendly, Western numerals. */
 export const ar: Record<TranslationKey, string> = {
+  'exerciseDetail.instructionsEnglishOnly': 'التعليمات بالإنجليزية لهذا التمرين',
   'iosHealth.watch': 'مزامنة بيانات الساعة الصحية غير متاحة على آيفون بعد. سيُحفظ اختيارك على الجهاز لكن لن نقرأ أي سجلات صحية.',
   'iosHealth.title': 'صحة Apple',
   'iosHealth.coming': 'دعم صحة Apple قريبًا',

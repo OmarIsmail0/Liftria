@@ -1,5 +1,6 @@
 /** English source copy. Keep key parity with ar.ts. */
 export const en = {
+  'exerciseDetail.instructionsEnglishOnly': 'Instructions for this exercise are in English.',
   'iosHealth.watch': 'Watch health syncing is not yet available on iPhone. Your choice is saved locally, but no health records are read.',
   'iosHealth.title': 'Apple Health',
   'iosHealth.coming': 'Apple Health support is coming',

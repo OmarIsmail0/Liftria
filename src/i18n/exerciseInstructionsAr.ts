@@ -1,3 +1,6 @@
+import type { Exercise } from '../services/database/gymTypes';
+import type { AppLanguage } from './index';
+
 /** Localized display-only instructions for the 100 most common bundled exercises.
  * English pack instructions remain stored verbatim; IDs and step order are canonical.
  */
@@ -103,3 +106,19 @@ export const EXERCISE_INSTRUCTIONS_AR: Record<string, readonly string[]> = {
   "Leverage_Shoulder_Press": ["ضع وزنًا مناسبًا واضبط المقعد على طولك حتى تصبح المقابض قرب أعلى الكتفين. ارفع الرأس والصدر وأمسك المقبضين بقبضة علوية.","ادفع المقبضين لأعلى بمد المرفقين.","بعد توقف قصير، أنزل الوزن إلى أعلى نقطة البداية قليلًا مع استمرار شد العضلات، ولا تضعه على المصدات حتى نهاية المجموعة."],
   "Leverage_High_Row": ["ضع الوزن المناسب واضبط ارتفاع المقعد حتى تصل بالكاد إلى المقابض فوقك، واضبط وسادة الركبتين لتثبيت جسمك. أمسك المقابض بقبضة علوية.","اسحب المقبضين نحو الجذع مع ضم لوحي الكتف وثني المرفقين.","توقف قليلًا عند نهاية السحب ثم أعد المقبضين ببطء إلى البداية.","عند التكرارات المتتالية لا تترك الوزن يستقر تمامًا على المصدات، للحفاظ على شد العضلات."],
 };
+
+/**
+ * Pick display-only steps without changing the English pack rows stored in SQLite.
+ * Uncovered pack exercises retain their English instructions with an explicit Arabic note;
+ * custom exercise instructions remain exactly as the user entered them.
+ */
+export function exerciseInstructionDisplay(
+  language: AppLanguage,
+  exercise: Pick<Exercise, 'id' | 'source' | 'instructions'>,
+): { steps: readonly string[]; englishOnly: boolean } {
+  if (language !== 'ar' || exercise.source !== 'pack')
+    return { steps: exercise.instructions, englishOnly: false };
+  if (Object.prototype.hasOwnProperty.call(EXERCISE_INSTRUCTIONS_AR, exercise.id))
+    return { steps: EXERCISE_INSTRUCTIONS_AR[exercise.id]!, englishOnly: false };
+  return { steps: exercise.instructions, englishOnly: exercise.instructions.length > 0 };
+}

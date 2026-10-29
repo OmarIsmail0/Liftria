@@ -14,6 +14,7 @@ import { appendExerciseToActiveSession, exerciseSessions, listTemplates, readRec
 import { readInProgressWorkout } from '../../../../src/features/train/workoutData';
 import type { ExerciseRecord } from '../../../../src/services/database/gymMath';
 import { exerciseName } from '../../../../src/i18n/exerciseNames';
+import { exerciseInstructionDisplay } from '../../../../src/i18n/exerciseInstructionsAr';
 
 export default function ExerciseDetail(){
   const {id}=useLocalSearchParams<{id:string}>();
@@ -75,6 +76,7 @@ export default function ExerciseDetail(){
   const highest=records.reduce<number|null>((n,r)=>r.heaviest!==null?Math.max(n??0,r.heaviest):n,null);
   const est=records.reduce<number|null>((n,r)=>r.bestEstimatedOneRepMax!==null?Math.max(n??0,r.bestEstimatedOneRepMax):n,null);
   const volume=records.reduce((n,r)=>Math.max(n,r.bestSessionVolume),0);
+  const localizedInstructions=exerciseInstructionDisplay(language,exercise);
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
       <Header title={exerciseName(language,exercise.id,exercise.name)} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
@@ -109,7 +111,10 @@ export default function ExerciseDetail(){
             detail={latinDigits(new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>)}
       </Card>
       <Card title={t('exerciseDetail.howTo')}>
-        {exercise.instructions.length?exercise.instructions.map((step,index)=>
+        {localizedInstructions.englishOnly&&<Typography tone="secondary" size="small">
+          {t('exerciseDetail.instructionsEnglishOnly')}
+        </Typography>}
+        {localizedInstructions.steps.length?localizedInstructions.steps.map((step,index)=>
           <View key={index} style={{flexDirection:'row',gap:theme.space[2]}}>
             <Typography tone="secondary">{index+1}.</Typography>
             <View style={{flex:1}}><Typography>{step}</Typography></View>
