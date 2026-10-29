@@ -25,11 +25,13 @@ install_fresh() { # a first launch, as on a new phone
   xcrun simctl install "$DEV" "$APP" || { echo "::error::App install failed"; exit 1; }
   xcrun simctl launch "$DEV" "$BUNDLE" >/dev/null; sleep 12
 }
-shot() { # mode name deep-link
-  # The app stays in the foreground: a link into the running app opens without iOS's
-  # "Open in Liftria?" prompt, which a cold openurl shows over the home screen.
-  xcrun simctl openurl "$DEV" "$3" || echo "::warning::openurl $3 failed"
-  sleep 6
+shot() { # mode name route
+  # A deep link shows iOS's "Open in Liftria?" prompt on the simulator, so the route goes in
+  # through the app's user defaults and a cold launch (read by src/navigation/checkRoute.ts).
+  xcrun simctl terminate "$DEV" "$BUNDLE" >/dev/null 2>&1 || true
+  xcrun simctl spawn "$DEV" defaults write "$BUNDLE" liftriaCheckRoute "$3"
+  xcrun simctl launch "$DEV" "$BUNDLE" >/dev/null || echo "::warning::launch for $2 failed"
+  sleep 8
   xcrun simctl io "$DEV" screenshot "$OUT/ios-$1-$2.png" >/dev/null || echo "::warning::screenshot $1-$2 failed"
 }
 same_images() { # warn when every shot of a pass is the same image (a dialog, not the app)
@@ -47,7 +49,7 @@ boot
 install_fresh
 for mode in light dark; do
   xcrun simctl ui "$DEV" appearance "$mode"; sleep 2
-  for name in $IOS_SCREENS; do r=$(route "$name"); [ -n "$r" ] && shot "$mode" "$name" "liftria://$r"; done
+  for name in $IOS_SCREENS; do r=$(route "$name"); [ -n "$r" ] && shot "$mode" "$name" "/$r"; done
   same_images "$mode"
 done
 
@@ -57,7 +59,7 @@ xcrun simctl spawn "$DEV" defaults write -g AppleLocale ar_EG
 xcrun simctl shutdown "$DEV"; boot
 install_fresh
 xcrun simctl ui "$DEV" appearance dark; sleep 2
-for name in $AR_SCREENS; do r=$(route "$name"); [ -n "$r" ] && shot ar-dark "$name" "liftria://$r"; done
+for name in $AR_SCREENS; do r=$(route "$name"); [ -n "$r" ] && shot ar-dark "$name" "/$r"; done
 same_images ar-dark
 for p in light-app-today light-he-steps light-tr-active dark-hk-photo ar-dark-app-health ar-dark-tr-active; do preview "$p"; done
 
