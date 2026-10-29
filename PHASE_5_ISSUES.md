@@ -177,11 +177,21 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Commit after every 30 ids and push right away.
    - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
 
-21. **PR AG: `Phase 5 / Arabic instructions, batch 4`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+21. ~~**PR AG: `Phase 5 / Arabic instructions, batch 4`**~~ DONE: PR #63 merged (2026-10-29). 520 of 876 exercises now have Arabic steps.
    - Same task as PR AF for the 150 pack ids in `docs/phase5/arabic-instructions-batch4.txt`: the remaining strength exercises (bodyweight, kettlebell, bands, other), beginner level first, 620 steps.
    - Same rules as PR AD to PR AF. Add the fourth list file to `listFiles`, and expect 520 ids.
    - Commit after every 30 ids and push right away.
    - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
+
+22. **PR AH: `Phase 5 / Arabic instructions, batch 5`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - Same task as PR AG for the 178 pack ids in `docs/phase5/arabic-instructions-batch5.txt`: the last strength exercises plus Olympic lifts, powerlifting, strongman and the first plyometrics, 744 steps.
+   - Same rules as PR AD to PR AG. Add the list file to `listFiles`, and expect 698 ids.
+   - Commit after every 30 ids and push right away.
+   - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
+
+23. **PR AI: `Phase 5 / Arabic instructions, batch 6 (last)`** (builder: **Cursor**, after PR AH merges)
+   - The last 178 ids in `docs/phase5/arabic-instructions-batch6.txt`: stretching, the rest of plyometrics, and cardio, 524 steps. After this, all 876 bundled exercises have Arabic steps.
+   - Same rules. Expect 876 ids. Once every pack exercise is covered, the "instructions in English" note never shows for a pack exercise. Keep the helper's fallback and its test as they are: custom exercises and a future pack update still need them.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
