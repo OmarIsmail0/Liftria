@@ -28,14 +28,15 @@ const translationKeys=new Set<string>(Object.keys(en));
 /**
  * Out of scope for this guard, and why:
  * - dev and test files: emulator routes and developer-only diagnostics, never shown to users.
- * - the Health screens and their feature module: owned separately, not part of this change.
+ * - the Health screens, AppleHealthComing.tsx and useHealthSnapshot.ts: owned by the iPhone PR (#28), which
+ *   edits them. The rest of src/features/health/ is scanned; its status codes are marked i18n-stored-ids.
  * - hiku/context.ts: the sentences Hiku sends to the model. The privacy preview shows the exact request
  *   text, so it is the payload and stays in the same language as the rest of the prompt (English).
  */
 const excluded=[
   /(^|\/)dev\//,/(^|\/)__tests__\//,
   /^app\/\(tabs\)\/progress\/health[^/]*\.tsx$/,
-  /^src\/features\/health\//,
+  /^src\/features\/health\/(AppleHealthComing\.tsx|useHealthSnapshot\.ts)$/,
   /^src\/features\/diagnostics\//,
   /^src\/features\/hiku\/context\.ts$/,
 ];
@@ -56,7 +57,17 @@ test('the guard reads the app and the feature modules',()=>{
   expect(names).toContain('src/features/train/WorkoutMiniBar.tsx');
   expect(names).toContain('src/features/train/workoutData.ts');
   expect(names).toContain('app/(tabs)/today.tsx');
+  expect(names).toContain('src/features/health/HealthCharts.tsx');
+  expect(names).toContain('src/features/health/presentation.ts');
+  expect(names).toContain('src/features/health/chartCopy.ts');
   expect(names.some(name=>name.includes('/dev/'))).toBe(false);
+});
+
+test('only the files the iPhone PR edits are left out of the Health scan',()=>{
+  const names=scanned.map(f=>f.name);
+  expect(names).not.toContain('src/features/health/AppleHealthComing.tsx');
+  expect(names).not.toContain('src/features/health/useHealthSnapshot.ts');
+  expect(names.some(name=>/^app\/\(tabs\)\/progress\/health[^/]*\.tsx$/.test(name))).toBe(false);
 });
 
 test('no English reaches the Arabic UI outside t()',()=>{
@@ -83,6 +94,30 @@ describe('scanner',()=>{
     expect(scan("export const h=(n:number)=>n+' kg'+(n>1?' each':'');",'sample.ts')).toEqual(['each']);
     expect(scan("export function g(){const errors:Record<string,string>={};errors.age='Enter an age.';return errors;}",'sample.ts'))
       .toEqual(['Enter an age.']);
+  });
+  test('catches the English the health charts used to show',()=>{
+    const oldCharts=`
+export function StepsChart({series,period}:{series:S[];period:'day'|'week'}){
+  if(!series.length)return <Typography tone="secondary">No source-backed steps to plot.</Typography>;
+  return <View>{series.map(source=><View key={source.origin} accessible accessibilityRole="image"
+    accessibilityLabel={\`\${source.label}, \${period==='day'?'hourly':'daily'} steps: \${total} in charted intervals\`}>
+    <Typography size="small" bold>{source.label} · separate source</Typography>
+    <Typography tone="secondary" size="small">{period==='day'
+      ? 'Midnight · 6 AM · Noon · 6 PM · Midnight'
+      : '7 days ago · Today'}</Typography></View>)}</View>;
+}
+export function HeartRateChart({samples}:{samples:H[]}){
+  if(!samples.length)return <Typography tone="secondary">No heart-rate samples to plot.</Typography>;
+  return <View accessibilityLabel={\`\${samples.length} heart-rate samples. Range \${lo} to \${hi} beats per minute. App origins do not verify devices.\`}>
+    <Typography tone="secondary" size="small">Samples, not an averaged resting heart rate. Device is unverified.</Typography></View>;
+}`;
+    const hits=scan(oldCharts,'HealthCharts.tsx');
+    expect(hits).toEqual(expect.arrayContaining([
+      'No source-backed steps to plot.','hourly','daily','steps:','in charted intervals','· separate source',
+      'Midnight · 6 AM · Noon · 6 PM · Midnight','7 days ago · Today','No heart-rate samples to plot.',
+      'heart-rate samples. Range','beats per minute. App origins do not verify devices.',
+      'Samples, not an averaged resting heart rate. Device is unverified.',
+    ]));
   });
   test('a literal that is an en.ts key is a key, not copy',()=>{
     const keys=new Set(['custom.weighted']);
