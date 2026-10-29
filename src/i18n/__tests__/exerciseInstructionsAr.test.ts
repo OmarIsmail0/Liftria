@@ -9,9 +9,14 @@ const { join } = jest.requireActual('path') as {
   join: (...paths: string[]) => string;
 };
 
-const ids = readFileSync(
-  join(process.cwd(), 'docs', 'phase5', 'arabic-instructions-top100.txt'), 'utf8',
-).trim().split(/\r?\n/).filter(Boolean);
+const listFiles = [
+  'arabic-instructions-top100.txt',
+  'arabic-instructions-next120.txt',
+];
+const ids = listFiles.flatMap(file =>
+  readFileSync(join(process.cwd(), 'docs', 'phase5', file), 'utf8')
+    .trim().split(/\r?\n/).filter(Boolean),
+);
 const pack = rawPack as { id: string; instructions: string[] }[];
 const englishById = new Map(pack.map(exercise => [exercise.id, exercise.instructions]));
 
@@ -38,8 +43,13 @@ function invalidSteps(translations: Translations) {
 }
 
 describe('Arabic common-exercise instructions guards', () => {
-  it('covers exactly the 100 listed pack IDs with no duplicates', () => {
-    expect(new Set(ids).size).toBe(100);
+  it('covers exactly the listed pack IDs from both lists, with no duplicates', () => {
+    expect(listFiles).toEqual([
+      'arabic-instructions-top100.txt',
+      'arabic-instructions-next120.txt',
+    ]);
+    expect(new Set(ids).size).toBe(220);
+    expect(ids).toHaveLength(220);
     expect(ids.every(id => englishById.has(id))).toBe(true);
     expect(coverage(EXERCISE_INSTRUCTIONS_AR, ids)).toEqual({ missing: [], extra: [] });
   });
