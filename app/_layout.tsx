@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
-import { Stack, router } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider, router, type Theme } from 'expo-router';
 import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { bundledFonts } from '../src/design/fonts';
@@ -38,7 +38,12 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
     if (ready && fontsLoaded) void SplashScreen.hideAsync().catch(() => {});
   }, [ready, fontsLoaded]);
   if (!ready || !fontsLoaded) return null;
-  return <>
+  // React Navigation paints native stack containers with its own theme's background, which
+  // defaults to light grey (242,242,242). On iPhone that showed through every nested stack
+  // screen, even in dark mode. Transparent lets the app's own backdrop show instead.
+  const base = theme.mode === 'dark' ? DarkTheme : DefaultTheme;
+  const navigationTheme: Theme = { ...base, colors: { ...base.colors, background: 'transparent' } };
+  return <NavigationThemeProvider value={navigationTheme}>
     <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'}
       translucent backgroundColor="transparent" />
     <Stack screenOptions={{ headerShown: false,
@@ -49,7 +54,7 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
       <Stack.Screen name="settings" />
       <Stack.Screen name="dev" />
     </Stack>
-  </>;
+  </NavigationThemeProvider>;
 }
 
 export default function RootLayout() {
