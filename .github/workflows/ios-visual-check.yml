@@ -1,8 +1,8 @@
 name: iPhone visual check (simulator screenshots)
 
-# After an iPhone simulator build on a PR, posts its screenshots on the PR and keeps them on the
-# visual-checks branch under pr-N/<sha7>/ios-*.png, next to the Android ones. The PR's code ran
-# only inside the simulator job; this job just copies PNG files.
+# After an iPhone simulator build, keeps its screenshots on the visual-checks branch: a PR's under
+# pr-N/<sha7>/ios-*.png (next to the Android ones, with a comment on the PR), a hand-started run's
+# under <branch>/<sha7>/. The PR's code ran only inside the simulator job; this job copies PNGs.
 
 on:
   workflow_run:
@@ -16,11 +16,11 @@ concurrency:
 jobs:
   publish:
     if: >-
-      github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion != 'skipped' &&
       github.event.workflow_run.conclusion != 'cancelled' &&
-      github.event.workflow_run.head_repository.full_name == github.repository &&
-      github.event.workflow_run.pull_requests[0].number
+      github.event.workflow_run.head_repository.full_name == github.repository && (
+      (github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.pull_requests[0].number) ||
+      github.event.workflow_run.event == 'workflow_dispatch' )
     runs-on: ubuntu-latest
     permissions:
       actions: read          # to download the screenshot artifact
@@ -29,6 +29,7 @@ jobs:
     env:
       PR: ${{ github.event.workflow_run.pull_requests[0].number }}
       SHA: ${{ github.event.workflow_run.head_sha }}
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -50,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           ls shots/ios-*.png >/dev/null 2>&1 || { echo "No iPhone screenshots in this run."; exit 0; }
-          DIR="pr-$PR/${SHA:0:7}"
+          if [ -n "$PR" ]; then DIR="pr-$PR/${SHA:0:7}"; else DIR="$BRANCH/${SHA:0:7}"; fi
           git config user.name "liftria-visual-check"
           git config user.email "visual-check@users.noreply.github.com"
           git fetch -q origin visual-checks
@@ -65,7 +66,7 @@ jobs:
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
       - name: Comment on the PR
-        if: steps.publish.outputs.dir != ''
+        if: steps.publish.outputs.dir != '' && env.PR != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DIR: ${{ steps.publish.outputs.dir }}

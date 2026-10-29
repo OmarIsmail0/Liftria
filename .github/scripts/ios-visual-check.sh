@@ -8,7 +8,7 @@ mkdir -p "$OUT"
 SCREENS=$(sed -n 's/^SCREENS="\(.*\)"$/\1/p' "$(dirname "$0")/visual-check.sh")
 test -n "$SCREENS" || { echo "::error::No SCREENS list in visual-check.sh"; exit 1; }
 IOS_SCREENS="app-today app-train app-eat app-progress app-health app-hiku app-settings on-2-privacy on-6-health on-7-watch he-steps he-heart he-permissions he-sync he-troubleshoot st-data st-backup st-profile st-hiku-key hk-describe hk-photo hk-photo-demo tr-demo tr-active tr-superset eat-portion eat-custom"
-AR_SCREENS="app-today app-health on-6-health on-7-watch he-steps st-data hk-photo tr-active eat-portion"
+AR_SCREENS="app-today app-health on-6-health on-7-watch he-steps st-data hk-photo tr-demo tr-active eat-portion"
 
 TYPE=$(xcrun simctl list devicetypes | sed -n 's/^\(iPhone [0-9][0-9]* Pro\) (\(.*\))$/\2/p' | tail -n1)
 RUNTIME=$(xcrun simctl list runtimes available | sed -n 's/^iOS .* - \(com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]*\)$/\1/p' | tail -n1)
