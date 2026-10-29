@@ -94,7 +94,38 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
 13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
-   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header` (after PR #27). ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
+   - ~~**Claude does these in the shared code:** long screen titles in `Header`~~ DONE: PR #40 merged (2026-10-29), with the Orb fixes and Western digits on iPhone. ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
+
+14. **PR Z: `Phase 5 / Arabic exercise names`** (builder: **Cursor**, branch from `main`; owner approved 2026-10-29)
+   - In Arabic, every exercise name is English: the 876 bundled exercises come from `assets/data/exercises/free-exercise-db.json` (English data). Give each bundled exercise an Arabic display name.
+   - **Data:** one file, `src/i18n/exerciseNamesAr.ts`, mapping the pack exercise `id` to its Arabic name. Don't edit the pack JSON, the database rows or the stored `name`: the English name stays the stored and imported (Hevy CSV matching) name, and backups don't change.
+   - **Display:** one helper (e.g. `exerciseName(language, exercise)` in `src/i18n/`) returns the Arabic name for `source: 'pack'` exercises in Arabic, otherwise `exercise.name`. Custom exercises always show what the person typed. Use it everywhere an exercise name reaches the screen, a spoken label or the rest notification. Find every place (library, pick, muscles, template, active workout and its mini-bar, session, history, records, exercise detail, preview, strength progress, import preview, plans, notifications), and list each file in the PR description.
+   - **Search:** in Arabic, the library and pick search match the Arabic name *and* the English name, so people can type either. Normalize Arabic before matching: strip diacritics and tatweel; treat أ إ آ as ا, ى as ي and ة as ه. Unit-test it, including partial words.
+   - **Names: what people say in an Egyptian gym, written in Arabic letters.** Keep one term per concept across all 876. Start from this glossary and extend it consistently:
+
+     | English | Arabic |
+     |---|---|
+     | Bench Press | بنش برس |
+     | Squat | سكوات |
+     | Deadlift | ديدليفت |
+     | Curl | كيرل |
+     | Row | سحب (e.g. Barbell Row: سحب بالبار) |
+     | Pulldown / Pull-Up / Chin-Up | سحب أمامي / عقلة / عقلة بقبضة عكسية |
+     | Press (shoulder) | ضغط كتف |
+     | Fly | تفتيح |
+     | Lunge | لانج |
+     | Raise (lateral / front) | رفرفة جانبي / أمامي |
+     | Extension / Kickback | تمديد / كيك باك |
+     | Crunch / Sit-Up / Plank | كرانش / بطن / بلانك |
+     | Stretch | إطالة |
+     | Barbell / Dumbbell / Cable / Machine / Kettlebell / Smith | بالبار / بالدمبل / بالكابل / على الجهاز / بالكيتل بيل / على السميث |
+     | Incline / Decline / Seated / Standing / Lying | مائل / مائل لأسفل / جالس / واقف / نائم |
+     | Alternate / One-Arm / Single-Leg | بالتبادل / بذراع واحدة / برجل واحدة |
+
+     Equipment words match `src/i18n/equipment.ts`. Proper names are transliterated (Arnold Press: ضغط أرنولد; Zottman Curl: كيرل زوتمان). Don't invent a muscle or a movement the English name doesn't say.
+   - **Guards (tests):** every pack `id` has an Arabic name and every key is a real pack `id`; no name is empty or contains Latin letters (allow-list only real tokens such as `EZ`, `T`, `V`, `W`, `Y`); no two different exercises share the same Arabic name; glossary terms are used consistently (e.g. any English name containing "Bench Press" maps to an Arabic name containing "بنش برس"). Each guard must fail on a planted bad example.
+   - Instructions stay English for now (out of scope).
+   - **Don't touch** `src/design/**`, the Health screens or the stack layouts (PR S, #28), or the import matching.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
