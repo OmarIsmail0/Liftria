@@ -1,6 +1,6 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
-import type { TranslationKey } from '../../../src/i18n';
+import { joinList, type TranslationKey } from '../../../src/i18n';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -19,7 +19,7 @@ const groups = ['All', ...Object.keys(MUSCLE_GROUPS)] as const;
 type BrowseRow = { id: string; exercise: Exercise; title: string; detail: string };
 
 function libraryDetail(exercise: Exercise, language: 'en' | 'ar', t: (key: TranslationKey, params?: Record<string, string | number>) => string): string {
-  const muscles = exercise.primaryMuscles.map(muscle => t(`muscle.${muscle}` as TranslationKey)).join(', ');
+  const muscles = joinList(language, exercise.primaryMuscles.map(muscle => t(`muscle.${muscle}` as TranslationKey)));
   const mine = exercise.source === 'custom' ? ' · ' + t('library.mine') : '';
   return equipmentLabel(language, exercise.equipment, t('library.equipmentUnknown')) + ' · ' + muscles + mine;
 }
