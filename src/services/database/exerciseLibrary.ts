@@ -114,6 +114,8 @@ function editDistance(a: string, b: string): number {
   return previous[b.length] ?? 3;
 }
 const ARABIC_LETTER = /[\u0600-\u06FF]/;
+let collatorAr: Intl.Collator | null = null;
+const arabicCollator = () => (collatorAr ??= new Intl.Collator('ar'));
 /**
  * Library search. In Arabic, an Arabic query matches the Arabic display name of pack
  * exercises (and custom names); a Latin query still matches the English names.
@@ -122,9 +124,13 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
   language: AppLanguage = 'en'): Exercise[] {
   const filtered = all.filter(e => !e.retired && (!muscle ||
     e.primaryMuscles.includes(muscle) || e.secondaryMuscles.includes(muscle)));
-  const display = (e: Exercise) => exerciseName(language, e.id, e.name);
-  const byName = (a: Exercise, b: Exercise) => language === 'ar'
-    ? display(a).localeCompare(display(b), 'ar') : a.name.localeCompare(b.name);
+  // Display names once per search, and one collator: a locale argument to localeCompare
+  // builds a new collator on every comparison, which froze the Arabic library on Hermes.
+  const names = new Map(filtered.map(e => [e, exerciseName(language, e.id, e.name)] as const));
+  const display = (e: Exercise) => names.get(e) ?? e.name;
+  const collator = language === 'ar' ? arabicCollator() : null;
+  const byName = (a: Exercise, b: Exercise) => collator
+    ? collator.compare(display(a), display(b)) : a.name.localeCompare(b.name);
   if (ARABIC_LETTER.test(query)) {
     const text = normalizeArabicSearch(query);
     if (!text) return filtered.sort(byName);
