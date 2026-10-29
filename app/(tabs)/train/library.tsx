@@ -10,6 +10,7 @@ import { useTheme } from '../../../src/design/ThemeProvider';
 import { MUSCLE_GROUPS, type Exercise } from '../../../src/services/database/gymTypes';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
 import { recentExerciseIds } from '../../../src/services/database/gymRepositories';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 const groups=['All',...Object.keys(MUSCLE_GROUPS)] as const;
 export default function ExerciseLibrary() {
@@ -43,17 +44,17 @@ export default function ExerciseLibrary() {
     return ()=>{active=false;};
   },[t]));
   const filtered=useMemo(()=>{
-    let rows=searchExercises(all,query);
+    let rows=searchExercises(all,query,null,language);
     if(group!=='All'){
       const muscles=MUSCLE_GROUPS[group as keyof typeof MUSCLE_GROUPS];
       if(muscles)rows=rows.filter(e=>e.primaryMuscles.some(m=>(muscles as readonly string[]).includes(m))
         || e.secondaryMuscles.some(m=>(muscles as readonly string[]).includes(m)));
     }
     return rows;
-  },[all,query,group]);
+  },[all,query,group,language]);
   const recentRows=useMemo(()=>recent.map(id=>all.find(e=>e.id===id))
     .filter((e):e is Exercise=>Boolean(e)),[all,recent]);
-  const row=(e:Exercise)=><ListRow key={e.id} title={e.name}
+  const row=(e:Exercise)=><ListRow key={e.id} title={exerciseName(language,e.id,e.name)}
     detail={equipmentLabel(language,e.equipment,t('library.equipmentUnknown'))+' · '+e.primaryMuscles.map(m=>t(`muscle.${m}` as TranslationKey)).join(', ')+(e.source==='custom'?' · '+t('library.mine'):'')}
     leading={<ExerciseThumbnail exercise={e} />}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>;

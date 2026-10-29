@@ -10,6 +10,7 @@ import { equipmentLabel } from '../../../src/i18n/equipment';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { MUSCLES, type Exercise, type Muscle } from '../../../src/services/database/gymTypes';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function MuscleBrowser(){
   const {theme}=useTheme();
@@ -32,7 +33,7 @@ export default function MuscleBrowser(){
     })();
     return()=>{mounted=false;};
   },[]));
-  const rows=useMemo(()=>searchExercises(all,'',selected),[all,selected]);
+  const rows=useMemo(()=>searchExercises(all,'',selected,language),[all,selected,language]);
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
       <Header title={t('train.muscles')} subtitle={t('muscle.browserSubtitle')} onBack={()=>router.back()}/>
@@ -45,7 +46,7 @@ export default function MuscleBrowser(){
         {error&&<Typography>{t('muscle.browserLoadError')}</Typography>}
         {!loading&&!error&&rows.length===0&&<EmptyState title={t('muscle.browserEmpty')}
           description={t('muscle.browserEmptyDescription')}/>}
-        {rows.slice(0,50).map(e=><ListRow key={e.id} title={e.name}
+        {rows.slice(0,50).map(e=><ListRow key={e.id} title={exerciseName(language,e.id,e.name)}
           leading={<ExerciseThumbnail exercise={e} />}
           detail={equipmentLabel(language,e.equipment,t('muscle.notSpecified'))+' · '+(e.primaryMuscles.includes(selected)?t('muscle.primary'):t('muscle.secondary'))}
           onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}/>)}

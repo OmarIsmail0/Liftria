@@ -10,6 +10,7 @@ import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../
 import { listTemplates, exerciseSessions, type Template } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { Exercise, Muscle } from '../../../src/services/database/gymTypes';
+import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function WorkoutPreview() {
   const {t,language}=useLanguage();
@@ -77,7 +78,7 @@ export default function WorkoutPreview() {
     <Card title={t('preview.upNext')}>
       {template?template.exercises.map((e,i)=><ListRow key={i}
         leading={lookup[e.exerciseId]?<ExerciseThumbnail exercise={lookup[e.exerciseId]!} />:undefined}
-        title={lookup[e.exerciseId]?.name??t('preview.exercise')}
+        title={lookup[e.exerciseId]?exerciseName(language,e.exerciseId,lookup[e.exerciseId]!.name):t('preview.exercise')}
         detail={t('preview.sets',{count:e.targetSets,min:e.repMin,max:e.repMax})+
           (last[e.exerciseId]?t('preview.last',{date:latinDigits(new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):t('preview.noLast'))}/>):
         <Typography tone="secondary">{t('preview.startEmptyHint')}</Typography>}
