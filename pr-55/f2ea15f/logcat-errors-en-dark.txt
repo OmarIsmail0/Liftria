@@ -1,0 +1,73 @@
+--------- beginning of system
+--------- beginning of kernel
+10-29 13:12:04.923  5312  5312 E ActivityThread: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@b922737 that was originally bound here
+10-29 13:12:04.923  5312  5312 E ActivityThread: android.app.ServiceConnectionLeaked: Service com.google.android.apps.auto.carservice.service.impl.GearheadCarStartupService has leaked ServiceConnection bdx@b922737 that was originally bound here
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.app.LoadedApk$ServiceDispatcher.<init>(LoadedApk.java:1811)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcherCommon(LoadedApk.java:1683)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.app.LoadedApk.getServiceDispatcher(LoadedApk.java:1662)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.app.ContextImpl.bindServiceCommon(ContextImpl.java:1819)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.app.ContextImpl.bindService(ContextImpl.java:1749)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.content.ContextWrapper.bindService(ContextWrapper.java:756)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at bdu.run(Unknown Source:1)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.os.Handler.handleCallback(Handler.java:938)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.os.Looper.loop(Looper.java:223)
+10-29 13:12:04.923  5312  5312 E ActivityThread: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-29 13:12:05.165   493  1705 E PackageDexUsage: Unsupported context?
+10-29 13:12:20.174   493  2457 E PackageDexUsage: Unsupported context?
+10-29 13:16:28.192   493  2003 E PackageDexUsage: Unsupported context?
+10-29 13:16:28.247   493  2003 E PackageDexUsage: Unsupported context?
+--------- beginning of main
+10-29 13:19:13.067   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:15.188  2050  2253 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:19:17.482   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:22.330  2050  2240 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:19:27.338   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:29.326  2050  2253 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:19:34.307   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:36.340  2050  2240 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:19:41.422   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:43.519  2050  2299 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:19:48.369   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:50.192   493   585 E InputDispatcher: channel '4448552 com.liftria.app/com.liftria.app.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-29 13:19:50.454  2050  2240 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:19:55.462   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:19:57.830  2050  2240 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:20:02.653   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:04.716  2050  2253 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-29 13:20:09.729   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:16.673   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:23.670   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:30.773   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:32.532   493   585 E InputDispatcher: channel '513a68a com.liftria.app/com.liftria.app.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-29 13:20:37.773   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:44.789   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:51.842   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:20:53.791   493   585 E InputDispatcher: channel '6235291 com.liftria.app/com.liftria.app.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-29 13:20:58.979   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:21:04.798  7003  7021 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-29 13:21:04.798  7003  7021 E libc    : Access denied finding property "service.adb.tls.port"
+10-29 13:21:05.519  7003  7021 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-29 13:21:05.519  7003  7021 E libc    : Access denied finding property "service.adb.tls.port"
+10-29 13:21:06.005   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: Exception during register request.
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: ciau: UNAUTHENTICATED: Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at ciat.c(:com.google.android.gms@201817023@20.18.17 (040800-311416286):3)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at sdn.a(:com.google.android.gms@201817023@20.18.17 (040800-311416286):48)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at afgm.a(:com.google.android.gms@201817023@20.18.17 (040800-311416286):12)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at com.google.android.libraries.matchstick.net.SilentRegisterIntentOperation.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):207)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):2)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at qgf.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):4)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at cui.run(:com.google.android.gms@201817023@20.18.17 (040800-311416286):5)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at cuh.run(:com.google.android.gms@201817023@20.18.17 (040800-311416286):9)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-29 13:21:06.188  1363 11628 E MS_RegisterService: 	at java.lang.Thread.run(Thread.java:923)
+10-29 13:21:08.613   432   890 E IPCThreadState: binder thread pool (1 threads) starved for 113 ms
+10-29 13:21:13.037   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:21:17.483   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:21:27.253   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:21:34.219   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-29 13:21:37.056 11906 11906 E OverlaySController: Calling with an invalid UID, the interface will not work
+10-29 13:21:37.286  1711  1711 E HwDetectorWithState: a: 3
+10-29 13:21:41.306   424   424 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
