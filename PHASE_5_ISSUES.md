@@ -183,13 +183,13 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Commit after every 30 ids and push right away.
    - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
 
-22. **PR AH: `Phase 5 / Arabic instructions, batch 5`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+22. ~~**PR AH: `Phase 5 / Arabic instructions, batch 5`**~~ DONE: PR #65 merged (2026-10-29).
    - Same task as PR AG for the 178 pack ids in `docs/phase5/arabic-instructions-batch5.txt`: the last strength exercises plus Olympic lifts, powerlifting, strongman and the first plyometrics, 744 steps.
    - Same rules as PR AD to PR AG. Add the list file to `listFiles`, and expect 698 ids.
    - Commit after every 30 ids and push right away.
    - Don't touch `src/i18n/exerciseInstructions.ts`, `app/**`, `src/design/**`, the pack JSON, or workflows.
 
-23. **PR AI: `Phase 5 / Arabic instructions, batch 6 (last)`** (builder: **Cursor**, after PR AH merges)
+23. ~~**PR AI: `Phase 5 / Arabic instructions, batch 6 (last)`**~~ DONE: PR #66 merged (2026-10-29). All 876 bundled exercises now have Arabic steps; the guard checks the lists equal the whole pack. Claude fixed رطل → رطلًا after 11–99 (14 places).
    - The last 178 ids in `docs/phase5/arabic-instructions-batch6.txt`: stretching, the rest of plyometrics, and cardio, 524 steps. After this, all 876 bundled exercises have Arabic steps.
    - Same rules. Expect 876 ids. Once every pack exercise is covered, the "instructions in English" note never shows for a pack exercise. Keep the helper's fallback and its test as they are: custom exercises and a future pack update still need them.
 
