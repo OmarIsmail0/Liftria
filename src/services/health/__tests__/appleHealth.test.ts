@@ -6,6 +6,7 @@ import { metricTypes } from '../types';
 
 jest.mock('@kingstinct/react-native-healthkit', () => ({
   isHealthDataAvailableAsync: jest.fn(async () => true),
+  getRequestStatusForAuthorization: jest.fn(async () => 2),
   requestAuthorization: jest.fn(async () => true),
   queryQuantitySamples: jest.fn(async () => []),
   queryCategorySamples: jest.fn(async () => []),
@@ -33,6 +34,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   (HK.isHealthDataAvailableAsync as jest.Mock).mockResolvedValue(true);
   (HK.requestAuthorization as jest.Mock).mockResolvedValue(true);
+  (HK.getRequestStatusForAuthorization as jest.Mock).mockResolvedValue(2);
   (HK.queryQuantitySamples as jest.Mock).mockResolvedValue([]);
   (HK.queryCategorySamples as jest.Mock).mockResolvedValue([]);
   (HK.queryWorkoutSamples as jest.Mock).mockResolvedValue([]);
@@ -246,5 +248,27 @@ test('HealthKit unavailable reports unsupported and does not query', async () =>
   await appleHealth.requestPermissions(['steps']);
   expect(HK.requestAuthorization).not.toHaveBeenCalled();
   expect(HK.queryQuantitySamples).not.toHaveBeenCalled();
+  expect(HK.queryStatisticsForQuantity).not.toHaveBeenCalled();
+});
+
+test('a read before the prompt was shown is not-requested and does not query', async () => {
+  (HK.getRequestStatusForAuthorization as jest.Mock).mockResolvedValue(1);
+  await expect(appleHealth.read('steps', range)).resolves.toMatchObject({ status: 'error', code: 'not-requested' });
+  await expect(appleHealth.read('heart-rate', range)).resolves.toMatchObject({ status: 'error', code: 'not-requested' });
+  expect(HK.queryStatisticsForQuantity).not.toHaveBeenCalled();
+  expect(HK.queryQuantitySamples).not.toHaveBeenCalled();
+  expect(HK.getRequestStatusForAuthorization).toHaveBeenCalledWith({ toRead: ['HKQuantityTypeIdentifierStepCount'] });
+});
+
+test('a failing request-status check still reads', async () => {
+  (HK.getRequestStatusForAuthorization as jest.Mock).mockRejectedValue(new Error('boom'));
+  await expect(appleHealth.read('steps', range)).resolves.toEqual({ status: 'empty' });
+  expect(HK.queryStatisticsForQuantity).toHaveBeenCalledTimes(1);
+});
+
+test('daily energy before the prompt is empty, not an error', async () => {
+  (HK.getRequestStatusForAuthorization as jest.Mock).mockResolvedValue(1);
+  const rows = await readAppleDailyEnergy(2);
+  expect(rows.filter(row => row.metric !== 'total-calories').every(row => row.status === 'empty')).toBe(true);
   expect(HK.queryStatisticsForQuantity).not.toHaveBeenCalled();
 });

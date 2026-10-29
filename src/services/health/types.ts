@@ -54,6 +54,9 @@ export type DailyEnergyRow =
 export type HealthRecord =
   | InstantSample | RateSample | IntervalSample | SeriesSample | ExerciseSession | SleepSession;
 export type HealthValue = HealthRecord | AggregateValue;
+/** read() error code on iPhone when the read prompt has never been shown. Not a read failure. */
+export const APPLE_NOT_REQUESTED = 'not-requested';
+
 export type ReadResult =
   | { status: 'ok'; records: HealthValue[] }
   | { status: 'empty' | 'permission-denied' | 'unsupported' | 'unavailable' }

@@ -1,4 +1,4 @@
-import type { HealthValue, MetricType, PermissionState } from '../../services/health/types';
+import type { AggregateValue, HealthValue, MetricType, PermissionState } from '../../services/health/types';
 import { bidiIsolate, latinDigits, translate, type AppLanguage } from '../../i18n';
 
 export type HealthReadingState = 'value' | 'no-data' | 'not-allowed' | 'not-available' | 'error';
@@ -17,13 +17,16 @@ export type HealthSummary = {
 export const SOURCE_PHONE = 'Phone',
   SOURCE_SAMSUNG = 'Samsung Health',
   SOURCE_UNKNOWN = 'Unknown source',
+  SOURCE_APPLE = 'Apple Health',
   NOTE_NOT_ALLOWED = 'Not allowed',
   NOTE_NOT_AVAILABLE = 'Not available',
   NOTE_PERMISSION_UNCONFIRMED = 'Permission not confirmed',
   NOTE_NO_DATA = 'No data',
   NOTE_NO_MEASURED_SOURCE = 'No measured source',
   NOTE_UNVERIFIED_DEVICE = 'Unverified device. The data origin does not prove this came from a watch.',
-  NOTE_SEPARATE_SOURCES = 'Separate sources; no combined total.';
+  NOTE_SEPARATE_SOURCES = 'Separate sources; no combined total.',
+  NOTE_APPLE_TOTAL = 'Apple Health total',
+  NOTE_APPLE_READ_ERROR = 'Apple Health read failed';
 
 /** App package is provenance, NOT proof that a connected watch supplied the record. */
 export function sourceName(origin: string): string {
@@ -105,6 +108,70 @@ export function summarizeRecords(
     note: metric === 'heart-rate' ? NOTE_UNVERIFIED_DEVICE :
       sources.length > 1 ? NOTE_SEPARATE_SOURCES : '',
   };
+}
+
+const noDataSummary = (metric: MetricType): HealthSummary => ({
+  metric, state: 'no-data', sources: [], total: null, latestAt: null, unverified: false, note: NOTE_NO_DATA,
+});
+
+/** One deduplicated Apple Health total. A zero sum is no data, never a displayed 0. */
+export function summarizeAppleTotal(metric: MetricType, value: AggregateValue, nowMs = Date.now()): HealthSummary {
+  if (!(value.value > 0)) return noDataSummary(metric);
+  const latestAt = value.windowEnd;
+  const unit = metric === 'steps' ? 'steps' : value.unit;
+  return {
+    metric, state: 'value',
+    sources: [{
+      origin: value.dataOrigin ?? 'apple-health',
+      label: SOURCE_APPLE,
+      value: value.value,
+      unit,
+      latestAt,
+      stale: sourceStale(metric, latestAt, nowMs),
+    }],
+    total: value.value,
+    latestAt,
+    unverified: false,
+    note: metric === 'steps' ? NOTE_APPLE_TOTAL : '',
+  };
+}
+
+/** The statistics window closest to the requested range. A week total is not reused as today. */
+export function aggregateForWindow(
+  metric: MetricType, records: HealthValue[], start: Date, end: Date,
+): AggregateValue | null {
+  const targetStart = start.getTime();
+  const targetEnd = end.getTime();
+  let best: AggregateValue | null = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (const record of records) {
+    if (record.kind !== 'aggregate' || record.metric !== metric || record.adapter !== 'apple-health') continue;
+    if (!(record.value > 0)) continue;
+    const windowStart = Date.parse(record.windowStart);
+    const windowEnd = Date.parse(record.windowEnd);
+    if (!Number.isFinite(windowStart) || !Number.isFinite(windowEnd)) continue;
+    const score = Math.abs(windowStart - targetStart) + Math.abs(windowEnd - targetEnd);
+    if (score < bestScore) {
+      best = record;
+      bestScore = score;
+    }
+  }
+  if (bestScore > 36 * 60 * 60 * 1000) return null;
+  return best;
+}
+
+/**
+ * Apple Health steps and energy are one statistics total, not a sum of samples.
+ * Sample metrics still group by the app that wrote them. Permission stays unknown
+ * to the caller; a successful read is still shown.
+ */
+export function appleWindowSummary(
+  metric: MetricType, records: HealthValue[], start: Date, end: Date, available: boolean, nowMs = Date.now(),
+): HealthSummary {
+  if (!available) return emptyMetricState(metric, 'unknown', false);
+  const aggregate = aggregateForWindow(metric, records, start, end);
+  if (aggregate) return summarizeAppleTotal(metric, aggregate, nowMs);
+  return summarizeRecords(metric, recordsInWindow(metric, records, start, end), 'granted', true, nowMs);
 }
 
 /** The daily-energy gate remains NOT READY: no HC aggregate is measured Phase-2 energy. */
