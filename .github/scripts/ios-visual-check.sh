@@ -26,10 +26,20 @@ install_fresh() { # a first launch, as on a new phone
   xcrun simctl launch "$DEV" "$BUNDLE" >/dev/null; sleep 12
 }
 shot() { # mode name deep-link
-  xcrun simctl terminate "$DEV" "$BUNDLE" >/dev/null 2>&1 || true
+  # The app stays in the foreground: a link into the running app opens without iOS's
+  # "Open in Liftria?" prompt, which a cold openurl shows over the home screen.
   xcrun simctl openurl "$DEV" "$3" || echo "::warning::openurl $3 failed"
-  sleep 7
+  sleep 6
   xcrun simctl io "$DEV" screenshot "$OUT/ios-$1-$2.png" >/dev/null || echo "::warning::screenshot $1-$2 failed"
+}
+same_images() { # warn when every shot of a pass is the same image (a dialog, not the app)
+  local n; n=$(md5 -q "$OUT"/ios-"$1"-*.png 2>/dev/null | sort -u | wc -l | tr -d ' ')
+  [ "$n" = 1 ] && echo "::warning::Every $1 screenshot is the same image; the app did not open the links"
+}
+preview() { # a small JPEG in the log, for reviewers who can't download artifacts
+  local f="$OUT/ios-$1.png"; [ -f "$f" ] || return
+  sips -s format jpeg -s formatOptions 40 -Z 360 "$f" --out /tmp/preview.jpg >/dev/null 2>&1 || return
+  echo "::group::preview ios-$1"; echo "PREVIEW-BEGIN ios-$1"; base64 -i /tmp/preview.jpg | fold -w 2000; echo "PREVIEW-END"; echo "::endgroup::"
 }
 route() { for entry in $SCREENS; do [ "${entry%%=*}" = "$1" ] && { echo "${entry#*=}"; return; }; done; }
 
@@ -38,6 +48,7 @@ install_fresh
 for mode in light dark; do
   xcrun simctl ui "$DEV" appearance "$mode"; sleep 2
   for name in $IOS_SCREENS; do r=$(route "$name"); [ -n "$r" ] && shot "$mode" "$name" "liftria://$r"; done
+  same_images "$mode"
 done
 
 # Arabic: the app's language follows the system, and right to left applies from the first launch.
@@ -47,6 +58,8 @@ xcrun simctl shutdown "$DEV"; boot
 install_fresh
 xcrun simctl ui "$DEV" appearance dark; sleep 2
 for name in $AR_SCREENS; do r=$(route "$name"); [ -n "$r" ] && shot ar-dark "$name" "liftria://$r"; done
+same_images ar-dark
+for p in light-app-today light-he-steps light-tr-active dark-hk-photo ar-dark-app-health ar-dark-tr-active; do preview "$p"; done
 
 # Crash reports for the app, if any.
 find ~/Library/Logs/DiagnosticReports -iname '*Liftria*' -newer "$APP" -print -exec cp {} "$OUT"/ \; 2>/dev/null \
