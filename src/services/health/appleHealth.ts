@@ -226,9 +226,10 @@ function kilocalories(unit: unknown, quantity: unknown): number | null {
 
 function bodyFatPercent(unit: unknown, quantity: unknown): number | null {
   const value = finite(quantity);
-  if (value === undefined || value < 0) return null;
-  // The library reports BodyFatPercentage in '%' on a 0–100 scale (for example 17.5).
-  return unit === '%' ? value : null;
+  // HealthKit's percent unit (HKUnit.percent(), which the library uses for '%') is a
+  // fraction: 0.175 means 17.5 %. Liftria stores body fat on a 0–100 scale.
+  if (value === undefined || value < 0 || value > 1) return null;
+  return unit === '%' ? Math.round(value * 1000) / 10 : null;
 }
 
 function exerciseName(activity: unknown): string | null {

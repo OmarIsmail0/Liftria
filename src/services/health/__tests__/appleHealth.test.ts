@@ -61,9 +61,11 @@ test('maps recorded samples to shared records, ids and units', () => {
   expect(normalizeAppleSample('weight', sample('g-1', { quantity: 70200, unit: 'g' }))).toMatchObject({
     unit: 'kg', value: 70.2,
   });
-  expect(normalizeAppleSample('body-fat', sample('fat-1', { quantity: 17.5, unit: '%' }))).toMatchObject({
+  expect(normalizeAppleSample('body-fat', sample('fat-1', { quantity: 0.175, unit: '%' }))).toMatchObject({
     kind: 'instant', unit: '%', value: 17.5, recordId: 'fat-1',
   });
+  // HealthKit's percent unit is a 0–1 fraction; a value above 1 is not a body-fat fraction.
+  expect(normalizeAppleSample('body-fat', sample('fat-2', { quantity: 17.5, unit: '%' }))).toBeNull();
   expect(normalizeAppleSample('lean-body-mass', sample('lean-1', { quantity: 55, unit: 'kg' }))).toMatchObject({
     kind: 'instant', unit: 'kg', value: 55, recordId: 'lean-1',
   });
@@ -183,7 +185,7 @@ test('sample reads keep the recorded uuid, origin, device and unit', async () =>
   (HK.queryQuantitySamples as jest.Mock).mockImplementation(async (identifier: string) => {
     if (identifier === 'HKQuantityTypeIdentifierHeartRate') return [sample('hr-1', { quantity: 72, unit: 'count/min' })];
     if (identifier === 'HKQuantityTypeIdentifierBodyMass') return [sample('kg-1', { quantity: 70.2, unit: 'kg' })];
-    if (identifier === 'HKQuantityTypeIdentifierBodyFatPercentage') return [sample('fat-1', { quantity: 17.5, unit: '%' })];
+    if (identifier === 'HKQuantityTypeIdentifierBodyFatPercentage') return [sample('fat-1', { quantity: 0.175, unit: '%' })];
     if (identifier === 'HKQuantityTypeIdentifierLeanBodyMass') return [sample('lean-1', { quantity: 55, unit: 'kg' })];
     return [];
   });

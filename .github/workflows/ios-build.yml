@@ -65,11 +65,12 @@ jobs:
       - name: Check the iPhone permission texts
         run: |
           PLIST=$(find ios/build/Build/Products -name Info.plist -path '*.app/Info.plist' | head -n1)
-          for key in NSCameraUsageDescription NSPhotoLibraryUsageDescription; do
+          for key in NSCameraUsageDescription NSPhotoLibraryUsageDescription NSHealthShareUsageDescription; do
             /usr/libexec/PlistBuddy -c "Print :$key" "$PLIST"
           done
-          # Nothing beyond what the app uses: no location, microphone, contacts or tracking texts.
-          for key in NSLocationWhenInUseUsageDescription NSMicrophoneUsageDescription NSContactsUsageDescription NSUserTrackingUsageDescription; do
+          # Nothing beyond what the app uses: no location, microphone, contacts or tracking texts,
+          # and no Apple Health write prompt (Liftria only reads).
+          for key in NSLocationWhenInUseUsageDescription NSMicrophoneUsageDescription NSContactsUsageDescription NSUserTrackingUsageDescription NSHealthUpdateUsageDescription; do
             if /usr/libexec/PlistBuddy -c "Print :$key" "$PLIST" >/dev/null 2>&1; then
               echo "::error::Unexpected iPhone permission $key"; exit 1
             fi
