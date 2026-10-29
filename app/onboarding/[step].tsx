@@ -21,6 +21,7 @@ import { setSetting } from '../../src/services/database';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
 
+/** i18n-stored-ids: persisted selection ids; the choices below map them through t() before display. */
 const watchOptions = ['Samsung Health', 'Fitbit', 'Garmin Connect', 'Pixel Watch (Fitbit)', 'Other', 'No watch'] as const;
 const titles: Record<OnboardingStep, TranslationKey> = {
   welcome: 'onboarding.welcomeToLiftria', privacy: 'onboarding.yourDataStaysWithYou',

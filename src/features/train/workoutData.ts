@@ -1,3 +1,4 @@
+import { translate, type AppLanguage } from '../../i18n';
 import { dbOperation, type DbResult } from '../../services/database';
 import { newGymId } from '../../services/database/exerciseLibrary';
 import { setVolume } from '../../services/database/gymMath';
@@ -96,16 +97,16 @@ export async function startManualWorkout(title:string, templateId:string|null=nu
 export type SetInput={sessionId:string;sessionExerciseId:string;position:number;
   side:'L'|'R'|null;kind:'working'|'warm-up';weight:number;reps:number;restSec:number;
   rpe?:number|null;rir?:number|null};
-export function validateSet(input:SetInput):string|null {
-  if(!Number.isFinite(input.weight)||input.weight<0||input.weight>10000)return 'Enter a valid weight.';
-  if(!Number.isInteger(input.reps)||input.reps<1||input.reps>500)return 'Add reps first.';
+export function validateSet(input:SetInput,language:AppLanguage='en'):string|null {
+  if(!Number.isFinite(input.weight)||input.weight<0||input.weight>10000)return translate(language,'setError.weight');
+  if(!Number.isInteger(input.reps)||input.reps<1||input.reps>500)return translate(language,'setError.reps');
   if(!Number.isInteger(input.position)||input.position<0||input.position>1000 ||
-    !Number.isFinite(input.restSec)||input.restSec<0||input.restSec>3600)return 'Invalid set settings.';
+    !Number.isFinite(input.restSec)||input.restSec<0||input.restSec>3600)return translate(language,'setError.settings');
   if(input.rpe!==undefined&&input.rpe!==null&&(!Number.isFinite(input.rpe)||input.rpe<1||input.rpe>10||input.rpe*2!==Math.round(input.rpe*2)))
-    return 'RPE must be 1–10 in half-point increments.';
+    return translate(language,'setError.rpe');
   if(input.rir!==undefined&&input.rir!==null&&(!Number.isInteger(input.rir)||input.rir<0||input.rir>20))
-    return 'RIR must be a whole number 0–20.';
-  if(input.rpe!=null&&input.rir!=null)return 'Choose RPE or RIR, not both.';
+    return translate(language,'setError.rir');
+  if(input.rpe!=null&&input.rir!=null)return translate(language,'setError.both');
   return null;
 }
 /** A set is persisted only on explicit Log set; repeated taps cannot create duplicates. */

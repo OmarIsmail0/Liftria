@@ -1,3 +1,4 @@
+import { translate, type AppLanguage } from '../../i18n';
 import { canEstimateTarget, estimateTarget, targetSafety, type FormulaProfile, type TargetEstimate } from '../onboarding/targetEstimate';
 import type { ProfileInput } from '../../services/database/profile';
 import type { Target } from '../../services/database/targets';
@@ -32,10 +33,10 @@ export function estimateEditedProfile(input: ProfileInput, nowYear = new Date().
   return canEstimateTarget(input, nowYear) ? estimateTarget(input, nowYear) : null;
 }
 export function checkSettingsTarget(
-  kcal: number, input: ProfileInput, nowYear = new Date().getFullYear(),
+  kcal: number, input: ProfileInput, nowYear = new Date().getFullYear(), language: AppLanguage = 'en',
 ): { blocked: boolean; warning: boolean; reason: string | null } {
   const estimate = canEstimateTarget(input, nowYear)
     ? estimateTarget({ ...input, goal:'maintain' }, nowYear) : null;
   const safety = targetSafety(kcal,estimate?.kcal ?? null);
-  return { ...safety, reason: safety.blocked ? 'A calorie target below 1,000 kcal cannot be saved.' : null };
+  return { ...safety, reason: safety.blocked ? translate(language, 'profileSettings.belowFloor') : null };
 }

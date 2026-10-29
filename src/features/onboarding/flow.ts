@@ -1,3 +1,4 @@
+import { translate, type AppLanguage } from '../../i18n';
 /** The first-run route set; no capsule on any ON screen. */
 export const onboardingSteps = [
   'welcome', 'privacy', 'profile', 'goal', 'target', 'health', 'watch', 'hiku', 'done',
@@ -26,6 +27,6 @@ export function skipOnboardingStep(step: OnboardingStep): OnboardingStep {
 }
 
 /** ON-9 is a completion screen, not one of the eight steps. */
-export function onboardingStepCaption(step: OnboardingStep): string | null {
-  return step === 'done' ? null : `Step ${onboardingSteps.indexOf(step) + 1} of 8`;
+export function onboardingStepCaption(step: OnboardingStep, language: AppLanguage = 'en'): string | null {
+  return step === 'done' ? null : translate(language, 'onboarding.stepOf8', { number: onboardingSteps.indexOf(step) + 1 });
 }
