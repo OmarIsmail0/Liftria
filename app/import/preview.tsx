@@ -5,14 +5,13 @@ import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/des
 import { getImportDraft, setPendingImport } from '../../src/features/import/importDraft';
 import { readImportContext } from '../../src/features/import/importRepository';
 import { canImportPlan, createImportPlan, resolveImportMappings, keepAllAsOwn, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
-import { expectedColumns, type WeightUnit } from '../../src/features/import/importCsv';
+import { expectedColumns, importerLabel, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
 import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
 import { formatNumber, bidiIsolate } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-const sourceName=(s:string)=>({hevy:'Hevy',strong:'Strong',fitnotes:'FitNotes',csv:'CSV'} as Record<string,string>)[s]??s;
 export default function ImportPreview(){
  const {theme}=useTheme();
  const {t,language}=useLanguage();
@@ -29,7 +28,7 @@ export default function ImportPreview(){
  },[t]);
  useEffect(()=>{if(draft?.parsed)void Promise.resolve().then(()=>load());},[load,draft?.parsed]);
  useEffect(()=>{void getTypedSetting('units.weight').then(r=>{if(r.ok)setDisplayUnit(r.value);});},[]);
- const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions,displayUnit):null;
+ const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions,displayUnit,language):null;
  const suggestions=draft?.parsed&&context?
   resolveImportMappings(draft.parsed,{...context,remembered:{}},{}) : [];
  const unmatchedNames=new Set(suggestions.filter(x=>x.status!=='exact').map(x=>x.name));
@@ -46,11 +45,11 @@ export default function ImportPreview(){
  const parseError=draft.error;
  const nothing=plan&&(plan.hashDuplicate||plan.workouts.length===0);
  return <Screen>
-  <Header title={t("im2.review")} subtitle={t("im2.from",{file:draft.fileName,source:sourceName(draft.source)})}
+  <Header title={t("im2.review")} subtitle={t("im2.from",{file:draft.fileName,source:importerLabel(draft.source)})}
    onBack={()=>router.back()}/>
   {parseError?<Card title={parseError.code==='empty'?t("im2.empty"):
     parseError.code==='too-large'?t("im2.tooLarge"):
-     t("im2.invalid",{source:sourceName(draft.source)})}>
+     t("im2.invalid",{source:importerLabel(draft.source)})}>
    <Typography tone="secondary">{language==="en"?parseError.message:t("im2.parseIssue")} {t("im2.nothingImported")}</Typography>
    <Typography tone="secondary" size="small">{t('im2.expected',{columns:(parseError.expected.length?parseError.expected:
     expectedColumns(draft.source as 'hevy'|'strong'|'fitnotes'|'csv')).join(', ')})}</Typography>
@@ -64,7 +63,7 @@ export default function ImportPreview(){
    <Button label={t("im2.chooseAnother")} variant="secondary" onPress={()=>router.replace('/import')}/>
   </Card>:<>
    <Card rim="train" title={t("im2.summary",{workouts:plan.workouts.length,sets:plan.setCount})}>
-    <Typography tone="secondary" size="small">{t("im2.fromSource",{source:sourceName(draft.source)})}</Typography>
+    <Typography tone="secondary" size="small">{t("im2.fromSource",{source:importerLabel(draft.source)})}</Typography>
     <Typography tone="secondary">{bidiIsolate(language,new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))+
      ' – '+bidiIsolate(language,new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}</Typography>
     <ListRow title={t("im2.warmups")} detail={formatNumber(language,plan.warmupCount)}/>

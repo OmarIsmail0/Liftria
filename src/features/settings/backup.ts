@@ -14,7 +14,7 @@ export type BackupRow=Record<string,string|number|null>;
 export type BackupData={format:'liftria-backup';formatVersion:1;schemaVersion:number;
  exportedAt:string;tables:Record<string,BackupRow[]>};
 export type BackupPreview={schemaVersion:number;exportedAt:string;
- counts:Array<{table:string;count:number}>;total:number};
+ counts:{table:string;count:number}[];total:number};
 const obj=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 /** The first backup format shipped with schema v6. When adding a table in a future
  * migration, list it in BACKUP_TABLES and record its introduction here. */

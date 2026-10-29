@@ -1,5 +1,5 @@
 import {router,useLocalSearchParams} from 'expo-router';
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {Button,Card,Header,Screen,Typography} from '../../src/design/primitives';
 import {bundledFoods,localDay,type Food,type MealKey} from '../../src/features/eat/foodCatalog';
 import {logFood,logQuick,readDiaryDay} from '../../src/features/eat/diaryRepository';
@@ -10,7 +10,7 @@ export default function DemoDiary(){
  const {auto}=useLocalSearchParams<{auto?:string}>();
  const once=useRef(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null);
- const create=async()=>{
+ const create=useCallback(async()=>{
   if(busy)return;setBusy(true);setError(null);
   const today=localDay(new Date());
   const diary=await readDiaryDay(today);
@@ -49,12 +49,12 @@ export default function DemoDiary(){
    if(!quick.ok){setError('Could not write the demo quick add.');setBusy(false);return;}
   }
   router.replace({pathname:'/(tabs)/eat',params:{demoWater:'3'}});
- };
+ },[busy]);
  useEffect(()=>{
   if(auto!=='1'||once.current)return;
   once.current=true;void Promise.resolve().then(create);
  // The explicit auto flag launches once per mount for emulator screenshot routes.
- },[auto]);
+ },[auto,create]);
  return <Screen>
   <Header title="Demo diary" onBack={()=>router.back()}/>
   <Card rim="eat" title="Developer screenshot data">

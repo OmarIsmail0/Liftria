@@ -1,3 +1,4 @@
+import { translate, type AppLanguage } from '../../i18n';
 /** Stored values stay metric; conversions are display-only. */
 export type WeightUnit = 'kg' | 'lb';
 export type HeightUnit = 'cm' | 'ftin';
@@ -7,9 +8,9 @@ export function displayWeight(kg: number, unit: WeightUnit): string {
   if (!Number.isFinite(kg)) return '—';
   return unit === 'kg' ? `${kg.toFixed(1)} kg` : `${(kg * LB_PER_KG).toFixed(1)} lb`;
 }
-export function displayHeight(cm: number, unit: HeightUnit): string {
+export function displayHeight(cm: number, unit: HeightUnit, language: AppLanguage = 'en'): string {
   if (!Number.isFinite(cm)) return '—';
-  if (unit === 'cm') return `${cm.toFixed(0)} cm`;
+  if (unit === 'cm') return `${cm.toFixed(0)} ${translate(language, 'units.cm')}`;
   const rounded = Math.round(cm / CM_PER_IN);
   return `${Math.floor(rounded / 12)}′ ${rounded % 12}″`;
 }

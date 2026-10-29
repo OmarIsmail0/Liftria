@@ -213,7 +213,7 @@ export default function TodayTab() {
               ? t('today.staleUnverified',{time:age(source.latestAt)})
               : t('today.deviceNotVerified')}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
-              <Typography>{formatNumber(language,source.value)} bpm</Typography>
+              <Typography>{t('today.heartValue',{value:formatNumber(language,source.value)})}</Typography>
               <Chip kind="pending" label={t('today.unverified')} />
               {heartRateTodayStatus(source.latestAt, now).stale &&
                 <Chip kind="stale" label={age(source.latestAt)} />}
@@ -226,7 +226,7 @@ export default function TodayTab() {
         <Button label={t('today.healthDetails')} variant="ghost" fullWidth
           onPress={() => router.push('/(tabs)/progress/health')} />
       </Card>
-      <Card rim="hiku" title="Hiku">
+      <Card rim="hiku" title={t('nav.hiku')}>
         <Typography tone="secondary">{local.offline ? t('today.hikuNeedsInternet') :
           local.key === 'ready' ? t('today.keyReady') :
           local.key === 'missing' ? t('today.keyMissing') :

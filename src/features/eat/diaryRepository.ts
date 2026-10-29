@@ -88,7 +88,7 @@ export async function logFood(food:Food,grams:number,meal:MealKey,day=localDay(n
     return entry;
   });
 }
-export async function logQuick(kcal:number,meal:MealKey,day=localDay(new Date()),name='Quick add')
+export async function logQuick(kcal:number,meal:MealKey,day=localDay(new Date()),name:string)
   :Promise<DbResult<DiaryEntry>>{
   return dbOperation(async db=>{
     if(!Number.isFinite(kcal)||kcal<=0||kcal>10000)throw new Error('Invalid quick add');

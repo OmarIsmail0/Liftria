@@ -1,4 +1,5 @@
 import {validateWeight,weightNeedsConfirmation} from '../weightRepository';
+import {toKg,fromKg} from '../../train/workoutUnits';
 test('only a real positive weight in an allowed date range may enter storage',()=>{
  const now=new Date().toISOString();
  expect(validateWeight(78.4,now)).toBe(true);
@@ -14,7 +15,6 @@ test('unusual entries trigger review instead of silently changing values',()=>{
 });
 
 test('Body input uses unit settings: 176.4 lb stores about 80 kg and displays 176.4 lb',()=>{
- const {toKg,fromKg}=require('../../../features/train/workoutUnits') as typeof import('../../../features/train/workoutUnits');
  const storedKg=toKg(176.4,'lb');
  expect(storedKg).toBeCloseTo(80,1);
  expect(fromKg(storedKg,'lb').toFixed(1)).toBe('176.4');
