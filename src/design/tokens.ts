@@ -30,7 +30,7 @@ const palette = {
     },
     aurora: { base: '#06070C' },
     glass: {
-      card: 'rgba(12,13,24,0.62)', highlight: 'rgba(255,255,255,0.10)',
+      card: 'rgba(17,19,30,0.86)', highlight: 'rgba(255,255,255,0.06)',
       border: 'rgba(255,255,255,0.08)',
       // CSS design reference only. Primitives use platform-native shadow properties.
       shadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 18px 44px rgba(0,0,0,0.50)',
@@ -43,8 +43,11 @@ const palette = {
     train: { gradEnd: '#FF6A6A' },
     orb: { 1: '#FFCF5E', 2: '#FF8F6B', 3: '#7B5CFF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFC2A3', 2: '#FF8F6B', 3: '#D9487A' },
-    sheet: { glass: 'rgba(16,17,30,0.94)' },
-    elevation: { card: '0 10px 30px rgba(0,0,0,0.35)' },
+    // Sheets are opaque: the page behind must never read through the panel.
+    sheet: { glass: 'rgba(17,19,30,1)', scrim: 'rgba(0,0,0,0.55)' },
+    elevation: { card: '0 1px 2px rgba(0,0,0,0.30), 0 10px 28px rgba(0,0,0,0.28)', thumb: '0 1px 3px rgba(0,0,0,0.40)' },
+    // One even hairline per surface; the domain color lives in the title dot, not the edge.
+    surface: { hairline: 'rgba(255,255,255,0.09)', control: 'rgba(255,255,255,0.08)', pressed: 'rgba(255,255,255,0.06)' },
     orbEmpty: { fillOpacity: 0.30, haloOpacity: 0.28, rimWidth: 1.5, rimStart: 0.9, rimEnd: 0.35 },
   },
   light: {
@@ -68,7 +71,7 @@ const palette = {
     },
     aurora: { base: '#EEF0F7' },
     glass: {
-      card: 'rgba(255,255,255,0.78)', highlight: 'rgba(255,255,255,0.92)',
+      card: 'rgba(255,255,255,0.97)', highlight: 'rgba(255,255,255,0.60)',
       border: 'rgba(255,255,255,0.90)',
       shadow: 'inset 0 1px 0 rgba(255,255,255,0.90), 0 14px 34px rgba(60,70,120,0.14)',
     },
@@ -80,8 +83,10 @@ const palette = {
     train: { gradEnd: '#B8322E' },
     orb: { 1: '#FFE09A', 2: '#FFB496', 3: '#B9A8FF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFD9C7', 2: '#FFB496', 3: '#F08DB0' },
-    sheet: { glass: 'rgba(255,255,255,0.95)' },
-    elevation: { card: '0 8px 24px rgba(18,22,28,0.08), 0 1px 2px rgba(18,22,28,0.06)' },
+    sheet: { glass: 'rgba(255,255,255,1)', scrim: 'rgba(16,24,40,0.36)' },
+    // Opaque cards so the shadow sits under the card instead of bleeding through it.
+    elevation: { card: '0 1px 2px rgba(16,24,40,0.05), 0 6px 18px rgba(16,24,40,0.07)', thumb: '0 1px 3px rgba(16,24,40,0.16)' },
+    surface: { hairline: 'rgba(16,24,40,0.08)', control: 'rgba(16,24,40,0.05)', pressed: 'rgba(16,24,40,0.05)' },
     orbEmpty: { fillOpacity: 0.22, haloOpacity: 0.18, rimWidth: 1.5, rimStart: 0.9, rimEnd: 0.35 },
   },
 } as const;
@@ -111,6 +116,10 @@ const shared = {
     base: { duration: 220, easing: [0.2, 0.8, 0.2, 1] },
     slow: { duration: 550, range: [500, 600], easing: [0.2, 0.8, 0.2, 1] },
     breathe: { duration: 5000, scale: 1.03 },
+    // Press feedback and sliding indicators: quick, critically damped, no wobble.
+    press: { scale: 0.97 },
+    spring: { damping: 22, stiffness: 320, mass: 0.8 },
+    enter: { duration: 280, offset: 10 },
   },
   visual: { cardGlowBlur: 34, orbGlowInnerBlur: 60, orbGlowOuterBlur: 120, orbHighlightOpacity: 0.5, orbHighlightFade: 0.3, ambientFade: 0.7 },
   orbSize: { today: 236, compact: 200, diary: 132, ringStroke: 4, segments: 48 },

@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { fontFamilyFor } from '../fonts';
@@ -8,6 +9,7 @@ import { chevronPointsLeft } from '../../i18n/layout';
 import { ChevronIcon } from './TabIcon';
 import { AmbientBackdrop, AuroraCardDecoration, cardOuterGlow } from './VisualEffects';
 import type { CardRim } from './contracts';
+import { useEnterAnimation, usePressScale } from './Motion';
 
 export type TypographySize = 'display' | 'title' | 'head' | 'metric-xl' | 'metric-l' |
   'metric-m' | 'body' | 'small' | 'label' | 'button';
@@ -53,12 +55,25 @@ export function Header({ title, subtitle, onBack, right }: {
 }) {
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
+  const press = usePressScale();
+  const solid = theme.effectiveStyle === 'solid';
   return <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3], minHeight: theme.size.touch.primary }}>
-    {onBack && <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel={t('common.back')}
-      style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
-        borderRadius: theme.radius.pill, borderWidth: theme.size.border.thin, borderColor: theme.controlOutline }}>
-      <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
-        size={theme.space[5]} strokeWidth={theme.size.iconStroke} />
+    {/* A 40dp filled disc inside the 48dp touch target. Solid (high contrast) keeps a 3:1 outline. */}
+    {onBack && <Pressable onPress={onBack} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+      accessibilityRole="button" accessibilityLabel={t('common.back')}
+      style={{ width: theme.size.touch.min, height: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
+        marginStart: -theme.space[1] }}>
+      {({ pressed }) => <Animated.View style={[{ width: theme.space[10], height: theme.space[10],
+        borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: 'center',
+        backgroundColor: theme.mode === 'light' && !solid
+          ? (pressed ? theme.color.bg.raised : theme.glass.card)
+          : (pressed ? theme.surface.hairline : theme.surface.control),
+        borderWidth: theme.size.border.thin,
+        borderColor: solid ? theme.controlOutline : theme.surface.hairline,
+        boxShadow: theme.mode === 'light' && !solid ? theme.elevation.thumb : undefined }, press.style]}>
+        <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
+          size={theme.space[5]} strokeWidth={2.2} />
+      </Animated.View>}
     </Pressable>}
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography size="title">{title}</Typography>
@@ -74,8 +89,9 @@ export function Card({ children, rim = 'none', title, flat = false }: {
   const { theme } = useTheme();
   const aurora = theme.effectiveStyle === 'aurora';
   const [frame, setFrame] = useState({ width: 0, height: 0 });
+  const entering = useEnterAnimation();
   const border = rim === 'none' ? theme.color.border.subtle : theme.color.domain[rim];
-  return <View style={{ borderRadius: theme.radius.lg, ...cardOuterGlow(theme, rim, flat) }}>
+  return <Animated.View entering={entering} style={{ borderRadius: theme.radius.lg, ...cardOuterGlow(theme, rim, flat) }}>
     <View onLayout={event => {
       const { width, height } = event.nativeEvent.layout;
       setFrame(previous => previous.width === width && previous.height === height
@@ -87,15 +103,25 @@ export function Card({ children, rim = 'none', title, flat = false }: {
       padding: theme.space[4], gap: theme.space[3],
       ...(!aurora && !flat ? { elevation: theme.size.border.thin } : {}),
     }}>
-      {aurora && <AuroraCardDecoration theme={theme} rim={rim} width={frame.width} height={frame.height} />}
+      {aurora && <AuroraCardDecoration theme={theme} width={frame.width} height={frame.height} />}
       {title && <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-        {!aurora && rim !== 'none' && <View style={{ width: theme.space[2], height: theme.space[2],
+        {rim !== 'none' && <View style={{ width: theme.space[2], height: theme.space[2],
           borderRadius: theme.radius.pill, backgroundColor: border }} />}
         <Typography size="head">{title}</Typography>
       </View>}
-      {children}
+      {withoutTrailingDivider(children)}
     </View>
-  </View>;
+  </Animated.View>;
+}
+
+/** Dividers belong between rows; the card's own edge closes the last one. */
+function withoutTrailingDivider(children: ReactNode): ReactNode {
+  const items = Children.toArray(children);
+  const lastIndex = items.length - 1;
+  const last = items[lastIndex];
+  if (!isValidElement(last) || last.type !== ListRow) return children;
+  items[lastIndex] = cloneElement(last as ReactElement<{ divider?: boolean }>, { divider: false });
+  return items;
 }
 
 export function Banner({ title, message, variant = 'info' }: {
@@ -115,15 +141,17 @@ export function Banner({ title, message, variant = 'info' }: {
   </View>;
 }
 
-export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel }: {
+export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel, divider = true }: {
   title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; leading?: ReactNode; accessibilityLabel?: string;
+  divider?: boolean;
 }) {
   const { theme } = useTheme();
   const { isRTL } = useLanguage();
   return <Pressable onPress={onPress} disabled={!onPress} accessible={Boolean(onPress)}
     accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? (detail ? `${title}. ${detail}` : title)}
-    style={{ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
-      gap: theme.space[3], borderBottomWidth: 1, borderColor: theme.color.border.subtle, paddingVertical: theme.space[2] }}>
+    style={({ pressed }) => ({ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
+      gap: theme.space[3], borderBottomWidth: divider ? 1 : 0, borderColor: theme.surface.hairline, paddingVertical: theme.space[2],
+      backgroundColor: pressed ? theme.surface.pressed : 'transparent' })}>
     {leading}
     <View style={{ flex: 1, gap: theme.space[1] }}>
       <Typography bold>{title}</Typography>{detail && <Typography tone="secondary" size="small">{detail}</Typography>}
