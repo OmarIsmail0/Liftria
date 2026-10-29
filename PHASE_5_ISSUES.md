@@ -67,14 +67,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Arabic gram label:** the portion chip says "جم" while the rest of the app now says "غ". Use "غ" everywhere.
    - **Don't touch** `src/design/**` or the Health screens and stack layouts (PR S).
    - **Claude (not this PR):** the over-target Eat ring still draws a dark square in Arabic (PR #30 screenshots); R1's `EatRing` wrapper didn't fix it. Claude fixes it in `Orb` after PR #27 merges and removes the wrapper.
-9. **PR V: `Phase 5 / Data coverage guards`** (builder: **Cursor**, branch from `main`)
+9. ~~**PR V: `Phase 5 / Data coverage guards`**~~ DONE: PR #33 merged (2026-10-28). (builder: **Cursor**, branch from `main`)
    - The rule "every new table is covered by Delete all and by the backup" has no test. Add guards that fail when it breaks:
      - **Backup:** every table the migrations create (read the `CREATE TABLE` statements in `src/services/database/index.ts`) is in `BACKUP_TABLES`, and every `BACKUP_TABLES` entry exists in the schema. A test that adds a fake table must make the guard fail.
      - **Delete all:** `app/settings/data.tsx` → Delete all removes every row of every table (except what the code documents it must keep, if anything: say why), the Anthropic key in SecureStore, and kept Hiku photo files on disk. Move the delete logic into a testable function in `src/features/settings/` if it lives in the screen, and test it against an in-memory or mocked database that lists every table.
      - **Restore:** a round trip (export → restore) keeps every table's rows; add a table to the fixture and the test must notice it's missing.
    - Fix any real gap the guards find (a table or file that isn't deleted or backed up), one commit per fix, and list each gap in the PR description.
    - **Don't touch** `src/design/**`, the Health screens or the stack layouts.
-10. **PR W: `Phase 5 / No English in the Arabic UI`** (builder: **Cursor**, model bake-off: Grok 4.7 vs Sonnet 5.5 on the same task; Claude merges the better PR and closes the other)
+10. ~~**PR W: `Phase 5 / No English in the Arabic UI`**~~ DONE: PR #34 merged (2026-10-29). (builder: **Cursor**; bake-off won by Sonnet 5.5, PR #34; Grok 4.7's #35 closed). Follow-up after PR S: the English in `src/features/health/HealthCharts.tsx`.
    - **Bug (PR #30/#31 screenshots):** in Arabic the workout mini-bar shows "Resume" and "0 of 9 sets"; spoken labels are English too ("Resume …", "Rest timer, …", "Enter …", "edit with keypad"). `src/i18n/__tests__/screenLiteralCopy.test.ts` only scans `app/` and only catches literal props, so `src/features/**` and concatenated strings slip through.
    - **Guard:** extend the source guard to `src/features/**` (not `src/design/**`, not `dev`), and to English inside string concatenation and template literals that reach the screen: JSX text, `Typography`/`Text` children, and `accessibilityLabel` / `label` / `title` / `placeholder` / `description` props (e.g. `'Resume '+x`, `` `Enter ${label}` ``, `{a} of {b}`). Keep a short allow-list of real tokens (brand names, units like `kg`). It must fail on today's code.
    - **Fix** everything it finds: every user-facing string and every spoken label goes through `t()` with English and Arabic. Counts go through `pluralForm()`, and in Arabic a number with its unit uses a no-break space.
@@ -87,10 +87,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
      - Each guard must fail on a planted example: test the scanner itself with small code strings, as PR W's `englishCopyScanner` tests do.
    - **Lint:** clear the existing ESLint warnings (`npx eslint .` shows 15) by fixing the code, not by disabling rules. If one can't be fixed safely, explain it in the PR.
    - **Don't touch** `src/design/**` (Claude's; leave its warnings and list them in the PR), the Health screens or the stack layouts.
-12. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+12. **PR Y: `Phase 5 / Health charts in Arabic`** (builder: **Cursor**, Sonnet 5.5; starts once PR W #34 is merged, from `main`)
+   - `src/features/health/HealthCharts.tsx` still shows English in Arabic: "No source-backed steps to plot.", "hourly"/"daily", "Midnight · 6 AM · Noon · 6 PM · Midnight", "7 days ago · Today", the heart-rate summary and its accessibility text. Translate all of it (English and Arabic; counts through `pluralForm()`; number+unit with a no-break space; times in the user's locale with Western digits).
+   - Widen PR W's guard (`src/i18n/__tests__/englishInArabicUi.test.ts`) to scan `src/features/health/**`, keeping the exclusion only for the files PR S (#28) edits: `app/(tabs)/progress/health*.tsx`, `src/features/health/AppleHealthComing.tsx`, `src/features/health/useHealthSnapshot.ts`. Fix whatever else it finds in `src/features/health/**` outside those files.
+   - **Don't touch** `src/design/**`, `src/services/health/**` or the files above.
+13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
-   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header`, and gating every `dev/*` route out of release builds except what the emulator check needs.
+   - **Claude does these in the shared code:** long screen titles (at most two lines, ellipsis, break between words) in `Header` (after PR #27). ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 

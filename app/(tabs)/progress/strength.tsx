@@ -53,7 +53,7 @@ export default function Strength(){
     <Typography tone="tertiary" size="small">{tr('p4.strength.15')}</Typography>
     <View style={{flexDirection:'row',alignItems:'flex-end',gap:theme.space[1],height:170}}>
      {bars.map(w=><View key={w.label} style={{flex:1,minWidth:20,alignItems:'center',gap:theme.space[1]}}>
-      <Typography size="small">{w.logged?Math.round(fromKg(w.volume,unit)/1000)+'k':'—'}</Typography>
+      <Typography size="small">{w.logged?tr('strength.thousands',{count:Math.round(fromKg(w.volume,unit)/1000)}):'—'}</Typography>
       <View style={{height:120,width:'90%',justifyContent:'flex-end',borderBottomWidth:1,
        borderBottomColor:theme.color.border.subtle}}>
        <View style={{height:w.logged?Math.max(4,Math.round(115*w.volume/peak)):4,

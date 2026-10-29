@@ -73,7 +73,7 @@ export default function UnitsAndPreferences() {
       <Typography tone="secondary" size="small">{t('preferences.unitsDescription')}</Typography>
       <SegmentedControl label={t('preferences.weight')} options={[{ value:'kg', label:'kg' }, { value:'lb', label:'lb' }]}
         value={values.weight} onChange={v => void change('weight', v)} />
-      <SegmentedControl label={t('preferences.height')} options={[{ value:'cm', label:'cm' }, { value:'ftin', label:'ft / in' }]}
+      <SegmentedControl label={t('preferences.height')} options={[{ value:'cm', label:t('units.cm') }, { value:'ftin', label:t('units.ftIn') }]}
         value={values.height} onChange={v => void change('height', v)} />
       <Stepper label={t('gymParity.barWeight',{unit:values.weight})}
         value={values.weight==='kg'?values.barKg:values.barLb}
@@ -85,7 +85,7 @@ export default function UnitsAndPreferences() {
       <Typography tone="secondary" size="small">{t('preferences.kjFuture')}</Typography>
     </Card>
     <Card title={t('water.settings')}>
-      <Stepper label={t('water.glassSize')} value={values.glassMl} unit="ml"
+      <Stepper label={t('water.glassSize')} value={values.glassMl} unit={t('units.ml')}
        step={50} min={50} max={1000} onChange={v=>void change('glassMl',v)}/>
     </Card>
     <Card title={t('gymParity.trainingSettings')}>
@@ -93,7 +93,7 @@ export default function UnitsAndPreferences() {
       <SegmentedControl label={t('gymParity.effortChoice')} value={values.effort}
         onChange={v=>void change('effort',v)}
         options={[{value:'off',label:t('gymParity.off')},
-         {value:'rpe',label:'RPE'},{value:'rir',label:'RIR'}]}/>
+         {value:'rpe',label:t('effort.rpeShort')},{value:'rir',label:t('effort.rirShort')}]}/>
     </Card>
     <Card title={t('preferences.display')}>
       <Toggle label={t('preferences.hide')} detail={t('preferences.hideDetail')}

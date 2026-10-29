@@ -10,8 +10,9 @@ import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from 
 import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
-import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, formatLocalDatabaseSize } from '../../src/features/settings/storage';
+import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 import {exportBackup,parseBackup,backupPreview,previewGroups,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv} from '../../src/features/settings/csvExport';
 
 /** In-memory sample never written to SQLite or accepted by restoreBackup. */
@@ -19,9 +20,9 @@ const DEMO_BACKUP:BackupData={
  format:'liftria-backup',formatVersion:1,schemaVersion:DB_SCHEMA_VERSION,
  exportedAt:'2026-10-27T10:00:00Z',
  tables:{...Object.fromEntries(BACKUP_TABLES.map(table=>[table,[]])),
-  sessions:[{id:'demo-session',title:'Demo workout',state:'finished'}],
+  sessions:[{id:'demo-session',state:'finished'}],
   sets:[{id:'demo-set'}],
-  diary_entries:[{id:'demo-meal',name_snapshot:'Demo food',kcal:100}],
+  diary_entries:[{id:'demo-meal',kcal:100}],
   foods:[{id:'demo-food'}],
   water_logs:[{day:'2026-10-27',glasses:3,glass_ml:250}],
   app_settings:[{key:'demo.preview',value:'true'}]},
@@ -78,8 +79,7 @@ export default function DataAndStorage() {
        kind==='workouts'?await workoutCsv():await diaryCsv();
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
-      const date=new Date().toISOString().slice(0,10);
-      await shareFile('liftria-'+kind+'-'+date+'.'+extension,
+      await shareFile(exportFileName(kind),
        typeof result.value==='string'?result.value:JSON.stringify(result.value),extension==='json'?'json':'csv');
       setMessage(t('backup.ready'));
     }catch{setMessage(t('backup.shareFailed'));}
@@ -120,7 +120,7 @@ export default function DataAndStorage() {
     if(busy)return;
     setBusy(true);
     try{
-      const result=await clearHealthCacheOnPhone();
+      const result=await clearHealthCacheOnPhone(language);
       setMessage(t(result.ok?'dataStorage.cacheCleared':'dataStorage.cacheFailed'));
       if(result.ok)await load();
     }catch{setMessage(t('dataStorage.cacheFailed'))}
@@ -142,8 +142,9 @@ export default function DataAndStorage() {
     if(busy||!canDeleteEverything(confirmation))return;
     setBusy(true);setMessage(null);
     try{
-      const result=await deleteEverythingOnPhone(confirmation);
-      if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':'dataStorage.deleteKeyFailed'));setOpen(false);return;}
+      const result=await deleteEverythingOnPhone(confirmation,undefined,language);
+      if(!result.ok){setMessage(t(result.stage==='database'?'dataStorage.deleteDatabaseFailed':
+        result.stage==='key'?'dataStorage.deleteKeyFailed':'dataStorage.deleteFilesFailed'));setOpen(false);return;}
       // All app-owned Phase 2 data and the saved key are gone. Return to fresh onboarding.
       setOpen(false);setConfirmation('');
       resetLocalPreferences();
@@ -164,7 +165,7 @@ export default function DataAndStorage() {
         <ListRow title={t('dataStorage.health')} detail={String(counts.healthSamples+counts.healthAggregates)} />
         <ListRow title={t('dataStorage.targets')} detail={String(counts.targetVersions)} />
         <ListRow title={t('dataStorage.profiles')} detail={String(counts.profiles)} />
-        <ListRow title={t('dataStorage.database')} detail={formatLocalDatabaseSize(counts.databaseBytes)} />
+        <ListRow title={t('dataStorage.database')} detail={formatLocalDatabaseSize(counts.databaseBytes, language)} />
       </> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
       <Typography tone="secondary" size="small">{t('dataStorage.countsNote')}</Typography>
     </Card>
@@ -173,7 +174,7 @@ export default function DataAndStorage() {
        detail={t('dataStorage.importDetail')}
        onPress={()=>router.push('/import')}/>
       {imported&&<ListRow title={t('dataStorage.undoImport')}
-       detail={t('dataStorage.undoDetail',{count:imported.count,source:imported.source})}
+       detail={t('dataStorage.undoDetail',{count:imported.count,source:importerLabel(imported.source)})}
        onPress={()=>setUndoVisible(true)}/>}
     </Card>
     <Card title={t('dataStorage.cacheTitle')}>

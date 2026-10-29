@@ -1,6 +1,7 @@
 /** Local-only best-effort rest alerts. Persist IDs in SQLite and reconcile OS schedules after process death. */
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { translate, type AppLanguage } from '../../i18n';
 import { dbOperation } from '../../services/database';
 import { restAt } from './restClock';
 
@@ -10,22 +11,22 @@ export type AlertRef = { id:string; sessionId:string; setId:string };
 export function isSessionRestNotification(data: Record<string,unknown> | undefined, sessionId:string):boolean {
   return data?.kind==='liftria-rest' && data?.sessionId===sessionId;
 }
-export async function prepareRestAlerts(): Promise<boolean> {
+export async function prepareRestAlerts(language: AppLanguage = 'en'): Promise<boolean> {
   if(Platform.OS==='android') await Notifications.setNotificationChannelAsync(REST_CHANNEL,{
-    name:'Rest timer (device test)',importance:Notifications.AndroidImportance.HIGH,
+    name:translate(language,'restAlerts.channel'),importance:Notifications.AndroidImportance.HIGH,
   });
   return (await Notifications.getPermissionsAsync()).granted;
 }
-export async function askRestPermission():Promise<boolean> {
-  if(await prepareRestAlerts())return true;
+export async function askRestPermission(language:AppLanguage='en'):Promise<boolean> {
+  if(await prepareRestAlerts(language))return true;
   return (await Notifications.requestPermissionsAsync()).granted;
 }
-export async function scheduleRestOver(deadline:string,sessionId:string,exerciseName:string,setId?:string)
-  :Promise<string|null> {
-  if(restAt(deadline).status!=='running'||!(await prepareRestAlerts()))return null;
+export async function scheduleRestOver(deadline:string,sessionId:string,exerciseName:string,setId?:string,
+  language:AppLanguage='en'):Promise<string|null> {
+  if(restAt(deadline).status!=='running'||!(await prepareRestAlerts(language)))return null;
   const notificationId=await Notifications.scheduleNotificationAsync({
     content:{
-      title:'Rest over',body:'Ready for your next set of '+exerciseName,
+      title:translate(language,'restAlerts.title'),body:translate(language,'restAlerts.body',{name:exerciseName}),
       data:{sessionId,setId,kind:'liftria-rest'},sound:'default',
     },
     trigger:{type:Notifications.SchedulableTriggerInputTypes.DATE,date:new Date(deadline)},

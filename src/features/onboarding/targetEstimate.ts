@@ -58,7 +58,6 @@ export function estimateTarget(p: FormulaProfile, nowYear = new Date().getFullYe
   };
 }
 
-export const FLOOR_WARNING = 'This is lower than Liftria recommends without guidance from a professional.';
 export function targetSafety(requestedKcal: number, estimatedKcal: number | null) {
   const blocked = !Number.isFinite(requestedKcal) || requestedKcal < 1000;
   const warning = Number.isFinite(requestedKcal) &&

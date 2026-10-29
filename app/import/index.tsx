@@ -15,7 +15,7 @@ const makeSources=(t: ReturnType<typeof useLanguage>['t']): {id:Importer;name:st
  {id:'csv',name:t('im1.generic'),guide:t('im1.csvGuide')},
 ];
 export default function ImportStart(){
- const {t}=useLanguage();
+ const {t,language}=useLanguage();
  const sources=makeSources(t);
  const [source,setSource]=useState<Importer>('hevy');
  const [reading,setReading]=useState(false);
@@ -26,10 +26,10 @@ export default function ImportStart(){
    const result=await DocumentPicker.getDocumentAsync({copyToCacheDirectory:true,multiple:false,type:'*/*'});
    if(result.canceled||!result.assets[0])return;
    const asset=result.assets[0],file=new File(asset.uri);
-   const wrongType=csvFileTypeError(asset.name,source);
+   const wrongType=csvFileTypeError(asset.name,source,language);
    if(wrongType){
     try{await file.delete();}catch{/* Picker cache cleanup is best effort. */}
-    setError(t(source==='hevy'?'im1.wrongFileHevy':'im1.wrongFile'));return;
+    setError(wrongType);return;
    }
    let text='',tooLarge=false;
    try{
@@ -38,7 +38,7 @@ export default function ImportStart(){
    }finally{try{await file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
    try{
     if(tooLarge)throw new ImportParseError('too-large',t('im1.tooLarge'));
-    const parsed=parseImportCsv(source,asset.name,text);
+    const parsed=parseImportCsv(source,asset.name,text,language);
     setImportDraft({parsed,error:null,source,fileName:asset.name});
    }catch(reason){
     if(reason instanceof ImportParseError)

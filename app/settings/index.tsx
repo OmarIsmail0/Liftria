@@ -6,6 +6,7 @@ import { useLanguage, systemLanguage } from '../../src/i18n/LanguageProvider';
 import { resolveLanguage, type LanguagePreference } from '../../src/i18n';
 import { Button, Card, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
+import { devRoutesEnabled } from '../../src/navigation/devRoutes';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
 import { localStorageCounts } from '../../src/services/database';
@@ -14,7 +15,7 @@ import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
 /** Local-first grouped settings, with appearance controls available immediately. */
 export default function SettingsHome() {
   const { theme, preferences, setMode } = useTheme();
-  const { t, preference, setLanguage } = useLanguage();
+  const { t, language, preference, setLanguage } = useLanguage();
   const [reopen, setReopen] = useState(false);
   const [languageError, setLanguageError] = useState(false);
   const taps = useRef(initialVersionTapState);
@@ -22,10 +23,10 @@ export default function SettingsHome() {
   useEffect(() => {
     let alive = true;
     void localStorageCounts().then(result => {
-      if(alive && result.ok) setDatabaseSize(formatLocalDatabaseSize(result.value.databaseBytes));
+      if(alive && result.ok) setDatabaseSize(formatLocalDatabaseSize(result.value.databaseBytes, language));
     });
     return () => { alive = false; };
-  }, []);
+  }, [language]);
   async function changeLanguage(next: LanguagePreference) {
     const ok = await setLanguage(next);
     setLanguageError(!ok);
@@ -73,7 +74,7 @@ export default function SettingsHome() {
         onPress={() => {
           const next = advanceVersionTap(taps.current, Date.now());
           taps.current = next.state;
-          if (next.unlocked) router.push('/dev');
+          if (next.unlocked && devRoutesEnabled()) router.push('/dev');
         }}
         style={{ minHeight: theme.size.touch.min, justifyContent: 'center' }}>
         <Typography tone="secondary" size="small">{t('settings.home.version', { version: releaseVersion.name })}</Typography>

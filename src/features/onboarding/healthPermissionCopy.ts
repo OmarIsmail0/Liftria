@@ -47,6 +47,7 @@ export function offerHealthConnectInstall(status: 'available' | 'not-installed' 
 }
 
 /** The Android provider-update-required status can also mean the provider app is absent. */
-export function healthConnectInstallLabel(status: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null): string | null {
-  return offerHealthConnectInstall(status) ? 'Get Health Connect' : null;
+export function healthConnectInstallLabel(status: 'available' | 'not-installed' | 'needs-update' | 'unsupported' | null,
+  language: AppLanguage = 'en'): string | null {
+  return offerHealthConnectInstall(status) ? translate(language, 'onboarding.getHealthConnect') : null;
 }
