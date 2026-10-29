@@ -91,7 +91,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - `src/features/health/HealthCharts.tsx` still shows English in Arabic: "No source-backed steps to plot.", "hourly"/"daily", "Midnight · 6 AM · Noon · 6 PM · Midnight", "7 days ago · Today", the heart-rate summary and its accessibility text. Translate all of it (English and Arabic; counts through `pluralForm()`; number+unit with a no-break space; times in the user's locale with Western digits).
    - Widen PR W's guard (`src/i18n/__tests__/englishInArabicUi.test.ts`) to scan `src/features/health/**`, keeping the exclusion only for the files PR S (#28) edits: `app/(tabs)/progress/health*.tsx`, `src/features/health/AppleHealthComing.tsx`, `src/features/health/useHealthSnapshot.ts`. Fix whatever else it finds in `src/features/health/**` outside those files.
    - **Don't touch** `src/design/**`, `src/services/health/**` or the files above.
-13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**, after PR S merges)
+13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**; owner 2026-10-29: start now from `main` on a new branch, without waiting for PR S. Don't touch the Health files or `src/services/health/**`; PR S and PR AA own them)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - ~~**Claude does these in the shared code:** long screen titles in `Header`~~ DONE: PR #40 merged (2026-10-29), with the Orb fixes and Western digits on iPhone. ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
@@ -138,6 +138,15 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Tests:** the adapter's mapping and unit normalization run against recorded sample objects (mock the library), including the read permission staying `'unknown'`, an empty result and an error. The coverage guards (backup, Delete all) still pass. Nothing is stored that the guards don't cover.
    - **Checks:** the CI iPhone simulator (label `ios`) has little or no health data, so the shots show the empty and permission states. A real iPhone needs the owner's Apple Developer account. Say in the PR what couldn't be checked.
    - **Don't touch** `src/design/**`, the Android Health Connect adapter's behavior, or workflows.
+
+16. **PR AB: `Phase 5 / Accessibility guards`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - Add `src/i18n/__tests__/accessibility.test.ts`, a **TypeScript-AST** scanner (use the `typescript` package already in devDependencies; not regexes, because props span lines). It scans `app/**` and `src/features/**` (not `app/dev/**`, not tests) and fails when:
+     1. a `Pressable`, `TouchableOpacity` or `TouchableHighlight` has no `accessibilityRole`, or has neither an `accessibilityLabel` nor a direct `Text`/`Typography` child with visible text;
+     2. an `Image` has neither an `accessibilityLabel` nor `accessible={false}`;
+     3. a `TextInput` has no `accessibilityLabel` (a placeholder isn't a label).
+   - Test the scanner itself on small planted code strings: each rule must fail on a bad example and pass on a good one.
+   - Fix every offender it finds: labels come from `t()` with English and Arabic strings. Don't change behavior or layout.
+   - Don't touch `src/design/**` (the shared primitives already label themselves), the Health screens, `src/services/health/**`, or `app.config.ts`.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
