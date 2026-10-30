@@ -193,6 +193,14 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - The last 178 ids in `docs/phase5/arabic-instructions-batch6.txt`: stretching, the rest of plyometrics, and cardio, 524 steps. After this, all 876 bundled exercises have Arabic steps.
    - Same rules. Expect 876 ids. Once every pack exercise is covered, the "instructions in English" note never shows for a pack exercise. Keep the helper's fallback and its test as they are: custom exercises and a future pack update still need them.
 
+24. **PR AJ: `Phase 5 / Arabic number agreement`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - In Arabic the noun after a number changes with the number: 1 سعرة واحدة / يوم واحد, 2 يومان, 3–10 أيام (plural), 11–99 يومًا (singular accusative), 100+ يوم. Some Arabic strings in `src/i18n/ar.ts` put a variable count before a fixed noun, e.g. `{count} يوم`, `{count} تمرين`, `{count} مجموعة`, `{count} طلب`, `{count} قياسات`, `{remaining} سعرة`. They read wrong for most numbers.
+   - **Count nouns** (days, weeks, months, hours, minutes, seconds, workouts, sets, sessions, reps, requests, items, measurements, records, foods): every string where a placeholder count comes right before one of these nouns becomes a plural key family (`.zero/.one/.two/.few/.many/.other`, in both `en.ts` and `ar.ts`, like `count.workouts.*`) chosen with `pluralForm()` at the call site. Arabic 11–99 forms use the singular accusative with tanween (`يومًا`, `تمرينًا`, `دقيقةً`, `مجموعةً`).
+   - **Unit labels stay as they are:** غ, مل, كغ, سم, %, and سعرة used as an energy unit right after an amount (like "kcal": `{kcal} سعرة`). Don't pluralize units.
+   - **Fixed numbers:** fix literal number+noun pairs the same way (`72 ساعة` → `72 ساعةً`, `45 ثانية` → `45 ثانيةً`) and typos such as `يوما` → `يومًا`.
+   - **Guard (test):** fail when an Arabic value in a key that is not a plural form (`.zero` … `.other`) has a `{placeholder}` immediately followed by a count noun from a list in the test; fail on `يوما` without tanween; plant one bad example for each check. English keeps working through the same plural keys.
+   - Update every call site to pass the count and pick the form. Don't touch `src/design/**`, Health adapters, `src/i18n/exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 **Rules (same as Phase 4):**
