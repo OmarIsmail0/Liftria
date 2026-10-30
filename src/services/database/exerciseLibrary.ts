@@ -2,7 +2,9 @@ import rawPack from '../../../assets/data/exercises/free-exercise-db.json';
 import { z } from 'zod';
 import { dbOperation, type DbResult } from './index';
 import type { AppLanguage } from '../../i18n';
+import { equipmentLabel } from '../../i18n/equipment';
 import { exerciseName, normalizeArabicSearch } from '../../i18n/exerciseNames';
+import { muscleLabel } from '../../i18n/muscles';
 import { MUSCLES, type Exercise, type ExerciseType, type Muscle, type PackExercise } from './gymTypes';
 
 export const PACK_ID = 'free-exercise-db:f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5';
@@ -117,8 +119,11 @@ const ARABIC_LETTER = /[\u0600-\u06FF]/;
 let collatorAr: Intl.Collator | null = null;
 const arabicCollator = () => (collatorAr ??= new Intl.Collator('ar'));
 /**
- * Library search. In Arabic, an Arabic query matches the Arabic display name of pack
- * exercises (and custom names); a Latin query still matches the English names.
+ * Library search. An Arabic query ranks the Arabic display name: 0 exact, 1 the name
+ * starts with it, 2 a word starts with it, 3 the name contains it, 4 one edit on a
+ * word of 4+ letters, then 5 an Arabic primary-muscle or equipment label. A Latin
+ * query uses the English name and aliases. Names, words and labels are normalized
+ * once per call. Ties use one shared Arabic collator, never localeCompare with a locale.
  */
 export function searchExercises(all: Exercise[], query: string, muscle?: Muscle | null,
   language: AppLanguage = 'en'): Exercise[] {
@@ -134,12 +139,27 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
   if (ARABIC_LETTER.test(query)) {
     const text = normalizeArabicSearch(query);
     if (!text) return filtered.sort(byName);
-    // Normalized name and its words, once per exercise per call.
+    // Names, words and labels once per call. The 17 muscle labels are shared;
+    // each distinct equipment string is normalized once.
+    const muscleLabels = new Map(MUSCLES.map(muscle =>
+      [muscle, normalizeArabicSearch(muscleLabel('ar', muscle))] as const));
+    const equipmentLabels = new Map<string, string>();
+    const equipmentText = (equipment: string | null): string => {
+      const key = equipment ?? '';
+      const cached = equipmentLabels.get(key);
+      if (cached !== undefined) return cached;
+      const label = normalizeArabicSearch(equipmentLabel('ar', equipment, ''));
+      equipmentLabels.set(key, label);
+      return label;
+    };
     const rows = filtered.map(exercise => {
       const name = normalizeArabicSearch(display(exercise));
-      return { exercise, name, words: name ? name.split(' ') : [] };
+      const labels = exercise.primaryMuscles.map(muscle => muscleLabels.get(muscle) ?? '');
+      const equipment = equipmentText(exercise.equipment);
+      if (equipment) labels.push(equipment);
+      return { exercise, name, words: name ? name.split(' ') : [], labels };
     });
-    const score = (row: { name: string; words: string[] }): number => {
+    const score = (row: { name: string; words: string[]; labels: string[] }): number => {
       if (row.name === text) return 0;
       if (row.name.startsWith(text)) return 1;
       if (row.words.some(word => word.startsWith(text))) return 2;
@@ -147,6 +167,7 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
       // A word of 4+ letters, one insertion, deletion or substitution away.
       if (row.words.some(word => word.length >= 4 && Math.abs(word.length - text.length) <= 1
         && editDistance(word, text) <= 1)) return 4;
+      if (row.labels.some(label => label.includes(text))) return 5;
       return Infinity;
     };
     return rows.map(row => ({ row, rank: score(row) })).filter(item => Number.isFinite(item.rank))
