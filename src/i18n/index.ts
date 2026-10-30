@@ -20,6 +20,11 @@ export function resolveLanguage(preference: LanguagePreference, deviceLanguage: 
  * Western digits everywhere (owner rule). Hermes on iOS ignores `numberingSystem` and the
  * `-u-nu-latn` locale extension, so map Arabic-Indic digits and separators back explicitly.
  */
+/** Join a list with the language's comma: Arabic uses U+060C, not the Latin comma. */
+export function joinList(language: AppLanguage, items: readonly string[]): string {
+  return items.join(language === 'ar' ? '\u060C ' : ', ');
+}
+
 export function latinDigits(value: string): string {
   return value
     .replace(/[\u0660-\u0669]/g, digit => String(digit.charCodeAt(0) - 0x0660))

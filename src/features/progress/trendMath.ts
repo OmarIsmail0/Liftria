@@ -34,7 +34,7 @@ export function nutritionTrend(entries:readonly DiaryEntry[],today:string,period
     completeMacroDays:withMacros.length,
     proteinMetDays:logged.filter(d=>d.proteinGoal==='met').length};
 }
-export type WeightPoint={id:string;at:string;kg:number;source:'liftria'|'health-connect';origin?:string};
+export type WeightPoint={id:string;at:string;kg:number;source:'liftria'|'health-connect'|'apple-health';origin?:string};
 export type WeightTrendPoint={day:string;kg:number;trend:number;entries:WeightPoint[]};
 export type WeightTrend={points:WeightTrendPoint[];latest:WeightTrendPoint|null;
   change:number|null;startDay:string;endDay:string};
@@ -59,8 +59,8 @@ export function weightTrend(rows:readonly WeightPoint[],first:string,last:string
   const past=latest?points.filter(p=>p.day<=dayOffset(latest.day,-7)).at(-1)??null:null;
   return {points,latest,change:latest&&past?latest.trend-past.trend:null,startDay:first,endDay:last};
 }
-/** The two sources share a chart but HC is never editable or copied to the profile. */
+/** Local entries and imported health readings share a chart. Imported rows stay read-only. */
 export function sourceCounts(rows:readonly WeightPoint[]):{local:number;health:number}{
   return {local:rows.filter(r=>r.source==='liftria').length,
-    health:rows.filter(r=>r.source==='health-connect').length};
+    health:rows.filter(r=>r.source!=='liftria').length};
 }

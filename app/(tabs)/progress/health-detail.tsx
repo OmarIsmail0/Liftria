@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView, View  } from 'react-native';
+import { appleHealthPhone, formatAppleAmount, healthCopy } from '../../../src/features/health/deviceHealth';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
@@ -8,8 +9,9 @@ import { healthConnect, readDailyEnergy } from '../../../src/services/health';
 import { metricTypes, type HealthValue, type HealthRecord, type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 import { StepsChart, HeartRateChart } from '../../../src/features/health/HealthCharts';
-import { dailyStepsBySource, emptyMetricState, heartRateSamples,
-  hourlyStepsBySource, recordsInWindow, sourceName, summarizeRecords,
+import { appleWindowSummary, dailyStepsBySource, emptyMetricState, heartRateSamples,
+  hourlyStepsBySource, NOTE_APPLE_READ_ERROR, NOTE_APPLE_TOTAL, recordsInWindow, SOURCE_APPLE,
+  sourceName, summarizeAppleTotal, summarizeRecords,
   type HealthSummary } from '../../../src/features/health/presentation';
 import { formatNumber, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
@@ -27,7 +29,7 @@ function recordTime(r: HealthValue): string {
     r.kind === 'aggregate' ? r.windowEnd : r.end;
 }
 
-export default function HealthMetricDetail() {
+function HealthMetricDetailAndroid() {
   const { metric: param } = useLocalSearchParams<{ metric: string }>();
   const metric: MetricType = typeof param === 'string' && metricTypes.includes(param as MetricType)
     ? param as MetricType : 'steps';
@@ -42,16 +44,18 @@ export default function HealthMetricDetail() {
   const [showEstimate, setShowEstimate] = useState(false);
   const [estimate, setEstimate] = useState<{ kcal: number; type: string } | null>(null);
   const permission = snapshot.permissions[metric];
-  const permitted = permission === 'granted';
   const available = snapshot.availability === 'available';
+  const permitted = appleHealthPhone() ? available && permission !== 'denied' : permission === 'granted';
   const base = snapshot.readings[metric];
   const today = new Date(), start = new Date(today);
   start.setHours(0,0,0,0);
   const weekStart = new Date(start); weekStart.setDate(weekStart.getDate() - 6);
   const rangeStart = window === 'day' ? start : weekStart;
-  const dayScoped = summarizeRecords(metric,
-    recordsInWindow(metric, snapshot.records, start, today),
-    snapshot.permissions[metric] ?? 'unknown', available);
+  const dayScoped = appleHealthPhone()
+    ? appleWindowSummary(metric, snapshot.records, start, today, available)
+    : summarizeRecords(metric,
+      recordsInWindow(metric, snapshot.records, start, today),
+      snapshot.permissions[metric] ?? 'unknown', available);
   const dayResult = base?.state === 'error'
     ? { ...dayScoped, state: 'error' as const, note: base.note } : dayScoped;
   const result = window === 'week' ? (!available || !permitted
@@ -73,22 +77,29 @@ export default function HealthMetricDetail() {
       if (!mounted) return;
       if (value.status === 'ok') {
         setWeekRecords(value.records);
-        setWeek(summarizeRecords(metric, recordsInWindow(metric, value.records, from, until), 'granted', true));
+        if (appleHealthPhone()) {
+          const aggregate = value.records.find(row => row.kind === 'aggregate' && row.metric === metric && row.value > 0);
+          setWeek(aggregate && aggregate.kind === 'aggregate'
+            ? summarizeAppleTotal(metric, aggregate)
+            : appleWindowSummary(metric, value.records, from, until, true));
+        } else {
+          setWeek(summarizeRecords(metric, recordsInWindow(metric, value.records, from, until), 'granted', true));
+        }
       } else {
         setWeekRecords([]);
         setWeek(value.status === 'error'
           ? { ...emptyMetricState(metric, 'granted', true), state: 'error',
-            note: t('healthMetric.weekError') }
+            note: t(healthCopy('metric.weekError')) }
           : emptyMetricState(metric, value.status === 'permission-denied' ? 'denied' : 'unknown',
             value.status !== 'unavailable'));
       }
     }).catch(() => { if (mounted) setWeek({ ...emptyMetricState(metric,'granted',true),
-      state:'error', note:t('healthMetric.weekReadError') }); });
+      state:'error', note:t(healthCopy('metric.weekReadError')) }); });
     return () => { mounted = false; };
   }, [metric, window, available, permitted, permission, weekRefresh, t]);
 
   useEffect(() => {
-    if (metric !== 'active-calories' || !available ||
+    if (appleHealthPhone() || metric !== 'active-calories' || !available ||
         snapshot.permissions['active-calories'] !== 'granted') return;
     let mounted = true;
     void readDailyEnergy(1).then(rows => {
@@ -101,7 +112,8 @@ export default function HealthMetricDetail() {
   }, [metric,available,snapshot.permissions]);
 
   const originLabel=(name:string)=>name==='Phone'?t('healthMetric.sourcePhone'):
-    name==='Unknown source'?t('healthMetric.sourceUnknown'):name;
+    name==='Unknown source'?t('healthMetric.sourceUnknown'):
+    name===SOURCE_APPLE?t('appleHealth.name'):name;
   const age=(iso:string):string=>{
     const parsed=Date.parse(iso);
     if(!Number.isFinite(parsed))return t('healthMetric.timeUnknown');
@@ -117,12 +129,20 @@ export default function HealthMetricDetail() {
     value==='No data'?t('healthMetric.noData'):
     value==='Unverified device. The data origin does not prove this came from a watch.'?t('healthMetric.sourceUnverified'):
     value==='Separate sources; no combined total.'?t('healthMetric.sourceSeparate'):
+    value===NOTE_APPLE_TOTAL?t('appleHealth.overview.total'):
+    value===NOTE_APPLE_READ_ERROR?t('appleHealth.readError'):
     language==='en'?value:t('healthMetric.readError');
   const describe=(r:HealthValue):string=>{
-    if(r.kind==='interval')return formatNumber(language,r.value)+' '+r.unit;
+    if(r.kind==='interval')return appleHealthPhone()
+      ? formatAppleAmount(language, r.value, r.metric==='steps'?'steps':r.unit)
+      : formatNumber(language,r.value)+' '+r.unit;
     if(r.kind==='series')return t('healthMetric.heartSamples',{count:r.points.length});
-    if(r.kind==='instant'||r.kind==='rate')return formatNumber(language,r.value)+' '+r.unit;
-    if(r.kind==='session')return t('healthMetric.minutes',{count:Math.round(r.durationSec/60)});
+    if(r.kind==='instant'||r.kind==='rate')return appleHealthPhone()
+      ? formatAppleAmount(language, r.value, r.unit)
+      : formatNumber(language,r.value)+' '+r.unit;
+    if(r.kind==='session')return appleHealthPhone()
+      ? formatAppleAmount(language, r.durationSec/60, 'minutes')
+      : t('healthMetric.minutes',{count:Math.round(r.durationSec/60)});
     return t('healthMetric.sleepSession');
   };
   const energyStatus=()=>!available?t('healthMetric.notAvailable'):
@@ -139,14 +159,14 @@ export default function HealthMetricDetail() {
 
   if (!snapshot.loaded) return <Screen embedded>
     <Header title={label[metric]?t(label[metric]):metric} subtitle={t('healthMetric.loading')} />
-    <Typography tone="secondary">{t('healthMetric.checkingPermission')}</Typography>
+    <Typography tone="secondary">{t(healthCopy('metric.checkingPermission'))}</Typography>
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
       setWeek(null); setWeekRecords([]); setWeekRefresh(v => v+1); void refresh(true);
     }} colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}>
-    <Header title={label[metric]?t(label[metric]):metric} subtitle={t('healthMetric.readOnly')}
+    <Header title={label[metric]?t(label[metric]):metric} subtitle={t(healthCopy('metric.readOnly'))}
       onBack={() => backOrReplace(router, '/(tabs)/progress')} />
     <Card rim="health" title={t('healthMetric.measurement')}>
       <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
@@ -155,7 +175,7 @@ export default function HealthMetricDetail() {
         <Button label={t("healthMetric.week")} size="sm" variant={window === 'week' ? 'primary' : 'secondary'}
           onPress={() => { setWeek(null); setWeekRecords([]); setWeekRefresh(v => v+1); setWindow('week'); }} />
       </View>
-      {energy ? <>
+      {energy && !appleHealthPhone() ? <>
         <Typography>{energyStatus()}</Typography>
         <Typography tone="secondary">{t('healthMetric.energyWarning')}</Typography>
         {permitted && estimate && <Button label={showEstimate?t('healthMetric.hideEstimate'):t('healthMetric.showEstimate')} variant="ghost"
@@ -167,41 +187,49 @@ export default function HealthMetricDetail() {
         </>}
       </> : window === 'week' && week === null && available && permitted ? <Typography tone="secondary">{t('healthMetric.weekLoading')}</Typography>
         : result?.state === 'value' ? <>
-          {metric === 'steps' && result.total !== null &&
-            <Typography size="metric-l">{t('healthMetric.stepsTotal',{count:result.total})}</Typography>}
-          {metric !== 'steps' && result.total !== null &&
-            <Typography size="metric-l">{formatNumber(language,result.total)} {sourceRows[0]?.unit}</Typography>}
+          {metric === 'steps' && result.total !== null && (!appleHealthPhone() || result.total > 0) &&
+            <Typography size="metric-l">{appleHealthPhone()
+              ? formatAppleAmount(language, result.total, 'steps')
+              : t('healthMetric.stepsTotal',{count:result.total})}</Typography>}
+          {metric !== 'steps' && result.total !== null && (!appleHealthPhone() || result.total > 0) &&
+            <Typography size="metric-l">{appleHealthPhone()
+              ? formatAppleAmount(language, result.total, sourceRows[0]?.unit ?? '')
+              : <>{formatNumber(language,result.total)} {sourceRows[0]?.unit}</>}</Typography>}
           {result.total === null && <Typography>{t('healthMetric.separate')}</Typography>}
           {result.unverified && <Chip kind="pending" label={t('healthMetric.unverified')} />}
           {result.note ? <Typography tone="secondary">{displayNote(result.note)}</Typography> : null}
-        </> : <Typography tone="secondary">{result?.note?displayNote(result.note):t('healthMetric.checking')}</Typography>}
-      {result?.state === 'value' && metric === 'steps' &&
+        </>         : <Typography tone="secondary">{result?.note?displayNote(result.note):t(healthCopy('metric.checking'))}</Typography>}
+      {appleHealthPhone() && result?.state === 'no-data' &&
+        <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>}
+      {result?.state === 'value' && metric === 'steps' && !(appleHealthPhone() && stepSeries.length === 0) &&
         <StepsChart series={stepSeries} period={window} />}
       {result?.state === 'value' && metric === 'heart-rate' &&
         <HeartRateChart samples={hrSamples} />}
       {permitted && result?.state === 'value' && <Typography tone="secondary" size="small">
-        {t('healthMetric.sourceExplain')}
+        {t(healthCopy('metric.sourceExplain'))}
       </Typography>}
     </Card>
     <Card title={t('healthMetric.sources')} rim="health">
       {sourceRows.length && permitted ? sourceRows.map(source =>
         <ListRow key={source.origin} title={originLabel(source.label)}
           detail={source.origin+' · '+(source.stale?t('healthMetric.stale',{time:age(source.latestAt)}):t('healthMetric.latest',{time:age(source.latestAt)}))}
-          suffix={<Typography>{formatNumber(language,source.value)} {source.unit}</Typography>} />)
+          suffix={<Typography>{appleHealthPhone()
+            ? formatAppleAmount(language, source.value, source.unit)
+            : <>{formatNumber(language,source.value)} {source.unit}</>}</Typography>} />)
         : <Typography tone="secondary">{t('healthMetric.noSource')}</Typography>}
       <Typography size="small" tone="secondary">{t('healthMetric.originNote')}</Typography>
     </Card>
     <Card title={t('healthMetric.what')}>
       <Typography tone="secondary">{metric === 'steps'
-        ? t('healthMetric.stepsNote')
+        ? t(healthCopy('metric.stepsNote'))
         : metric === 'heart-rate'
-          ? t('healthMetric.heartNote')
+          ? t(healthCopy('metric.heartNote'))
           : metric === 'sleep-session'
-            ? t('healthMetric.sleepNote')
+            ? t(healthCopy('metric.sleepNote'))
             : metric === 'exercise-session'
-              ? t('healthMetric.sessionNote')
-              : energy ? t('healthMetric.energyNote')
-                : t('healthMetric.otherNote')}</Typography>
+              ? t(healthCopy('metric.sessionNote'))
+              : energy ? t(healthCopy('metric.energyNote'))
+                : t(healthCopy('metric.otherNote'))}</Typography>
     </Card>
     <Card title={t('healthMetric.recent')}>
       {records.length ? records.map(r =>
@@ -211,7 +239,11 @@ export default function HealthMetricDetail() {
           onPress={() => router.push({ pathname: '/(tabs)/progress/health-record',
             params: { metric, recordId: r.recordId, origin: r.dataOrigin,
               adapter: r.adapter, readAt: snapshot.readAt ?? '' } })} />)
-        : <Typography tone="secondary">{t('healthMetric.noRecords')}</Typography>}
+        : <Typography tone="secondary">{t(healthCopy('metric.noRecords'))}</Typography>}
     </Card>
   </ScrollView></Screen>;
+}
+
+export default function HealthMetricDetail(){
+ return <HealthMetricDetailAndroid/>;
 }

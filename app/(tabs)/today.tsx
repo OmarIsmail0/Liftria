@@ -11,8 +11,9 @@ import { getProfile, type Profile } from '../../src/services/database/profile';
 import { getCurrentTarget, type Target } from '../../src/services/database/targets';
 import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState, type KeyState } from '../../src/services/secure-storage';
+import { appleHealthPhone, formatAppleAmount, healthCopy } from '../../src/features/health/deviceHealth';
+import { heartRateTodayStatus, NOTE_APPLE_READ_ERROR, NOTE_APPLE_TOTAL, phase2EnergyMessage, SOURCE_APPLE } from '../../src/features/health/presentation';
 import { overviewMetrics, useHealthSnapshot } from '../../src/features/health/useHealthSnapshot';
-import { heartRateTodayStatus, phase2EnergyMessage } from '../../src/features/health/presentation';
 import { listPlans, listSessions, listTemplates } from '../../src/services/database/gymRepositories';
 import { scheduledTemplate, isLocalDate } from '../../src/features/train/weekPlan';
 import { readDiaryDay, summarizeEntries, type DaySummary } from '../../src/features/eat/diaryRepository';
@@ -85,13 +86,16 @@ export default function TodayTab() {
   const hr = snapshot.readings['heart-rate'];
   const hasTarget = local.target !== null;
   const setupSteps = ['welcome','privacy','profile','goal','target','health','watch','hiku','done'] as const;
-  const promptHealth = snapshot.loaded && snapshot.availability !== null && !connectDismissed &&
-    (snapshot.availability !== 'available' ||
-      (snapshot.permissions.steps !== 'granted' && snapshot.permissions['heart-rate'] !== 'granted'));
+  const promptHealth = snapshot.loaded && snapshot.availability !== null && !connectDismissed && (
+    appleHealthPhone()
+      ? snapshot.availability === 'available' && steps?.state !== 'value' && hr?.state !== 'value'
+      : snapshot.availability !== 'available' ||
+        (snapshot.permissions.steps !== 'granted' && snapshot.permissions['heart-rate'] !== 'granted'));
   const justUpdated = snapshot.fresh;
   const now = new Date();
   const sourceLabel=(label:string)=>label==='Phone'?t('chips.phone'):
-    label==='Unknown source'?t('healthOverview.unknownSource'):label;
+    label==='Unknown source'?t('healthOverview.unknownSource'):
+    label===SOURCE_APPLE?t('appleHealth.name'):label;
   const age=(iso:string)=>{
     const time=Date.parse(iso);
     if(!Number.isFinite(time))return t('healthOverview.timeUnknown');
@@ -108,7 +112,9 @@ export default function TodayTab() {
     message==='No measured source'?t('healthOverview.noMeasure'):
     message==='Unverified device. The data origin does not prove this came from a watch.'?t('healthOverview.noteUnverified'):
     message==='Separate sources; no combined total.'?t('healthOverview.noteSeparate'):
-    language==='en'?message:t('healthOverview.checking');
+    message===NOTE_APPLE_TOTAL?t('appleHealth.overview.total'):
+    message===NOTE_APPLE_READ_ERROR?t('appleHealth.readError'):
+    language==='en'?message:t(appleHealthPhone()?'appleHealth.today.checking':'healthOverview.checking');
   const energyNote=note(phase2EnergyMessage(
     snapshot.permissions['active-calories']??'unknown',snapshot.availability==='available'));
 
@@ -183,21 +189,22 @@ export default function TodayTab() {
           <Typography tone="secondary">{t('today.trainingEmpty')}</Typography>}
         <Typography tone="tertiary" size="small">{t('today.trainingNote')}</Typography>
       </Card>
-      {promptHealth && <Card title={t('today.healthPermissions')} rim="health">
-        <Typography tone="secondary">{t('today.hiddenUntilPermission')}</Typography>
+      {promptHealth && <Card title={t(healthCopy('today.permissions'))} rim="health">
+        <Typography tone="secondary">{t(healthCopy('today.hidden'))}</Typography>
         <View style={{ flexDirection: 'row', flexWrap:'wrap',gap:theme.space[2] }}>
-          <Button label={t('today.turnOn')} variant="secondary" onPress={() =>
+          <Button label={appleHealthPhone()?t('appleHealth.today.connect'):t('today.turnOn')} variant="secondary" onPress={() =>
             router.push('/(tabs)/progress/health-permissions')} />
           <Button label={t('today.notNow')} variant="ghost" onPress={() => setConnectDismissed(true)} />
         </View>
       </Card>}
       <Card rim="health" title={t('today.activity')}>
-        {snapshot.availability !== 'available' && snapshot.availability !== null && <Button label={t('today.connectHealth')} variant="secondary"
-          onPress={() => router.push('/(tabs)/progress/health-permissions')} />}
+        {snapshot.availability !== 'available' && snapshot.availability !== null && !appleHealthPhone() &&
+          <Button label={t('today.connectHealth')} variant="secondary"
+            onPress={() => router.push('/(tabs)/progress/health-permissions')} />}
         {justUpdated && <Typography tone="secondary" size="small">{t('today.justUpdated')}</Typography>}
         {steps?.state === 'value' ? steps.sources.map(source =>
           <ListRow key={source.origin} title={t('today.sourceSteps',{source:sourceLabel(source.label)})}
-            detail={source.stale?t('today.staleAt',{time:age(source.latestAt)}):t('today.readOnly')}
+            detail={source.stale?t('today.staleAt',{time:age(source.latestAt)}):t(healthCopy('today.readOnly'))}
             suffix={<View style={{ gap: theme.space[1], alignItems: 'flex-end' }}>
               <Typography>{formatNumber(language, source.value)}</Typography>
               <Chip kind={source.label === 'Phone' ? 'phone' : 'pending'}
@@ -205,7 +212,7 @@ export default function TodayTab() {
               {source.stale && <Chip kind="stale" label={age(source.latestAt)} />}
             </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
-          : <Typography tone="secondary">{t('today.stepsStatus',{status:note(steps?.note??'Checking Health Connect…')})}</Typography>}
+          : <Typography tone="secondary">{t('today.stepsStatus',{status:note(steps?.note??(appleHealthPhone()?t('appleHealth.today.checking'):'Checking Health Connect…'))})}</Typography>}
         {hr?.state === 'value' ? hr.sources.map(source =>
           <ListRow key={source.origin} title={t('today.sourceHeart',{source:sourceLabel(source.label)})}
             detail={heartRateTodayStatus(source.latestAt, now).stale
@@ -218,8 +225,15 @@ export default function TodayTab() {
                 <Chip kind="stale" label={age(source.latestAt)} />}
             </View>}
             onPress={() => router.push('/(tabs)/progress/health')} />)
-          : <Typography tone="secondary">{t('today.heartStatus',{status:note(hr?.note??'Checking Health Connect…')})}</Typography>}
-        <Typography tone="secondary">{t('today.energyStatus',{status:energyNote})}</Typography>
+          : <Typography tone="secondary">{t('today.heartStatus',{status:note(hr?.note??(appleHealthPhone()?t('appleHealth.today.checking'):'Checking Health Connect…'))})}</Typography>}
+        {appleHealthPhone() && snapshot.readings['active-calories']?.state === 'value' &&
+          (snapshot.readings['active-calories']?.total ?? 0) > 0 ?
+          <Typography tone="secondary">{t('appleHealth.today.energy',{amount:formatAppleAmount(language,
+            snapshot.readings['active-calories']?.total ?? 0,
+            snapshot.readings['active-calories']?.sources[0]?.unit ?? 'kcal')})}</Typography> :
+          <Typography tone="secondary">{t('today.energyStatus',{status:energyNote})}</Typography>}
+        {appleHealthPhone() && (steps?.state === 'no-data' || hr?.state === 'no-data') &&
+          <Typography tone="secondary" size="small">{t('appleHealth.changeAccess')}</Typography>}
         {steps?.sources.length !== 1 && (steps?.sources.length ?? 0) > 1 &&
           <Typography tone="secondary" size="small">{t('today.sourceNote')}</Typography>}
         <Button label={t('today.healthDetails')} variant="ghost" fullWidth

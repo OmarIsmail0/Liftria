@@ -35,11 +35,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // Under "ios" in each file, so Android doesn't get untranslated-default strings (lint error).
   locales: { en: './locales/en.json', ar: './locales/ar.json' },
   android: {
-    package: 'com.liftria.app',
     adaptiveIcon: {
       foregroundImage: './assets/brand/splash-light.png',
       backgroundColor: '#F3F5F8',
     },
+    package: 'com.liftria.app',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
     permissions: [...healthReadPermissions, 'android.permission.INTERNET', 'android.permission.POST_NOTIFICATIONS'],
     allowBackup: false,
@@ -77,6 +77,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // RTL from the first launch on an Arabic phone (otherwise only after a restart).
     './plugins/withArabicFirstLaunchRtl',
     'react-native-health-connect',
+    // Read-only Apple Health. `NSHealthUpdateUsageDescription: false` omits the write
+    // prompt (the plugin adds one by default). `background: false` omits background delivery.
+    ['@kingstinct/react-native-healthkit', {
+      NSHealthShareUsageDescription: 'Liftria reads steps, heart rate, workouts, sleep and body measurements from Apple Health to show them in the app. It never writes to Apple Health.',
+      NSHealthUpdateUsageDescription: false,
+      background: false,
+    }],
     ['expo-build-properties', {
       android: { minSdkVersion: 28, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
     }],

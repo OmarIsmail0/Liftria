@@ -8,6 +8,7 @@ import {readDiaryRange,type DiaryEntry} from '../../../src/features/eat/diaryRep
 import {nutritionTrend,weightTrend,type WeightPoint} from '../../../src/features/progress/trendMath';
 import {cachedHealthWeights,listLocalWeights} from '../../../src/features/progress/weightRepository';
 import {getTypedSetting} from '../../../src/services/database/settings';
+import {healthCopy} from '../../../src/features/health/deviceHealth';
 
 export default function ProgressTab(){
  const {t,language}=useLanguage();
@@ -43,14 +44,14 @@ export default function ProgressTab(){
    <ListRow title={t('trend.openNutrition')} onPress={()=>router.push('/(tabs)/progress/nutrition')}/>
   </Card>
   <Card rim="health" title={t('trend.body')}>
-   <Typography tone="secondary" size="small">{t('trend.weightSource')}</Typography>
-   <Typography>{!body.latest?t('trend.weightEmpty'):hidden?t('trend.hidden'):
+   <Typography tone="secondary" size="small">{t(healthCopy('trend.source'))}</Typography>
+   <Typography>{!body.latest?t(healthCopy('trend.empty')):hidden?t('trend.hidden'):
     t('trend.kg',{weight:format(body.latest.trend,1)})}</Typography>
    <ListRow title={t('trend.openBody')} onPress={()=>router.push('/(tabs)/progress/body')}/>
   </Card>
   <Card rim="health" title={t('progress.health')}>
-   <Typography tone="secondary">{t('progress.healthDescription')}</Typography>
-   <ListRow title={t('settings.home.health')} detail={t('progress.healthOverview')}
+   <Typography tone="secondary">{t(healthCopy('progress.description'))}</Typography>
+   <ListRow title={t(healthCopy('settings.title'))} detail={t('progress.healthOverview')}
     onPress={()=>router.push('/(tabs)/progress/health')}/>
   </Card>
  </Screen>;

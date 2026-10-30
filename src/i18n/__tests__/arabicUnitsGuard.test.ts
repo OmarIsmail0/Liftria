@@ -98,9 +98,10 @@ describe('Arabic units guard', () => {
       // - طلبات (requests plural)
       const hasPlural = /أيام|تمارين|طلبات|عناصر/.test(arabicText);
       // 11-99 take the singular accusative, so the counted noun right after {count} ends in tanwin
-      // fath (e.g. يومًا). A bare singular like "14 يوم" is wrong too, not only a plural.
+      // fath: يومًا, or on a feminine noun ةً (خطوةً، دقيقةً). A bare singular like "14 يوم" is wrong
+      // too, not only a plural.
       const firstWord = arabicText.split(/\s/)[0] ?? '';
-      if (!firstWord.endsWith('ًا')) {
+      if (!firstWord.endsWith('ًا') && !firstWord.endsWith('ةً')) {
         violations.push(`${key}: "${value}" counted noun "${firstWord}" is not singular accusative`);
         continue;
       }

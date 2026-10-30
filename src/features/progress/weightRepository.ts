@@ -1,4 +1,5 @@
 import {dbOperation,listCachedHealth,type DbResult} from '../../services/database';
+import {healthAdapterVisible} from '../health/deviceHealth';
 import {newGymId} from '../../services/database/exerciseLibrary';
 import type {WeightPoint} from './trendMath';
 
@@ -50,15 +51,21 @@ export async function restoreWeight(weight:LocalWeight):Promise<DbResult<boolean
  });
 }
 export async function cachedHealthWeights():Promise<DbResult<WeightPoint[]>>{
+ // iPhone shows apple-health rows only. health-connect and samsung-health
+ // rows from an Android backup stay in the database and stay off this phone.
  const cache=await listCachedHealth(500);
  if(!cache.ok)return cache;
  const seen=new Set<string>(),values:WeightPoint[]=[];
  for(const row of cache.value){
+  if(!healthAdapterVisible(row.adapter))continue;
   if(row.kind!=='instant'||row.metric!=='weight'||row.unit!=='kg'||
      !Number.isFinite(row.value)||row.value<=0)continue;
   const id=row.adapter+':'+row.recordId;
   if(seen.has(id))continue;seen.add(id);
-  values.push({id,at:row.time,kg:row.value,source:'health-connect',origin:row.dataOrigin});
+  values.push({
+   id,at:row.time,kg:row.value,origin:row.dataOrigin,
+   source:row.adapter==='apple-health'?'apple-health':'health-connect',
+  });
  }
  return {ok:true,value:values};
 }

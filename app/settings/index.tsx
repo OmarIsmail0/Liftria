@@ -11,6 +11,7 @@ import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/
 import releaseVersion from '../../src/config/releaseVersion.json';
 import { localStorageCounts } from '../../src/services/database';
 import { formatLocalDatabaseSize } from '../../src/features/settings/storage';
+import { healthCopy } from '../../src/features/health/deviceHealth';
 
 /** Local-first grouped settings, with appearance controls available immediately. */
 export default function SettingsHome() {
@@ -61,7 +62,7 @@ export default function SettingsHome() {
     <Card title={t('settings.home.notificationsData')}>
       <ListRow title={t('settings.home.notifications')} detail={t('settings.home.notificationsDetail')}
         onPress={() => router.push('/settings/notifications')} />
-      <ListRow title={t('settings.home.health')} detail={t('settings.home.healthDetail')}
+      <ListRow title={t(healthCopy('settings.title'))} detail={t(healthCopy('settings.detail'))}
         onPress={() => router.push('/(tabs)/progress/health')} />
       <ListRow title={t('settings.home.data')} detail={t('settings.home.dataDetail')}
         onPress={() => router.push('/settings/data')} />

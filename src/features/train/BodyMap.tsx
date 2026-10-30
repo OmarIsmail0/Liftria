@@ -3,7 +3,7 @@ import Body, { type Slug } from 'react-native-body-highlighter';
 import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { muscleLabel } from '../../i18n/muscles';
-import { translate, type AppLanguage } from '../../i18n';
+import { joinList, translate, type AppLanguage } from '../../i18n';
 import { fontFamilyFor } from '../../design/fonts';
 import { MUSCLES, type Muscle } from '../../services/database/gymTypes';
 import { BODY_REGIONS, BUNDLED_REGIONS, DRAWN_REGIONS, mapBodyRegions, preferredBodySide,
@@ -13,7 +13,7 @@ export { BUNDLED_REGIONS, DRAWN_REGIONS };
 export type { MuscleShade };
 
 export function bodyMapDescription(primary: readonly Muscle[], secondary: readonly Muscle[], language: AppLanguage = 'en'): string {
-  const names = (items:readonly Muscle[]) => [...new Set(items)].map(m=>muscleLabel(language,m)).join(', ');
+  const names = (items:readonly Muscle[]) => joinList(language,[...new Set(items)].map(m=>muscleLabel(language,m)));
   const first = names(primary) || (language === 'en' ? 'none' : translate(language, 'muscle.none'));
   const second = names(secondary.filter(m=>!primary.includes(m))) || (language === 'en' ? 'none' : translate(language, 'muscle.none'));
   return language === 'en' ? 'Muscles worked. Primary: ' + first + '. Secondary: ' + second + '.' :
@@ -80,11 +80,11 @@ export function BodyMap({ primary=[], secondary=[], mini=false, icon=false, onSe
     {!mini && !shading && <View style={{ gap:theme.space[2], alignSelf:'stretch' }}>
       <View style={{ flexDirection:'row', flexWrap:'wrap', gap:theme.space[3], alignItems:'center' }}>
         <View style={{ width:14,height:14,borderRadius:4,backgroundColor:theme.color.domain.train }} />
-        <Text style={{ color:textColor, flexShrink:1 }}>{t('muscle.primary')}: {primary.map(m=>muscleLabel(language,m)).join(', ')||t('muscle.none')}</Text>
+        <Text style={{ color:textColor, flexShrink:1 }}>{t('muscle.primary')}: {joinList(language,primary.map(m=>muscleLabel(language,m)))||t('muscle.none')}</Text>
       </View>
       <View style={{ flexDirection:'row', flexWrap:'wrap', gap:theme.space[3], alignItems:'center' }}>
         <View style={{ width:14,height:14,borderRadius:4,backgroundColor:trainTint(theme.color.domain.train,0.55) }} />
-        <Text style={{ color:textColor, flexShrink:1 }}>{t('muscle.secondary')}: {secondary.filter(m=>!primary.includes(m)).map(m=>muscleLabel(language,m)).join(', ')||t('muscle.none')}</Text>
+        <Text style={{ color:textColor, flexShrink:1 }}>{t('muscle.secondary')}: {joinList(language,secondary.filter(m=>!primary.includes(m)).map(m=>muscleLabel(language,m)))||t('muscle.none')}</Text>
       </View>
     </View>}
     {onSelect && !mini && <View style={{ flexDirection:'row', flexWrap:'wrap', gap:theme.space[2] }}>

@@ -6,7 +6,7 @@ export const metricTypes = [
 export type MetricType = typeof metricTypes[number];
 export type PermissionState = 'granted' | 'denied' | 'unknown';
 export type SourceMeta = {
-  adapter: 'health-connect' | 'samsung-health';
+  adapter: 'health-connect' | 'samsung-health' | 'apple-health';
   recordId: string;
   dataOrigin: string;
   device?: { manufacturer?: string; model?: string; type?: string };
@@ -42,9 +42,21 @@ export type AggregateValue = {
   value: number; unit: 'kcal' | 'count'; dataOrigin?: string;
   dataOrigins?: string[]; // An aggregate may include multiple apps; never misattribute it.
 };
+/** Energy totals describe a time window, not necessarily complete daily expenditure. */
+export const energyMetrics = ['active-calories', 'total-calories', 'basal-metabolic-rate'] as const satisfies readonly MetricType[];
+export type EnergyMetric = typeof energyMetrics[number];
+export type DailyEnergyRow =
+  | { metric: EnergyMetric; date: string; status: 'ok'; value: AggregateValue }
+  // Health Connect can return a total even when no connected app contributed data.
+  | { metric: EnergyMetric; date: string; status: 'no-source'; value: AggregateValue }
+  | { metric: EnergyMetric; date: string; status: 'empty' | 'unavailable' | 'permission-denied' | 'error'; message?: string };
+
 export type HealthRecord =
   | InstantSample | RateSample | IntervalSample | SeriesSample | ExerciseSession | SleepSession;
 export type HealthValue = HealthRecord | AggregateValue;
+/** read() error code on iPhone when the read prompt has never been shown. Not a read failure. */
+export const APPLE_NOT_REQUESTED = 'not-requested';
+
 export type ReadResult =
   | { status: 'ok'; records: HealthValue[] }
   | { status: 'empty' | 'permission-denied' | 'unsupported' | 'unavailable' }

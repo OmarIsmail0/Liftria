@@ -14,6 +14,7 @@ import {cachedHealthWeights,listLocalWeights,removeWeight,restoreWeight,saveWeig
 import {WeightGraph} from '../../../src/features/progress/TrendCharts';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {fromKg,toKg,type WeightUnit} from '../../../src/features/train/workoutUnits';
+import {appleHealthPhone,healthCopy} from '../../../src/features/health/deviceHealth';
 
 type Undo={type:'added';entry:LocalWeight}|{type:'deleted';entry:LocalWeight}|
  {type:'edited';entry:LocalWeight};
@@ -93,18 +94,18 @@ export default function BodyTrends(){
    options={[{value:'4w',label:t('polish.range4w')},
     {value:'3m',label:t('polish.range3m')},{value:'1y',label:t('polish.range1y')}]}/>
   <Card rim="health" title={t('trend.weightTrend')}>
-   <Typography tone="secondary" size="small">{t('trend.weightSource')}</Typography>
+   <Typography tone="secondary" size="small">{t(healthCopy('trend.source'))}</Typography>
    {demoCount>0&&<Typography tone="secondary" size="small">{t('trend.demoDataWarning',{count:demoCount})}</Typography>}
    {result.latest?<Typography size="metric-m">{hidden?t('trend.hidden'):
     t('trend.weightValue',{weight:fmt(fromKg(result.latest.trend,weightUnit)),unit:weightUnit})}</Typography>:
-    <Typography tone="secondary">{t('trend.weightEmpty')}</Typography>}
+    <Typography tone="secondary">{t(healthCopy('trend.empty'))}</Typography>}
    <Typography tone="secondary" size="small">{t('trend.emaDescription')}</Typography>
    {result.change!==null&&!hidden&&<Typography tone="secondary">{t('trend.trendChange',{
     change:fmt(fromKg(result.change,weightUnit)),unit:weightUnit})}</Typography>}
    {result.points.length>0&&<WeightGraph trend={result} hidden={hidden} unit={weightUnit}/>}
    <View style={{flexDirection:'row',gap:theme.space[3],flexWrap:'wrap'}}>
     <Chip kind="phone" label={t('trend.myWeight')}/>
-    <Chip kind={counts.health===0?'off':'measured'} label={t('trend.healthConnect')}/>
+    <Chip kind={counts.health===0?'off':'measured'} label={t(healthCopy('trend.chip'))}/>
    </View>
    <Typography tone="secondary" size="small">{t('trend.sourceCounts',{
     local:counts.local,health:counts.health})}</Typography>
@@ -113,19 +114,19 @@ export default function BodyTrends(){
    <Button label={t('trend.logWeight')} variant="secondary" onPress={()=>open()}/>
   </Card>
   <Card title={t('trend.bodyFat')}>
-   <Typography tone="secondary">{t('trend.bodyFatPending')}</Typography>
+   <Typography tone="secondary">{t(appleHealthPhone()?'appleHealth.trend.bodyFat':'trend.bodyFatPending')}</Typography>
   </Card>
   <Card title={t('trend.weightHistory')}>
-   {recent.length===0?<Typography tone="secondary">{t('trend.weightEmpty')}</Typography>:
+   {recent.length===0?<Typography tone="secondary">{t(healthCopy('trend.empty'))}</Typography>:
    recent.map(row=><ListRow key={row.id} title={hidden?t('trend.hidden'):
        t('trend.weightValue',{weight:fmt(fromKg(row.kg,weightUnit)),unit:weightUnit})}
       detail={bidiIsolate(language,localDay(new Date(row.at)))+' · '+
-       (row.source==='liftria'?t('trend.myWeight'):t('trend.healthConnect'))+
-       (row.source==='health-connect'&&row.origin?' · '+row.origin:'')+
+       (row.source==='liftria'?t('trend.myWeight'):t(healthCopy('trend.chip')))+
+       (row.source!=='liftria'&&row.origin?' · '+row.origin:'')+
        ('note' in row&&typeof row.note==='string'&&row.note?' · '+row.note:'')}
       onPress={row.source==='liftria'?()=>open(row as LocalWeight):undefined}
-      suffix={row.source==='health-connect'?<Chip kind="measured" label={t('trend.readOnly')}/>:undefined}/>)}
-   {health.length>0&&<Typography tone="secondary" size="small">{t('trend.healthPrivacy')}</Typography>}
+      suffix={row.source!=='liftria'?<Chip kind="measured" label={t('trend.readOnly')}/>:undefined}/>)}
+   {health.length>0&&<Typography tone="secondary" size="small">{t(healthCopy('trend.privacy'))}</Typography>}
   </Card>
   {error&&<Button label={t('common.retry')} onPress={()=>{setError(false);void load();}}/>}
   </ScrollView>
@@ -133,7 +134,7 @@ export default function BodyTrends(){
    <Snackbar message={t('trend.weightChanged')} onUndo={()=>void undoAction()}/>
   </View>}
   <Sheet visible={editing} title={current?t('trend.editWeight'):t('trend.logWeight')}
-    description={t('trend.localWeightPrivacy')} onClose={()=>setEditing(false)}>
+    description={t(healthCopy('trend.localPrivacy'))} onClose={()=>setEditing(false)}>
    <Field label={t('trend.weightInput',{unit:weightUnit})} value={entered}
     onChangeText={v=>{setEntered(v);setWarning(false);}} keyboardType="decimal-pad"/>
    {Number.isFinite(inputValue)&&inputValue>0&&<Stepper

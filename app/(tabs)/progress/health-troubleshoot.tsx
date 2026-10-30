@@ -1,12 +1,13 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router } from 'expo-router';
-import { RefreshControl, ScrollView } from 'react-native';
+import { RefreshControl, ScrollView  } from 'react-native';
+import { appleHealthPhone } from '../../../src/features/health/deviceHealth';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 
-export default function HealthTroubleshoot() {
+function HealthTroubleshootAndroid() {
   const {t}=useLanguage();
   const { theme } = useTheme();
   const { snapshot, refresh, refreshing } = useHealthSnapshot(overviewMetrics);
@@ -54,4 +55,46 @@ export default function HealthTroubleshoot() {
     <Button label={refreshing ? t('healthTr.checking') : t('healthTr.recheck')} disabled={refreshing}
       fullWidth onPress={() => void refresh(true)} />
   </ScrollView></Screen>;
+}
+
+function HealthTroubleshootIos() {
+  const { t } = useLanguage();
+  const { theme } = useTheme();
+  const { snapshot, refresh, refreshing } = useHealthSnapshot(overviewMetrics);
+  const available = snapshot.availability === 'available';
+  const appleRecords = snapshot.records.filter(row => row.adapter === 'apple-health');
+  const checks = [
+    { name: t('appleHealth.tr.available'),
+      state: available ? t('appleHealth.tr.availableYes') : t('appleHealth.tr.availableNo'),
+      detail: available ? t('appleHealth.tr.availableDetail') : t('appleHealth.tr.unavailableDetail'),
+      good: available },
+    { name: t('appleHealth.tr.access'), state: t('appleHealth.tr.accessState'),
+      detail: t('appleHealth.changeAccess'), good: false },
+    { name: t('appleHealth.tr.watch'), state: t('appleHealth.tr.watchState'),
+      detail: t('appleHealth.tr.watchDetail'), good: false },
+    { name: t('appleHealth.tr.records'),
+      state: appleRecords.length ? t('appleHealth.tr.recordsYes') : t('appleHealth.tr.recordsNo'),
+      detail: appleRecords.length ? t('appleHealth.tr.recordsDetail') : t('appleHealth.tr.recordsEmpty'),
+      good: appleRecords.length > 0 },
+  ];
+  return <Screen embedded scroll={false}><ScrollView
+    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh(true)} />}
+    contentContainerStyle={{ gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
+    <Header title={t('appleHealth.tr.title')} subtitle={t('appleHealth.tr.subtitle')}
+      onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
+    <Card title={refreshing ? t('appleHealth.tr.checking') : t('appleHealth.tr.title')} rim="health">
+      {checks.map((item, i) => <ListRow key={item.name} title={`${i + 1}. ${item.name}`}
+        accessibilityLabel={`${item.name}. ${item.state}. ${item.detail}`}
+        detail={item.detail}
+        suffix={<Chip kind={item.good ? 'off' : 'pending'} label={item.state} />} />)}
+    </Card>
+    <Button label={t('appleHealth.tr.permissions')} variant="secondary"
+      onPress={() => router.push('/(tabs)/progress/health-permissions')} />
+    <Button label={refreshing ? t('appleHealth.tr.checking') : t('appleHealth.tr.recheck')} disabled={refreshing}
+      fullWidth onPress={() => void refresh(true)} />
+  </ScrollView></Screen>;
+}
+
+export default function HealthTroubleshoot(){
+ return appleHealthPhone() ? <HealthTroubleshootIos/> : <HealthTroubleshootAndroid/>;
 }

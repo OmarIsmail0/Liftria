@@ -9,6 +9,8 @@ const latinWords = (text: string): string[] =>
 describe('English keeps the wording the charts had before', () => {
   test('steps chart', () => {
     expect(noStepsText('en')).toBe('No source-backed steps to plot.');
+    expect(sourceDisplayName('en', 'Apple Health')).toBe('Apple Health');
+    expect(sourceDisplayName('ar', 'Apple Health')).toBe('صحة Apple');
     expect(stepsSourceTitle('en', 'Phone')).toBe('Phone · separate source');
     expect(stepsChartLabel('en', 'Phone', 'day', 600)).toBe('Phone, hourly steps: 600 in charted intervals');
     expect(stepsChartLabel('en', 'Samsung Health', 'week', 1200))

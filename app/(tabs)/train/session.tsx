@@ -1,6 +1,6 @@
 import { importerLabel } from '../../../src/features/import/importCsv';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber, latinDigits } from '../../../src/i18n';
+import { formatNumber, joinList, latinDigits } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -130,7 +130,7 @@ export default function SessionDetail(){
    <Button label={t('sessionDetail.cancel')} variant="secondary" fullWidth onPress={()=>{setEditing(false);void refresh();}}/>
   </View>:<Button label={t('sessionDetail.delete')} variant="danger" onPress={()=>void deletePrompt()}/>}
   <Sheet visible={confirm} destructive title={t('sessionDetail.deleteTitle')}
-   description={changed.length?t('sessionDetail.changed',{names:changed.join(', ')}):t('sessionDetail.deleteDesc')}
+   description={changed.length?t('sessionDetail.changed',{names:joinList(language,changed)}):t('sessionDetail.deleteDesc')}
    onClose={()=>setConfirm(false)}>
    <Button label={t('sessionDetail.keep')} fullWidth onPress={()=>setConfirm(false)}/>
    <Button label={t('sessionDetail.delete')} variant="danger" fullWidth disabled={busy} onPress={()=>void remove()}/>
