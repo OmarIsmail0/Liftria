@@ -71,8 +71,8 @@ export default function WorkoutPreview() {
     <Header title={template?.name??t('preview.emptyWorkout')} subtitle={t('preview.subtitle')} onBack={()=>router.back()}/>
     <Card rim="train">
       {muscles.length>0&&<BodyMap primary={muscles}/>}
-      <Typography tone="secondary">{template?t('preview.details',{exercises:t(('count.exercises.'+pluralForm(language,template.exercises.length)) as TranslationKey,
-        {count:template.exercises.length}),seconds:template.restSec}):
+      <Typography tone="secondary">{template?t((`preview.details.${pluralForm(language,template.restSec)}`) as TranslationKey,{exercises:t(('count.exercises.'+pluralForm(language,template.exercises.length)) as TranslationKey,
+        {count:template.exercises.length}),count:template.restSec}):
         t('preview.noneYet')}</Typography>
     </Card>
     <Card title={t('preview.upNext')}>

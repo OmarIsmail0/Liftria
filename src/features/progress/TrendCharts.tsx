@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {View} from 'react-native';
 import Svg,{Circle,Line,Path,Rect,Text as SvgText} from 'react-native-svg';
 import {useTheme} from '../../design/ThemeProvider';
+import {pluralForm,type TranslationKey} from '../../i18n';
 import {useLanguage} from '../../i18n/LanguageProvider';
 import type {NutritionTrend,WeightTrend} from './trendMath';
 import {formatAxisDayLabel,formatAxisValueLabel,pickTickIndexes} from './chartAxis';
@@ -22,7 +23,7 @@ export function NutritionGraph({trend,target,hidden=false}:{
  const yTicks=[0,ceiling/2,ceiling];
  const xTicks=pickTickIndexes(trend.days.length,4);
  return <View accessible accessibilityRole="image"
-  accessibilityLabel={hidden?t('trend.hidden'):t('trend.chartNutritionA11y',{count:trend.loggedDays})}
+  accessibilityLabel={hidden?t('trend.hidden'):t((`trend.chartNutritionA11y.${pluralForm(language,trend.loggedDays)}`) as TranslationKey,{count:trend.loggedDays})}
   onLayout={event=>{const next=event.nativeEvent.layout.width;if(next>0)setWidth(next);}}
   style={{height}}>
   <Svg width={width} height={height}>
@@ -67,10 +68,11 @@ export function ProteinPips({days,hidden}:{
  days:NutritionTrend['days'];hidden:boolean;
 }){
  const {theme}=useTheme();
- const {t}=useLanguage();
+ const {t,language}=useLanguage();
+ const met=days.filter(d=>d.proteinGoal==='met').length;
  return <View accessibilityRole="image" accessible
   accessibilityLabel={hidden?t('trend.hidden'):
-    t('trend.chartProteinA11y',{count:days.filter(d=>d.proteinGoal==='met').length})}
+    t((`trend.chartProteinA11y.${pluralForm(language,met)}`) as TranslationKey,{count:met})}
   style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[1]}}>
   {days.map(day=>{
    const goal=day.proteinGoal;
@@ -102,7 +104,7 @@ export function WeightGraph({trend,hidden,unit}:{
  const xTicks=pickTickIndexes(trend.points.length,4);
  return <View onLayout={e=>{const w=e.nativeEvent.layout.width;if(w>0)setWidth(w);}}
   accessible accessibilityRole="image"
-  accessibilityLabel={hidden?t('trend.hidden'):t('trend.chartWeightA11y',{count:days.length})}
+  accessibilityLabel={hidden?t('trend.hidden'):t((`trend.chartWeightA11y.${pluralForm(language,days.length)}`) as TranslationKey,{count:days.length})}
   style={{height}}>
    <Svg width={width} height={height}>
     <Line x1={pad.left} x2={pad.left} y1={pad.top} y2={height-pad.bottom}

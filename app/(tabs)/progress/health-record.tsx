@@ -1,6 +1,6 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { appleHealthPhone, formatAppleAmount, healthAdapterVisible, healthCopy } from '../../../src/features/health/deviceHealth';
-import { formatNumber, latinDigits } from '../../../src/i18n';
+import { formatNumber, latinDigits, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
@@ -25,7 +25,7 @@ function HealthRecordDetailAndroid() {
     : formatNumber(language,value.value)+' '+value.unit;
    if(value.kind==='session')return appleHealthPhone()
     ? formatAppleAmount(language,value.durationSec/60,'minutes')
-    : t('healthRecord.exercise',{minutes:Math.round(value.durationSec/60)});
+    : t((`healthRecord.exercise.${pluralForm(language,Math.round(value.durationSec/60))}`) as TranslationKey,{count:Math.round(value.durationSec/60)});
    return t('healthRecord.sleep');
   };
 

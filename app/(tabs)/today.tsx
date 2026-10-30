@@ -5,7 +5,7 @@ import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { SettingsIcon } from '../../src/design/primitives/TabIcon';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { formatDate, formatNumber } from '../../src/i18n';
+import { formatDate, formatNumber, pluralForm, type TranslationKey } from '../../src/i18n';
 import { Banner, Button, Card, Chip, Header, ListRow, Orb, Screen, Skeleton, Typography } from '../../src/design/primitives';
 import { getProfile, type Profile } from '../../src/services/database/profile';
 import { getCurrentTarget, type Target } from '../../src/services/database/targets';
@@ -100,10 +100,11 @@ export default function TodayTab() {
     const time=Date.parse(iso);
     if(!Number.isFinite(time))return t('healthOverview.timeUnknown');
     const minutes=Math.max(0,Math.floor((now.getTime()-time)/60000));
-    if(minutes<60)return t('healthOverview.minutesAgo',{count:minutes});
+    const ago=(base:string,count:number)=>t((`${base}.${pluralForm(language,count)}`) as TranslationKey,{count});
+    if(minutes<60)return ago('healthOverview.minutesAgo',minutes);
     const hours=Math.floor(minutes/60);
-    return hours<24?t('healthOverview.hoursAgo',{count:hours}):
-      t('healthOverview.daysAgo',{count:Math.floor(hours/24)});
+    return hours<24?ago('healthOverview.hoursAgo',hours):
+      ago('healthOverview.daysAgo',Math.floor(hours/24));
   };
   const note=(message:string):string=>message==='No data'?t('healthOverview.noData'):
     message==='Not allowed'?t('healthOverview.notAllowed'):

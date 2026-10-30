@@ -1,7 +1,7 @@
 import { MUSCLES, type Muscle } from '../../services/database/gymTypes';
 import { setVolume } from '../../services/database/gymMath';
 import type { StrengthObservation } from '../../services/database/historyRepository';
-import { formatNumber, translate, type AppLanguage } from '../../i18n';
+import { formatNumber, pluralForm, translate, type AppLanguage, type TranslationKey } from '../../i18n';
 
 export const RECOVERY={
   primaryCredit:1,secondaryCredit:0.5,
@@ -109,7 +109,7 @@ export function relativeTrainingDay(iso:string|null,now:Date,language:AppLanguag
   const trained=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const diff=Math.round((today.valueOf()-trained.valueOf())/86400000);
   return diff<=0?translate(language,'recovery.today'):diff===1?translate(language,'recovery.yesterday'):
-    translate(language,'recovery.daysAgo',{days:diff});
+    translate(language,(`recovery.daysAgo.${pluralForm(language,diff)}`) as TranslationKey,{count:diff});
 }
 
 /** Row copy describes logged set credit, not physiological recovery. */

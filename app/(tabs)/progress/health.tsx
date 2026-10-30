@@ -8,7 +8,7 @@ import { type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 import { canInstallHealthConnect, earliestCachedRecordAt, NOTE_APPLE_READ_ERROR, NOTE_APPLE_TOTAL, SOURCE_APPLE } from '../../../src/features/health/presentation';
 import { appleHealthPhone, formatAppleAmount, healthCopy, offerProviderInstall, readAccessIsReported } from '../../../src/features/health/deviceHealth';
-import { formatNumber, type TranslationKey, latinDigits } from '../../../src/i18n';
+import { formatNumber, latinDigits, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 
 const names: Partial<Record<MetricType,TranslationKey>> = {
@@ -37,10 +37,11 @@ function HealthOverviewAndroid() {
     const at=Date.parse(iso);
     if(!Number.isFinite(at))return t('healthOverview.timeUnknown');
     const mins=Math.max(0,Math.floor((now-at)/60000));
-    if(mins<60)return t('healthOverview.minutesAgo',{count:mins});
+    const ago=(base:string,count:number)=>t((`${base}.${pluralForm(language,count)}`) as TranslationKey,{count});
+    if(mins<60)return ago('healthOverview.minutesAgo',mins);
     const hours=Math.floor(mins/60);
-    return hours<24?t('healthOverview.hoursAgo',{count:hours}):
-      t('healthOverview.daysAgo',{count:Math.floor(hours/24)});
+    return hours<24?ago('healthOverview.hoursAgo',hours):
+      ago('healthOverview.daysAgo',Math.floor(hours/24));
   };
   const availability=()=>snapshot.availability===null?t(healthCopy('overview.checkingStatus')):
     snapshot.availability==='available'?t(healthCopy('overview.available')):

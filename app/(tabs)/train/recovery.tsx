@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber, type TranslationKey } from '../../../src/i18n';
+import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -51,7 +51,7 @@ export default function Recovery(){
   const logged=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const days=Math.round((day.valueOf()-logged.valueOf())/86400000);
   return days<=0?t('recovery.today'):days===1?t('recovery.yesterday'):
-   t('recovery.daysAgo',{days});
+   t((`recovery.daysAgo.${pluralForm(language,days)}`) as TranslationKey,{count:days});
  };
  const sets=(count:number)=>{
   const rounded=Number(count.toFixed(1));

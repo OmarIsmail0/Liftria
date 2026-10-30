@@ -1,3 +1,4 @@
+import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -212,7 +213,7 @@ export default function ActiveWorkoutScreen() {
     if(kind==='working'){setReps(0);setEffortValue('');}
     if(kind==='working'&&superset.nextIndex!==null&&superset.nextIndex!==selected)
       choose(superset.nextIndex);
-    void AccessibilityInfo.announceForAccessibility(t('active.loggedAnnouncement',{name:kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:position+1}),seconds:effectiveRest}));
+    void AccessibilityInfo.announceForAccessibility(t((`active.loggedAnnouncement.${pluralForm(language,effectiveRest)}`) as TranslationKey,{name:kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:position+1}),count:effectiveRest}));
     await refresh();
     if(saved.value.restDeadline){
       const asked=await getSetting('rest.permissionPromptSeen');
