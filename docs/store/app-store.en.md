@@ -29,7 +29,7 @@ Bring your own Anthropic API key to request AI meal estimates from text or a pho
 
 Liftria is for personal tracking; it does not provide medical advice.
 
-**Keywords:** food diary,workout log,weight,calories,macros,gym,meal planner,fitness
+**Keywords:** food diary,workout log,weight,calories,macros,gym,fitness
 
 **Support URL:** OWNER TO PROVIDE
 **Privacy policy URL:** OWNER TO PROVIDE
