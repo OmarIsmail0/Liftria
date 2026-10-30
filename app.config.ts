@@ -36,7 +36,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   locales: { en: './locales/en.json', ar: './locales/ar.json' },
   android: {
     adaptiveIcon: {
-      foregroundImage: './assets/brand/splash-light.png',
+      foregroundImage: './assets/brand/adaptive-foreground.png',
+      monochromeImage: './assets/brand/adaptive-monochrome.png',
       backgroundColor: '#F3F5F8',
     },
     package: 'com.liftria.app',
