@@ -25,9 +25,9 @@ jest.mock('expo-notifications', () => ({
 }));
 jest.mock('../../services/database', () => ({ dbOperation: jest.fn(async () => ({ ok: true, value: undefined })) }));
 
-/** Words an Arabic reader should never meet. kg and lb stay Latin by app convention. */
+/** Words an Arabic reader should never meet. Weight units are كغ and رطل, not kg and lb. */
 const latinWords = (text: string): string[] =>
-  text.replace(/\{\w+\}/g, ' ').match(/[A-Za-z]+/g)?.filter(word => word !== 'kg' && word !== 'lb') ?? [];
+  text.replace(/\{\w+\}/g, ' ').match(/[A-Za-z]+/g) ?? [];
 const expectArabic = (text: string | null) => {
   expect(text).toEqual(expect.any(String));
   expect(latinWords(text as string)).toEqual([]);
@@ -127,9 +127,9 @@ describe('runtime copy comes out in Arabic when asked', () => {
 });
 
 describe('Arabic strings that carry a unit', () => {
-  test('no Latin cm, sec, min, bpm or MB in Arabic values (kg and lb stay Latin)', () => {
+  test('no Latin cm, sec, min, bpm, MB, kg or lb in Arabic values', () => {
     const hits = Object.entries(ar).flatMap(([key, value]) =>
-      latinWords(value).filter(word => /^(cm|sec|min|bpm|MB)$/.test(word)).map(word => key + ': ' + word));
+      latinWords(value).filter(word => /^(cm|sec|min|bpm|MB|kg|lb)$/.test(word)).map(word => key + ': ' + word));
     expect(hits).toEqual([]);
   });
 });

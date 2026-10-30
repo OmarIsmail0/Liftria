@@ -2,6 +2,61 @@ import { ar } from '../ar';
 import type { TranslationKey } from '../en';
 import { weightUnitLabel } from '../index';
 
+type Dirent = { name: string; isDirectory: () => boolean; isFile: () => boolean };
+const { readdirSync, readFileSync } = jest.requireActual('fs') as {
+  readdirSync: (dir: string, options: { withFileTypes: true }) => Dirent[];
+  readFileSync: (file: string, encoding: 'utf8') => string;
+};
+const { join, relative } = jest.requireActual('path') as {
+  join: (...parts: string[]) => string;
+  relative: (from: string, to: string) => string;
+};
+
+/** Latin kg/lb in an Arabic sentence. Placeholders such as {unit} are not units. */
+export function latinWeightUnits(value: string): string[] {
+  return value.match(/\b(?:kg|lb)\b/g) ?? [];
+}
+
+/**
+ * A screen still pastes a stored weight code into text the user reads.
+ * Comparisons and setters (`unit === 'kg'`, `setUnit('kg')`) are the stored code, not a label.
+ * `WeightGraph`'s unit prop is that stored code; the axis label goes through weightUnitLabel.
+ * csvExport's "Weight kg" header is the spreadsheet column, not Arabic UI.
+ */
+export function rawWeightUnitDisplays(source: string): string[] {
+  const code = source
+    .replace(/\/\*[\s\S]*?\*\//g, block => block.replace(/[^\n]/g, ' '))
+    .replace(/\/\/.*$/gm, '');
+  const rules = [
+    /['"`][^'"`\n]*\s(?:kg|lb)['"`]/g,
+    /['"][^'"\n]*['"]\s*\+\s*(?:unit|weightUnit|displayUnit|values\.weight)\b/g,
+    /\$\{(?:unit|weightUnit|displayUnit|values\.weight)\}/g,
+    /\{(?:unit|weightUnit|displayUnit)\}/g,
+    /\bunit:\s*(?:unit|weightUnit|displayUnit|values\.weight)\b/g,
+    /\bunit=\{(?:unit|weightUnit|displayUnit|values\.weight)\}/g,
+    /\blabel:\s*['"](?:kg|lb)['"]/g,
+    /\?['"](?:✓\s+)?(?:kg|lb)['"]\s*:\s*['"](?:kg|lb)['"]/g,
+  ];
+  const shorthand = /\{(?:unit|weightUnit|displayUnit|values\.weight)\s*[,}]|,(?:unit|weightUnit|displayUnit|values\.weight)\s*\}/;
+  const hits: string[] = [];
+  code.split('\n').forEach((line, index) => {
+    if (line.includes('WeightGraph')) return;
+    rules.forEach(rule => { rule.lastIndex = 0; });
+    const pasted = rules.some(rule => rule.test(line))
+      || (/\bt\(|\btranslate\(/.test(line) && shorthand.test(line));
+    if (pasted) hits.push(`${index + 1}:${line.trim()}`);
+  });
+  return hits;
+}
+
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const file = join(dir, entry.name);
+    if (entry.isDirectory()) return sourceFiles(file);
+    return entry.isFile() && /\.tsx?$/.test(entry.name) && !entry.name.endsWith('.d.ts') ? [file] : [];
+  });
+}
+
 describe('Arabic units guard', () => {
   test('no Latin kcal in Arabic translations', () => {
     const violations: string[] = [];
@@ -168,5 +223,61 @@ describe('weightUnitLabel', () => {
     expect(weightUnitLabel('en', 'lb')).toBe('lb');
     expect(weightUnitLabel('ar', 'kg')).toBe('كغ');
     expect(weightUnitLabel('ar', 'lb')).toBe('رطل');
+  });
+});
+
+describe('Arabic weight-unit words', () => {
+  test('the scanner fails on a planted Latin kg or lb', () => {
+    expect(latinWeightUnits('الوزن {weight} kg')).toEqual(['kg']);
+    expect(latinWeightUnits('أو lb')).toEqual(['lb']);
+    expect(latinWeightUnits('{count}\u00A0kg')).toEqual(['kg']);
+    expect(latinWeightUnits('الوزن {weight}\u00A0كغ')).toEqual([]);
+    expect(latinWeightUnits('ستُقرأ الأوزان بوحدة {unit}.')).toEqual([]);
+  });
+
+  test('no Arabic translation contains Latin kg or lb', () => {
+    const violations: string[] = [];
+    for (const [key, value] of Object.entries(ar)) {
+      if (typeof value !== 'string') continue;
+      const hits = latinWeightUnits(value);
+      if (hits.length > 0) violations.push(`${key}: "${value}"`);
+    }
+    if (violations.length > 0) {
+      throw new Error(
+        `Found ${violations.length} Arabic translations with Latin kg/lb:\n${violations.join('\n')}`
+      );
+    }
+  });
+
+  test('the screen scanner fails when a raw unit is concatenated', () => {
+    expect(rawWeightUnitDisplays("detail={n+' kg'}")).not.toEqual([]);
+    expect(rawWeightUnitDisplays('detail={n+" lb"}')).not.toEqual([]);
+    expect(rawWeightUnitDisplays("detail={n+' '+unit}")).not.toEqual([]);
+    expect(rawWeightUnitDisplays('detail={`${n} ${weightUnit}`}')).not.toEqual([]);
+    expect(rawWeightUnitDisplays("t('history.volumeValue',{unit})")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("t('active.loggedA11y',{unit:weightUnit})")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("<Typography>{unit}</Typography>")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("options={[{value:'kg', label:'kg'}]}")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("label={unit==='kg'?'✓ kg':'kg'}")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("<Stepper unit={weightUnit}/>")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("if(unit==='kg')setUnit('kg');")).toEqual([]);
+    expect(rawWeightUnitDisplays("t('k',{unit:weightUnitLabel(language,unit)})")).toEqual([]);
+    expect(rawWeightUnitDisplays("detail={n+' '+weightUnitLabel(language,'kg')}")).toEqual([]);
+    expect(rawWeightUnitDisplays('<WeightGraph unit={weightUnit}/>')).toEqual([]);
+  });
+
+  test('no screen concatenates a raw weight unit', () => {
+    const roots = ['app', join('src', 'features')].map(dir => join(process.cwd(), dir));
+    const excluded = [
+      /(^|\/)__tests__\//,
+      /(^|\/)dev\//,
+      /^src\/features\/settings\/csvExport\.ts$/,
+    ];
+    const hits = roots.flatMap(sourceFiles)
+      .map(file => ({ file, name: relative(process.cwd(), file).replace(/\\/g, '/') }))
+      .filter(({ name }) => !excluded.some(pattern => pattern.test(name)))
+      .flatMap(({ file, name }) => rawWeightUnitDisplays(readFileSync(file, 'utf8'))
+        .map(hit => `${name}:${hit}`));
+    expect(hits).toEqual([]);
   });
 });

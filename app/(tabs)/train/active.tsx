@@ -1,4 +1,3 @@
-import { weightUnitLabel } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,7 +25,7 @@ import { MUSCLES, type Exercise } from '../../../src/services/database/gymTypes'
 import { summarizeActiveMuscles } from '../../../src/features/train/activeMuscleLoad';
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { muscleLabel } from '../../../src/i18n/muscles';
-import { formatNumber } from '../../../src/i18n';
+import { formatNumber, weightUnitLabel } from '../../../src/i18n';
 import { formatEditableNumber } from '../../../src/i18n/editableNumber';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 
