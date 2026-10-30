@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import {formatDate} from '../../src/i18n';
+import {formatDate, pluralForm, type TranslationKey} from '../../src/i18n';
 import { router,useLocalSearchParams } from 'expo-router';
 import {View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
@@ -134,7 +134,10 @@ export default function DataAndStorage() {
       const result=await undoLastImport();
       setUndoVisible(false);
       if(result.ok&&result.value){
-        setMessage(t('dataStorage.importRemoved',{workouts:result.value.sessions,exercises:result.value.custom}));
+        setMessage(t('dataStorage.importRemoved',{
+          workouts:t((`dataStorage.importRemoved.workouts.${pluralForm(language,result.value.sessions)}`) as TranslationKey,{count:result.value.sessions}),
+          exercises:t((`dataStorage.importRemoved.exercises.${pluralForm(language,result.value.custom)}`) as TranslationKey,{count:result.value.custom}),
+        }));
         await load();
       }else setMessage(t('dataStorage.undoFailed'));
     }finally{setBusy(false);}
@@ -175,7 +178,7 @@ export default function DataAndStorage() {
        detail={t('dataStorage.importDetail')}
        onPress={()=>router.push('/import')}/>
       {imported&&<ListRow title={t('dataStorage.undoImport')}
-       detail={t('dataStorage.undoDetail',{count:imported.count,source:importerLabel(imported.source)})}
+       detail={t((`dataStorage.undoDetail.${pluralForm(language,imported.count)}`) as TranslationKey,{count:imported.count,source:importerLabel(imported.source)})}
        onPress={()=>setUndoVisible(true)}/>}
     </Card>
     <Card title={t('dataStorage.cacheTitle')}>
@@ -200,7 +203,7 @@ export default function DataAndStorage() {
     {message && <View accessibilityRole="alert" style={{paddingVertical:theme.space[2]}}>
       <Typography tone="secondary">ⓘ {message}</Typography>
     </View>}
-    <Sheet visible={undoVisible} title={t('dataStorage.undoTitle',{count:imported?.count??0})}
+    <Sheet visible={undoVisible} title={t((`dataStorage.undoTitle.${pluralForm(language,imported?.count??0)}`) as TranslationKey,{count:imported?.count??0})}
       destructive description={t('dataStorage.undoDescription')}
       onClose={()=>{if(!busy)setUndoVisible(false);}}>
       <Button label={t('dataStorage.keepImport')} fullWidth disabled={busy} onPress={()=>setUndoVisible(false)}/>
@@ -211,7 +214,7 @@ export default function DataAndStorage() {
       description={t('backup.confirmDetail')} onClose={closePreview}>
       {previewBackup&&<>
         {isDemo&&<Typography tone="secondary">{t('backup.demoNotice')}</Typography>}
-        <Typography tone="secondary">{t('backup.preview',{
+        <Typography tone="secondary">{t((`backup.preview.${pluralForm(language,backupPreview(previewBackup).total)}`) as TranslationKey,{
          schema:backupPreview(previewBackup).schemaVersion,
          count:backupPreview(previewBackup).total,date})}</Typography>
         {groups.map(g=><Typography key={g.group} tone="secondary" size="small">

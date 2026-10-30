@@ -2,6 +2,7 @@ import {useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {View} from 'react-native';
 import {Button,Card,Stepper,Typography} from '../../design/primitives';
+import {pluralForm,type TranslationKey} from '../../i18n';
 import {useLanguage} from '../../i18n/LanguageProvider';
 import {getTypedSetting} from '../../services/database/settings';
 import {calculatePlates,suggestedWarmups,suggestedUnplatedWarmups} from './plateCalculator';
@@ -13,7 +14,7 @@ export function PlateCalculatorCard({targetKg,onWarmup,showPlates=true,unplatedS
  targetKg?:number;onWarmup?:(item:WarmupPick)=>void;
  showPlates?:boolean;unplatedStepKg?:number;
 }){
- const {t}=useLanguage(),{theme}=useTheme();
+ const {t,language}=useLanguage(),{theme}=useTheme();
  const [unit,setUnit]=useState<WeightUnit>('kg'),[barKg,setBarKg]=useState(20),
  [barLb,setBarLb]=useState(45),[small,setSmall]=useState(false);
  const [manual,setManual]=useState<number|null>(null);
@@ -51,7 +52,7 @@ export function PlateCalculatorCard({targetKg,onWarmup,showPlates=true,unplatedS
      <Typography bold>{t('gymParity.warmups')}</Typography>
      <Typography tone="secondary" size="small">{t('gymParity.warmupDisclaimer')}</Typography>
      {warmups.map((row,i)=><Button key={i} variant="secondary" fullWidth
-       label={t('gymParity.warmupStep',{weight:label(row.actual),unit,reps:row.reps})}
+       label={t((`gymParity.warmupStep.${pluralForm(language,row.reps)}`) as TranslationKey,{weight:label(row.actual),unit,count:row.reps})}
        onPress={()=>onWarmup({weight:row.weightKg,reps:row.reps})}/>)}
    </>}
   </Card>;

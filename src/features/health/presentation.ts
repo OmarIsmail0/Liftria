@@ -1,5 +1,5 @@
 import type { AggregateValue, HealthValue, MetricType, PermissionState } from '../../services/health/types';
-import { bidiIsolate, latinDigits, translate, type AppLanguage } from '../../i18n';
+import { bidiIsolate, latinDigits, pluralForm, translate, type AppLanguage, type TranslationKey } from '../../i18n';
 
 export type HealthReadingState = 'value' | 'no-data' | 'not-allowed' | 'not-available' | 'error';
 export type OriginSummary = { origin: string; label: string; value: number; unit: string; latestAt: string; stale: boolean };
@@ -272,10 +272,12 @@ export function ageLabel(timestamp: string, nowMs = Date.now(), language: AppLan
   const time = Date.parse(timestamp);
   if (!Number.isFinite(time)) return translate(language, 'healthOverview.timeUnknown');
   const elapsedMinutes = Math.max(0, Math.floor((nowMs - time) / 60000));
-  if (elapsedMinutes < 60) return translate(language, 'healthOverview.minutesAgo', { count: elapsedMinutes });
+  const ago = (base: string, count: number) =>
+    translate(language, `${base}.${pluralForm(language, count)}` as TranslationKey, { count });
+  if (elapsedMinutes < 60) return ago('healthOverview.minutesAgo', elapsedMinutes);
   const hours = Math.floor(elapsedMinutes / 60);
-  if (hours < 24) return translate(language, 'healthOverview.hoursAgo', { count: hours });
-  return translate(language, 'healthOverview.daysAgo', { count: Math.floor(hours / 24) });
+  if (hours < 24) return ago('healthOverview.hoursAgo', hours);
+  return ago('healthOverview.daysAgo', Math.floor(hours / 24));
 }
 
 export function healthAvailabilityText(

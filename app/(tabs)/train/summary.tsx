@@ -71,7 +71,7 @@ export default function WorkoutSummaryScreen() {
       <ListRow title={t('summary.workingSets')} detail={formatNumber(language,stats.sets)}/>
       <ListRow title={t('summary.volume')} detail={t('summary.volumeValue',{amount:formatNumber(language,Math.round(stats.volume))})}/>
       <Typography tone="secondary">{t('summary.trainingVolume',{comparison})}</Typography>
-      <Typography tone="secondary">{stats.pending?t('summary.pending',{count:stats.pending}):t('summary.allLogged')}</Typography>
+      <Typography tone="secondary">{stats.pending?t((`summary.pending.${pluralForm(language,stats.pending)}`) as TranslationKey,{count:stats.pending}):t('summary.allLogged')}</Typography>
     </Card>
     <Card title={t('summary.records')}>
       {newRecords>0?<Typography bold>{t((`summary.records.${pluralForm(language,newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
@@ -95,7 +95,7 @@ export default function WorkoutSummaryScreen() {
     <Button label={t('summary.discard')} variant="danger" disabled={busy}
       onPress={()=>setDiscard(true)}/>
     <Sheet visible={discard} destructive title={t('summary.discardTitle')}
-      description={t('summary.discardDescription',{count:stats.sets})}
+      description={t((`summary.discardDescription.${pluralForm(language,stats.sets)}`) as TranslationKey,{count:stats.sets})}
       onClose={()=>setDiscard(false)}>
       <Button label={t('summary.keep')} fullWidth onPress={()=>setDiscard(false)}/>
       <Button label={t('summary.discard')} variant="danger" fullWidth disabled={busy}

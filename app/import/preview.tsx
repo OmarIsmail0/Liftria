@@ -10,7 +10,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
 import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
-import { formatNumber, bidiIsolate, latinDigits } from '../../src/i18n';
+import { formatNumber, bidiIsolate, latinDigits, pluralForm, type TranslationKey } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { exerciseName } from '../../src/i18n/exerciseNames';
 export default function ImportPreview(){
@@ -63,7 +63,9 @@ export default function ImportPreview(){
    <Button label={t("im2.done")} onPress={()=>router.back()}/>
    <Button label={t("im2.chooseAnother")} variant="secondary" onPress={()=>router.replace('/import')}/>
   </Card>:<>
-   <Card rim="train" title={t("im2.summary",{workouts:plan.workouts.length,sets:plan.setCount})}>
+   <Card rim="train" title={t("im2.summary",{
+    workouts:t((`im2.summary.workouts.${pluralForm(language,plan.workouts.length)}`) as TranslationKey,{count:plan.workouts.length}),
+    sets:t((`im2.summary.sets.${pluralForm(language,plan.setCount)}`) as TranslationKey,{count:plan.setCount})})}>
     <Typography tone="secondary" size="small">{t("im2.fromSource",{source:importerLabel(draft.source)})}</Typography>
     <Typography tone="secondary">{bidiIsolate(language,latinDigits(new Date(plan.workouts[0]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))+
      ' – '+bidiIsolate(language,latinDigits(new Date(plan.workouts[plan.workouts.length-1]!.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))}</Typography>
@@ -97,7 +99,7 @@ export default function ImportPreview(){
      <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
       {imageForId(m.resolvedId??m.suggestedId) &&
         <ExerciseThumbnail exercise={imageForId(m.resolvedId??m.suggestedId)!}/>}
-      <Typography bold>{t("im2.matchCount",{name:m.name,count:m.count})}</Typography>
+      <Typography bold>{t((`im2.matchCount.${pluralForm(language,m.count)}`) as TranslationKey,{name:m.name,count:m.count})}</Typography>
      </View>
      <Typography tone="secondary">{m.resolvedId?t("im2.currentLibrary"):t("im2.currentOwn")}</Typography>
      {suggestions.find(s=>s.name===m.name)?.status==='exact'&&
@@ -124,7 +126,7 @@ export default function ImportPreview(){
     <Typography tone="secondary" size="small">{t("im2.rmEstimate")}</Typography>
    </Card>
    {error&&<Typography>{error}</Typography>}
-   <Button label={t("im2.import",{count:plan.workouts.length})} variant="train" size="xl"
+   <Button label={t((`im2.import.${pluralForm(language,plan.workouts.length)}`) as TranslationKey,{count:plan.workouts.length})} variant="train" size="xl"
     disabled={!canImportPlan(plan)} fullWidth onPress={start}/>
    <Button label={t("im2.cancel")} variant="secondary" fullWidth onPress={()=>router.back()}/>
   </>}
