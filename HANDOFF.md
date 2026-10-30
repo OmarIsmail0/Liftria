@@ -75,6 +75,9 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
   the included "Cursor Models" (Cursor Grok `cursor-grok-4.5-high`, Composer) can fail mid-run with
   "On-demand usage is required" and lose unpushed work. Owner's current pick: **Grok 4.7**
   (`grok-4.7-high`). Tell agents to commit and push after every step.
+  **Owner, 2026-10-30:** Grok or Composer only, never Sonnet or other non-Cursor models (Other
+  Models is at 100%; going over the limits costs on-demand money). Cursor Models was at 21% after
+  about eight Grok runs (~1.5% each). Check the bar before big launches; stop at about 80%.
 - **Treat Cursor like GPT (owner, 2026-10-28: "it might be an idiot"):** its output is a claim. Run the
   checks yourself, read the whole diff, verify its assumptions against the code, and keep the same rules.
 
