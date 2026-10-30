@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n';
+import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -55,7 +55,7 @@ export default function Recovery(){
  };
  const sets=(count:number)=>{
   const rounded=Number(count.toFixed(1));
-  return t(rounded===1?'recovery.oneSet':'recovery.sets',{count:formatNumber(language,rounded)});
+  return t((`recovery.sets.${pluralForm(language,rounded)}`) as TranslationKey,{count:rounded});
  };
  const detail=(row:MuscleRecovery):string=>{
   if(mode==='recent')return t('recovery.rowRecent',{

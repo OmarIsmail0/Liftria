@@ -5,7 +5,7 @@ import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../
 import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { muscleLabel } from '../../i18n/muscles';
-import { formatDate, joinList } from '../../i18n';
+import { formatDate, joinList, pluralForm, type TranslationKey } from '../../i18n';
 import { listPlans, listSessions, listTemplates, saveTemplate, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
 import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
@@ -78,7 +78,7 @@ export default function TrainHome() {
         <Button label={t('train.retry')} onPress={()=>void refresh()}/></Card>:
       <Card rim="train" title={active?t('train.inProgress'):planned?t('train.upNext', { name: planned.name }):t('train.start')}>
         {active?<View style={{gap:theme.space[2]}}>
-          <Typography>{active.title} · {elapsedLabel(active.startedAt)} · {t('train.setsLogged', { count: stats?.sets ?? 0 })}</Typography>
+          <Typography>{active.title} · {elapsedLabel(active.startedAt)} · {t((`train.setsLogged.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })}</Typography>
           <Button label={t('train.resume')} size="xl" variant="train" fullWidth onPress={resume}/>
           <Button label={t('train.discard')} variant="danger" onPress={()=>setDiscard(true)}/>
         </View>:planned?<View style={{gap:theme.space[2]}}>
@@ -156,7 +156,7 @@ export default function TrainHome() {
     </Card>
     <Typography tone="tertiary" size="small">{t('train.offline')}</Typography>
     <Sheet visible={discard} title={t('train.discardTitle')} destructive
-      description={t('train.discardDescription', { count: stats?.sets ?? 0 })
+      description={t((`train.discardDescription.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })
       } onClose={()=>setDiscard(false)}>
       <Button label={t('train.keep')} fullWidth onPress={()=>setDiscard(false)}/>
       <Button label={t('train.discard')} variant="danger" fullWidth onPress={()=>void deleteActive()}/>

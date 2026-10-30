@@ -79,7 +79,9 @@ export default function WorkoutPreview() {
       {template?template.exercises.map((e,i)=><ListRow key={i}
         leading={lookup[e.exerciseId]?<ExerciseThumbnail exercise={lookup[e.exerciseId]!} />:undefined}
         title={lookup[e.exerciseId]?exerciseName(language,e.exerciseId,lookup[e.exerciseId]!.name):t('preview.exercise')}
-        detail={t('preview.sets',{count:e.targetSets,min:e.repMin,max:e.repMax})+
+        detail={t('preview.sets',{
+          sets:t((`preview.sets.count.${pluralForm(language,e.targetSets)}`) as TranslationKey,{count:e.targetSets}),
+          reps:t((`preview.sets.reps.${pluralForm(language,e.repMax)}`) as TranslationKey,{min:e.repMin,max:e.repMax})})+
           (last[e.exerciseId]?t('preview.last',{date:latinDigits(new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):t('preview.noLast'))}/>):
         <Typography tone="secondary">{t('preview.startEmptyHint')}</Typography>}
     </Card>

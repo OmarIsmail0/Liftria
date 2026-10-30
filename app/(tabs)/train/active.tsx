@@ -264,7 +264,7 @@ export default function ActiveWorkoutScreen() {
   return <Screen embedded safeBottom scroll={false}>
     {screenOn&&focused&&<KeepScreenOn/>}
     <View style={{paddingHorizontal:theme.layout.gutter,paddingTop:theme.space[2],gap:theme.space[2]}}>
-      <Header title={view.title} subtitle={t('active.elapsed',{time:elapsedLabel(view.startedAt,now),count:stats?.sets??0})}
+      <Header title={view.title} subtitle={t((`active.elapsed.${pluralForm(language,stats?.sets??0)}`) as TranslationKey,{time:elapsedLabel(view.startedAt,now),count:stats?.sets??0})}
         onBack={()=>router.replace('/(tabs)/train')} right={<View style={{flexDirection:'row',gap:theme.space[2],alignItems:'center'}}>
           <Pressable accessibilityRole="button" accessibilityLabel={t('polish.musclesSoFar')}
             onPress={()=>setMuscleOpen(true)}
@@ -302,7 +302,7 @@ export default function ActiveWorkoutScreen() {
         {view.sets.filter(s=>s.sessionExerciseId===exercise.id&&s.kind==='warm-up')
           .sort((a,b)=>a.position-b.position).map((s,index)=>
             <ListRow key={s.id} title={t('active.warmupRow',{count:index+1})}
-              detail={displayWeight(s.weight,exercise.type,weightUnit,language)+' × '+t('active.repsCount',{count:s.reps})}
+              detail={displayWeight(s.weight,exercise.type,weightUnit,language)+' × '+t((`active.repsCount.${pluralForm(language,s.reps)}`) as TranslationKey,{count:s.reps})}
               suffix={<Button label={t('active.undo')} variant="secondary" onPress={()=>setPendingUndo(s)}/>}
               onPress={()=>selectEdit(s)}/>)}
         <Typography tone="secondary" size="small">{exercise.unilateral?t('active.bothSides'):''}
@@ -314,7 +314,7 @@ export default function ActiveWorkoutScreen() {
             minHeight:64,paddingVertical:theme.space[2],borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
             <View style={{flex:1,gap:theme.space[1]}}>
               <Typography bold>{label}{active?' · '+t('active.current'):''}</Typography>
-              {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t('active.loggedA11y',{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:weightUnit,reps:slot.logged.reps})}
+              {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t((`active.loggedA11y.${pluralForm(language,slot.logged.reps)}`) as TranslationKey,{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:weightUnit,count:slot.logged.reps})}
                 onPress={()=>selectEdit(slot.logged!)}>
                 <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit,language)} × {slot.logged.reps}
                 {slot.logged.rpe!=null?' · '+t('effort.rpeValue',{value:slot.logged.rpe}):''}
@@ -348,7 +348,7 @@ export default function ActiveWorkoutScreen() {
       {edit&&<Typography bold>{t('active.editingSet',{name:edit.kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:edit.position+1})})}</Typography>}
       {!edit&&suggestion&&<Text style={{fontStyle:'italic',color:theme.color.text.tertiary,fontSize:theme.type.small.size}}>
         {suggestion.progressed?t('active.progressed',{weight:fromKg(step,weightUnit).toFixed(2).replace(/\.?0+$/,''),unit:weightUnit}):t('active.suggested')}
-        {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit,language)} × {t('active.suggestedReps',{count:suggestion.reps})}
+        {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit,language)} × {t((`active.suggestedReps.${pluralForm(language,suggestion.reps)}`) as TranslationKey,{count:suggestion.reps})}
       </Text>}
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
         <GymStepper label={exercise?.type==='assisted'?t('active.assistanceUnit',{unit:weightUnit}):exercise?.type==='dumbbell'?t('active.eachUnit',{unit:weightUnit}):t('active.weightUnit',{unit:weightUnit})}
@@ -466,7 +466,7 @@ export default function ActiveWorkoutScreen() {
         onPress={()=>{if(pendingUndo)void undo(pendingUndo);}}/>
     </Sheet>
     <Sheet visible={finishVisible} title={(stats?.pending??0)>0?
-      t('active.pendingFinish',{count:stats?.pending??0}):t('active.finishTitle')}
+      t((`active.pendingFinish.${pluralForm(language,stats?.pending??0)}`) as TranslationKey,{count:stats?.pending??0}):t('active.finishTitle')}
       description={(stats?.pending??0)>0?t('active.dropPending'):t('active.reviewBeforeSave')}
       onClose={()=>setFinishVisible(false)}>
       <Button label={t('active.backToWorkout')} fullWidth onPress={()=>setFinishVisible(false)}/>

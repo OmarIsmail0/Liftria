@@ -6,6 +6,7 @@ import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail
 import { resultCardEdges } from '../../../src/features/train/resultCardEdges';
 import { Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
+import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
@@ -61,7 +62,7 @@ export default function MuscleBrowser() {
         </Card>
         <View style={[edges.top, showRows ? { paddingBottom: theme.space[3] } : null]}>
           <View style={{ gap: theme.space[3] }}>
-            <Typography size="head">{t('muscle.browserCount', { name: muscleLabel(language, selected), count: matches.length })}</Typography>
+            <Typography size="head">{t((`muscle.browserCount.${pluralForm(language, matches.length)}`) as TranslationKey, { name: muscleLabel(language, selected), count: matches.length })}</Typography>
             <Typography tone="secondary" size="small">{t('muscle.browserDescription')}</Typography>
             {loading && <ActivityIndicator color={theme.color.domain.train} />}
             {error && <Typography>{t('muscle.browserLoadError')}</Typography>}

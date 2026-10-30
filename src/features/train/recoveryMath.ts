@@ -1,7 +1,7 @@
 import { MUSCLES, type Muscle } from '../../services/database/gymTypes';
 import { setVolume } from '../../services/database/gymMath';
 import type { StrengthObservation } from '../../services/database/historyRepository';
-import { formatNumber, pluralForm, translate, type AppLanguage, type TranslationKey } from '../../i18n';
+import { pluralForm, translate, type AppLanguage, type TranslationKey } from '../../i18n';
 
 export const RECOVERY={
   primaryCredit:1,secondaryCredit:0.5,
@@ -117,7 +117,7 @@ export function recoveryRowText(row:MuscleRecovery,mode:'recent'|'volume'|'untra
   language:AppLanguage='en'):string {
   const counted=(value:number)=>{
     const rounded=Number(value.toFixed(1));
-    return translate(language,rounded===1?'recovery.oneSet':'recovery.sets',{count:formatNumber(language,rounded)});
+    return translate(language,(`recovery.sets.${pluralForm(language,rounded)}`) as TranslationKey,{count:rounded});
   };
   const inSentence=(text:string)=>language==='en'?text.toLowerCase():text;
   const day=(iso:string|null)=>inSentence(relativeTrainingDay(iso,now,language));
