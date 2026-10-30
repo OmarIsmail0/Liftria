@@ -144,6 +144,9 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
       if (row.name.startsWith(text)) return 1;
       if (row.words.some(word => word.startsWith(text))) return 2;
       if (row.name.includes(text)) return 3;
+      // A word of 4+ letters, one insertion, deletion or substitution away.
+      if (row.words.some(word => word.length >= 4 && Math.abs(word.length - text.length) <= 1
+        && editDistance(word, text) <= 1)) return 4;
       return Infinity;
     };
     return rows.map(row => ({ row, rank: score(row) })).filter(item => Number.isFinite(item.rank))
