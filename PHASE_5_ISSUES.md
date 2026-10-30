@@ -201,7 +201,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Guard (test):** fail when an Arabic value in a key that is not a plural form (`.zero` … `.other`) has a `{placeholder}` immediately followed by a count noun from a list in the test; fail on `يوما` without tanween; plant one bad example for each check. English keeps working through the same plural keys.
    - Update every call site to pass the count and pick the form. Don't touch `src/design/**`, Health adapters, `src/i18n/exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
 
-25. **PR AK: `Phase 5 / Arabic exercise search`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+25. ~~**PR AK: `Phase 5 / Arabic exercise search`**~~ DONE: PR #73 merged (2026-10-30). صدر، دمبل، the typo سكوت and a Latin "bench" all find the right exercises, 9–36 ms per search in tests.
    - In Arabic, `searchExercises` (`src/services/database/exerciseLibrary.ts`) only matches a substring of the Arabic name. English search also ranks word starts, forgives small typos and checks aliases. Bring Arabic up to the same level:
      - rank: exact name, name starts with, a word in the name starts with, name contains (keep `normalizeArabicSearch` for alef/ya/ta-marbuta/tashkeel);
      - small typos: a word of 4+ letters within edit distance 1 of a name word (lowest rank);
@@ -210,6 +210,12 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Keep it fast on Hermes: precompute normalized names and words once per search, as the current code does; no `localeCompare` with a locale argument; one shared collator. Add a test that searches all 876 exercises in Arabic within a time budget.
    - Tests: each rank level, typo match, muscle and equipment matches ranked below name matches, Latin query in Arabic mode, empty query unchanged. English search unchanged (existing tests stay as they are).
    - Don't touch `src/design/**`, the library screens' layout, Health files, `exerciseInstructionsAr.ts`, or workflows.
+
+26. **PR AL: `Phase 5 / Arabic weight units`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - In Arabic the weight unit shows as Latin `kg` / `lb` (e.g. "8,130 kg", "{weight} {unit}"): the `{unit}` placeholder and several screens use the raw setting value. Add one helper, `weightUnitLabel(language, unit)` in `src/i18n/` (Arabic: كغ and رطل; English: kg and lb, unchanged), and use it everywhere a weight unit is shown: every `{unit}` call site, the Strength/Progress volume figures, plate calculator, records, history, import preview, body weight.
+   - Values and stored units stay as they are (`'kg' | 'lb'` in settings and the database). Only the shown text changes.
+   - **Guard (test):** in Arabic, no translated string and no rendered weight label contains Latin `kg` or `lb` (extend the existing Arabic units guard, which already forbids `kcal` and `g`), with a planted failure. A unit test for the helper.
+   - Don't touch `src/design/**`, Health adapters' stored units, `exerciseInstructionsAr.ts`, store assets, or workflows.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
