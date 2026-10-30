@@ -59,8 +59,9 @@ describe('Arabic number agreement', () => {
 
   test('يوما is written يومًا', () => {
     expect(missingTanweenViolations(ar)).toEqual([]);
-    expect(ar['adaptive.count.needLoggedDays.two']).toContain('يومًا');
-    expect(ar['adaptive.count.needWeighIns.two']).toContain('يومًا');
+    expect(ar['adaptive.count.needLoggedDays.many']).toContain('يومًا');
+    expect(ar['adaptive.count.needLoggedDays.two']).toContain('يومان');
+    expect(ar['adaptive.count.needWeighIns.two']).toContain('قياسان');
   });
 
   test('fixed 11–99 counts use the singular accusative', () => {
@@ -103,12 +104,26 @@ describe('Arabic number agreement', () => {
     for (const count of [0, 1, 2, 4, 14, 100]) {
       const key = `eatI.items.${pluralForm('en', count)}` as TranslationKey;
       expect(translate('en', key, { count })).toContain(String(count));
-      expect(translate('ar', `eatI.items.${pluralForm('ar', count)}` as TranslationKey, { count })).toContain(String(count));
+      const arText = translate('ar', `eatI.items.${pluralForm('ar', count)}` as TranslationKey, { count });
+      // Arabic says one and two in the noun itself (صنف واحد، صنفان), without the digit.
+      if (count === 1 || count === 2) expect(arText).not.toContain(String(count));
+      else expect(arText).toContain(String(count));
     }
-    expect(translate('ar', 'eatI.items.two', { count: 2 })).toContain('صنفان');
+    expect(translate('ar', 'eatI.items.one', { count: 1 })).toBe('صنف واحد');
+    expect(translate('ar', 'eatI.items.two', { count: 2 })).toBe('صنفان');
     expect(translate('ar', 'eatI.items.many', { count: 14 })).toContain('صنفًا');
     expect(translate('ar', 'eatI.items.few', { count: 3 })).toContain('أصناف');
     expect(translate('ar', 'train.setsLogged.two', { count: 2 })).toContain('مجموعتان');
     expect(translate('ar', 'sessionDetail.minute.many', { count: 11 })).toContain('دقيقةً');
+  });
+
+  test('Arabic one and two forms say the number in the noun, not with a digit', () => {
+    const nonCount = new Set(['name', 'time', 'weight', 'unit', 'set', 'exercises', 'source', 'schema', 'date', 'min', 'max', 'kcal', 'value']);
+    const violations = (table: Record<string, string>) => Object.entries(table)
+      .filter(([key]) => /\.(one|two)$/.test(key) && !key.startsWith('preview.sets.reps'))
+      .filter(([, value]) => [...value.matchAll(/\{(\w+)\}[ \u00a0](?=[\u0600-\u06ff])/g)].some(match => !nonCount.has(match[1] ?? '')))
+      .map(([key]) => key);
+    expect(violations(ar as Record<string, string>)).toEqual([]);
+    expect(violations({ 'planted.count.two': '{count} تمرينان' })).toEqual(['planted.count.two']);
   });
 });
