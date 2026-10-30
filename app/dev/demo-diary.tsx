@@ -7,7 +7,7 @@ import {logFood,logQuick,readDiaryDay} from '../../src/features/eat/diaryReposit
 /** Hidden screenshot fixture; all nutrition comes from the bundled source packs.
  * Reopening only adds missing entries to today's actual local diary. */
 export default function DemoDiary(){
- const {auto}=useLocalSearchParams<{auto?:string}>();
+ const {auto,view}=useLocalSearchParams<{auto?:string;view?:'today'|'eat'}>();
  const once=useRef(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null);
  const create=useCallback(async()=>{
@@ -48,8 +48,8 @@ export default function DemoDiary(){
    const quick=await logQuick(Math.max(1,Math.round(eggs.kcal)),'snacks',today,snackName);
    if(!quick.ok){setError('Could not write the demo quick add.');setBusy(false);return;}
   }
-  router.replace({pathname:'/(tabs)/eat',params:{demoWater:'3'}});
- },[busy]);
+  router.replace(view==='today'?'/(tabs)/today':{pathname:'/(tabs)/eat',params:{demoWater:'3'}});
+ },[busy,view]);
  useEffect(()=>{
   if(auto!=='1'||once.current)return;
   once.current=true;void Promise.resolve().then(create);
