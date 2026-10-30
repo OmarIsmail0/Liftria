@@ -134,15 +134,21 @@ export function searchExercises(all: Exercise[], query: string, muscle?: Muscle 
   if (ARABIC_LETTER.test(query)) {
     const text = normalizeArabicSearch(query);
     if (!text) return filtered.sort(byName);
-    const score = (exercise: Exercise): number => {
+    // Normalized name and its words, once per exercise per call.
+    const rows = filtered.map(exercise => {
       const name = normalizeArabicSearch(display(exercise));
-      if (name === text) return 0;
-      if (name.startsWith(text)) return 1;
-      if (name.includes(text)) return 3;
+      return { exercise, name, words: name ? name.split(' ') : [] };
+    });
+    const score = (row: { name: string; words: string[] }): number => {
+      if (row.name === text) return 0;
+      if (row.name.startsWith(text)) return 1;
+      if (row.words.some(word => word.startsWith(text))) return 2;
+      if (row.name.includes(text)) return 3;
       return Infinity;
     };
-    return filtered.map(e=>({e,rank:score(e)})).filter(x=>Number.isFinite(x.rank))
-      .sort((a,b)=>a.rank-b.rank || byName(a.e,b.e)).map(x=>x.e);
+    return rows.map(row => ({ row, rank: score(row) })).filter(item => Number.isFinite(item.rank))
+      .sort((a, b) => a.rank - b.rank || byName(a.row.exercise, b.row.exercise))
+      .map(item => item.row.exercise);
   }
   const text = normalizedName(query);
   if (!text) return filtered.sort(byName);
