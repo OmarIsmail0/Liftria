@@ -214,7 +214,7 @@ export default function DataAndStorage() {
       description={t('backup.confirmDetail')} onClose={closePreview}>
       {previewBackup&&<>
         {isDemo&&<Typography tone="secondary">{t('backup.demoNotice')}</Typography>}
-        <Typography tone="secondary">{t('backup.preview',{
+        <Typography tone="secondary">{t((`backup.preview.${pluralForm(language,backupPreview(previewBackup).total)}`) as TranslationKey,{
          schema:backupPreview(previewBackup).schemaVersion,
          count:backupPreview(previewBackup).total,date})}</Typography>
         {groups.map(g=><Typography key={g.group} tone="secondary" size="small">

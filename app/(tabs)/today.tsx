@@ -176,7 +176,7 @@ export default function TodayTab() {
         <Button label={t('today.logMeal')} variant="secondary" fullWidth
           onPress={() => router.push('/(tabs)/eat')} />
         {diary.logged&&<Typography tone="secondary" size="small">{local.hideNumbers ?
-          t('eatI.items',{count:diary.count}) : t('eatI.eaten',{count:formatNumber(language,diary.kcal)})}</Typography>}
+          t((`eatI.items.${pluralForm(language,diary.count)}`) as TranslationKey,{count:diary.count}) : t('eatI.eaten',{count:formatNumber(language,diary.kcal)})}</Typography>}
       </Card>
       {(!local.onboardingFinished || !hasTarget) && <Card title={t('today.gettingStarted')}>
         <Typography tone="secondary">{t('today.setupDetails')}</Typography>

@@ -1,6 +1,7 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {Button,Card,Chip,Header,ListRow,Screen,Typography} from '../../../src/design/primitives';
+import {pluralForm,type TranslationKey} from '../../../src/i18n';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {keyState} from '../../../src/services/secure-storage';
@@ -36,7 +37,7 @@ export default function HikuHome(){
     onPress={()=>router.push('/(tabs)/hiku/photo')}/>
   </Card>
   <Card title={t('hikuK.usageTitle')}>
-   <Typography tone="secondary">{requests?t('hikuK.requestCount',{count:requests}):t('hikuK.noRequests')}</Typography>
+   <Typography tone="secondary">{requests?t((`hikuK.requestCount.${pluralForm(language,requests)}`) as TranslationKey,{count:requests}):t('hikuK.noRequests')}</Typography>
    <ListRow title={t('hikuK.usageLink')} onPress={()=>router.push('/(tabs)/hiku/usage')}/>
   </Card>
  </Screen>;
