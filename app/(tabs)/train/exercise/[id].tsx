@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../../src/i18n/LanguageProvider';
-import { latinDigits } from '../../../../src/i18n';
+import { latinDigits, weightUnitLabel } from '../../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -77,6 +77,7 @@ export default function ExerciseDetail(){
   const est=records.reduce<number|null>((n,r)=>r.bestEstimatedOneRepMax!==null?Math.max(n??0,r.bestEstimatedOneRepMax):n,null);
   const volume=records.reduce((n,r)=>Math.max(n,r.bestSessionVolume),0);
   const instructionDisplay=localizedExerciseInstructions(language,exercise);
+  const kgLabel=weightUnitLabel(language,'kg');
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
       <Header title={exerciseName(language,exercise.id,exercise.name)} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
@@ -96,9 +97,9 @@ export default function ExerciseDetail(){
           description={t('exerciseDetail.emptyDesc')}/>:
         <View style={{gap:theme.space[2]}}>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[4]}}>
-            <View><Typography size="metric-m">{highest===null?'—':highest+' kg'}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.heaviest')}</Typography></View>
-            <View><Typography size="metric-m">{volume?Math.round(volume)+' kg':'—'}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.bestVolume')}</Typography></View>
-            <View><Typography size="metric-m">{est===null?'—':Math.round(est)+' kg'}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.estimateRM')}</Typography></View>
+            <View><Typography size="metric-m">{highest===null?'—':highest+' '+kgLabel}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.heaviest')}</Typography></View>
+            <View><Typography size="metric-m">{volume?Math.round(volume)+' '+kgLabel:'—'}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.bestVolume')}</Typography></View>
+            <View><Typography size="metric-m">{est===null?'—':Math.round(est)+' '+kgLabel}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.estimateRM')}</Typography></View>
           </View>
           <Chip kind="estimate" label={t('exerciseDetail.estimate')}/>
           <Typography tone="secondary" size="small">{t('exerciseDetail.estimateDesc')}</Typography>

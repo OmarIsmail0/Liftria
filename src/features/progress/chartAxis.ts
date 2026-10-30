@@ -1,4 +1,4 @@
-import { formatNumber, latinDigits, translate, type AppLanguage } from '../../i18n';
+import { formatNumber, latinDigits, translate, weightUnitLabel, type AppLanguage } from '../../i18n';
 
 type AxisUnit = 'kg' | 'lb' | 'kcal';
 
@@ -40,8 +40,9 @@ export function formatAxisDayLabel(day: string, language: AppLanguage): string {
 export function formatAxisValueLabel(value: number, language: AppLanguage, unit: AxisUnit): string {
   const digits = unit === 'kcal' ? 0 : 1;
   const rounded = digits === 0 ? Math.round(value) : Math.round(value * 10) / 10;
+  const unitLabel = unit === 'kcal' ? translate(language, 'trend.axisKcal') : weightUnitLabel(language, unit);
   return `${formatNumber(language, rounded, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  })} ${unit === 'kcal' ? translate(language, 'trend.axisKcal') : unit}`;
+  })} ${unitLabel}`;
 }

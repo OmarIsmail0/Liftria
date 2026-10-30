@@ -1,4 +1,4 @@
-import { translate, type AppLanguage } from '../../i18n';
+import { translate, weightUnitLabel, type AppLanguage } from '../../i18n';
 import { bundledExercises, normalizedName, searchExercises } from '../../services/database/exerciseLibrary';
 import { calculateRecords, type RecordObservation } from '../../services/database/gymMath';
 import type { Exercise } from '../../services/database/gymTypes';
@@ -91,9 +91,10 @@ export function createImportPlan(parsed:ParsedImport,context:ImportContext,
   const to=next.heaviest??next.lowestAssistance;
   const exerciseName=mappings.find(m=>(m.resolvedId??'import-custom:'+normalizedName(m.name))===next.exerciseId)?.name
    ??next.exerciseId;
+  const unitLabel=weightUnitLabel(language,displayUnit);
   return {exerciseName,before:from===null||from===undefined?translate(language,'im2.firstRecord'):
-   fromKg(from,displayUnit).toFixed(1)+' '+displayUnit,
-   after:to===null?translate(language,'im2.repsRecord'):fromKg(to,displayUnit).toFixed(1)+' '+displayUnit};
+   fromKg(from,displayUnit).toFixed(1)+' '+unitLabel,
+   after:to===null?translate(language,'im2.repsRecord'):fromKg(to,displayUnit).toFixed(1)+' '+unitLabel};
  });
  return {parsed,workouts,skippedDays,hashDuplicate,missingUnit,unit,mappings,
   customCount:mappings.filter(m=>m.resolvedId===null).length,setCount,warmupCount,changes};

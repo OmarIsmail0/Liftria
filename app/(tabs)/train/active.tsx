@@ -1,3 +1,4 @@
+import { weightUnitLabel } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -67,6 +68,7 @@ export default function ActiveWorkoutScreen() {
   const [now,setNow]=useState(() => Date.now());
   const [focused,setFocused]=useState(false);
   const [weightUnit,setWeightUnit]=useState<WeightUnit>('kg');
+  const unitLabel=weightUnitLabel(language,weightUnit);
   const [smallPlates,setSmallPlates]=useState(false);
   const [suggestion,setSuggestion]=useState<{weight:number;reps:number;progressed:boolean}|null>(null);
   const [exerciseNote,setExerciseNote]=useState('');
@@ -313,7 +315,7 @@ export default function ActiveWorkoutScreen() {
             minHeight:64,paddingVertical:theme.space[2],borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
             <View style={{flex:1,gap:theme.space[1]}}>
               <Typography bold>{label}{active?' · '+t('active.current'):''}</Typography>
-              {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t('active.loggedA11y',{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:weightUnit,reps:slot.logged.reps})}
+              {slot.logged?<Pressable accessibilityRole="button" accessibilityLabel={t('active.loggedA11y',{set:label,weight:Number(fromKg(slot.logged.weight,weightUnit).toFixed(2)),unit:unitLabel,reps:slot.logged.reps})}
                 onPress={()=>selectEdit(slot.logged!)}>
                 <Typography>{displayWeight(slot.logged.weight,exercise.type,weightUnit,language)} × {slot.logged.reps}
                 {slot.logged.rpe!=null?' · '+t('effort.rpeValue',{value:slot.logged.rpe}):''}
@@ -346,13 +348,13 @@ export default function ActiveWorkoutScreen() {
       paddingBottom:theme.space[3]+insets.bottom,backgroundColor:theme.color.bg.raised,gap:theme.space[2]}}>
       {edit&&<Typography bold>{t('active.editingSet',{name:edit.kind==='warm-up'?t('active.warmupSet'):t('active.set',{count:edit.position+1})})}</Typography>}
       {!edit&&suggestion&&<Text style={{fontStyle:'italic',color:theme.color.text.tertiary,fontSize:theme.type.small.size}}>
-        {suggestion.progressed?t('active.progressed',{weight:fromKg(step,weightUnit).toFixed(2).replace(/\.?0+$/,''),unit:weightUnit}):t('active.suggested')}
+        {suggestion.progressed?t('active.progressed',{weight:fromKg(step,weightUnit).toFixed(2).replace(/\.?0+$/,''),unit:unitLabel}):t('active.suggested')}
         {displayWeight(suggestion.weight,exercise?.type??'weighted',weightUnit,language)} × {t('active.suggestedReps',{count:suggestion.reps})}
       </Text>}
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-        <GymStepper label={exercise?.type==='assisted'?t('active.assistanceUnit',{unit:weightUnit}):exercise?.type==='dumbbell'?t('active.eachUnit',{unit:weightUnit}):t('active.weightUnit',{unit:weightUnit})}
+        <GymStepper label={exercise?.type==='assisted'?t('active.assistanceUnit',{unit:unitLabel}):exercise?.type==='dumbbell'?t('active.eachUnit',{unit:unitLabel}):t('active.weightUnit',{unit:unitLabel})}
           value={fromKg(kg,weightUnit)} onChange={v=>setKg(toKg(v,weightUnit))}
-          step={fromKg(step,weightUnit)} unit={weightUnit}/>
+          step={fromKg(step,weightUnit)} unit={unitLabel}/>
         <GymStepper label={t('active.reps')} value={reps} onChange={setReps} step={1} max={500}/>
       </View>
       {effortMode!=='off'&&kind==='working'&&
