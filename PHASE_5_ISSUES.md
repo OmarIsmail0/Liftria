@@ -201,7 +201,18 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Guard (test):** fail when an Arabic value in a key that is not a plural form (`.zero` … `.other`) has a `{placeholder}` immediately followed by a count noun from a list in the test; fail on `يوما` without tanween; plant one bad example for each check. English keeps working through the same plural keys.
    - Update every call site to pass the count and pick the form. Don't touch `src/design/**`, Health adapters, `src/i18n/exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
 
+25. **PR AK: `Phase 5 / Arabic exercise search`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - In Arabic, `searchExercises` (`src/services/database/exerciseLibrary.ts`) only matches a substring of the Arabic name. English search also ranks word starts, forgives small typos and checks aliases. Bring Arabic up to the same level:
+     - rank: exact name, name starts with, a word in the name starts with, name contains (keep `normalizeArabicSearch` for alef/ya/ta-marbuta/tashkeel);
+     - small typos: a word of 4+ letters within edit distance 1 of a name word (lowest rank);
+     - muscle and equipment words: typing an Arabic muscle or equipment name (the labels the app already shows, e.g. صدر، أكتاف، دمبل، كابل، جهاز) also returns exercises with that primary muscle or equipment, ranked below every name match;
+     - a Latin query in Arabic mode still matches the English name and aliases (gym words are often typed in English).
+   - Keep it fast on Hermes: precompute normalized names and words once per search, as the current code does; no `localeCompare` with a locale argument; one shared collator. Add a test that searches all 876 exercises in Arabic within a time budget.
+   - Tests: each rank level, typo match, muscle and equipment matches ranked below name matches, Latin query in Arabic mode, empty query unchanged. English search unchanged (existing tests stay as they are).
+   - Don't touch `src/design/**`, the library screens' layout, Health files, `exerciseInstructionsAr.ts`, or workflows.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
+
 
 **Rules (same as Phase 4):**
 - Every push runs `verify`. Claude adds `build` for emulator screenshots and merges when `verify` is green and the screenshots are clean.
