@@ -1,5 +1,6 @@
 import { ar } from '../ar';
 import type { TranslationKey } from '../en';
+import { weightUnitLabel } from '../index';
 
 describe('Arabic units guard', () => {
   test('no Latin kcal in Arabic translations', () => {
@@ -158,5 +159,14 @@ describe('Arabic units guard', () => {
         `Found ${violations.length} Arabic translations with regular space before units:\n${violations.join('\n')}`
       );
     }
+  });
+});
+
+describe('weightUnitLabel', () => {
+  test('Arabic uses كغ and رطل; English keeps kg and lb', () => {
+    expect(weightUnitLabel('en', 'kg')).toBe('kg');
+    expect(weightUnitLabel('en', 'lb')).toBe('lb');
+    expect(weightUnitLabel('ar', 'kg')).toBe('كغ');
+    expect(weightUnitLabel('ar', 'lb')).toBe('رطل');
   });
 });
