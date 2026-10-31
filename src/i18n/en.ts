@@ -2343,6 +2343,7 @@ export const en = {
   "appleHealth.settings.title": "Apple Health",
   "appleHealth.settings.detail": "Read-only access",
   "appleHealth.progress.description": "Apple Health measurements live inside Progress.",
+  "appleHealth.trend.sourceCounts": "{local} local · {health} Apple Health entries in this range",
   "appleHealth.trend.source": "Entries saved in Liftria and cached Apple Health readings, kept separate by source.",
   "appleHealth.trend.empty": "Log your weight to see a trend. Apple Health may also have readings.",
   "appleHealth.trend.privacy": "Apple Health entries can only be edited in the Health app. Liftria never writes health measurements.",

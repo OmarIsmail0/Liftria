@@ -2344,6 +2344,7 @@ export const ar: Record<TranslationKey, string> = {
   "appleHealth.settings.title": "صحة Apple",
   "appleHealth.settings.detail": "وصول للقراءة فقط",
   "appleHealth.progress.description": "قياسات صحة Apple موجودة داخل التقدم.",
+  "appleHealth.trend.sourceCounts": "{local} إدخال محلي · {health} قراءة من صحة Apple في هذه الفترة",
   "appleHealth.trend.source": "إدخالات محفوظة في ليفتريا وقراءات صحة Apple المخزنة، مع إبقاء المصدر منفصلًا.",
   "appleHealth.trend.empty": "سجّل وزنك لترى الاتجاه. قد تتوفر قراءات في صحة Apple أيضًا.",
   "appleHealth.trend.privacy": "لا يمكن تعديل إدخالات صحة Apple إلا في تطبيق الصحة. لا يكتب ليفتريا قياسات صحية.",

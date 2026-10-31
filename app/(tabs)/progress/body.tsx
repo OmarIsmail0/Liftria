@@ -110,7 +110,7 @@ export default function BodyTrends(){
     <Chip kind="phone" label={t('trend.myWeight')}/>
     <Chip kind={counts.health===0?'off':'measured'} label={t(healthCopy('trend.chip'))}/>
    </View>
-   <Typography tone="secondary" size="small">{t('trend.sourceCounts',{
+   <Typography tone="secondary" size="small">{t(healthCopy('trend.sourceCounts'),{
     local:counts.local,health:counts.health})}</Typography>
    {hidden&&<Button label={t('eatI.showNumbers')} variant="ghost" onPress={()=>
     router.push('/settings/preferences')}/>}

@@ -22,7 +22,7 @@ const slots = [
   'record.readOnly', 'record.notFound', 'record.noWrite',
   'today.permissions', 'today.connect', 'today.readOnly', 'today.hidden',
   'settings.title', 'settings.detail', 'progress.description',
-  'trend.source', 'trend.empty', 'trend.privacy', 'trend.chip',
+  'trend.source', 'trend.empty', 'trend.privacy', 'trend.chip', 'trend.sourceCounts',
 ] as const satisfies readonly HealthCopySlot[];
 
 describe('iPhone health flags', () => {
