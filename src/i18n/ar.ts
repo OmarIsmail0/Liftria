@@ -409,6 +409,8 @@ export const ar: Record<TranslationKey, string> = {
   'trend.weightValue': "{weight} {unit}",
   'trend.weightInput': "الوزن ({unit})",
   'trend.weightAdjust': "التعديل بمقدار {step} {unit}",
+  'measure.unit.cm': 'سم',
+  'measure.unit.in': 'بوصة',
   'eatI.partialMacros': "قيم المغذيات: {count} من {total}",
   'hikuK.title': "تقديرات الوجبات من هيكو",
   'hikuK.intro': "صف ما أكلته بكلماتك، حتى باللهجة المصرية. راجع التقديرات قبل حفظها.",

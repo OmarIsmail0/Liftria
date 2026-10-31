@@ -408,6 +408,8 @@ export const en = {
   'trend.weightValue': "{weight} {unit}",
   'trend.weightInput': "Weight ({unit})",
   'trend.weightAdjust': "Adjust by {step} {unit}",
+  'measure.unit.cm': 'cm',
+  'measure.unit.in': 'in',
   'eatI.partialMacros': "Macros from {count} of {total} items",
   'hikuK.title': "Hiku meal estimates",
   'hikuK.intro': "Describe what you ate in your own words, including Egyptian Arabic. Check the estimates before saving.",
