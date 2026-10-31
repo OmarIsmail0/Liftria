@@ -1,13 +1,38 @@
 import {useState} from 'react';
 import {View} from 'react-native';
-import Svg,{Circle,Line,Path,Rect,Text as SvgText} from 'react-native-svg';
+import Svg,{Circle,Line,Path,Rect} from 'react-native-svg';
 import {useTheme} from '../../design/ThemeProvider';
+import {Typography} from '../../design/primitives';
 import {pluralForm,type TranslationKey} from '../../i18n';
 import {useLanguage} from '../../i18n/LanguageProvider';
 import type {NutritionTrend,WeightTrend} from './trendMath';
 import {formatAxisDayLabel,formatAxisValueLabel,pickTickIndexes} from './chartAxis';
 import {fromKg,type WeightUnit} from '../train/workoutUnits';
 
+type AxisTick={key:string;x:number;baseline:number;anchor:'end'|'middle';text:string};
+/**
+ * react-native-svg Text does not shape Arabic on Android. Tick labels are the app text
+ * primitive on the same anchors: `baseline` is the old SVG baseline, `end` keeps the right
+ * edge on x, `middle` keeps the center on x. The layer stays left-to-right with the axis.
+ * Screen readers skip the ticks; the chart view keeps its summary label.
+ */
+function ChartAxisLabels({labels}:{labels:AxisTick[]}){
+ const {theme}=useTheme();
+ const fontSize=theme.type.small.size;
+ return <View pointerEvents="none" accessible={false} accessibilityElementsHidden
+  importantForAccessibility="no-hide-descendants"
+  style={{position:'absolute',left:0,right:0,top:0,bottom:0,direction:'ltr'}}>
+  {labels.map(label=>
+   <View key={label.key} pointerEvents="none" accessible={false} accessibilityElementsHidden
+    importantForAccessibility="no-hide-descendants"
+    style={{position:'absolute',top:label.baseline-fontSize,left:label.x,
+     transform:[{translateX:label.anchor==='end'?'-100%':'-50%'}]}}>
+    <View style={{flexDirection:'row'}}>
+     <Typography tone="secondary" size="small">{label.text}</Typography>
+    </View>
+   </View>)}
+ </View>;
+}
 /** Chart axes are permanently chronological left-to-right even in an RTL interface. */
 export function NutritionGraph({trend,target,hidden=false}:{
  trend:NutritionTrend;target:number|null;hidden?:boolean;
@@ -42,19 +67,20 @@ export function NutritionGraph({trend,target,hidden=false}:{
      return <ViewPlaceholder key={d.day} i={i} x={x(i)} y={y(d.kcal??0)} prev={
        prev?.logged?{x:x(i-1),y:y(prev.kcal??0)}:null} stroke={theme.color.domain.eat}/>;
    })}
-   {!hidden&&yTicks.map(value=><SvgText key={'nl'+value} x={pad.left-6} y={y(value)+4}
-    fill={theme.color.text.secondary} textAnchor="end" fontSize={theme.type.small.size}>
-    {formatAxisValueLabel(value,language,'kcal')}
-   </SvgText>)}
-   {xTicks.map(index=>{
-    const day=trend.days[index];
-    if(!day)return null;
-    return <SvgText key={'nd'+day.day} x={x(index)} y={height-8}
-     fill={theme.color.text.secondary} textAnchor="middle" fontSize={theme.type.small.size}>
-     {formatAxisDayLabel(day.day,language)}
-    </SvgText>;
-   })}
   </Svg>
+  <ChartAxisLabels labels={[
+   ...(!hidden?yTicks.map(value=>({
+    key:'nl'+value,x:pad.left-6,baseline:y(value)+4,anchor:'end' as const,
+    text:formatAxisValueLabel(value,language,'kcal'),
+   })):[]),
+   ...xTicks.flatMap(index=>{
+    const day=trend.days[index];
+    return day?[{
+     key:'nd'+day.day,x:x(index),baseline:height-8,anchor:'middle' as const,
+     text:formatAxisDayLabel(day.day,language),
+    }]:[];
+   }),
+  ]}/>
  </View>;
 }
 /** Group native SVG primitives without creating React Native views within SVG. */
@@ -122,18 +148,19 @@ export function WeightGraph({trend,hidden,unit}:{
        fill={theme.color.bg.raised} stroke={theme.color.domain.health} strokeWidth={1.5}/>:
       <Circle key={entry.id} cx={x(day.day)} cy={y(entry.kg)} r={4}
        fill={theme.color.bg.raised} stroke={theme.color.domain.health} strokeWidth={1.5}/>))}
-    {!hidden&&yTicks.map(value=><SvgText key={'wl'+value} x={pad.left-6} y={y(value)+4}
-     fill={theme.color.text.secondary} textAnchor="end" fontSize={theme.type.small.size}>
-     {formatAxisValueLabel(fromKg(value,unit),language,unit)}
-    </SvgText>)}
-    {xTicks.map(index=>{
-      const day=days[index];
-      if(!day)return null;
-      return <SvgText key={'wd'+day.day} x={x(day.day)} y={height-8}
-       fill={theme.color.text.secondary} textAnchor="middle" fontSize={theme.type.small.size}>
-       {formatAxisDayLabel(day.day,language)}
-      </SvgText>;
-    })}
    </Svg>
+   <ChartAxisLabels labels={[
+    ...(!hidden?yTicks.map(value=>({
+     key:'wl'+value,x:pad.left-6,baseline:y(value)+4,anchor:'end' as const,
+     text:formatAxisValueLabel(fromKg(value,unit),language,unit),
+    })):[]),
+    ...xTicks.flatMap(index=>{
+     const day=days[index];
+     return day?[{
+      key:'wd'+day.day,x:x(day.day),baseline:height-8,anchor:'middle' as const,
+      text:formatAxisDayLabel(day.day,language),
+     }]:[];
+    }),
+   ]}/>
  </View>;
 }
