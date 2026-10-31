@@ -28,6 +28,8 @@ export default function DeveloperHome() {
         onPress={() => router.push('/dev/demo-import')} />
       <ListRow title="Demo measurements" detail="Sample tape measurements, no database write"
         onPress={() => router.push('/dev/demo-measurements?auto=1')} />
+      <ListRow title="Demo progress photos" detail="Drawn illustrations, blurred and compare, no database write"
+        onPress={() => router.push('/dev/demo-progress-photos?auto=1')} />
     </Card>
   </Screen>;
 }
