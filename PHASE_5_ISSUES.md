@@ -235,6 +235,18 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Test: a render test that the labels are RN text in Arabic and English, with the same strings as before.
    - Don't touch `src/design/**`, Health adapters, or workflows.
 
+29. **PR AO: `Phase 5 / Progress photos`** (builder: **Cursor**, Grok 4.7, branch from `main`; owner asked for a next feature, 2026-10-31)
+   - Hevy and MacroFactor both keep progress photos. Liftria has the camera, the image picker and the image manipulator already (PR O); add private progress photos to Progress → Body, under the Measurements card.
+   - **Taking a photo:** "Add photo" offers "Take a photo" or "Choose from gallery", the same way as Hiku photo: ask for camera access only on "Take a photo", and if refused explain once and offer the gallery. The person picks a pose: front, side or back. Downscale with `expo-image-manipulator` to a 1080 px long edge, JPEG quality 0.7, which also strips EXIF and location.
+   - **Storage:** one additive migration (version 8) adds `progress_photos` (`id` from `newGymId()`, `taken_at`, `pose` CHECK front/side/back, `jpeg_base64 TEXT NOT NULL`, `width`, `height`, `note`, `source` = `'liftria'`). Keep the image in SQLite as base64 like Hiku's kept photos, so the backup, restore and Delete all cover it with no extra files. Keep the cached copies from the picker and manipulator only for the flow, and delete them after saving (`deleteTemporaryFiles` already covers those folders).
+   - **Private by default:** photos never leave the phone. They are not sent to Hiku and are not in the CSV export. They appear only on the Body screen and their own screens. On the Body card, thumbnails stay blurred until the person taps "Show photos", every time the screen opens; Settings → Privacy has a switch to show them without the tap (off by default).
+   - **Screens:** the card shows the latest photo per pose and the count. The gallery screen groups photos by date, newest first; each photo can be viewed full screen, have its note edited, or be deleted after confirming. **Compare:** pick a pose and two dates and see the two photos side by side with their dates (and the body weight from those days when there is one, labeled as logged, never invented).
+   - **Backup:** the backup includes the table (with `introducedIn` 8 in the manifest, like PR AM did for v7). The restore preview counts photos and shows their total size. Data and storage shows how much space photos use. A v6 or v7 backup without the table restores as empty.
+   - **Strings:** every new string in English and Arabic, counts through `pluralForm()`, the same direction-safe value rules as the rest of the app.
+   - **Tests:** the migration on a v7 database keeps existing data; the repository (add, edit note, delete, latest per pose, list by date); the resize call (mock the manipulator: 1080 px, quality 0.7); nothing is saved when the picker is cancelled or permission is denied; the blur stays on until tapped; backup round trip with a small photo; Delete all removes the rows; the coverage guards pass.
+   - **Screenshots:** a `dev/demo-progress-photos?auto=1` route with **drawn illustrations only** (like `DemoPhotoIllustration`, no real people and no bundled photos), showing the blurred card, the shown card and the compare view. It must not write to the database. Claude adds it to the screenshot lists.
+   - Don't touch `src/design/**`, Health adapters, Hiku request code, `exerciseInstructionsAr.ts`, store assets, `app.config.ts` (camera texts already exist), or workflows. No new dependencies.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 
