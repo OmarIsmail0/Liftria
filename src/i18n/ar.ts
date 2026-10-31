@@ -2165,6 +2165,7 @@ export const ar: Record<TranslationKey, string> = {
   "today.staleAt": "قديمة · {time}",
   "today.staleUnverified": "قديمة · {time} · جهاز غير متحقق منه",
   "p4.about.versionBuild": "الإصدار {version} · إصدار Android {build}",
+  "p4.about.commit": "الشيفرة {commit}",
   "miniBar.resume": "استئناف",
   "miniBar.resumeA11y": "استئناف {title}. المجموعات المسجلة: {count}.",
   "miniBar.progress": "المجموعات: {done} من {total}",

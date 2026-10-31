@@ -2164,6 +2164,7 @@ export const en = {
   "today.staleAt": "Stale · {time}",
   "today.staleUnverified": "Stale · {time} · unverified device",
   "p4.about.versionBuild": "Version {version} · Android build {build}",
+  "p4.about.commit": "Code {commit}",
   "miniBar.resume": "Resume",
   "miniBar.resumeA11y": "Resume {title}. Sets logged: {count}.",
   "miniBar.progress": "{done} of {total} sets",

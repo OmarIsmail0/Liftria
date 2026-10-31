@@ -1,6 +1,9 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import releaseVersion from './src/config/releaseVersion.json';
 import { resolveAndroidVersionCode } from './src/config/androidVersion';
+// Plain JS like the other config plugins: the app's TypeScript has no Node types.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { buildCommit } = require('./plugins/buildCommit') as { buildCommit: () => string | null };
 
 const healthReadPermissions = [
   'android.permission.health.READ_STEPS',
@@ -26,6 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
+  extra: { ...config.extra, commit: buildCommit() },
   ios: {
     icon: { light: './assets/brand/icon-light.png', dark: './assets/brand/icon-dark.png' },
     bundleIdentifier: 'com.liftria.app',

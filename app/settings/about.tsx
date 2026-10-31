@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Card, Chip, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
+import Constants from 'expo-constants';
 import releaseVersion from '../../src/config/releaseVersion.json';
 
 export default function AboutHelp() {
@@ -11,6 +12,8 @@ export default function AboutHelp() {
       onBack={()=>backOrReplace(router,'/settings')} />
     <Card title={tr('p4.about.2')}>
       <Typography>{tr('p4.about.versionBuild',{version:releaseVersion.name,build:releaseVersion.androidCode})}</Typography>
+      {typeof Constants.expoConfig?.extra?.commit === 'string' &&
+        <Typography tone="secondary" size="small">{tr('p4.about.commit',{commit:Constants.expoConfig.extra.commit})}</Typography>}
       <Typography tone="secondary">{tr('p4.about.17')}</Typography>
     </Card>
     <Card title={tr('p4.about.3')}>
