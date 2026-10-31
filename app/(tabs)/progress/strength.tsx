@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { bidiIsolate, formatNumber, latinDigits } from '../../../src/i18n';
+import { bidiIsolate, formatNumber, latinDigits, weightUnitLabel } from '../../../src/i18n';
 import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -38,6 +38,7 @@ export default function Strength(){
  const top=records.filter(r=>r.bestEstimatedOneRepMax!==null)
   .sort((a,b)=>(b.bestEstimatedOneRepMax??0)-(a.bestEstimatedOneRepMax??0)).slice(0,4);
  const names=new Map(rows.map(r=>[r.exerciseId,exerciseName(language,r.exerciseId,r.name)]));
+ const unitLabel=weightUnitLabel(language,unit);
  return <Screen embedded>
   <Header title={tr('p4.strength.0')} subtitle={tr('p4.strength.1')} onBack={()=>router.back()}/>
   <SegmentedControl label={tr('p4.strength.2')} value={range} onChange={setRange}
@@ -48,7 +49,7 @@ export default function Strength(){
    <Button label={tr('p4.strength.5')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
   </Card>:<>
    <Card rim="train" title={tr('p4.strength.6')}>
-    <Typography size="metric-m">{bidiIsolate(language,formatNumber(language,Math.round(fromKg(summary.total,unit)))+' '+unit)}</Typography>
+    <Typography size="metric-m">{bidiIsolate(language,formatNumber(language,Math.round(fromKg(summary.total,unit)))+' '+unitLabel)}</Typography>
     <Typography tone="secondary" size="small">{summary.changePct===null?tr('p4.strength.18'):
       bidiIsolate(language,(summary.changePct>=0?'+':'')+formatNumber(language,Math.round(summary.changePct))+'%')+' '+tr('p4.strength.19')}</Typography>
     <Typography tone="tertiary" size="small">{tr('p4.strength.15')}</Typography>
@@ -72,7 +73,7 @@ export default function Strength(){
    <Card title={tr('p4.strength.7')}>
     {top.length===0?<Typography tone="secondary">{tr('p4.strength.16')}</Typography>:
      top.map(r=><ListRow key={r.exerciseId+':'+r.side} title={names.get(r.exerciseId)??r.exerciseId}
-      detail={bidiIsolate(language,formatNumber(language,Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit)))+' '+unit)+' '+tr('p4.strength.20')+' · '+bidiIsolate(language,latinDigits(new Date(r.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))}
+      detail={bidiIsolate(language,formatNumber(language,Math.round(fromKg(r.bestEstimatedOneRepMax??0,unit)))+' '+unitLabel)+' '+tr('p4.strength.20')+' · '+bidiIsolate(language,latinDigits(new Date(r.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US')))}
       suffix={<Chip kind="estimate" label={tr('p4.strength.8')}/>}
       onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:r.exerciseId}})}/>)}
     <Typography tone="secondary" size="small">{tr('p4.strength.17')}</Typography>
