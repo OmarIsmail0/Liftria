@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
+import { weightUnitLabel } from '../../i18n';
 import { formatEditableNumber } from '../../i18n/editableNumber';
 import { useLanguage } from '../../i18n/LanguageProvider';
 
@@ -10,7 +11,8 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
   label:string; value:number; onChange:(value:number)=>void; step?:number; min?:number; max?:number; unit?:string;
 }) {
   const {theme}=useTheme();
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
+  const shownUnit=unit==='kg'||unit==='lb'?weightUnitLabel(language,unit):unit;
   const current=useRef(value);
   const repeat=useRef<ReturnType<typeof setInterval>|null>(null);
   const [editing,setEditing]=useState(false);
@@ -32,7 +34,7 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
     <Typography size="head">{direction<0?'−':'+'}</Typography>
   </Pressable>;
   return <View style={{gap:theme.space[2],flex:1,minWidth:150}}>
-    <Typography tone="secondary" size="small">{label}{unit&&label.toLowerCase().includes(unit)?'':' · '+unit}</Typography>
+    <Typography tone="secondary" size="small">{label}{shownUnit&&label.toLowerCase().includes(shownUnit)?'':' · '+shownUnit}</Typography>
     <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[1]}}>
       {control(-1)}
       {editing?<TextInput autoFocus accessibilityLabel={t('stepper.enter',{label})}
@@ -42,7 +44,7 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
         style={{flex:1,minHeight:64,textAlign:'center',color:theme.color.text.primary,
           fontSize:theme.type.body.size,borderBottomWidth:1,borderColor:theme.controlOutline}}/>:
         <Pressable accessibilityRole="button"
-          accessibilityLabel={t('stepper.editA11y',{label,value:formatEditableNumber(value,'load')+(unit?' '+unit:'')})}
+          accessibilityLabel={t('stepper.editA11y',{label,value:formatEditableNumber(value,'load')+(shownUnit?' '+shownUnit:'')})}
           onPress={()=>{setTyped(formatEditableNumber(value,'load'));setEditing(true);}}
           style={{flex:1,minHeight:64,justifyContent:'center',alignItems:'center'}}>
           <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}

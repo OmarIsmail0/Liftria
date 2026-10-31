@@ -55,7 +55,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - **Don't touch** `src/design/**` (Claude's, PR #27), the Health screens, or the stack layouts (PR S). Build on the existing primitives.
 7. ~~**PR T: `Phase 5 / Arabic copy sweep`**~~ DONE: PR #30 merged (2026-10-28). (builder: **Cursor**; started from PR #29's branch, so merge `main` in with a merge commit now that #29 has merged)
-   - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. `kg` and `lb` stay Latin (app convention).
+   - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. Weight units too: كغ and رطل (changed by PR AL #75, 2026-10-31; owner: "do what is best"). Stored units stay `kg` / `lb`.
    - **One direction-safe value:** every number with its unit is one string with a no-break space (U+00A0) between them, wrapped with `bidiIsolate()` where it sits inside Arabic text, so it never wraps or reorders.
    - **Counted phrases:** every remaining Arabic count goes through `pluralForm()` with correct forms (11–99 take the singular accusative: "14 يومًا"). Where a count sits in "X of Y" phrasing, reword to avoid a counted noun ("الأيام المسجلة: 27 من 28").
    - **Untranslated values on screen:** Hiku usage rows show the raw model id and request status; show the model's display name and a translated status.

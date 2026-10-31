@@ -17,6 +17,8 @@ test('date labels are localized with western numerals in Arabic',()=>{
 test('value labels use the requested unit and locale formatting',()=>{
   expect(formatAxisValueLabel(78.44,'en','kg')).toBe('78.4 kg');
   expect(formatAxisValueLabel(173.92,'en','lb')).toBe('173.9 lb');
+  expect(formatAxisValueLabel(78.44,'ar','kg')).toBe('78.4 كغ');
+  expect(formatAxisValueLabel(173.92,'ar','lb')).toBe('173.9 رطل');
   expect(formatAxisValueLabel(2123.2,'en','kcal')).toBe('2,123 kcal');
   const ar=formatAxisValueLabel(2123.2,'ar','kcal');
   expect(ar).toBe('2,123 سعرة');

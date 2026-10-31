@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
+import { weightUnitLabel } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Card, Header, Screen, SegmentedControl, Stepper, Toggle, Typography } from '../../src/design/primitives';
 import { useTheme } from '../../src/design/ThemeProvider';
@@ -18,7 +19,7 @@ const defaults: Prefs = { weight: 'kg', height: 'cm', hideNumbers: false,
 
 export default function UnitsAndPreferences() {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [values, setValues] = useState<Prefs>(defaults);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,13 +72,14 @@ export default function UnitsAndPreferences() {
       onBack={() => backOrReplace(router, '/settings')} />
     <Card title={t('preferences.units')}>
       <Typography tone="secondary" size="small">{t('preferences.unitsDescription')}</Typography>
-      <SegmentedControl label={t('preferences.weight')} options={[{ value:'kg', label:'kg' }, { value:'lb', label:'lb' }]}
+      <SegmentedControl label={t('preferences.weight')} options={[
+        { value:'kg', label:weightUnitLabel(language,'kg') }, { value:'lb', label:weightUnitLabel(language,'lb') }]}
         value={values.weight} onChange={v => void change('weight', v)} />
       <SegmentedControl label={t('preferences.height')} options={[{ value:'cm', label:t('units.cm') }, { value:'ftin', label:t('units.ftIn') }]}
         value={values.height} onChange={v => void change('height', v)} />
-      <Stepper label={t('gymParity.barWeight',{unit:values.weight})}
+      <Stepper label={t('gymParity.barWeight',{unit:weightUnitLabel(language,values.weight)})}
         value={values.weight==='kg'?values.barKg:values.barLb}
-        unit={values.weight} step={values.weight==='kg'?2.5:5} min={2.5} max={values.weight==='kg'?100:220}
+        unit={weightUnitLabel(language,values.weight)} step={values.weight==='kg'?2.5:5} min={2.5} max={values.weight==='kg'?100:220}
         onChange={v=>void change(values.weight==='kg'?'barKg':'barLb',v)}/>
       <Toggle label={t('preferences.smallPlates')} detail={t('preferences.smallPlatesDetail')}
         value={values.smallPlates} onChange={v => void change('smallPlates', v)} />

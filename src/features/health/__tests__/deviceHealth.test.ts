@@ -148,7 +148,8 @@ describe('Apple Health amounts', () => {
     expect(formatAppleAmount('ar', 1200, 'steps')).not.toMatch(/[٠-٩]/);
     expect(formatAppleAmount('ar', 80.5, 'kcal')).toContain('\u00A0سعرة');
     expect(formatAppleAmount('ar', 72, 'bpm')).toContain('\u00A0نبضة/د');
-    expect(formatAppleAmount('ar', 80.4, 'kg')).toContain('\u00A0kg');
+    expect(formatAppleAmount('ar', 80.4, 'kg')).toContain('\u00A0كغ');
+    expect(formatAppleAmount('ar', 80.4, 'kg')).not.toMatch(/\bkg\b/);
     expect(formatAppleAmount('ar', 18.5, '%')).toContain('\u00A0%');
     expect(formatAppleAmount('ar', 72, 'bpm')).not.toMatch(/bpm/);
     expect(formatAppleAmount('ar', 40, 'kcal')).not.toMatch(/kcal/);

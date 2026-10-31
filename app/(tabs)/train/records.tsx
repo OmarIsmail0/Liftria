@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { latinDigits } from '../../../src/i18n';
+import { latinDigits, weightUnitLabel } from '../../../src/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -30,6 +30,7 @@ export default function Records(){
   })();
   return()=>{live=false;};
  },[language]));
+ const unitLabel=weightUnitLabel(language,unit);
  return <Screen embedded>
   <Header title={t('train.records')} subtitle={t('records.subtitle')} onBack={()=>router.back()}/>
   <Card rim="train" title={t('records.bestSets')}>
@@ -40,14 +41,14 @@ export default function Records(){
     <Button label={t('records.start')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
    </View>:rows.map(({row,name})=><ListRow key={row.exerciseId+':'+row.side}
     title={name+(row.side?' · '+sideLabel(row.side,language):'')}
-    detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unit:
-      row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unit:t('records.mostReps')+' ' +row.maxReps)+
+    detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unitLabel:
+      row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unitLabel:t('records.mostReps')+' ' +row.maxReps)+
       ' · '+latinDigits(new Date(row.latestAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}
     onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:row.exerciseId}})}
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>
        <Chip kind="estimate" label={t('chips.estimate')}/>
-       <Typography size="small">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unit} {t('records.estimated1rm')}</Typography>
+       <Typography size="small">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unitLabel} {t('records.estimated1rm')}</Typography>
       </View>:undefined}/>)}
   </Card>
   <Typography size="small" tone="secondary">{t('records.disclaimer')}</Typography>

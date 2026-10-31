@@ -1,12 +1,13 @@
-import { translate, type AppLanguage } from '../../i18n';
+import { translate, weightUnitLabel, type AppLanguage } from '../../i18n';
 /** Stored values stay metric; conversions are display-only. */
 export type WeightUnit = 'kg' | 'lb';
 export type HeightUnit = 'cm' | 'ftin';
 export const LB_PER_KG = 2.2046226218487757;
 export const CM_PER_IN = 2.54;
-export function displayWeight(kg: number, unit: WeightUnit): string {
+export function displayWeight(kg: number, unit: WeightUnit, language: AppLanguage = 'en'): string {
   if (!Number.isFinite(kg)) return '—';
-  return unit === 'kg' ? `${kg.toFixed(1)} kg` : `${(kg * LB_PER_KG).toFixed(1)} lb`;
+  const shown = unit === 'kg' ? kg : kg * LB_PER_KG;
+  return `${shown.toFixed(1)} ${weightUnitLabel(language, unit)}`;
 }
 export function displayHeight(cm: number, unit: HeightUnit, language: AppLanguage = 'en'): string {
   if (!Number.isFinite(cm)) return '—';
