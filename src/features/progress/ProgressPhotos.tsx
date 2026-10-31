@@ -195,20 +195,23 @@ export function ProgressPhotosCard({ preview }: { preview?: ProgressPhotoCardPre
         <Button label={t('common.retry')} onPress={() => void load()} />
       </>}
       {blurred && frames.length > 0 && <Button label={t('progressPhotos.show')} onPress={() => setRevealed(true)} />}
-      {frames.length > 0 && <>
-        <Button label={t('progressPhotos.gallery')} variant="secondary"
-          onPress={() => { if (live) router.push('/(tabs)/progress/photos'); }} />
-        <Button label={t('progressPhotos.compare')} variant="secondary"
-          onPress={() => { if (live) router.push('/(tabs)/progress/photo-compare'); }} />
-      </>}
-      <Button label={t('progressPhotos.add')} variant="secondary" onPress={() => {
-        if (!live) return;
-        setPose('front');
-        setNote('');
-        setDenied(false);
-        setCaptureError(false);
-        setAdding(true);
-      }} />
+      {/* One wrapping row, so the card doesn't stack four full-width lines. */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
+        {frames.length > 0 && <>
+          <Button label={t('progressPhotos.gallery')} variant="secondary"
+            onPress={() => { if (live) router.push('/(tabs)/progress/photos'); }} />
+          <Button label={t('progressPhotos.compare')} variant="secondary"
+            onPress={() => { if (live) router.push('/(tabs)/progress/photo-compare'); }} />
+        </>}
+        <Button label={t('progressPhotos.add')} variant="secondary" onPress={() => {
+          if (!live) return;
+          setPose('front');
+          setNote('');
+          setDenied(false);
+          setCaptureError(false);
+          setAdding(true);
+        }} />
+      </View>
     </Card>
     <Sheet visible={adding} title={t('progressPhotos.add')} description={t('progressPhotos.privacy')} onClose={closeAdd}>
       <SegmentedControl label={t('progressPhotos.pose')} value={pose} onChange={setPose}
