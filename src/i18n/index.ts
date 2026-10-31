@@ -7,6 +7,12 @@ export type AppLanguage = 'en' | 'ar';
 export function bidiIsolate(language: AppLanguage, value: string): string {
   return language === 'ar' ? '\u2068' + value + '\u2069' : value;
 }
+
+/** Screen word for a stored weight unit. Math and storage stay `'kg' | 'lb'`. */
+export function weightUnitLabel(language: AppLanguage, unit: 'kg' | 'lb'): string {
+  if (language !== 'ar') return unit;
+  return unit === 'kg' ? 'كغ' : 'رطل';
+}
 export type LanguagePreference = 'system' | AppLanguage;
 export type TranslationParams = Record<string, string | number>;
 export const languages = { en, ar } as const;

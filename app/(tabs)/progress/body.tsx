@@ -2,7 +2,7 @@ import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useEffect,useState} from 'react';
 import {ScrollView,View} from 'react-native';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {bidiIsolate,formatNumber,pluralForm,type TranslationKey} from '../../../src/i18n';
+import {bidiIsolate, formatNumber, pluralForm, type TranslationKey, weightUnitLabel} from '../../../src/i18n';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,
@@ -56,6 +56,7 @@ export default function BodyTrends(){
   validateWeight(weightKg,date.toISOString())&&note.length<=400;
  const fmt=(n:number,digits=1)=>bidiIsolate(language,formatNumber(language,n,
   {minimumFractionDigits:digits,maximumFractionDigits:digits}));
+ const unitLabel=weightUnitLabel(language,weightUnit);
  function open(entry?:LocalWeight){
   setCurrent(entry??null);setDay(entry?localDay(new Date(entry.at)):today);
   setEntered(entry?formatEditableNumber(fromKg(entry.kg,weightUnit),'weight'):'');setNote(entry?.note??'');
@@ -98,11 +99,11 @@ export default function BodyTrends(){
    <Typography tone="secondary" size="small">{t(healthCopy('trend.source'))}</Typography>
    {demoCount>0&&<Typography tone="secondary" size="small">{t((`trend.demoDataWarning.${pluralForm(language,demoCount)}`) as TranslationKey,{count:demoCount})}</Typography>}
    {result.latest?<Typography size="metric-m">{hidden?t('trend.hidden'):
-    t('trend.weightValue',{weight:fmt(fromKg(result.latest.trend,weightUnit)),unit:weightUnit})}</Typography>:
+    t('trend.weightValue',{weight:fmt(fromKg(result.latest.trend,weightUnit)),unit:unitLabel})}</Typography>:
     <Typography tone="secondary">{t(healthCopy('trend.empty'))}</Typography>}
    <Typography tone="secondary" size="small">{t('trend.emaDescription')}</Typography>
    {result.change!==null&&!hidden&&<Typography tone="secondary">{t('trend.trendChange',{
-    change:fmt(fromKg(result.change,weightUnit)),unit:weightUnit})}</Typography>}
+    change:fmt(fromKg(result.change,weightUnit)),unit:unitLabel})}</Typography>}
    {result.points.length>0&&<WeightGraph trend={result} hidden={hidden} unit={weightUnit}/>}
    <View style={{flexDirection:'row',gap:theme.space[3],flexWrap:'wrap'}}>
     <Chip kind="phone" label={t('trend.myWeight')}/>
@@ -121,7 +122,7 @@ export default function BodyTrends(){
   <Card title={t('trend.weightHistory')}>
    {recent.length===0?<Typography tone="secondary">{t(healthCopy('trend.empty'))}</Typography>:
    recent.map(row=><ListRow key={row.id} title={hidden?t('trend.hidden'):
-       t('trend.weightValue',{weight:fmt(fromKg(row.kg,weightUnit)),unit:weightUnit})}
+       t('trend.weightValue',{weight:fmt(fromKg(row.kg,weightUnit)),unit:unitLabel})}
       detail={bidiIsolate(language,localDay(new Date(row.at)))+' · '+
        (row.source==='liftria'?t('trend.myWeight'):t(healthCopy('trend.chip')))+
        (row.source!=='liftria'&&row.origin?' · '+row.origin:'')+
@@ -137,12 +138,12 @@ export default function BodyTrends(){
   </View>}
   <Sheet visible={editing} title={current?t('trend.editWeight'):t('trend.logWeight')}
     description={t(healthCopy('trend.localPrivacy'))} onClose={()=>setEditing(false)}>
-   <Field label={t('trend.weightInput',{unit:weightUnit})} value={entered}
+   <Field label={t('trend.weightInput',{unit:unitLabel})} value={entered}
     onChangeText={v=>{setEntered(v);setWarning(false);}} keyboardType="decimal-pad"/>
    {Number.isFinite(inputValue)&&inputValue>0&&<Stepper
-     label={t('trend.weightAdjust',{step:step.toFixed(1),unit:weightUnit})}
+     label={t('trend.weightAdjust',{step:step.toFixed(1),unit:unitLabel})}
      value={Math.round(inputValue*10)/10} min={step}
-     max={weightUnit==='lb'?1102.3:500} step={step} unit={weightUnit}
+     max={weightUnit==='lb'?1102.3:500} step={step} unit={unitLabel}
      onChange={v=>{setEntered(formatEditableNumber(v,'weight'));setWarning(false);}}/>}
    <Field label={t('trend.date')} value={day} onChangeText={setDay} placeholder={t('trend.datePlaceholder')}/>
    <Field label={t('trend.note')} value={note} onChangeText={setNote} multiline/>

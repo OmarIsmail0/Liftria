@@ -13,4 +13,6 @@ test('assisted and bodyweight weight text matches actual semantics',()=>{
   expect(displayWeight(0,'bodyweight','kg')).toBe('BW');
   expect(displayWeight(10,'bodyweight','kg')).toBe('+10 kg');
   expect(displayWeight(20,'dumbbell','kg')).toBe('20 kg each');
+  expect(displayWeight(10,'bodyweight','kg','ar')).toBe('+10 كغ');
+  expect(displayWeight(20,'dumbbell','lb','ar')).toBe('44.09 رطل لكل يد');
 });

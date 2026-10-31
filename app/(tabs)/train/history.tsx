@@ -1,4 +1,4 @@
-import { translateWorkoutCount, formatNumber, latinDigits } from '../../../src/i18n';
+import { translateWorkoutCount, formatNumber, latinDigits, weightUnitLabel } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { importerLabel } from '../../../src/features/import/importCsv';
 import { router, useFocusEffect } from 'expo-router';
@@ -57,7 +57,7 @@ export default function History(){
   <Header title={t('train.history')} subtitle={t('history.subtitle')} onBack={()=>router.back()}/>
   <Card rim="train" title={t('history.month')}>
    <Typography>{hidden?t('history.completed'):translateWorkoutCount(language,month)}</Typography>
-   <Typography tone="secondary">{hidden?t('history.volumeHidden'):t('history.volumeValue',{value:formatNumber(language,Math.round(fromKg(volume,unit))),unit})}</Typography>
+   <Typography tone="secondary">{hidden?t('history.volumeHidden'):t('history.volumeValue',{value:formatNumber(language,Math.round(fromKg(volume,unit))),unit:weightUnitLabel(language,unit)})}</Typography>
    <Typography tone="tertiary" size="small">{t('history.source')}</Typography>
   </Card>
   <Card title={t('train.recent')}>

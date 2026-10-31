@@ -10,7 +10,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
 import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
-import { formatNumber, bidiIsolate, latinDigits, pluralForm, type TranslationKey } from '../../src/i18n';
+import {formatNumber, bidiIsolate, latinDigits, pluralForm, type TranslationKey, weightUnitLabel} from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { exerciseName } from '../../src/i18n/exerciseNames';
 export default function ImportPreview(){
@@ -83,10 +83,10 @@ export default function ImportPreview(){
    {plan.parsed.needsUnit&&<Card title={t("im2.unitTitle")}>
     <Typography tone="secondary">{t("im2.unitExplain")}</Typography>
     <View style={{flexDirection:'row',gap:theme.space[2]}}>
-     <Button label={unit==='kg'?'✓ kg':'kg'} variant="secondary" onPress={()=>setUnit('kg')}/>
-     <Button label={unit==='lb'?'✓ lb':'lb'} variant="secondary" onPress={()=>setUnit('lb')}/>
+     <Button label={unit==='kg'?'✓ '+weightUnitLabel(language,'kg'):weightUnitLabel(language,'kg')} variant="secondary" onPress={()=>setUnit('kg')}/>
+     <Button label={unit==='lb'?'✓ '+weightUnitLabel(language,'lb'):weightUnitLabel(language,'lb')} variant="secondary" onPress={()=>setUnit('lb')}/>
     </View>
-    {unit&&<Typography>{t("im2.unitChoice",{unit})}</Typography>}
+    {unit?<Typography>{t("im2.unitChoice",{unit:weightUnitLabel(language,unit)})}</Typography>:null}
    </Card>}
    {plan.mappings.length>0&&<Card title={t("im2.matching",{count:mappings.length})}>
     <Typography tone="secondary">{t("im2.matchExplain")}</Typography>

@@ -1,4 +1,4 @@
-import { translate, type AppLanguage } from '../../i18n';
+import { translate, weightUnitLabel, type AppLanguage } from '../../i18n';
 import type { ExerciseType } from '../../services/database/gymTypes';
 export type WeightUnit='kg'|'lb';
 const LB_PER_KG=2.2046226218;
@@ -14,9 +14,10 @@ export function workoutWeightStep(type:ExerciseType,unit:WeightUnit,smallPlates:
 export function displayWeight(weight:number,type:ExerciseType,unit:WeightUnit,language:AppLanguage='en'):string {
   const n=fromKg(weight,unit);
   const value=Number(n.toFixed(2)).toString();
-  if(type==='bodyweight')return weight<=0?translate(language,'weight.bodyweightShort'):'+'+value+' '+unit;
-  if(type==='assisted')return '−'+value+' '+unit;
-  return value+' '+unit+(type==='dumbbell'?' '+translate(language,'weight.each'):'');
+  const label=weightUnitLabel(language,unit);
+  if(type==='bodyweight')return weight<=0?translate(language,'weight.bodyweightShort'):'+'+value+' '+label;
+  if(type==='assisted')return '−'+value+' '+label;
+  return value+' '+label+(type==='dumbbell'?' '+translate(language,'weight.each'):'');
 }
 /** Stored as 'L' / 'R'; Arabic reads them as the words for left and right. */
 export function sideLabel(side:'L'|'R',language:AppLanguage):string {

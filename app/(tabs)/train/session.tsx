@@ -1,6 +1,6 @@
 import { importerLabel } from '../../../src/features/import/importCsv';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber, joinList, latinDigits, pluralForm, type TranslationKey } from '../../../src/i18n';
+import {formatNumber, joinList, latinDigits, pluralForm, type TranslationKey, weightUnitLabel} from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -83,7 +83,7 @@ export default function SessionDetail(){
    <ListRow title={t('sessionDetail.start')} detail={latinDigits(new Date(data.session.startedAt).toLocaleTimeString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>
    <ListRow title={t('sessionDetail.duration')} detail={t((`sessionDetail.minute.${pluralForm(language,Math.round(duration/60000))}`) as TranslationKey,{count:Math.round(duration/60000)})}/>
    <ListRow title={t('sessionDetail.workingSets')} detail={formatNumber(language,stats.sets)}/>
-   <ListRow title={t('sessionDetail.volume')} detail={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+unit}/>
+   <ListRow title={t('sessionDetail.volume')} detail={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+weightUnitLabel(language,unit)}/>
    {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:importerLabel(data.session.importer)})}
     {data.session.importedAt?t('sessionDetail.importedAt',{date:latinDigits(new Date(data.session.importedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):''}
    </Typography>}
@@ -95,7 +95,7 @@ export default function SessionDetail(){
     const i=draft.indexOf(s);
     return <View key={s.id??e.id+':'+i} style={{gap:8,paddingBottom:12}}>
      <Typography tone="secondary" size="small">{s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}{s.side?' '+sideLabel(s.side,language):''}</Typography>
-     <GymStepper label={t('sessionDetail.weight')} value={fromKg(s.weight,unit)} unit={unit}
+     <GymStepper label={t('sessionDetail.weight')} value={fromKg(s.weight,unit)} unit={weightUnitLabel(language,unit)}
        step={fromKg(workoutWeightStep(e.type,unit,smallPlates),unit)}
        onChange={v=>change(i,{weight:toKg(v,unit)})}/>
      <GymStepper label={t('sessionDetail.reps')} value={s.reps} onChange={v=>change(i,{reps:v})}/>
