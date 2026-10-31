@@ -211,7 +211,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Tests: each rank level, typo match, muscle and equipment matches ranked below name matches, Latin query in Arabic mode, empty query unchanged. English search unchanged (existing tests stay as they are).
    - Don't touch `src/design/**`, the library screens' layout, Health files, `exerciseInstructionsAr.ts`, or workflows.
 
-26. **PR AL: `Phase 5 / Arabic weight units`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+26. ~~**PR AL: `Phase 5 / Arabic weight units`**~~ DONE: PR #75 merged (2026-10-31). Arabic shows كغ / رطل on Strength, plates, workouts, history and Body. (builder: **Cursor**, Grok 4.7, branch from `main`)
    - In Arabic the weight unit shows as Latin `kg` / `lb` (e.g. "8,130 kg", "{weight} {unit}"): the `{unit}` placeholder and several screens use the raw setting value. Add one helper, `weightUnitLabel(language, unit)` in `src/i18n/` (Arabic: كغ and رطل; English: kg and lb, unchanged), and use it everywhere a weight unit is shown: every `{unit}` call site, the Strength/Progress volume figures, plate calculator, records, history, import preview, body weight.
    - Values and stored units stay as they are (`'kg' | 'lb'` in settings and the database). Only the shown text changes.
    - **Guard (test):** in Arabic, no translated string and no rendered weight label contains Latin `kg` or `lb` (extend the existing Arabic units guard, which already forbids `kcal` and `g`), with a planted failure. A unit test for the helper.
@@ -227,6 +227,13 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Tests:** the migration on a v6 database keeps existing data; the repository (add, edit, delete, latest per site, change since the previous entry); the cm/inch conversion and rounding; blank fields are not saved; backup round trip.
    - **Screenshots:** a `dev/demo-measurements?auto=1` route with sample data (light and dark, English and Arabic) for Claude's emulator pass. Claude adds the route to the screenshot list (`.github/scripts/visual-check.sh`); don't edit it.
    - Don't touch `src/design/**`, Health adapters, `exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
+
+28. **PR AN: `Phase 5 / Chart labels in Arabic`** (builder: **Cursor**, Grok 4.7, branch from `main`, after PR AM)
+   - From PR #75's screenshots: the trend charts in `src/features/progress/TrendCharts.tsx` draw axis labels with `react-native-svg` `<Text>`, which on Android doesn't join Arabic letters: "كغ" shows as "ك غ" and month names (أكتوبر) come out broken. Latin labels look fine, so it was only visible once units went Arabic.
+   - Draw the axis labels (value ticks and date ticks) as normal React Native text (`Typography`) positioned absolutely over the SVG at the same places, so Android shapes Arabic. Keep the lines, dots, bars and spacing the same. Check every other `SvgText` in `src/features/**` and do the same where it can show Arabic.
+   - Screen readers: the labels stay hidden from them as now (the chart's summary label already describes it).
+   - Test: a render test that the labels are RN text in Arabic and English, with the same strings as before.
+   - Don't touch `src/design/**`, Health adapters, or workflows.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
