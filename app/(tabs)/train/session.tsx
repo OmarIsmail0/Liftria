@@ -1,6 +1,6 @@
 import { importerLabel } from '../../../src/features/import/importCsv';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
-import { formatNumber, joinList, latinDigits, weightUnitLabel } from '../../../src/i18n';
+import {formatNumber, joinList, latinDigits, pluralForm, type TranslationKey, weightUnitLabel} from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -81,7 +81,7 @@ export default function SessionDetail(){
   </Card>}
   <Card rim="train" title={t('sessionDetail.statistics')}>
    <ListRow title={t('sessionDetail.start')} detail={latinDigits(new Date(data.session.startedAt).toLocaleTimeString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>
-   <ListRow title={t('sessionDetail.duration')} detail={t('sessionDetail.minute',{count:Math.round(duration/60000)})}/>
+   <ListRow title={t('sessionDetail.duration')} detail={t((`sessionDetail.minute.${pluralForm(language,Math.round(duration/60000))}`) as TranslationKey,{count:Math.round(duration/60000)})}/>
    <ListRow title={t('sessionDetail.workingSets')} detail={formatNumber(language,stats.sets)}/>
    <ListRow title={t('sessionDetail.volume')} detail={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+weightUnitLabel(language,unit)}/>
    {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:importerLabel(data.session.importer)})}

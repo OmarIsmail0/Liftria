@@ -2,7 +2,7 @@ import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useEffect,useState} from 'react';
 import {ScrollView,View} from 'react-native';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {bidiIsolate,formatNumber,weightUnitLabel} from '../../../src/i18n';
+import {bidiIsolate, formatNumber, pluralForm, type TranslationKey, weightUnitLabel} from '../../../src/i18n';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,
@@ -96,7 +96,7 @@ export default function BodyTrends(){
     {value:'3m',label:t('polish.range3m')},{value:'1y',label:t('polish.range1y')}]}/>
   <Card rim="health" title={t('trend.weightTrend')}>
    <Typography tone="secondary" size="small">{t(healthCopy('trend.source'))}</Typography>
-   {demoCount>0&&<Typography tone="secondary" size="small">{t('trend.demoDataWarning',{count:demoCount})}</Typography>}
+   {demoCount>0&&<Typography tone="secondary" size="small">{t((`trend.demoDataWarning.${pluralForm(language,demoCount)}`) as TranslationKey,{count:demoCount})}</Typography>}
    {result.latest?<Typography size="metric-m">{hidden?t('trend.hidden'):
     t('trend.weightValue',{weight:fmt(fromKg(result.latest.trend,weightUnit)),unit:unitLabel})}</Typography>:
     <Typography tone="secondary">{t(healthCopy('trend.empty'))}</Typography>}

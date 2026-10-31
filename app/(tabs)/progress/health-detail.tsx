@@ -13,7 +13,7 @@ import { appleWindowSummary, dailyStepsBySource, emptyMetricState, heartRateSamp
   hourlyStepsBySource, NOTE_APPLE_READ_ERROR, NOTE_APPLE_TOTAL, recordsInWindow, SOURCE_APPLE,
   sourceName, summarizeAppleTotal, summarizeRecords,
   type HealthSummary } from '../../../src/features/health/presentation';
-import { formatNumber, type TranslationKey } from '../../../src/i18n';
+import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 
 const label: Partial<Record<MetricType,TranslationKey>> = {
@@ -118,10 +118,11 @@ function HealthMetricDetailAndroid() {
     const parsed=Date.parse(iso);
     if(!Number.isFinite(parsed))return t('healthMetric.timeUnknown');
     const mins=Math.max(0,Math.floor((today.getTime()-parsed)/60000));
-    if(mins<60)return t('healthMetric.minuteAge',{count:mins});
+    const ago=(base:string,count:number)=>t((`${base}.${pluralForm(language,count)}`) as TranslationKey,{count});
+    if(mins<60)return ago('healthMetric.minuteAge',mins);
     const hours=Math.floor(mins/60);
-    return hours<24?t('healthMetric.hourAge',{count:hours}):
-      t('healthMetric.dayAge',{count:Math.floor(hours/24)});
+    return hours<24?ago('healthMetric.hourAge',hours):
+      ago('healthMetric.dayAge',Math.floor(hours/24));
   };
   const displayNote=(value:string):string=>value==='Not allowed'?t('healthMetric.notAllowed'):
     value==='Not available'?t('healthMetric.notAvailable'):
@@ -142,7 +143,7 @@ function HealthMetricDetailAndroid() {
       : formatNumber(language,r.value)+' '+r.unit;
     if(r.kind==='session')return appleHealthPhone()
       ? formatAppleAmount(language, r.durationSec/60, 'minutes')
-      : t('healthMetric.minutes',{count:Math.round(r.durationSec/60)});
+      : t((`healthMetric.minutes.${pluralForm(language,Math.round(r.durationSec/60))}`) as TranslationKey,{count:Math.round(r.durationSec/60)});
     return t('healthMetric.sleepSession');
   };
   const energyStatus=()=>!available?t('healthMetric.notAvailable'):

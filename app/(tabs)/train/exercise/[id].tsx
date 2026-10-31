@@ -1,5 +1,5 @@
 import { useLanguage } from '../../../../src/i18n/LanguageProvider';
-import { latinDigits, weightUnitLabel } from '../../../../src/i18n';
+import {latinDigits, pluralForm, type TranslationKey, weightUnitLabel} from '../../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -103,7 +103,7 @@ export default function ExerciseDetail(){
           </View>
           <Chip kind="estimate" label={t('exerciseDetail.estimate')}/>
           <Typography tone="secondary" size="small">{t('exerciseDetail.estimateDesc')}</Typography>
-          <Typography tone="secondary">{sessions.length===1?t('exerciseDetail.oneSession'):t('exerciseDetail.manySessions',{count:sessions.length})}</Typography>
+          <Typography tone="secondary">{sessions.length===1?t('exerciseDetail.oneSession'):t((`exerciseDetail.manySessions.${pluralForm(language,sessions.length)}`) as TranslationKey,{count:sessions.length})}</Typography>
         </View>}
       </Card>
       <Card title={t('exerciseDetail.recentTitle')}>

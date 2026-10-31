@@ -2,7 +2,7 @@ import {useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {View} from 'react-native';
 import {Button,Card,Stepper,Typography} from '../../design/primitives';
-import {weightUnitLabel} from '../../i18n';
+import {pluralForm, type TranslationKey, weightUnitLabel} from '../../i18n';
 import {useLanguage} from '../../i18n/LanguageProvider';
 import {getTypedSetting} from '../../services/database/settings';
 import {calculatePlates,suggestedWarmups,suggestedUnplatedWarmups} from './plateCalculator';
@@ -53,7 +53,7 @@ export function PlateCalculatorCard({targetKg,onWarmup,showPlates=true,unplatedS
      <Typography bold>{t('gymParity.warmups')}</Typography>
      <Typography tone="secondary" size="small">{t('gymParity.warmupDisclaimer')}</Typography>
      {warmups.map((row,i)=><Button key={i} variant="secondary" fullWidth
-       label={t('gymParity.warmupStep',{weight:label(row.actual),unit:unitLabel,reps:row.reps})}
+       label={t((`gymParity.warmupStep.${pluralForm(language,row.reps)}`) as TranslationKey,{weight:label(row.actual),unit:unitLabel,count:row.reps})}
        onPress={()=>onWarmup({weight:row.weightKg,reps:row.reps})}/>)}
    </>}
   </Card>;

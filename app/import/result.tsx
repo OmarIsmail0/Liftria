@@ -1,15 +1,16 @@
+import { pluralForm, type TranslationKey } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { router } from 'expo-router';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
 import { getImportOutcome, clearImportDraft } from '../../src/features/import/importDraft';
 export default function ImportResult(){
- const {t}=useLanguage();
+ const {t,language}=useLanguage();
  const result=getImportOutcome();
  const done=()=>{clearImportDraft();router.replace('/settings/data');};
  const history=()=>{clearImportDraft();router.replace('/(tabs)/train/history');};
  return <Screen>
   <Header title={t('import.result.title')}/>
-  {result?.ok?<Card rim="train" title={t('import.result.success',{count:result.result.workouts})}>
+  {result?.ok?<Card rim="train" title={t((`import.result.success.${pluralForm(language,result.result.workouts)}`) as TranslationKey,{count:result.result.workouts})}>
    <ListRow title={t('import.result.sets')} detail={String(result.result.sets)}/>
    {result.result.custom>0&&<ListRow title={t('import.result.custom')}
      detail={String(result.result.custom)}/>}

@@ -20,12 +20,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Liftria',
   slug: 'liftria',
+  icon: './assets/brand/icon-light.png',
   scheme: 'liftria',
   version: releaseVersion.name,
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   ios: {
+    icon: { light: './assets/brand/icon-light.png', dark: './assets/brand/icon-dark.png' },
     bundleIdentifier: 'com.liftria.app',
     supportsTablet: false,
   },
@@ -33,6 +35,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // Under "ios" in each file, so Android doesn't get untranslated-default strings (lint error).
   locales: { en: './locales/en.json', ar: './locales/ar.json' },
   android: {
+    adaptiveIcon: {
+      foregroundImage: './assets/brand/adaptive-foreground.png',
+      monochromeImage: './assets/brand/adaptive-monochrome.png',
+      backgroundColor: '#F3F5F8',
+    },
     package: 'com.liftria.app',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
     permissions: [...healthReadPermissions, 'android.permission.INTERNET', 'android.permission.POST_NOTIFICATIONS'],
@@ -51,7 +58,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-notifications',
-    'expo-splash-screen',
+    ['expo-splash-screen', {
+      backgroundColor: '#F3F5F8',
+      image: './assets/brand/splash-light.png',
+      imageWidth: 220,
+      dark: { backgroundColor: '#0F1216', image: './assets/brand/splash-dark.png' },
+    }],
     // Camera (owner, 2026-10-26): only when the user taps "Take a photo" for a Hiku estimate.
     // The plugin also writes the iPhone permission texts (NSCameraUsageDescription etc.).
     ['expo-image-picker', {

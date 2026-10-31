@@ -4,7 +4,7 @@ import {ScrollView,View} from 'react-native';
 import {Button,Card,Chip,Header,ListRow,Orb,Screen,Snackbar,Typography} from '../../../src/design/primitives';
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {formatNumber} from '../../../src/i18n';
+import {formatNumber,pluralForm,type TranslationKey} from '../../../src/i18n';
 import {WaterCounterCard} from '../../../src/features/eat/WaterCounterCard';
 import {getCurrentTarget,type Target} from '../../../src/services/database/targets';
 import {getTypedSetting} from '../../../src/services/database/settings';
@@ -53,7 +53,7 @@ export default function EatHome(){
   async function repeat(meal:MealKey|null){
     const result=meal?await copyMeal(dayOffset(day,-1),day,meal):
       await copyDay(dayOffset(day,-1),day);
-    if(result.ok&&result.value>0){setNotice(t('eatI.copied',{count:result.value}));await reload();}
+    if(result.ok&&result.value>0){setNotice(t((`eatI.copied.${pluralForm(language,result.value)}`) as TranslationKey,{count:result.value}));await reload();}
     else setNotice(t('eatI.nothingCopy'));
   }
   async function applySaved(savedMeal:SavedMeal,meal:MealKey){
@@ -105,7 +105,7 @@ export default function EatHome(){
         const inMeal=entries.filter(entry=>entry.meal===meal),part=summary.byMeal[meal];
         return <Card key={meal} rim="eat" title={mealName(meal)}>
           <Typography tone="secondary">{part.count===0?t('eatI.notLogged'):
-            hidden?t('eatI.items',{count:part.count}):t('eatI.kcal',{count:format(part.kcal)})}</Typography>
+            hidden?t((`eatI.items.${pluralForm(language,part.count)}`) as TranslationKey,{count:part.count}):t('eatI.kcal',{count:format(part.kcal)})}</Typography>
           {inMeal.map(entry=><ListRow key={entry.id} title={entryName(entry,language)}
             detail={hidden?t('eatI.hidden'):(entry.grams?t('eatI.grams',{count:format(entry.grams)})+' · ':'')+
               t('eatI.kcal',{count:format(entry.kcal)})}

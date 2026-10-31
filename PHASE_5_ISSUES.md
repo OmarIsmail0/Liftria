@@ -55,7 +55,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - A privacy page in Settings → About that matches what the app actually does (local data, BYO key, what Hiku sends).
    - **Don't touch** `src/design/**` (Claude's, PR #27), the Health screens, or the stack layouts (PR S). Build on the existing primitives.
 7. ~~**PR T: `Phase 5 / Arabic copy sweep`**~~ DONE: PR #30 merged (2026-10-28). (builder: **Cursor**; started from PR #29's branch, so merge `main` in with a merge commit now that #29 has merged)
-   - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. `kg` and `lb` stay Latin (app convention).
+   - **Units in Arabic:** no Latin `kcal`, `g`, `mg` or `ml` inside Arabic sentences. Use سعرة / غ / ملغ / مل. Weight units too: كغ and رطل (changed by PR AL #75, 2026-10-31; owner: "do what is best"). Stored units stay `kg` / `lb`.
    - **One direction-safe value:** every number with its unit is one string with a no-break space (U+00A0) between them, wrapped with `bidiIsolate()` where it sits inside Arabic text, so it never wraps or reorders.
    - **Counted phrases:** every remaining Arabic count goes through `pluralForm()` with correct forms (11–99 take the singular accusative: "14 يومًا"). Where a count sits in "X of Y" phrasing, reword to avoid a counted noun ("الأيام المسجلة: 27 من 28").
    - **Untranslated values on screen:** Hiku usage rows show the raw model id and request status; show the model's display name and a translated status.
@@ -91,7 +91,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - `src/features/health/HealthCharts.tsx` still shows English in Arabic: "No source-backed steps to plot.", "hourly"/"daily", "Midnight · 6 AM · Noon · 6 PM · Midnight", "7 days ago · Today", the heart-rate summary and its accessibility text. Translate all of it (English and Arabic; counts through `pluralForm()`; number+unit with a no-break space; times in the user's locale with Western digits).
    - Widen PR W's guard (`src/i18n/__tests__/englishInArabicUi.test.ts`) to scan `src/features/health/**`, keeping the exclusion only for the files PR S (#28) edits: `app/(tabs)/progress/health*.tsx`, `src/features/health/AppleHealthComing.tsx`, `src/features/health/useHealthSnapshot.ts`. Fix whatever else it finds in `src/features/health/**` outside those files.
    - **Don't touch** `src/design/**`, `src/services/health/**` or the files above.
-13. **PR R2: `Phase 5 / Release readiness`** (builder: **GPT**; owner 2026-10-29: start now from `main` on a new branch, without waiting for PR S. Don't touch the Health files or `src/services/health/**`; PR S and PR AA own them)
+13. ~~**PR R2: `Phase 5 / Release readiness`**~~ DONE: PR #47 merged (2026-10-30). Single-path L icon, Android adaptive and themed icon, store screenshots from real screens; Claude regenerated the splash marks. Still owner's: signing secrets, Apple Developer account, support/privacy URLs. (builder: **GPT**; owner 2026-10-29: start now from `main` on a new branch, without waiting for PR S. Don't touch the Health files or `src/services/health/**`; PR S and PR AA own them)
    - Final app icon and splash in light and dark, the Play Store short and full descriptions (English and Arabic), App Store descriptions (English and Arabic), and screenshot routes for the store images.
    - Owner: Android signing secrets in GitHub (`LIFTRIA_*`), then Claude builds the signed release.
    - ~~**Claude does these in the shared code:** long screen titles in `Header`~~ DONE: PR #40 merged (2026-10-29), with the Orb fixes and Western digits on iPhone. ~~Gating `dev/*` out of release builds~~ DONE: PR #32 merged (2026-10-28); CI APKs keep them via `EXPO_PUBLIC_LIFTRIA_DEV_ROUTES`.
@@ -193,7 +193,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - The last 178 ids in `docs/phase5/arabic-instructions-batch6.txt`: stretching, the rest of plyometrics, and cardio, 524 steps. After this, all 876 bundled exercises have Arabic steps.
    - Same rules. Expect 876 ids. Once every pack exercise is covered, the "instructions in English" note never shows for a pack exercise. Keep the helper's fallback and its test as they are: custom exercises and a future pack update still need them.
 
-24. **PR AJ: `Phase 5 / Arabic number agreement`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+24. ~~**PR AJ: `Phase 5 / Arabic number agreement`**~~ DONE: PR #70 merged (2026-10-30). Claude removed the digit from one/two forms (يوم واحد، يومان) and fixed the adaptive and zero forms; a guard keeps it that way.
    - In Arabic the noun after a number changes with the number: 1 سعرة واحدة / يوم واحد, 2 يومان, 3–10 أيام (plural), 11–99 يومًا (singular accusative), 100+ يوم. Some Arabic strings in `src/i18n/ar.ts` put a variable count before a fixed noun, e.g. `{count} يوم`, `{count} تمرين`, `{count} مجموعة`, `{count} طلب`, `{count} قياسات`, `{remaining} سعرة`. They read wrong for most numbers.
    - **Count nouns** (days, weeks, months, hours, minutes, seconds, workouts, sets, sessions, reps, requests, items, measurements, records, foods): every string where a placeholder count comes right before one of these nouns becomes a plural key family (`.zero/.one/.two/.few/.many/.other`, in both `en.ts` and `ar.ts`, like `count.workouts.*`) chosen with `pluralForm()` at the call site. Arabic 11–99 forms use the singular accusative with tanween (`يومًا`, `تمرينًا`, `دقيقةً`, `مجموعةً`).
    - **Unit labels stay as they are:** غ, مل, كغ, سم, %, and سعرة used as an energy unit right after an amount (like "kcal": `{kcal} سعرة`). Don't pluralize units.
@@ -201,7 +201,24 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Guard (test):** fail when an Arabic value in a key that is not a plural form (`.zero` … `.other`) has a `{placeholder}` immediately followed by a count noun from a list in the test; fail on `يوما` without tanween; plant one bad example for each check. English keeps working through the same plural keys.
    - Update every call site to pass the count and pick the form. Don't touch `src/design/**`, Health adapters, `src/i18n/exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
 
+25. ~~**PR AK: `Phase 5 / Arabic exercise search`**~~ DONE: PR #73 merged (2026-10-30). صدر، دمبل، the typo سكوت and a Latin "bench" all find the right exercises, 9–36 ms per search in tests.
+   - In Arabic, `searchExercises` (`src/services/database/exerciseLibrary.ts`) only matches a substring of the Arabic name. English search also ranks word starts, forgives small typos and checks aliases. Bring Arabic up to the same level:
+     - rank: exact name, name starts with, a word in the name starts with, name contains (keep `normalizeArabicSearch` for alef/ya/ta-marbuta/tashkeel);
+     - small typos: a word of 4+ letters within edit distance 1 of a name word (lowest rank);
+     - muscle and equipment words: typing an Arabic muscle or equipment name (the labels the app already shows, e.g. صدر، أكتاف، دمبل، كابل، جهاز) also returns exercises with that primary muscle or equipment, ranked below every name match;
+     - a Latin query in Arabic mode still matches the English name and aliases (gym words are often typed in English).
+   - Keep it fast on Hermes: precompute normalized names and words once per search, as the current code does; no `localeCompare` with a locale argument; one shared collator. Add a test that searches all 876 exercises in Arabic within a time budget.
+   - Tests: each rank level, typo match, muscle and equipment matches ranked below name matches, Latin query in Arabic mode, empty query unchanged. English search unchanged (existing tests stay as they are).
+   - Don't touch `src/design/**`, the library screens' layout, Health files, `exerciseInstructionsAr.ts`, or workflows.
+
+26. **PR AL: `Phase 5 / Arabic weight units`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - In Arabic the weight unit shows as Latin `kg` / `lb` (e.g. "8,130 kg", "{weight} {unit}"): the `{unit}` placeholder and several screens use the raw setting value. Add one helper, `weightUnitLabel(language, unit)` in `src/i18n/` (Arabic: كغ and رطل; English: kg and lb, unchanged), and use it everywhere a weight unit is shown: every `{unit}` call site, the Strength/Progress volume figures, plate calculator, records, history, import preview, body weight.
+   - Values and stored units stay as they are (`'kg' | 'lb'` in settings and the database). Only the shown text changes.
+   - **Guard (test):** in Arabic, no translated string and no rendered weight label contains Latin `kg` or `lb` (extend the existing Arabic units guard, which already forbids `kcal` and `g`), with a planted failure. A unit test for the helper.
+   - Don't touch `src/design/**`, Health adapters' stored units, `exerciseInstructionsAr.ts`, store assets, or workflows.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
+
 
 **Rules (same as Phase 4):**
 - Every push runs `verify`. Claude adds `build` for emulator screenshots and merges when `verify` is green and the screenshots are clean.

@@ -2,7 +2,7 @@ import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useEffect,useState} from 'react';
 import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Snackbar,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {formatNumber} from '../../../src/i18n';
+import {formatNumber,pluralForm,type TranslationKey} from '../../../src/i18n';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {MEALS,entryName,localDay,type MealKey,type Food} from '../../../src/features/eat/foodCatalog';
 import {deleteEntry,foodById,moveEntry,readDiaryDay,removeMeal,restoreEntries,saveMeal,
@@ -70,7 +70,7 @@ export default function MealDetail(){
     <Header title={displayName} onBack={()=>router.back()}/>
     <Card rim="eat" title={t('eatI.nutrition')}>
       <Typography>{entries.length===0?t('eatI.notLogged'):hidden?
-        t('eatI.items',{count:entries.length}):t('eatI.kcal',{count:format(summary.kcal)})}</Typography>
+        t((`eatI.items.${pluralForm(language,entries.length)}`) as TranslationKey,{count:entries.length}):t('eatI.kcal',{count:format(summary.kcal)})}</Typography>
       {!hidden&&summary.protein!==null&&<Typography tone="secondary">{t('eatI.macroAmounts',{
         p:format(Math.round(summary.protein)),c:summary.carbs===null?'—':format(Math.round(summary.carbs)),
         f:summary.fat===null?'—':format(Math.round(summary.fat))})}</Typography>}
@@ -116,7 +116,7 @@ export default function MealDetail(){
       <Button label={t('eatI.removeItem')} variant="danger" onPress={()=>void removeOne()} fullWidth/>
     </Sheet>
     <Sheet visible={deleting} title={t('eatI.deleteMeal')}
-      description={t('eatI.confirmDelete',{count:entries.length})}
+      description={t((`eatI.confirmDelete.${pluralForm(language,entries.length)}`) as TranslationKey,{count:entries.length})}
       onClose={()=>setDeleting(false)}>
       <Button label={t('eatI.keep')} onPress={()=>setDeleting(false)} fullWidth/>
       <Button label={t('eatI.deleteMeal')} variant="danger" onPress={()=>void clear()} fullWidth/>
