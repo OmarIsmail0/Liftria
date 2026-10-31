@@ -217,7 +217,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Guard (test):** in Arabic, no translated string and no rendered weight label contains Latin `kg` or `lb` (extend the existing Arabic units guard, which already forbids `kcal` and `g`), with a planted failure. A unit test for the helper.
    - Don't touch `src/design/**`, Health adapters' stored units, `exerciseInstructionsAr.ts`, store assets, or workflows.
 
-27. **PR AM: `Phase 5 / Body measurements`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+27. ~~**PR AM: `Phase 5 / Body measurements`**~~ DONE: PR #78 merged (2026-10-31). 11 tape sites, cm or inches, chart and history per site; in backup, Delete all and CSV. Claude moved its chart labels to app text and fixed a false positive in the weight-unit guard. (builder: **Cursor**, Grok 4.7, branch from `main`)
    - Hevy and MacroFactor both track body measurements; Liftria only tracks weight. Add the common tape measurements: waist, hips, chest, neck, shoulders, left and right arm, left and right thigh, left and right calf.
    - **Storage:** one additive migration (the next schema version after 6) adds `body_measurements` (`id` from `newGymId()`, `measured_at`, `site` with a CHECK for the 11 sites, `cm REAL NOT NULL CHECK(cm>0 AND cm<400)`, `note`, `source` = `'liftria'` like `weights`). Always stored in cm.
    - **Unit:** shown in cm, or in inches when the weight unit setting is `lb` (1 in = 2.54 cm; round to 0.1). In Arabic the unit is سم / بوصة, never Latin. Entry accepts the shown unit and converts it to cm.
@@ -228,7 +228,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Screenshots:** a `dev/demo-measurements?auto=1` route with sample data (light and dark, English and Arabic) for Claude's emulator pass. Claude adds the route to the screenshot list (`.github/scripts/visual-check.sh`); don't edit it.
    - Don't touch `src/design/**`, Health adapters, `exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
 
-28. **PR AN: `Phase 5 / Chart labels in Arabic`** (builder: **Cursor**, Grok 4.7, branch from `main`, after PR AM)
+28. ~~**PR AN: `Phase 5 / Chart labels in Arabic`**~~ DONE: PR #79 merged (2026-10-31). Arabic axis labels now join ("80.2 كغ", "4 أكتوبر"). (builder: **Cursor**, Grok 4.7, branch from `main`, after PR AM)
    - From PR #75's screenshots: the trend charts in `src/features/progress/TrendCharts.tsx` draw axis labels with `react-native-svg` `<Text>`, which on Android doesn't join Arabic letters: "كغ" shows as "ك غ" and month names (أكتوبر) come out broken. Latin labels look fine, so it was only visible once units went Arabic.
    - Draw the axis labels (value ticks and date ticks) as normal React Native text (`Typography`) positioned absolutely over the SVG at the same places, so Android shapes Arabic. Keep the lines, dots, bars and spacing the same. Check every other `SvgText` in `src/features/**` and do the same where it can show Arabic.
    - Screen readers: the labels stay hidden from them as now (the chart's summary label already describes it).
