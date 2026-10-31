@@ -102,22 +102,23 @@ const asDb = mockDb as unknown as SQLite.SQLiteDatabase;
 const currentYear = new Date().getUTCFullYear();
 
 describe('monotonic, separate and additive migrations', () => {
-  test('fresh install runs v1 through v6 in distinct transactions, then caches the connection', async () => {
+  test('fresh install runs v1 through v7 in distinct transactions, then caches the connection', async () => {
     expect(DB_NAME).toBe('liftria.db');
-    expect(DB_SCHEMA_VERSION).toBe(6);
-    expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(DB_SCHEMA_VERSION).toBe(7);
+    expect(DB_MIGRATIONS.map(m => m.version)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(DB_MIGRATIONS[6].sql).toContain('CREATE TABLE IF NOT EXISTS body_measurements');
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_samples');
     expect(DB_MIGRATIONS[0].sql).toContain('CREATE TABLE IF NOT EXISTS health_aggregates');
     expect(DB_MIGRATIONS[1].sql).toContain('CREATE TABLE IF NOT EXISTS targets');
     expect(DB_MIGRATIONS[1].sql).not.toContain('CREATE TABLE app_settings');
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await initializeDatabase();
-    expect(state.schema).toBe(6);
-    expect(state.migrations).toEqual([1, 2, 3, 4, 5, 6]);
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(6);
+    expect(state.schema).toBe(7);
+    expect(state.migrations).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(7);
     expect(SQLite.openDatabaseAsync).toHaveBeenCalledWith('liftria.db');
     await initializeDatabase();
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(6);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(7);
   });
 
   test('v1 settings and both health caches remain after v4; re-run is no-op', async () => {
@@ -128,21 +129,21 @@ describe('monotonic, separate and additive migrations', () => {
     state.aggregates.set('health-connect:energy', { payload_json: '{}' });
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await migrateDatabase(asDb);
-    expect(state.schema).toBe(6);
-    expect(state.migrations).toEqual([2, 3, 4, 5, 6]);
+    expect(state.schema).toBe(7);
+    expect(state.migrations).toEqual([2, 3, 4, 5, 6, 7]);
     expect(state.settings.get('persisted')).toBe('value');
     expect(state.health.size).toBe(1);
     expect(state.aggregates.size).toBe(1);
     await migrateDatabase(asDb);
-    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(5);
+    expect(mockDb.withExclusiveTransactionAsync.mock.calls.length - before).toBe(6);
   });
 
   test('newer-than-app schema is rejected without running SQL', async () => {
-    state.schema = 7;
+    state.schema = 8;
     const before = mockDb.withExclusiveTransactionAsync.mock.calls.length;
     await expect(migrateDatabase(asDb)).rejects.toThrow('Database schema is newer than app');
     expect(mockDb.withExclusiveTransactionAsync.mock.calls.length).toBe(before);
-    state.schema = 6;
+    state.schema = 7;
   });
 });
 
@@ -234,7 +235,7 @@ describe('target snapshots are append-only, nonzero and linked to sources', () =
       expect(all.value[1]?.inputs).toBeNull();
     }
     expect((await getDataLayerCounts())).toMatchObject({ ok: true,
-      value: { schema: 6, profile: 1, targets: 2 } });
+      value: { schema: 7, profile: 1, targets: 2 } });
   });
   test('a corrupted inputs_json keeps the target row readable (current and history)', async () => {
     state.targets = [];

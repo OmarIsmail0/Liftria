@@ -20,7 +20,7 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 // New application id com.liftria.app gets a fresh on-device database. Do not rename
 // databases after shipping to friends without an explicit migration/copy strategy.
 export const DB_NAME = 'liftria.db';
-export const DB_SCHEMA_VERSION = 6;
+export const DB_SCHEMA_VERSION = 7;
 
 /** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
 export const DB_MIGRATIONS = [
@@ -218,6 +218,19 @@ export const DB_MIGRATIONS = [
       glass_ml INTEGER NOT NULL CHECK(glass_ml>=50 AND glass_ml<=1000),
       logged_at TEXT NOT NULL
     );
+  ` },
+  { version: 7, sql: `
+    CREATE TABLE IF NOT EXISTS body_measurements (
+      id TEXT PRIMARY KEY,
+      measured_at TEXT NOT NULL,
+      site TEXT NOT NULL CHECK(site IN (
+        'waist','hips','chest','neck','shoulders',
+        'arm_left','arm_right','thigh_left','thigh_right','calf_left','calf_right')),
+      cm REAL NOT NULL CHECK(cm>0 AND cm<400),
+      note TEXT,
+      source TEXT NOT NULL DEFAULT 'liftria' CHECK(source='liftria')
+    );
+    CREATE INDEX IF NOT EXISTS idx_body_measurements_site ON body_measurements(site, measured_at);
   ` },
 ] as const;
 

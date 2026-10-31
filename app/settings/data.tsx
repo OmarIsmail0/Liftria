@@ -14,7 +14,7 @@ import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/fea
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 import {exportBackup,parseBackup,backupPreview,previewGroups,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
 import {importerLabel} from '../../src/features/import/importCsv';
-import {workoutCsv,diaryCsv} from '../../src/features/settings/csvExport';
+import {workoutCsv,diaryCsv,measurementsCsv} from '../../src/features/settings/csvExport';
 
 /** In-memory sample never written to SQLite or accepted by restoreBackup. */
 const DEMO_BACKUP:BackupData={
@@ -73,11 +73,11 @@ export default function DataAndStorage() {
       try{file.delete();}catch{/* File may already have been removed by the OS. */}
     }
   }
-  async function exportData(kind:'backup'|'workouts'|'diary'){
+  async function exportData(kind:'backup'|'workouts'|'diary'|'measurements'){
     if(busy)return;setBusy(true);setMessage(null);
     try{
       const result=kind==='backup'?await exportBackup():
-       kind==='workouts'?await workoutCsv():await diaryCsv();
+       kind==='workouts'?await workoutCsv():kind==='diary'?await diaryCsv():await measurementsCsv();
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
       await shareFile(exportFileName(kind),
@@ -193,6 +193,8 @@ export default function DataAndStorage() {
        onPress={()=>void exportData('workouts')}/>
       <Button label={t('backup.diaryCsv')} disabled={busy} variant="secondary"
        onPress={()=>void exportData('diary')}/>
+      <Button label={t('backup.measurementsCsv')} disabled={busy} variant="secondary"
+       onPress={()=>void exportData('measurements')}/>
       <Typography tone="secondary" size="small">{t('dataStorage.backupNote')}</Typography>
     </Card>
     <Card title={t('dataStorage.deleteTitle')}>
@@ -219,8 +221,8 @@ export default function DataAndStorage() {
          count:backupPreview(previewBackup).total,date})}</Typography>
         {groups.map(g=><Typography key={g.group} tone="secondary" size="small">
           {t(('backup.group.'+g.group) as 'backup.group.workouts'|'backup.group.sets'|
-           'backup.group.diary'|'backup.group.foods'|'backup.group.weights'|'backup.group.water'|
-           'backup.group.health'|'backup.group.plans'|'backup.group.settings')}: {g.count}
+           'backup.group.diary'|'backup.group.foods'|'backup.group.weights'|'backup.group.measurements'|
+           'backup.group.water'|'backup.group.health'|'backup.group.plans'|'backup.group.settings')}: {g.count}
         </Typography>)}
       </>}
       {!isDemo&&<Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}

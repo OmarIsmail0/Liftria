@@ -17,13 +17,13 @@ export async function clearHealthCacheOnPhone(language: AppLanguage = 'en'): Pro
  * a picked backup or import file. Each flow deletes its copy, but it stays if the app closes
  * mid-flow. The modules recreate the folder on their next use. */
 export const TEMPORARY_FILE_FOLDERS = ['ImagePicker', 'ImageManipulator', 'DocumentPicker'] as const;
-export type ExportKind = 'backup' | 'workouts' | 'diary';
+export type ExportKind = 'backup' | 'workouts' | 'diary' | 'measurements';
 /** Name of the export copy written to the cache root for the share sheet. */
 export function exportFileName(kind: ExportKind, date: Date = new Date()): string {
   return `liftria-${kind}-${date.toISOString().slice(0, 10)}.${kind === 'backup' ? 'json' : 'csv'}`;
 }
 export function isExportFileName(name: string): boolean {
-  return /^liftria-(?:backup-\d{4}-\d{2}-\d{2}\.json|(?:workouts|diary)-\d{4}-\d{2}-\d{2}\.csv)$/.test(name);
+  return /^liftria-(?:backup-\d{4}-\d{2}-\d{2}\.json|(?:workouts|diary|measurements)-\d{4}-\d{2}-\d{2}\.csv)$/.test(name);
 }
 export async function deleteTemporaryFiles(): Promise<boolean> {
   try {

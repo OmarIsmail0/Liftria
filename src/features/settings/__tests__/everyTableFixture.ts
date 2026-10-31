@@ -78,6 +78,9 @@ export const EVERY_TABLE_ROWS: Record<string, Row[]> = {
   saved_meals: [{ id: 'meal-1', name: 'فطار', created_at: AT }],
   saved_meal_items: [{ id: 'item-1', meal_id: 'meal-1', food_id: 'food-1', grams: 250, position: 0 }],
   weights: [{ id: 'weight-1', measured_at: AT, kg: 80.5, note: null, source: 'liftria' }],
+  body_measurements: [{
+    id: 'measure-1', measured_at: AT, site: 'waist', cm: 82.5, note: 'بعد التمرين', source: 'liftria',
+  }],
   water_logs: [{ day: '2026-10-28', glasses: 6, glass_ml: 250, logged_at: AT }],
 };
 

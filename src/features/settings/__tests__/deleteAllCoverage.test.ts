@@ -48,6 +48,7 @@ const LEFTOVER_FILES = [
   'liftria-backup-2026-10-28.json',
   'liftria-workouts-2026-10-28.csv',
   'liftria-diary-2026-10-28.csv',
+  'liftria-measurements-2026-10-28.csv',
 ];
 
 /** Every table holds at least one row, the Anthropic key is saved, a Hiku photo is kept,
@@ -113,7 +114,8 @@ test('the guard notices a table, the key or a file that Delete all leaves behind
 
 test('export copies are named the way Delete all recognises them', () => {
   const day = new Date('2026-10-28T08:00:00.000Z');
-  expect([exportFileName('backup', day), exportFileName('workouts', day), exportFileName('diary', day)])
+  expect([exportFileName('backup', day), exportFileName('workouts', day), exportFileName('diary', day),
+    exportFileName('measurements', day)])
     .toEqual(LEFTOVER_FILES.filter(file => file.startsWith('liftria-')));
   for (const other of ['liftria-backup-2026-10-28.csv', 'liftria-backup-2026-10-28.json.part', 'backup.json', 'liftria.db'])
     expect(isExportFileName(other)).toBe(false);

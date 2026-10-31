@@ -5,16 +5,18 @@ test('backup JSON round trip preserves nulls, text and every schema table',()=>{
  tables.diary_entries=[{id:'a',name_snapshot:'فول "مدمس"',protein:null,kcal:250}];
  tables.app_settings=[{key:'adaptive.checkin.2026-10-26',value:'{"status":"dismissed"}'}];
  tables.water_logs=[{day:'2026-10-27',glasses:0,glass_ml:250,logged_at:'2026-10-27T00:00:00Z'}];
- const backup:BackupData={format:'liftria-backup',formatVersion:1,schemaVersion:6,
+ tables.body_measurements=[{id:'m1',site:'waist',cm:82.5,note:'بعد التمرين',measured_at:'2026-10-27T00:00:00Z',source:'liftria'}];
+ const backup:BackupData={format:'liftria-backup',formatVersion:1,schemaVersion:7,
   exportedAt:'2026-10-27T00:00:00Z',tables};
  const restored=parseBackup(JSON.stringify(backup));
  expect(restored).toEqual(backup);
- expect(backupPreview(restored).total).toBe(3);
- expect(previewGroups(restored).reduce((n,g)=>n+g.count,0)).toBe(3);
+ expect(backupPreview(restored).total).toBe(4);
+ expect(previewGroups(restored).reduce((n,g)=>n+g.count,0)).toBe(4);
  expect(previewGroups(restored).find(g=>g.group==='water')?.count).toBe(1);
+ expect(previewGroups(restored).find(g=>g.group==='measurements')?.count).toBe(1);
 });
 test('restore parser rejects missing tables, foreign/unsupported formats and bad cells',()=>{
- const backup={format:'liftria-backup',formatVersion:1,schemaVersion:6,
+ const backup={format:'liftria-backup',formatVersion:1,schemaVersion:7,
   exportedAt:'2026-10-27T00:00:00Z',tables:Object.fromEntries(BACKUP_TABLES.map(name=>[name,[]]))};
  expect(()=>parseBackup(JSON.stringify({...backup,schemaVersion:999}))).toThrow();
  expect(()=>parseBackup(JSON.stringify({...backup,tables:{}}))).toThrow();
@@ -55,5 +57,15 @@ test('v6 backup rejects newer-version tables and unknown names',()=>{
  expect(()=>validateBackupTables({...tables,future_table:[]},6,manifest)).toThrow('Table introduced');
  expect(()=>validateBackupTables({...tables,unknown_table:[]},6,manifest)).toThrow('Unknown');
  expect(()=>validateBackupTables(tables,8,manifest)).toThrow('Unsupported');
- expect(()=>validateBackupTables(tables,6)).not.toThrow();
+ const v6=Object.fromEntries(BACKUP_TABLES.filter(name=>name!=='body_measurements').map(name=>[name,[]]));
+ expect(()=>validateBackupTables(v6,6)).not.toThrow();
+ expect(()=>validateBackupTables(tables,6)).toThrow('Table introduced');
+ expect(()=>validateBackupTables(tables,7)).not.toThrow();
+});
+test('a v6 backup without body_measurements restores as an empty table',()=>{
+ const tables=Object.fromEntries(BACKUP_TABLES.filter(name=>name!=='body_measurements').map(name=>[name,[]]));
+ const parsed=parseBackup(JSON.stringify({format:'liftria-backup',formatVersion:1,schemaVersion:6,
+  exportedAt:'2026-10-27T00:00:00Z',tables}));
+ expect(parsed.tables.body_measurements).toEqual([]);
+ expect(parsed.schemaVersion).toBe(6);
 });

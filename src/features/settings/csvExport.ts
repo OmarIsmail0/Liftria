@@ -27,6 +27,15 @@ export async function workoutCsv():Promise<DbResult<string>>{
     r.position,r.kind,r.side,r.weight,r.reps,r.rpe,r.rir,r.note])]);
  });
 }
+export async function measurementsCsv():Promise<DbResult<string>>{
+ return dbOperation(async db=>{
+  const rows=await db.getAllAsync<{
+   measured_at:string;site:string;cm:number;note:string|null;source:string;
+  }>('SELECT measured_at,site,cm,note,source FROM body_measurements ORDER BY measured_at,site,id');
+  return csvRows([['Measured at','Site','Centimeters','Note','Source'],...rows.map(r=>
+   [r.measured_at,r.site,r.cm,r.note,r.source])]);
+ });
+}
 export async function diaryCsv():Promise<DbResult<string>>{
  return dbOperation(async db=>{
   const rows=await db.getAllAsync<{
