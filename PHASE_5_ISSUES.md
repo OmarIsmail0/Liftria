@@ -39,7 +39,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Privacy:** no photo is kept after the request unless Settings → Hiku → "Keep photos" is on (off by default). Add it to Delete all and the backup.
    - Test: the resize/EXIF step (mock the manipulator), the request body shape (image block first, no `thinking`/`temperature`), and that nothing saves without the review.
    - Screenshots: a `dev/demo-hiku-photo?auto=1` route using a bundled sample image and pack values, with Save disabled and no API call.
-5. **PR S: `Phase 5 / iPhone`** (owner, 2026-10-26: "don't forget about iPhone")
+5. ~~**PR S: `Phase 5 / iPhone`**~~ DONE: PR #28 merged (2026-10-29). (owner, 2026-10-26: "don't forget about iPhone")
    - The app must run on iPhone from the same code. Claude added the iPhone config (bundle id `com.liftria.app`, permission texts in English and Arabic, right to left from the first launch) and a CI job that builds it for the iPhone simulator (`ios-build.yml`; label a PR `ios` to run it). **It builds green on `main` (2026-10-26)**; it selects the newest Xcode on the runner because Expo needs Swift 6.2.
    - **Health:** Health Connect is Android-only. On iPhone, every Health Connect screen and call must be behind `Platform.OS === 'android'`; on iPhone show an honest "Apple Health support is coming" state, never fake data. Apple Health (HealthKit) is a separate later PR: **PR AA** (library chosen and approved 2026-10-29).
    - Check every Android-only call (Health Connect, the Android notification channel, back-button handling) and every screen in the iPhone layout: safe areas (notch and home bar), the keyboard on Field screens, and swipe-back on stack screens.
@@ -127,7 +127,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Instructions stay English for now (out of scope).
    - **Don't touch** `src/design/**`, the Health screens or the stack layouts (PR S, #28), or the import matching.
 
-15. **PR AA: `Phase 5 / Apple Health`** (owner approved 2026-10-29). Split into two parts:
+15. ~~**PR AA: `Phase 5 / Apple Health`**~~ DONE: PR #44 and PR #52 merged (2026-10-29). (owner approved 2026-10-29). Split into two parts:
    - **Part 1, library + adapter + config + tests:** PR #44 (Cursor, Grok 4.7), based on PR S's branch. Claude fixed body fat (HealthKit's `%` is a 0–1 fraction) and made the iPhone build require the read text and forbid a write prompt. Merge after #28.
    - **Part 2, the iPhone screens:** after #28 and #44 merge. The spec below covers both parts.
    - **Library (owner approved):** `@kingstinct/react-native-healthkit` (MIT, maintained, New Architecture via Nitro) plus its peer `react-native-nitro-modules`. Install with `npx expo install`; Claude regenerates the lockfile if it needs to. No other new dependency.
@@ -139,7 +139,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - **Checks:** the CI iPhone simulator (label `ios`) has little or no health data, so the shots show the empty and permission states. A real iPhone needs the owner's Apple Developer account. Say in the PR what couldn't be checked.
    - **Don't touch** `src/design/**`, the Android Health Connect adapter's behavior, or workflows.
 
-16. **PR AB: `Phase 5 / Accessibility guards`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+16. ~~**PR AB: `Phase 5 / Accessibility guards`**~~ DONE: PR #48 merged (2026-10-29). (builder: **Cursor**, Grok 4.7, branch from `main`)
    - Add `src/i18n/__tests__/accessibility.test.ts`, a **TypeScript-AST** scanner (use the `typescript` package already in devDependencies; not regexes, because props span lines). It scans `app/**` and `src/features/**` (not `app/dev/**`, not tests) and fails when:
      1. a `Pressable`, `TouchableOpacity` or `TouchableHighlight` has no `accessibilityRole`, or has neither an `accessibilityLabel` nor a direct `Text`/`Typography` child with visible text;
      2. an `Image` has neither an `accessibilityLabel` nor `accessible={false}`;
@@ -148,7 +148,7 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Fix every offender it finds: labels come from `t()` with English and Arabic strings. Don't change behavior or layout.
    - Don't touch `src/design/**` (the shared primitives already label themselves), the Health screens, `src/services/health/**`, or `app.config.ts`.
 
-17. **PR AC: `Phase 5 / Browse every exercise`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+17. ~~**PR AC: `Phase 5 / Browse every exercise`**~~ DONE: PR #53 merged (2026-10-29). (builder: **Cursor**, Grok 4.7, branch from `main`)
    - The library shows only the first 60 of 876 exercises ("search to find more"), the muscle screen 50, and the picker 60. People can't browse the pack.
    - Make `app/(tabs)/train/library.tsx`, `pick.tsx` and `muscles.tsx` list **every** match with a virtualized list (`FlatList` / `SectionList`, keyed by exercise id, `getItemLayout` if rows have a fixed height). Keep the current look: the same `ListRow`s, card styling, headers, filters, the recent list and the empty state. Remove the "limited" message and its strings when nothing uses them.
    - The library in A–Z order gets section headers by first letter in English and in Arabic (Arabic order follows the Arabic names from PR Z: `searchExercises(..., language)` already sorts them).
@@ -216,6 +216,17 @@ Background for the choices below: `docs/COMPETITIVE_REVIEW.md` → "Next (Phase 
    - Values and stored units stay as they are (`'kg' | 'lb'` in settings and the database). Only the shown text changes.
    - **Guard (test):** in Arabic, no translated string and no rendered weight label contains Latin `kg` or `lb` (extend the existing Arabic units guard, which already forbids `kcal` and `g`), with a planted failure. A unit test for the helper.
    - Don't touch `src/design/**`, Health adapters' stored units, `exerciseInstructionsAr.ts`, store assets, or workflows.
+
+27. **PR AM: `Phase 5 / Body measurements`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - Hevy and MacroFactor both track body measurements; Liftria only tracks weight. Add the common tape measurements: waist, hips, chest, neck, shoulders, left and right arm, left and right thigh, left and right calf.
+   - **Storage:** one additive migration (the next schema version after 6) adds `body_measurements` (`id` from `newGymId()`, `measured_at`, `site` with a CHECK for the 11 sites, `cm REAL NOT NULL CHECK(cm>0 AND cm<400)`, `note`, `source` = `'liftria'` like `weights`). Always stored in cm.
+   - **Unit:** shown in cm, or in inches when the weight unit setting is `lb` (1 in = 2.54 cm; round to 0.1). In Arabic the unit is سم / بوصة, never Latin. Entry accepts the shown unit and converts it to cm.
+   - **Screen:** on Progress → Body, a "Measurements" card under the weight section: the latest value per site with its date and the change since the previous entry. "Add measurements" opens a form for any subset of the sites (a blank field means not measured, never 0). Tapping a site shows its history as a simple line chart with the existing chart primitives and a list where each entry can be edited or deleted. With no entries, the card shows the existing empty-state style with one line saying what to measure.
+   - **Coverage:** the new table is in the backup (export, restore and the round-trip test), in Delete all, and in the CSV export as its own file or section. `everyTableFixture` and the coverage guards must pass with it.
+   - **Strings:** every new string in English and Arabic; counted phrases go through `pluralForm()`; values with units use `bidiIsolate()` and a no-break space like the rest of the app.
+   - **Tests:** the migration on a v6 database keeps existing data; the repository (add, edit, delete, latest per site, change since the previous entry); the cm/inch conversion and rounding; blank fields are not saved; backup round trip.
+   - **Screenshots:** a `dev/demo-measurements?auto=1` route with sample data (light and dark, English and Arabic) for Claude's emulator pass. Claude adds the route to the screenshot list (`.github/scripts/visual-check.sh`); don't edit it.
+   - Don't touch `src/design/**`, Health adapters, `exerciseInstructionsAr.ts`, store assets, `app.config.ts`, or workflows.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
