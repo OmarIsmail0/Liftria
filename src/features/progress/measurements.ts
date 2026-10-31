@@ -72,8 +72,13 @@ function lengthText(shown: number, unit: LengthUnit, language: AppLanguage): str
 }
 
 /** One direction-safe value: number, no-break space, unit. */
+/** A value that is already in the shown unit (the chart axis uses this). */
+export function formatShownLength(shown: number, unit: LengthUnit, language: AppLanguage): string {
+  return bidiIsolate(language, lengthText(roundTenth(shown), unit, language));
+}
+
 export function formatMeasurement(cm: number, unit: LengthUnit, language: AppLanguage): string {
-  return bidiIsolate(language, lengthText(fromCm(cm, unit), unit, language));
+  return formatShownLength(fromCm(cm, unit), unit, language);
 }
 
 /** Difference of the two displayed values, so the change matches what the person sees. */
@@ -88,11 +93,13 @@ export function formatSignedMeasurement(delta: number, unit: LengthUnit, languag
   return bidiIsolate(language, signed + NBSP + lengthUnitLabel(language, unit));
 }
 
-export function validateMeasurement(cm: number, at: string, site: string): boolean {
+export function measurementDateOk(at: string): boolean {
   const date = new Date(at);
-  return isMeasurementSite(site)
-    && Number.isFinite(cm) && cm > 0 && cm < 400
-    && Number.isFinite(date.getTime()) && date.getTime() <= Date.now() + 86400000;
+  return Number.isFinite(date.getTime()) && date.getTime() <= Date.now() + 86400000;
+}
+
+export function validateMeasurement(cm: number, at: string, site: string): boolean {
+  return isMeasurementSite(site) && Number.isFinite(cm) && cm > 0 && cm < 400 && measurementDateOk(at);
 }
 
 export type ParsedField =

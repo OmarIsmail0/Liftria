@@ -137,3 +137,67 @@ export function WeightGraph({trend,hidden,unit}:{
    </Svg>
  </View>;
 }
+
+function calendarDay(at:string):string{
+ const date=new Date(at);
+ const month=String(date.getMonth()+1).padStart(2,'0');
+ const day=String(date.getDate()).padStart(2,'0');
+ return date.getFullYear()+'-'+month+'-'+day;
+}
+
+/** One tape site over time. The caller passes values already converted to the shown unit. */
+export function MeasurementGraph({points,hidden,valueLabel,accessibilityLabel}:{
+ points:{at:string;value:number}[];
+ hidden:boolean;
+ valueLabel:(value:number)=>string;
+ accessibilityLabel:string;
+}){
+ const {theme}=useTheme();
+ const {language}=useLanguage();
+ const [width,setWidth]=useState(320);
+ const ordered=[...points].filter(point=>Number.isFinite(Date.parse(point.at))&&Number.isFinite(point.value))
+  .sort((a,b)=>a.at.localeCompare(b.at));
+ if(ordered.length===0)return null;
+ const height=192,pad={top:12,right:12,bottom:30,left:language==='ar'?76:58};
+ const values=ordered.map(point=>point.value);
+ const min=Math.min(...values),max=Math.max(...values);
+ const span=Math.max(1,max-min),minY=min-span*0.1,maxY=max+span*0.1;
+ const times=ordered.map(point=>Date.parse(point.at));
+ const start=Math.min(...times),end=Math.max(...times);
+ const x=(at:string)=>{
+  const spanX=width-pad.left-pad.right;
+  if(end===start)return pad.left+spanX/2;
+  return pad.left+(Date.parse(at)-start)/(end-start)*spanX;
+ };
+ const y=(value:number)=>height-pad.bottom-(value-minY)/(maxY-minY)*(height-pad.top-pad.bottom);
+ const yTicks=[minY,(minY+maxY)/2,maxY];
+ const xTicks=pickTickIndexes(ordered.length,4);
+ return <View onLayout={event=>{const next=event.nativeEvent.layout.width;if(next>0)setWidth(next);}}
+  accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={{height}}>
+  <Svg width={width} height={height}>
+   <Line x1={pad.left} x2={pad.left} y1={pad.top} y2={height-pad.bottom}
+    stroke={theme.color.border.subtle} strokeWidth={1}/>
+   <Line x1={pad.left} x2={width-pad.right} y1={height-pad.bottom} y2={height-pad.bottom}
+    stroke={theme.color.border.subtle} strokeWidth={1}/>
+   {yTicks.map(value=><Line key={'my'+value} x1={pad.left} x2={width-pad.right} y1={y(value)} y2={y(value)}
+    stroke={theme.color.border.subtle} strokeDasharray="2 3" strokeWidth={0.8}/>)}
+   {ordered.map((point,index)=>{
+    const prev=ordered[index-1];
+    return <ViewPlaceholder key={point.at+':'+index} i={index} x={x(point.at)} y={y(point.value)}
+     prev={prev?{x:x(prev.at),y:y(prev.value)}:null} stroke={theme.color.domain.health}/>;
+   })}
+   {!hidden&&yTicks.map(value=><SvgText key={'ml'+value} x={pad.left-6} y={y(value)+4}
+    fill={theme.color.text.secondary} textAnchor="end" fontSize={theme.type.small.size}>
+    {valueLabel(value)}
+   </SvgText>)}
+   {xTicks.map(index=>{
+    const point=ordered[index];
+    if(!point)return null;
+    return <SvgText key={'md'+point.at} x={x(point.at)} y={height-8}
+     fill={theme.color.text.secondary} textAnchor="middle" fontSize={theme.type.small.size}>
+     {formatAxisDayLabel(calendarDay(point.at),language)}
+    </SvgText>;
+   })}
+  </Svg>
+ </View>;
+}
