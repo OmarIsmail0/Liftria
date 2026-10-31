@@ -31,7 +31,8 @@ export function rawWeightUnitDisplays(source: string): string[] {
     /['"`][^'"`\n]*\s(?:kg|lb)['"`]/g,
     /['"][^'"\n]*['"]\s*\+\s*(?:unit|weightUnit|displayUnit|values\.weight)\b/g,
     /\$\{(?:unit|weightUnit|displayUnit|values\.weight)\}/g,
-    /\{(?:unit|weightUnit|displayUnit)\}/g,
+    // Rendered as a JSX child; `prop={weightUnit}` only passes the setting along.
+    /(?<!=)\{(?:unit|weightUnit|displayUnit)\}/g,
     /\bunit:\s*(?:unit|weightUnit|displayUnit|values\.weight)\b/g,
     /\bunit=\{(?:unit|weightUnit|displayUnit|values\.weight)\}/g,
     /\blabel:\s*['"](?:kg|lb)['"]/g,
@@ -257,6 +258,7 @@ describe('Arabic weight-unit words', () => {
     expect(rawWeightUnitDisplays("t('history.volumeValue',{unit})")).not.toEqual([]);
     expect(rawWeightUnitDisplays("t('active.loggedA11y',{unit:weightUnit})")).not.toEqual([]);
     expect(rawWeightUnitDisplays("<Typography>{unit}</Typography>")).not.toEqual([]);
+    expect(rawWeightUnitDisplays("<BodyMeasurements weightUnit={weightUnit}/>")).toEqual([]);
     expect(rawWeightUnitDisplays("options={[{value:'kg', label:'kg'}]}")).not.toEqual([]);
     expect(rawWeightUnitDisplays("label={unit==='kg'?'✓ kg':'kg'}")).not.toEqual([]);
     expect(rawWeightUnitDisplays("<Stepper unit={weightUnit}/>")).not.toEqual([]);

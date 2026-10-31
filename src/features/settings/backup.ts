@@ -8,7 +8,7 @@ export const BACKUP_TABLES=[
  'health_samples','health_aggregates','profile','targets','import_batches',
  'exercises','templates','template_exercises','plans','sessions','session_exercises',
  'sets','foods','food_portions','hiku_requests','diary_entries','favorite_foods',
- 'saved_meals','saved_meal_items','weights','water_logs',
+ 'saved_meals','saved_meal_items','weights','body_measurements','water_logs',
 ] as const;
 export type BackupRow=Record<string,string|number|null>;
 export type BackupData={format:'liftria-backup';formatVersion:1;schemaVersion:number;
@@ -16,13 +16,16 @@ export type BackupData={format:'liftria-backup';formatVersion:1;schemaVersion:nu
 export type BackupPreview={schemaVersion:number;exportedAt:string;
  counts:{table:string;count:number}[];total:number};
 const obj=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
-/** The first backup format shipped with schema v6. When adding a table in a future
- * migration, list it in BACKUP_TABLES and record its introduction here. */
+/** The first backup format shipped with schema v6. Tables added later record the
+ * schema version that introduced them, so an older file may omit them. */
 export type BackupManifest={schemaVersion:number;tables:readonly string[];
  introducedIn:Readonly<Record<string,number>>};
 export const BACKUP_MANIFEST:BackupManifest={
  schemaVersion:DB_SCHEMA_VERSION,tables:BACKUP_TABLES,
- introducedIn:Object.fromEntries(BACKUP_TABLES.map(table=>[table,6])),
+ introducedIn:{
+  ...Object.fromEntries(BACKUP_TABLES.filter(table=>table!=='body_measurements').map(table=>[table,6])),
+  body_measurements:7,
+ },
 };
 export const MIN_BACKUP_SCHEMA_VERSION=6;
 const validCell=(v:unknown)=>v===null||typeof v==='string'||typeof v==='number'&&Number.isFinite(v);
@@ -82,6 +85,7 @@ export const BACKUP_GROUPS={
  diary:['diary_entries','test_nutrition_entries','saved_meals','saved_meal_items'],
  foods:['foods','food_portions','favorite_foods'],
  weights:['weights'],
+ measurements:['body_measurements'],
  water:['water_logs'],
  health:['health_samples','health_aggregates'],
  plans:['plans','templates','template_exercises','exercises','import_batches'],

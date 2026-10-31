@@ -12,6 +12,7 @@ import {rangeDays,weightTrend,sourceCounts,type RangeKey,type WeightPoint} from 
 import {cachedHealthWeights,listLocalWeights,removeWeight,restoreWeight,saveWeight,
  weightNeedsConfirmation,validateWeight,type LocalWeight} from '../../../src/features/progress/weightRepository';
 import {WeightGraph} from '../../../src/features/progress/TrendCharts';
+import {BodyMeasurements} from '../../../src/features/progress/BodyMeasurements';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {fromKg,toKg,type WeightUnit} from '../../../src/features/train/workoutUnits';
 import {appleHealthPhone,healthCopy} from '../../../src/features/health/deviceHealth';
@@ -114,6 +115,7 @@ export default function BodyTrends(){
     router.push('/settings/preferences')}/>}
    <Button label={t('trend.logWeight')} variant="secondary" onPress={()=>open()}/>
   </Card>
+  <BodyMeasurements weightUnit={weightUnit} hidden={hidden}/>
   <Card title={t('trend.bodyFat')}>
    <Typography tone="secondary">{t(appleHealthPhone()?'appleHealth.trend.bodyFat':'trend.bodyFatPending')}</Typography>
   </Card>
