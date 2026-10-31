@@ -94,6 +94,7 @@ const healthCopySlots = {
   'trend.privacy': ['trend.healthPrivacy', 'appleHealth.trend.privacy'],
   'trend.localPrivacy': ['trend.localWeightPrivacy', 'appleHealth.trend.localPrivacy'],
   'trend.chip': ['trend.healthConnect', 'appleHealth.name'],
+  'trend.sourceCounts': ['trend.sourceCounts', 'appleHealth.trend.sourceCounts'],
 } as const satisfies Record<string, readonly [TranslationKey, TranslationKey]>;
 
 export type HealthCopySlot = keyof typeof healthCopySlots;
