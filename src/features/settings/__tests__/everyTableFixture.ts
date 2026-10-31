@@ -81,6 +81,10 @@ export const EVERY_TABLE_ROWS: Record<string, Row[]> = {
   body_measurements: [{
     id: 'measure-1', measured_at: AT, site: 'waist', cm: 82.5, note: 'بعد التمرين', source: 'liftria',
   }],
+  progress_photos: [{
+    id: 'photo-1', taken_at: AT, pose: 'front', jpeg_base64: 'AQID', width: 2, height: 3,
+    note: 'صباح', source: 'liftria',
+  }],
   water_logs: [{ day: '2026-10-28', glasses: 6, glass_ml: 250, logged_at: AT }],
 };
 
