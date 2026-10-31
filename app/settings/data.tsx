@@ -12,7 +12,8 @@ import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
-import {exportBackup,parseBackup,backupPreview,previewGroups,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {progressPhotoUsage,type ProgressPhotoUsage} from '../../src/features/progress/progressPhotoRepository';
 import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv,measurementsCsv} from '../../src/features/settings/csvExport';
 
@@ -34,6 +35,7 @@ export default function DataAndStorage() {
   const { theme, resetLocalPreferences } = useTheme();
   const { language,resetLanguage, t } = useLanguage();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
+  const [photoUsage,setPhotoUsage]=useState<ProgressPhotoUsage|null>(null);
   const [imported,setImported]=useState<ImportBatch|null>(null);
   const [undoVisible,setUndoVisible]=useState(false);
   const [confirmation,setConfirmation]=useState('');
@@ -43,7 +45,7 @@ export default function DataAndStorage() {
   const [pendingRestore,setPendingRestore]=useState<BackupData|null>(null);
   const [restoreText,setRestoreText]=useState('');
   const previewBackup=isDemo?DEMO_BACKUP:pendingRestore;
-  const groups=previewBackup?previewGroups(previewBackup).filter(g=>g.count>0):[];
+  const groups=previewBackup?previewGroups(previewBackup).filter(g=>g.count>0||g.group==='photos'):[];
   const date=previewBackup?formatDate(language,new Date(previewBackup.exportedAt),
    {dateStyle:'medium',timeStyle:'short'}):'';
   const closePreview=()=>{
@@ -54,6 +56,8 @@ export default function DataAndStorage() {
   const load=useCallback(async()=>{
     const result=await localStorageCounts();
     if(result.ok)setCounts(result.value);
+    const photos=await progressPhotoUsage();
+    if(photos.ok)setPhotoUsage(photos.value);
     const batch=await lastImportBatch();
     if(batch.ok)setImported(batch.value);
     else setMessage(t('dataStorage.readError'));
@@ -170,6 +174,7 @@ export default function DataAndStorage() {
         <ListRow title={t('dataStorage.targets')} detail={String(counts.targetVersions)} />
         <ListRow title={t('dataStorage.profiles')} detail={String(counts.profiles)} />
         <ListRow title={t('dataStorage.database')} detail={formatLocalDatabaseSize(counts.databaseBytes, language)} />
+        {photoUsage&&<ListRow title={t('dataStorage.photos')} detail={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />}
       </> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
       <Typography tone="secondary" size="small">{t('dataStorage.countsNote')}</Typography>
     </Card>
@@ -222,7 +227,12 @@ export default function DataAndStorage() {
         {groups.map(g=><Typography key={g.group} tone="secondary" size="small">
           {t(('backup.group.'+g.group) as 'backup.group.workouts'|'backup.group.sets'|
            'backup.group.diary'|'backup.group.foods'|'backup.group.weights'|'backup.group.measurements'|
-           'backup.group.water'|'backup.group.health'|'backup.group.plans'|'backup.group.settings')}: {g.count}
+           'backup.group.photos'|'backup.group.water'|'backup.group.health'|'backup.group.plans'|
+           'backup.group.settings')}{': '}
+          {g.group==='photos'&&previewBackup
+            ? t((`progressPhotos.count.${pluralForm(language,g.count)}`) as TranslationKey,{count:g.count})
+              +' · '+formatLocalDatabaseSize(progressPhotoByteCount(previewBackup), language)
+            : String(g.count)}
         </Typography>)}
       </>}
       {!isDemo&&<Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}

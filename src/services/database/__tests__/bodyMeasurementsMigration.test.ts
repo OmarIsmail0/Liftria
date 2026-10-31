@@ -43,7 +43,8 @@ test('v7 on a v6 database keeps existing rows and adds body_measurements', async
   await migrateDatabase(db);
 
   const version = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
-  expect(version?.user_version).toBe(7);
+  expect(version?.user_version).toBe(8);
+  expect((await db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM progress_photos'))?.n).toBe(0);
   expect(await db.getFirstAsync<{ kg: number; note: string }>(
     'SELECT kg,note FROM weights WHERE id=?', ['w1'])).toEqual({ kg: 80.5, note: 'keep me' });
   expect((await db.getFirstAsync<{ glasses: number }>(

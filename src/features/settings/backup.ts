@@ -8,7 +8,7 @@ export const BACKUP_TABLES=[
  'health_samples','health_aggregates','profile','targets','import_batches',
  'exercises','templates','template_exercises','plans','sessions','session_exercises',
  'sets','foods','food_portions','hiku_requests','diary_entries','favorite_foods',
- 'saved_meals','saved_meal_items','weights','body_measurements','water_logs',
+ 'saved_meals','saved_meal_items','weights','body_measurements','progress_photos','water_logs',
 ] as const;
 export type BackupRow=Record<string,string|number|null>;
 export type BackupData={format:'liftria-backup';formatVersion:1;schemaVersion:number;
@@ -23,8 +23,9 @@ export type BackupManifest={schemaVersion:number;tables:readonly string[];
 export const BACKUP_MANIFEST:BackupManifest={
  schemaVersion:DB_SCHEMA_VERSION,tables:BACKUP_TABLES,
  introducedIn:{
-  ...Object.fromEntries(BACKUP_TABLES.filter(table=>table!=='body_measurements').map(table=>[table,6])),
+  ...Object.fromEntries(BACKUP_TABLES.filter(table=>table!=='body_measurements'&&table!=='progress_photos').map(table=>[table,6])),
   body_measurements:7,
+  progress_photos:8,
  },
 };
 export const MIN_BACKUP_SCHEMA_VERSION=6;
@@ -86,6 +87,7 @@ export const BACKUP_GROUPS={
  foods:['foods','food_portions','favorite_foods'],
  weights:['weights'],
  measurements:['body_measurements'],
+ photos:['progress_photos'],
  water:['water_logs'],
  health:['health_samples','health_aggregates'],
  plans:['plans','templates','template_exercises','exercises','import_batches'],
@@ -101,6 +103,15 @@ export function backupPreview(backup:BackupData):BackupPreview{
  const counts=BACKUP_TABLES.map(table=>({table,count:backup.tables[table]?.length??0}));
  return {schemaVersion:backup.schemaVersion,exportedAt:backup.exportedAt,
   counts,total:counts.reduce((sum,row)=>sum+row.count,0)};
+}
+/** Stored JPEG text length, the same basis as kept-photo LENGTH(value). */
+export function progressPhotoByteCount(backup:BackupData):number{
+ let bytes=0;
+ for(const row of backup.tables.progress_photos??[]){
+  const jpeg=row.jpeg_base64;
+  if(typeof jpeg==='string')bytes+=jpeg.length;
+ }
+ return bytes;
 }
 export async function exportBackup():Promise<DbResult<BackupData>>{
  return dbOperation(async db=>{
