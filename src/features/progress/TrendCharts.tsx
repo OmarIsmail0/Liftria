@@ -185,7 +185,7 @@ export function MeasurementGraph({points,hidden,valueLabel,accessibilityLabel}:{
  const ordered=[...points].filter(point=>Number.isFinite(Date.parse(point.at))&&Number.isFinite(point.value))
   .sort((a,b)=>a.at.localeCompare(b.at));
  if(ordered.length===0)return null;
- const height=192,pad={top:12,right:12,bottom:30,left:language==='ar'?76:58};
+ const height=192,pad={top:12,right:36,bottom:30,left:language==='ar'?76:58};
  const values=ordered.map(point=>point.value);
  const min=Math.min(...values),max=Math.max(...values);
  const span=Math.max(1,max-min),minY=min-span*0.1,maxY=max+span*0.1;
@@ -213,18 +213,18 @@ export function MeasurementGraph({points,hidden,valueLabel,accessibilityLabel}:{
     return <ViewPlaceholder key={point.at+':'+index} i={index} x={x(point.at)} y={y(point.value)}
      prev={prev?{x:x(prev.at),y:y(prev.value)}:null} stroke={theme.color.domain.health}/>;
    })}
-   {!hidden&&yTicks.map(value=><SvgText key={'ml'+value} x={pad.left-6} y={y(value)+4}
-    fill={theme.color.text.secondary} textAnchor="end" fontSize={theme.type.small.size}>
-    {valueLabel(value)}
-   </SvgText>)}
-   {xTicks.map(index=>{
-    const point=ordered[index];
-    if(!point)return null;
-    return <SvgText key={'md'+point.at} x={x(point.at)} y={height-8}
-     fill={theme.color.text.secondary} textAnchor="middle" fontSize={theme.type.small.size}>
-     {formatAxisDayLabel(calendarDay(point.at),language)}
-    </SvgText>;
-   })}
   </Svg>
+  <ChartAxisLabels labels={[
+   ...(!hidden?yTicks.map(value=>({
+    key:'ml'+value,x:pad.left-6,baseline:y(value)+4,anchor:'end' as const,text:valueLabel(value),
+   })):[]),
+   ...xTicks.flatMap(index=>{
+    const point=ordered[index];
+    return point?[{
+     key:'md'+point.at,x:x(point.at),baseline:height-8,anchor:'middle' as const,
+     text:formatAxisDayLabel(calendarDay(point.at),language),
+    }]:[];
+   }),
+  ]}/>
  </View>;
 }
