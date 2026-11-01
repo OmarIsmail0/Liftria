@@ -1,10 +1,11 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
+import { bidiIsolate } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
+import { Pressable, View } from 'react-native';
+import { Button, Card, Field, Header, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ensureExercisePack, listExercises, searchExercises, newGymId } from '../../../src/services/database/exerciseLibrary';
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
@@ -31,6 +32,8 @@ export default function TemplateEditor() {
   const [baseline,setBaseline]=useState(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
   const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline;
   const pendingRemove=useRef<Parameters<typeof navigation.dispatch>[0]|null>(null);
+  // Coming back from an exercise's detail must not reload the draft over unsaved edits.
+  const hydratedFor=useRef<string|null>(null);
   // Set after save, delete or discard; the replace runs on the next render, once removal
   // is no longer prevented.
   const [exiting,setExiting]=useState(false);
@@ -53,11 +56,15 @@ export default function TemplateEditor() {
   };
   useFocusEffect(useCallback(()=>{
     let live=true;
+    const key=(id??'')+'|'+(exerciseId??'');
     void (async()=>{
       const pack=await ensureExercisePack();
       const [all,templates]=await Promise.all([pack.ok?listExercises():Promise.resolve(null),listTemplates()]);
       if(!live)return;
       if(all?.ok)setLibrary(all.value);
+      if(hydratedFor.current===key)return;
+      if(id&&!templates.ok)return;
+      hydratedFor.current=key;
       const existing=templates.ok?templates.value.find(t=>t.id===id):undefined;
       if(existing){setName(existing.name);setRest(existing.restSec);setNotes(existing.notes??'');
         setExercises(existing.exercises);
@@ -114,12 +121,16 @@ export default function TemplateEditor() {
       </Typography>}
       {exercises.map((e,i)=>{
         const item=library.find(x=>x.id===e.exerciseId);
+        const shown=exerciseName(language,e.exerciseId,item?.name??e.exerciseId);
         return <View key={i} style={{gap:theme.space[2],paddingVertical:theme.space[3],
           borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
-          <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
+          <Pressable accessibilityRole="button"
+            accessibilityLabel={t('exerciseRow.open',{name:bidiIsolate(language,shown)})}
+            onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.exerciseId}})}
+            style={{flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
             {item && <ExerciseThumbnail exercise={item} />}
-            <Typography bold>{item?.name??e.exerciseId}</Typography>
-          </View>
+            <Typography bold>{shown}</Typography>
+          </Pressable>
           {e.supersetGroup?<Button label={t('gymParity.unlink')} variant="secondary"
             onPress={()=>unlink(e.supersetGroup!)}/>:
            <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
@@ -159,9 +170,23 @@ export default function TemplateEditor() {
     </Card>
     <Card title={t('template.addExercise')}>
       <Field label={t('template.searchLibrary')} value={query} onChangeText={setQuery} placeholder={t('template.searchExample')}/>
-      {filtered.filter(e=>!exercises.some(row=>row.exerciseId===e.id)).map(e=>
-        <ListRow key={e.id} title={exerciseName(language,e.id,e.name)} detail={equipmentLabel(language,e.equipment,t('template.bodyweight'))}
-          leading={<ExerciseThumbnail exercise={e} />} onPress={()=>add(e)}/>)}
+      {filtered.filter(e=>!exercises.some(row=>row.exerciseId===e.id)).map(e=>{
+        const shown=exerciseName(language,e.id,e.name);
+        const isolated=bidiIsolate(language,shown);
+        return <View key={e.id} style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('exerciseRow.open',{name:isolated})}
+            onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}
+            style={{flex:1,flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
+            <ExerciseThumbnail exercise={e} />
+            <View style={{flex:1}}>
+              <Typography bold lines={1}>{shown}</Typography>
+              <Typography tone="secondary" size="small" lines={1}>{equipmentLabel(language,e.equipment,t('template.bodyweight'))}</Typography>
+            </View>
+          </Pressable>
+          <Button label={t('exerciseRow.add')} variant="secondary"
+            accessibilityLabel={t('exerciseRow.addNamed',{name:isolated})} onPress={()=>add(e)}/>
+        </View>;
+      })}
       <Button label={t('template.browseMap')} variant="secondary"
         onPress={()=>router.push('/(tabs)/train/muscles')}/>
     </Card>

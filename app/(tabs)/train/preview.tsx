@@ -79,6 +79,7 @@ export default function WorkoutPreview() {
       {template?template.exercises.map((e,i)=><ListRow key={i}
         leading={lookup[e.exerciseId]?<ExerciseThumbnail exercise={lookup[e.exerciseId]!} />:undefined}
         title={lookup[e.exerciseId]?exerciseName(language,e.exerciseId,lookup[e.exerciseId]!.name):t('preview.exercise')}
+        onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.exerciseId}})}
         detail={t('preview.sets',{
           sets:t((`preview.sets.count.${pluralForm(language,e.targetSets)}`) as TranslationKey,{count:e.targetSets}),
           reps:t((`preview.sets.reps.${pluralForm(language,e.repMax)}`) as TranslationKey,{min:e.repMin,max:e.repMax})})+
