@@ -269,7 +269,7 @@ The owner installed the build from PR #86 on their phone and listed problems. Po
    - **Rest timer bugs (owner point 6: "buggy and looks weird").** Audit `src/features/train/restClock.ts`, `restAlerts.ts`, `RestOrb.tsx` and the active-workout rest UI for: time drifting or jumping after the app goes to the background and comes back; +15/−15/skip racing with the scheduled notification (the notification must move or cancel with every change); the timer surviving a set undo, an edit or a superset round; a stale timer after finishing the workout; double notifications; the orb's ring and the number disagreeing. Base everything on the stored `rest_deadline` and wall-clock time, never on an interval counter. Add tests for each case with fake timers. Leave the rest timer's *look* to the redesign; only fix what is broken (for example text overlapping or clipping).
    - Strings in English and Arabic. Don't touch `src/design/**`, import, the exercise lists, Health files, or workflows.
 
-33. **PR AS: `Phase 5 / Workout redesign (Hevy style)`** (builder: **Cursor**, Grok 4.7, from `main`; PR AQ and PR AR have merged)
+33. ~~**PR AS: `Phase 5 / Workout redesign (Hevy style)`**~~ DONE: PR #99 merged (2026-11-01). One list with a set table per exercise, hold to delete, rest bar, multi-select picker with muscle and equipment filters, routine cards. Claude fixed the picker's disabled button and chip rows from the screenshots. (builder: **Cursor**, Grok 4.7, from `main`; PR AQ and PR AR have merged)
    - **Reference:** the clickable mockup the owner reviewed, `docs/mockups/workout-redesign.html` (open it in a browser; light/dark and English/Arabic toggles). Match its layout, spacing and behaviour, using the app's own primitives and tokens.
    - **Owner's changes after the mockup (2026-11-01):**
      - **Hold to delete a set:** long-press a set row (about 0.5 s) to delete it, with an Undo snackbar for a few seconds. Show a one-line hint "Hold a set to delete it." under the first exercise until the person has deleted a set once.
@@ -305,6 +305,12 @@ The owner installed the build from PR #86 on their phone and listed problems. Po
 34. **PR AT: `Phase 5 / Exercise figures`** (art: **Claude**; wiring: **Cursor** after PR AS)
    - Owner, 2026-11-01: exercise pictures like Hevy and JEFIT, a figure doing the movement with the worked muscles highlighted, drawn in Liftria's style (no photos). Claude draws about 40 side-view poses built from muscle-shaped parts (`docs/mockups/figures.js` holds the approved style's first 8). Each exercise maps to one pose plus its equipment; primary muscles orange, secondary lighter, coloured at runtime from the pack's muscles.
    - Cursor's part, once the poses land: the pose-mapping table for all 876 exercises (name keywords, `equipment`, `force`, `mechanic`, with a manual-overrides list), the `ExerciseFigure` component (cached per exercise, fast in long lists), the body-map fallback for unmapped exercises, and tests that every exercise gets a pose or the fallback.
+
+35. **PR AU: `Phase 5 / Save drop and failure sets`** (builder: **Cursor**, Grok 4.7, branch from `main`)
+   - PR AS shows set types W, D and F, but only warm-up is stored (`sets.kind` is `working` / `warm-up`), so D and F revert to numbers after the workout reloads. Store them: an additive migration (next version) adds `sets.mark TEXT CHECK(mark IN ('drop','failure') OR mark IS NULL)` (keep `kind` as is so stats, records, suggestions and imports don't change meaning). Write it on log and on change; read it back into the set table; show D/F in History and the exercise detail; include it in the backup (the round trip test), CSV export (a "Set type" column) and Hevy import (`dropset` and `failure` now keep their mark).
+   - Records and volume keep counting drop and failure sets as working sets, as today; say so in a code comment.
+   - Tests: the migration on a v9 database keeps data; mark survives reload; import of a Hevy file with dropset/failure; CSV column; backup round trip.
+   - Don't touch `src/design/**`, Health files, or workflows.
 
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
