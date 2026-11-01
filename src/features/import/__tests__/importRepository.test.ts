@@ -104,7 +104,7 @@ test('one commit inserts provenance and a later identical hash adds nothing',asy
  expect(mockState.sessions.every(s=>s.source==='imported-file'&&!!s.import_batch_id)).toBe(true);
  expect((await lastImportBatch()).ok).toBe(true);
  const previous=mockClone();
- expect((await commitImport(p)).ok).toBe(false);
+ expect(await commitImport(p)).toMatchObject({ok:false,error:{message:'im3.alreadyImported'}});
  expect(mockState).toEqual(previous);
 });
 test('Undo removes exactly imported tables byte for byte and preserves manual pre-existing sessions',async()=>{
@@ -126,7 +126,7 @@ test('Undo removes exactly imported tables byte for byte and preserves manual pr
 test('a write failure rolls all six tables back instead of partially importing',async()=>{
  mockFailSet=true;
  const before=mockClone(),plan=createImportPlan(parseImportCsv('csv','demo.csv',csv),context,null);
- expect((await commitImport(plan)).ok).toBe(false);
+ expect(await commitImport(plan)).toMatchObject({ok:false,error:{message:'im3.storage'}});
  expect(mockState).toEqual(before);
 });
 
