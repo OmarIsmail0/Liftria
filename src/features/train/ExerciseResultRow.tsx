@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
-import { Pressable, View, type ViewStyle } from 'react-native';
+import { Pressable, Text, View, type ViewStyle } from 'react-native';
+import { fontFamilyFor } from '../../design/fonts';
 import { Button, Typography } from '../../design/primitives';
 import { ChevronIcon } from '../../design/primitives/TabIcon';
 import { useTheme } from '../../design/ThemeProvider';
@@ -20,6 +21,8 @@ export interface ExerciseResultRowProps {
   onOpen: (id: string) => void;
   onAdd?: (id: string) => void;
   addLabel?: string;
+  /** When set, the add control is a checkmark instead of a button. */
+  marked?: boolean;
 }
 
 function sameRow(previous: ExerciseResultRowProps, next: ExerciseResultRowProps): boolean {
@@ -28,12 +31,13 @@ function sameRow(previous: ExerciseResultRowProps, next: ExerciseResultRowProps)
     && previous.onOpen === next.onOpen
     && previous.onAdd === next.onAdd
     && previous.addLabel === next.addLabel
+    && previous.marked === next.marked
     && previous.edges === next.edges
     && previous.exercise === next.exercise;
 }
 
 export const ExerciseResultRow = memo(function ExerciseResultRow({
-  identity, exercise, edges, divider, onOpen, onAdd, addLabel,
+  identity, exercise, edges, divider, onOpen, onAdd, addLabel, marked,
 }: ExerciseResultRowProps) {
   const { theme } = useTheme();
   const { t, language, isRTL } = useLanguage();
@@ -53,8 +57,20 @@ export const ExerciseResultRow = memo(function ExerciseResultRow({
         {!onAdd && <ChevronIcon left={chevronPointsLeft('forward', isRTL)}
           color={theme.color.text.secondary} size={theme.space[4]} strokeWidth={theme.size.iconStroke} />}
       </Pressable>
-      {onAdd && addLabel ? <Button label={addLabel} size="sm" variant="secondary"
+      {onAdd && addLabel && marked === undefined ? <Button label={addLabel} size="sm" variant="secondary"
         accessibilityLabel={t('exerciseRow.addNamed', { name })} onPress={add} /> : null}
+      {onAdd && marked !== undefined ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: marked }}
+        accessibilityLabel={marked ? t('pick.selected') : (addLabel ?? t('exerciseRow.add'))} onPress={add}
+        style={{ width: theme.size.touch.min, height: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{
+          width: 26, height: 26, borderRadius: theme.radius.pill, alignItems: 'center', justifyContent: 'center',
+          borderWidth: 2, borderColor: marked ? theme.color.domain.train : theme.surface.hairline,
+          backgroundColor: marked ? theme.color.domain.train : 'transparent',
+        }}>
+          {marked ? <Text style={{ color: theme.color.on.train,
+            fontFamily: fontFamilyFor('Figtree', '700', language === 'ar') }}>✓</Text> : null}
+        </View>
+      </Pressable> : null}
     </View>
     {divider ? <View style={{ height: 1, backgroundColor: theme.surface.hairline }} /> : null}
   </View>;

@@ -30,7 +30,7 @@ test('the active workout and the preview open the same exercise screen', () => {
     const text = source(file);
     expect(text).toContain("pathname:'/(tabs)/train/exercise/[id]'");
   }
-  expect(source('app/(tabs)/train/active.tsx')).toContain('ExerciseThumbnail');
+  expect(source('app/(tabs)/train/active.tsx')).toContain('ExerciseFigure');
   expect(source('app/(tabs)/train/active.tsx')).toContain('exerciseRow.open');
   // A custom exercise has no id until it is saved, and saving already opens its detail.
   expect(source('app/(tabs)/train/create.tsx')).toContain("pathname:'/(tabs)/train/exercise/[id]'");

@@ -4,13 +4,15 @@ import { bidiIsolate } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { Button, Card, Field, Header, Screen, Sheet, Stepper, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ensureExercisePack, listExercises, searchExercises, newGymId } from '../../../src/services/database/exerciseLibrary';
 import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput } from '../../../src/services/database/gymRepositories';
 import type { Exercise } from '../../../src/services/database/gymTypes';
-import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
+import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
+import { muscleLabel } from '../../../src/i18n/muscles';
+import { fontFamilyFor } from '../../../src/design/fonts';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function TemplateEditor() {
@@ -29,6 +31,8 @@ export default function TemplateEditor() {
   const [discardSheet,setDiscardSheet]=useState(false);
   const [error,setError]=useState<string|null>(null);
   const [busy,setBusy]=useState(false);
+  const [menuAt,setMenuAt]=useState<number|null>(null);
+  const [restAt,setRestAt]=useState<number|null>(null);
   const [baseline,setBaseline]=useState(JSON.stringify({name:'',rest:120,notes:'',exercises:[]}));
   const dirty=JSON.stringify({name,rest,notes,exercises})!==baseline;
   const pendingRemove=useRef<Parameters<typeof navigation.dispatch>[0]|null>(null);
@@ -122,49 +126,63 @@ export default function TemplateEditor() {
       {exercises.map((e,i)=>{
         const item=library.find(x=>x.id===e.exerciseId);
         const shown=exerciseName(language,e.exerciseId,item?.name??e.exerciseId);
+        const muscle=item?.primaryMuscles[0];
+        const repsLabel=e.repMin===e.repMax?String(e.repMin):e.repMin+'–'+e.repMax;
         return <View key={i} style={{gap:theme.space[2],paddingVertical:theme.space[3],
-          borderBottomWidth:1,borderColor:theme.color.border.subtle}}>
-          <Pressable accessibilityRole="button"
-            accessibilityLabel={t('exerciseRow.open',{name:bidiIsolate(language,shown)})}
-            onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.exerciseId}})}
-            style={{flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
-            {item && <ExerciseThumbnail exercise={item} />}
-            <Typography bold>{shown}</Typography>
+          borderBottomWidth:1,borderColor:theme.color.border.subtle,
+          borderStartWidth:e.supersetGroup?3:0,borderStartColor:theme.color.status.warning,
+          paddingStart:e.supersetGroup?theme.space[2]:0}}>
+          <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
+            <Pressable accessibilityRole="button"
+              accessibilityLabel={t('exerciseRow.open',{name:bidiIsolate(language,shown)})}
+              onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.exerciseId}})}
+              style={{flex:1,flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
+              {item && <ExerciseFigure exercise={item} />}
+              <View style={{flex:1}}>
+                <Typography bold lines={2}>{shown}</Typography>
+                {muscle && <Typography tone="secondary" size="small">{muscleLabel(language,muscle)}</Typography>}
+              </View>
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('workout.menu')}
+              onPress={()=>setMenuAt(i)}
+              style={{width:theme.size.touch.min,height:theme.size.touch.min,alignItems:'center',justifyContent:'center'}}>
+              <Typography size="head">⋯</Typography>
+            </Pressable>
+          </View>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('workout.restTime')}
+            onPress={()=>setRestAt(i)}
+            style={{alignSelf:'flex-start',minHeight:theme.size.touch.min,paddingHorizontal:theme.space[3],
+              borderRadius:theme.radius.pill,justifyContent:'center',backgroundColor:theme.surface.control}}>
+            <Typography size="small" bold>{t('workout.restChip',{time:String(e.restSec??rest)})}</Typography>
           </Pressable>
-          {e.supersetGroup?<Button label={t('gymParity.unlink')} variant="secondary"
-            onPress={()=>unlink(e.supersetGroup!)}/>:
-           <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-             <Button label={t('gymParity.linkNext')} variant="secondary"
-              disabled={i+1>=exercises.length||Boolean(exercises[i+1]?.supersetGroup)}
-              onPress={()=>linkGroup(i,2)}/>
-             <Button label={t('gymParity.superset')+' × 3'} variant="secondary"
-              disabled={i+2>=exercises.length||Boolean(exercises[i+1]?.supersetGroup)||
-                Boolean(exercises[i+2]?.supersetGroup)}
-              onPress={()=>linkGroup(i,3)}/>
-           </View>}
-          <Stepper label={t('template.workingSets')} value={e.targetSets} min={1} max={20} step={1}
-            onChange={v=>update(i,{targetSets:v})}/>
-          <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-            <View style={{flex:1,minWidth:120}}>
-              <Stepper label={t('template.repsMin')} value={e.repMin} min={1} max={100}
-                onChange={v=>update(i,{repMin:v,repMax:Math.max(v,e.repMax)})}/>
-            </View>
-            <View style={{flex:1,minWidth:120}}>
-              <Stepper label={t('template.repsMax')} value={e.repMax} min={e.repMin} max={100}
-                onChange={v=>update(i,{repMax:v})}/>
-            </View>
+          <View style={{flexDirection:'row',gap:theme.space[2]}}>
+            <View style={{width:48,alignItems:'center'}}><Typography size="label" tone="tertiary">{t('workout.columnSet')}</Typography></View>
+            <View style={{flex:1,alignItems:'center'}}><Typography size="label" tone="tertiary">{t('workout.columnReps')}</Typography></View>
           </View>
-          <Stepper label={t('template.exerciseRest')} value={e.restSec??rest} min={0} max={600} step={15}
-            unit={t('units.sec')} onChange={v=>update(i,{restSec:v})}/>
-          <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
-            <Button label={t('template.moveUp')} variant="secondary" disabled={i===0}
-              onPress={()=>setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[i-1],b=next[i];
-                if(a&&b){next[i-1]=b;next[i]=a;}return next;})}/>
-            <Button label={t('template.moveDown')} variant="secondary" disabled={i===exercises.length-1}
-              onPress={()=>setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[i+1],b=next[i];
-                if(a&&b){next[i+1]=b;next[i]=a;}return next;})}/>
-            <Button label={t('template.remove')} variant="ghost" onPress={()=>setExercises(old=>old.filter((_,n)=>n!==i).map(x=>({...x,supersetGroup:null})))}/>
-          </View>
+          {Array.from({length:e.targetSets},(_,setIndex)=>{
+            const setNumber=setIndex+1;
+            return <View key={setNumber} style={{flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
+              <View style={{width:48,alignItems:'center'}}><Typography bold>{setNumber}</Typography></View>
+              <TextInput accessibilityLabel={t('workout.columnReps')} value={repsLabel}
+                keyboardType="number-pad"
+                onChangeText={text=>{
+                  const value=Number(text.replace(/[^0-9]/g,''));
+                  if(Number.isInteger(value)&&value>=1&&value<=100)update(i,{repMin:value,repMax:value});
+                }}
+                style={{flex:1,minHeight:theme.size.touch.min,textAlign:'center',borderRadius:theme.radius.sm,
+                  borderWidth:theme.size.border.thin,borderColor:theme.surface.hairline,
+                  backgroundColor:theme.surface.control,color:theme.color.text.primary,
+                  fontFamily:fontFamilyFor('Figtree','700',language==='ar'),fontSize:theme.type.body.size}}/>
+            </View>;
+          })}
+          <Pressable accessibilityRole="button" accessibilityLabel={t('workout.addSet')}
+            onPress={()=>update(i,{targetSets:Math.min(20,e.targetSets+1)})}
+            style={{minHeight:theme.size.touch.min,borderRadius:theme.radius.md,alignItems:'center',
+              justifyContent:'center',backgroundColor:theme.surface.control}}>
+            <Typography bold>{t('workout.addSet')}</Typography>
+          </Pressable>
+          {e.targetSets>1 && <Button label={t('sessionDetail.removeSet')} variant="ghost"
+            onPress={()=>update(i,{targetSets:e.targetSets-1})}/>}
         </View>;
       })}
     </Card>
@@ -177,7 +195,7 @@ export default function TemplateEditor() {
           <Pressable accessibilityRole="button" accessibilityLabel={t('exerciseRow.open',{name:isolated})}
             onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.id}})}
             style={{flex:1,flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
-            <ExerciseThumbnail exercise={e} />
+            <ExerciseFigure exercise={e} />
             <View style={{flex:1}}>
               <Typography bold lines={1}>{shown}</Typography>
               <Typography tone="secondary" size="small" lines={1}>{equipmentLabel(language,e.equipment,t('template.bodyweight'))}</Typography>
@@ -195,6 +213,38 @@ export default function TemplateEditor() {
       disabled={busy||!name.trim()||exercises.length===0}
       onPress={()=>void save()}/>
     {id&&<Button label={t('template.delete')} variant="danger" onPress={()=>setDeleteSheet(true)}/>}
+    <Sheet visible={menuAt!==null} title={menuAt!==null?exerciseName(language,exercises[menuAt]?.exerciseId??'',library.find(item=>item.id===exercises[menuAt]?.exerciseId)?.name??''):t('workout.menu')}
+      onClose={()=>setMenuAt(null)}>
+      {menuAt!==null&&<>
+        {exercises[menuAt]?.supersetGroup?<Button label={t('gymParity.unlink')} variant="secondary" fullWidth
+          onPress={()=>{unlink(exercises[menuAt]!.supersetGroup!);setMenuAt(null);}}/>:
+          <>
+            <Button label={t('gymParity.linkNext')} variant="secondary" fullWidth
+              disabled={menuAt+1>=exercises.length||Boolean(exercises[menuAt+1]?.supersetGroup)}
+              onPress={()=>{linkGroup(menuAt,2);setMenuAt(null);}}/>
+            <Button label={t('gymParity.superset')+' × 3'} variant="secondary" fullWidth
+              disabled={menuAt+2>=exercises.length||Boolean(exercises[menuAt+1]?.supersetGroup)||Boolean(exercises[menuAt+2]?.supersetGroup)}
+              onPress={()=>{linkGroup(menuAt,3);setMenuAt(null);}}/>
+          </>}
+        <Button label={t('template.moveUp')} variant="secondary" fullWidth disabled={menuAt===0}
+          onPress={()=>{setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[menuAt-1],b=next[menuAt];
+            if(a&&b){next[menuAt-1]=b;next[menuAt]=a;}return next;});setMenuAt(null);}}/>
+        <Button label={t('template.moveDown')} variant="secondary" fullWidth disabled={menuAt>=exercises.length-1}
+          onPress={()=>{setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[menuAt+1],b=next[menuAt];
+            if(a&&b){next[menuAt+1]=b;next[menuAt]=a;}return next;});setMenuAt(null);}}/>
+        <Button label={t('workout.restTime')} variant="secondary" fullWidth onPress={()=>{setRestAt(menuAt);setMenuAt(null);}}/>
+        <Button label={t('template.remove')} variant="danger" fullWidth
+          onPress={()=>{setExercises(old=>old.filter((_,n)=>n!==menuAt).map(x=>({...x,supersetGroup:null})));setMenuAt(null);}}/>
+      </>}
+    </Sheet>
+    <Sheet visible={restAt!==null} title={t('workout.restTime')} onClose={()=>setRestAt(null)}>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
+        {[0,60,90,120,150,180,240].map(seconds=><Button key={seconds}
+          label={seconds===0?t('workout.restOff'):String(seconds)}
+          variant={(exercises[restAt??-1]?.restSec??rest)===seconds?'train':'secondary'}
+          onPress={()=>{if(restAt!==null)update(restAt,{restSec:seconds});setRestAt(null);}}/>)}
+      </View>
+    </Sheet>
     <Sheet visible={discardSheet&&!saved} title={t('template.discardTitle')}
       description={t('template.discardDescription')} onClose={cancelDiscard}>
       <Button label={t('template.keepEditing')} fullWidth onPress={cancelDiscard}/>

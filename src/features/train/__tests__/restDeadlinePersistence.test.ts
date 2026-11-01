@@ -1,6 +1,6 @@
 import { deleteLocalDatabase, dbOperation } from '../../../services/database';
 import { resetMemorySqlite } from '../../settings/__tests__/memorySqlite';
-import { editLoggedSet, logWorkoutSet, readWorkout, removeLoggedSet } from '../workoutData';
+import { editLoggedSet, logWorkoutSet, readWorkout, removeLoggedSet, updateExerciseRest } from '../workoutData';
 import { selectCurrentRest } from '../restClock';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../../settings/__tests__/memorySqlite').memoryExpoSqlite);
@@ -88,4 +88,15 @@ test('undo and edit do not leave a running rest behind', async () => {
   const loaded = await readWorkout('s1');
   if (!loaded.ok || !loaded.value) throw new Error('workout missing');
   expect(selectCurrentRest(loaded.value.sets, 'in-progress', Date.now()).status).toBe('idle');
+});
+
+test('a changed rest time is remembered on that exercise only', async () => {
+  const before = await readWorkout('s1');
+  if (!before.ok || !before.value) throw new Error('workout missing');
+  expect(before.value.exercises.map(exercise => exercise.restSec)).toEqual([120, 120]);
+  const saved = await updateExerciseRest('se1', 90);
+  expect(saved.ok && saved.value).toBe(true);
+  const after = await readWorkout('s1');
+  if (!after.ok || !after.value) throw new Error('workout missing');
+  expect(after.value.exercises.map(exercise => exercise.restSec)).toEqual([90, 120]);
 });

@@ -10,7 +10,7 @@ afterEach(() => {
 
 test('v8 stores a private JPEG with a front, side or back pose', () => {
   const sql = DB_MIGRATIONS.find(migration => migration.version === 8)?.sql ?? '';
-  expect(DB_SCHEMA_VERSION).toBe(8);
+  expect(DB_SCHEMA_VERSION).toBe(9);
   expect(sql).toContain('CREATE TABLE IF NOT EXISTS progress_photos');
   expect(sql).toContain("CHECK(pose IN ('front','side','back'))");
   expect(sql).toContain('jpeg_base64 TEXT NOT NULL');
@@ -39,7 +39,7 @@ test('v8 on a v7 database keeps existing rows and starts with no photos', async 
   await migrateDatabase(db);
 
   const version = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
-  expect(version?.user_version).toBe(8);
+  expect(version?.user_version).toBe(9);
   expect(await db.getFirstAsync<{ kg: number; note: string }>(
     'SELECT kg,note FROM weights WHERE id=?', ['w1'])).toEqual({ kg: 80.5, note: 'keep me' });
   expect(await db.getFirstAsync<{ cm: number; note: string }>(

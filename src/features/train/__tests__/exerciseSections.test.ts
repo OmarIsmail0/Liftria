@@ -118,7 +118,8 @@ test('the browse screens virtualize every match and do not cap the pack', () => 
   expect(library).toContain('accessibilityRole="header"');
   expect(library).not.toMatch(/<ScrollView(?![^>]*horizontal)/);
   expect(pick).toContain('<FlatList');
-  expect(pick).not.toContain('ScrollView');
+  // Filter chips scroll sideways. The exercise list stays a FlatList, not a vertical ScrollView.
+  expect(pick).not.toMatch(/<ScrollView\s(?![^>]*\bhorizontal\b)/);
   expect(muscles).toContain('<FlatList');
   expect(muscles).not.toContain('ScrollView');
   for (const file of ['src/i18n/en.ts', 'src/i18n/ar.ts']) {
