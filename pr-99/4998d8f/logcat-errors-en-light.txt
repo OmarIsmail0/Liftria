@@ -1,0 +1,400 @@
+11-01 17:00:46.105  2024  2583 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.105  2024  2583 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.105  2024  2583 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@ca606ff} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:93)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.106  2024  2583 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@f885b15} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:93)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.107  2024  2583 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.115  2024  2599 E MDD     : MDDManager Failed to init shared file metadata.
+11-01 17:00:46.185   498  1818 E system_server: Invalid class loader spec: =UnsupportedClassLoaderContext=
+11-01 17:00:46.185   498  1818 E PackageDexUsage: Unsupported context?
+11-01 17:00:46.266  2024  2570 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1793552446158
+11-01 17:00:46.267  2024  2570 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1793552446158
+11-01 17:00:46.309  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/refreshzeroprefixtask/shared/ZeroPrefixTaskStats.pb.tmp
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@5f26b3c} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@cc42a1a} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@a18ff28} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.337  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@8eacde6} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.338  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@d8aa37d} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.342  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@72c56c3} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@ea2fa79} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@1f39c1f} with executor MoreExecutors.directExecutor()
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+11-01 17:00:46.345  2024  6032 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+11-01 17:00:47.548  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:00:50.458  2024  2348 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+11-01 17:00:50.465  2024  2348 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+11-01 17:00:52.477   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:00:56.806  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:01.825   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:05.129  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:10.131   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:13.136  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:18.162   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:20.467  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:25.445   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:27.678  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:32.684   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:34.952  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:35.368   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:42.332  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:47.189   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:49.377  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:01:53.228  6776  6792 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+11-01 17:01:53.228  6776  6792 E libc    : Access denied finding property "service.adb.tls.port"
+11-01 17:01:54.455   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:01:56.747  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:01.774   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:03.857  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:08.943   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:11.090  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:16.128   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:18.423  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:23.350   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:26.635  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:31.763   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:35.077  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:35.368   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:43.234  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:48.273   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:02:52.417  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:02:57.498   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:01.630  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:06.754   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:09.975  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:14.957   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:18.087  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:23.166   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:26.444  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:31.499   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:34.536  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:35.367   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:42.861  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:47.876   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:51.037  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:03:56.053   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:03:59.174  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:04.279   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:04:07.671  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:12.720   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:04:17.148  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:22.076   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:04:23.154  6776  6793 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+11-01 17:04:23.154  6776  6793 E libc    : Access denied finding property "service.adb.tls.port"
+11-01 17:04:25.510  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:30.559   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:04:34.820  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:35.367   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:04:44.135  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:49.142   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:04:52.838  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:04:52.887  2024  6032 E ApplicationPropertiesBu: Date 2021-12-06T00:00:00Z is out of expected range.
+11-01 17:04:52.887  2024  6032 E ApplicationPropertiesBu: Date 2022-02-15T00:00:00Z is out of expected range.
+11-01 17:04:52.887  2024  6032 E ApplicationPropertiesBu: Date 2022-02-22T00:00:00Z is out of expected range.
+11-01 17:04:54.203  1591  8441 E PhenotypeModule: PhenotypeModule.handlePhenotypeConfigurationUpdates():246 Get empty configurations.
+11-01 17:04:55.618  1405  2299 E GmsClient: unable to connect to service: com.google.android.gms.auth.key.retrieval.service.START on com.google.android.gms
+11-01 17:04:57.805   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:01.067  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:06.117   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:09.465  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:14.460   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:17.837  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:22.788   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:26.888  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:31.911   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:35.039  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:35.368   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:44.044  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:49.157   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:05:53.350  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:05:58.316   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:02.691  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:06:07.650   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:11.926  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:06:16.893   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:20.139  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:06:25.274   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:29.699  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:06:34.655   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:38.057  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:06:43.068   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:47.222  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:06:52.292   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:06:56.593  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:01.579   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:05.800  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:10.810   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:13.955  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:19.011   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:23.237  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:28.302   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:31.973  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:35.383   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:41.273  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:46.337   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:49.451  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:07:54.554   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:07:58.685  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:03.764   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:07.958  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:13.023   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:17.162  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:22.194   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:26.468  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:31.496   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:35.691  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:40.738   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:44.024  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:48.989   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:51.819  6776  6793 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+11-01 17:08:51.819  6776  6793 E libc    : Access denied finding property "service.adb.tls.port"
+11-01 17:08:53.086  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:08:58.100   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:08:59.057  1174  4791 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+11-01 17:09:01.405  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:06.439   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:09.622  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:14.755   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:17.906  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:22.920   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:26.120  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:31.178   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:35.429  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:40.473   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:43.722  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:48.841   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:52.075  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:09:57.048   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:09:59.061  1174 11654 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+11-01 17:10:00.662  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:05.793   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:09.029  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:14.036   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:17.347  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:22.344   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:26.012  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:31.041   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:34.317  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:35.368   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:42.424  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:47.429   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:49.938  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:10:54.857   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:10:58.313  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:03.261   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:06.405  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:11.507   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:14.714  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:19.676   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:22.751  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:27.743   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:30.771  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:35.368   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:39.041  2024  2348 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:44.076   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:47.307  2024  2336 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:11:52.319   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:11:55.439  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:12:00.455   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:12:03.794  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:12:08.765   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:12:12.318  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:12:17.385   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:12:20.760  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:12:25.798   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:12:28.929  2024  2317 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:12:33.941   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+11-01 17:12:37.186  2024  2349 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+11-01 17:12:42.075   430   430 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
