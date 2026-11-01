@@ -1,2 +1,5 @@
-import {Stack} from 'expo-router';
-export default function HikuStack(){return <Stack screenOptions={{headerShown:false,contentStyle:{backgroundColor:'transparent'}}}/>;}
+import { OpaqueStack } from '../../../src/navigation/OpaqueStack';
+
+export default function HikuStack() {
+  return <OpaqueStack />;
+}

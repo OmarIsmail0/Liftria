@@ -47,8 +47,11 @@ export function Screen({ children, scroll = true, padded = true, embedded = fals
   const insets = useSafeAreaInsets();
   const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !(safeBottom && Platform.OS==='ios') ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
-  return <View style={[layout, { backgroundColor: embedded ? 'transparent' : theme.background }]}>
-    {!embedded && theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
+  // The native stack card is opaque, so a transparent screen would hide the shared
+  // aurora and a fade would show the previous screen through it. Each screen paints
+  // the same static backdrop itself. `embedded` only skips the bottom inset.
+  return <View style={[layout, { backgroundColor: theme.background }]}>
+    {theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     {scroll
       ? <ScrollView automaticallyAdjustKeyboardInsets={Platform.OS==='ios'} contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}
