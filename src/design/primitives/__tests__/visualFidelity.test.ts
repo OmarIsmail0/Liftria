@@ -2,13 +2,12 @@ import { createTheme } from '../../tokens';
 import { fontFamilyFor } from '../../fonts';
 import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps, shouldShowOrbHighlight } from '../VisualGeometry';
 
-test('four fixed ellipse locations match the CSS prototype percentages', () => {
+test('two glows sit behind the top of the screen only, none behind content', () => {
   expect(ambientGlows).toEqual([
-    { key: 'train', cx: 12, cy: 6, rx: 55, ry: 32 },
-    { key: 'hiku', cx: 98, cy: 32, rx: 60, ry: 34 },
-    { key: 'health', cx: 2, cy: 72, rx: 60, ry: 34 },
-    { key: 'eat', cx: 92, cy: 96, rx: 55, ry: 30 },
+    { key: 'train', cx: 8, cy: -2, rx: 62, ry: 24 },
+    { key: 'hiku', cx: 96, cy: 6, rx: 56, ry: 22 },
   ]);
+  for (const glow of ambientGlows) expect(glow.cy + glow.ry).toBeLessThanOrEqual(30);
   for (const mode of ['dark', 'light'] as const) {
     const theme = createTheme(mode, 'aurora');
     expect(theme.visual.ambientFade).toBe(0.7);

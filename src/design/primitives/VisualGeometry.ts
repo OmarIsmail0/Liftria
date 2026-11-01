@@ -1,9 +1,9 @@
 /** Geometry shared with SVG primitives; these helpers are platform-free and unit-testable. */
+/** Two glows behind the top of the screen only (owner, 2026-11-01: the four full-screen glows
+ * read as busy). Content below the header sits on the plain base color. */
 export const ambientGlows = [
-  { key: 'train', cx: 12, cy: 6, rx: 55, ry: 32 },
-  { key: 'hiku', cx: 98, cy: 32, rx: 60, ry: 34 },
-  { key: 'health', cx: 2, cy: 72, rx: 60, ry: 34 },
-  { key: 'eat', cx: 92, cy: 96, rx: 55, ry: 30 },
+  { key: 'train', cx: 8, cy: -2, rx: 62, ry: 24 },
+  { key: 'hiku', cx: 96, cy: 6, rx: 56, ry: 22 },
 ] as const;
 
 export const cardRimStops = [0, 0.3, 0.55, 1] as const;
