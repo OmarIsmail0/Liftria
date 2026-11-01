@@ -2511,5 +2511,10 @@ export const en = {
   "train.copyName": "{name} copy",
   "train.starterRoutines": "Starter routines",
   "train.moreExercises": "+{count}",
+  "workout.minus15": "−15",
+  "workout.plus15": "+15",
+  "workout.skip": "Skip",
+  "workout.removeConfirm": "Remove this exercise and its logged sets?",
+  "workout.removeKeep": "Keep exercise",
 } as const;
 export type TranslationKey = keyof typeof en;

@@ -31,9 +31,9 @@ const MUSCLE_FILTER_GROUP: Record<Exclude<MuscleFilter, 'all'>, readonly Muscle[
 export function equipmentFilterOf(equipment: string | null): Exclude<EquipmentFilter, 'any'> {
   const key = equipment?.trim().toLowerCase() ?? '';
   if (!key) return 'bodyweight';
-  for (const [group, values] of Object.entries(NAMED_EQUIPMENT) as Array<
-    [Exclude<EquipmentFilter, 'any' | 'other'>, readonly string[]]
-  >) {
+  for (const [group, values] of Object.entries(NAMED_EQUIPMENT) as [
+    Exclude<EquipmentFilter, 'any' | 'other'>, readonly string[],
+  ][]) {
     if (values.includes(key)) return group;
   }
   return 'other';

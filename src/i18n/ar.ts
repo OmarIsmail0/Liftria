@@ -2512,4 +2512,9 @@ export const ar: Record<TranslationKey, string> = {
   "train.copyName": "نسخة من {name}",
   "train.starterRoutines": "روتينات جاهزة",
   "train.moreExercises": "+{count}",
+  "workout.minus15": "−15",
+  "workout.plus15": "+15",
+  "workout.skip": "تخطٍّ",
+  "workout.removeConfirm": "حذف هذا التمرين ومجموعاته المسجّلة؟",
+  "workout.removeKeep": "الإبقاء على التمرين",
 };

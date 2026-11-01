@@ -186,7 +186,7 @@ export function buildSetRows(input: {
   marks: Readonly<Record<string, SetMark>>;
   hidden?: ReadonlySet<string>;
 }): PlannedRow[] {
-  const sides: Array<'L' | 'R' | null> = input.unilateral ? ['L', 'R'] : [null];
+  const sides: ('L' | 'R' | null)[] = input.unilateral ? ['L', 'R'] : [null];
   const planned = Math.max(0, input.targetSets) + Math.max(0, input.extraRows);
   const positions = new Set<number>();
   for (let position = 0; position < planned; position += 1) positions.add(position);
