@@ -4,9 +4,10 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvide
 import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { bundledFonts } from '../src/design/fonts';
-import { LanguageProvider } from '../src/i18n/LanguageProvider';
+import { LanguageProvider, useLanguage } from '../src/i18n/LanguageProvider';
 import { ThemeProvider, useTheme } from '../src/design/ThemeProvider';
-import { subscribeRestNotificationResponse } from '../src/features/train/restAlerts';
+import { handleNotificationOpen, subscribeRestNotificationResponse } from '../src/features/train/restAlerts';
+import { useWorkoutNotificationSync } from '../src/features/train/workoutNotification';
 import { readWorkout } from '../src/features/train/workoutData';
 import * as Notifications from 'expo-notifications';
 
@@ -15,6 +16,8 @@ void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { ready, theme } = useTheme();
+  const { language } = useLanguage();
+  useWorkoutNotificationSync(language);
   useEffect(()=>{
     if(!ready||!fontsLoaded)return;
     const openSession=(sessionId:string)=>{
@@ -27,8 +30,9 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
     // Cold starts can deliver the response before the router or listener has mounted.
     void Notifications.getLastNotificationResponseAsync().then(response=>{
       const data=response?.notification.request.content.data;
-      if(data?.kind==='liftria-rest'&&typeof data.sessionId==='string'){
-        openSession(data.sessionId);
+      const kind=data&&typeof data==='object'?(data as Record<string,unknown>).kind:undefined;
+      if(response&&(kind==='liftria-rest'||kind==='liftria-workout')){
+        void handleNotificationOpen(response,openSession);
         void Notifications.clearLastNotificationResponseAsync();
       }
     }).catch(()=>{});
