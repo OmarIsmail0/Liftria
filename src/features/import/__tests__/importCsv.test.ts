@@ -1,4 +1,6 @@
-import { ImportParseError, readCsv, parseImportCsv, sha256, fromImportWeight, csvFileTypeError } from '../importCsv';
+import { ImportParseError, readCsv, parseImportCsv, sha256, fromImportWeight, csvFileTypeError, detectImportSource, importFailureText } from '../importCsv';
+const {readFileSync}=jest.requireActual('fs') as {readFileSync:(file:string,encoding:'utf8')=>string};
+const {join}=jest.requireActual('path') as {join:(...parts:string[])=>string};
 test('SHA-256 UTF-8 deterministic vectors; no Web Crypto dependency',()=>{
  expect(sha256('')).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
  expect(sha256('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
@@ -153,4 +155,69 @@ test('file type guard rejects XLSX copies and explains how to export a real Hevy
  expect(csvFileTypeError('export.XLSX','csv')).toContain('CSV files only');
  expect(csvFileTypeError('export.csv','hevy')).toBeNull();
  expect(csvFileTypeError('EXPORT.CSV','hevy')).toBeNull();
+ expect(csvFileTypeError('photo.jpg','hevy','en','image/jpeg')).toContain('without opening it in Excel');
+ expect(csvFileTypeError('document:1234','hevy','en','application/octet-stream')).toBeNull();
+ expect(csvFileTypeError('Hevy export','hevy','en','text/csv')).toBeNull();
+ expect(csvFileTypeError('','csv','en','text/plain')).toBeNull();
+});
+
+/** Synthetic Hevy export in the current 14-column shape. Not a real person's file. */
+test('current Hevy export: quoted commas, a note line break, named dates and set types',()=>{
+ const raw=readFileSync(join(process.cwd(),'src/features/import/__tests__/fixtures/hevy-current.csv'),'utf8');
+ expect(detectImportSource(readCsv(raw).columns)).toBe('hevy');
+ const result=parseImportCsv('hevy','document:1234',raw);
+ expect(result.columns).toEqual([
+  'title','start_time','end_time','description','exercise_title','superset_id','exercise_notes',
+  'set_index','set_type','weight_kg','reps','distance_km','duration_seconds','rpe',
+ ]);
+ expect(result.needsUnit).toBe(false);
+ expect(result.nonStrengthRows).toBe(1);
+ expect(result.workouts).toHaveLength(1);
+ const workout=result.workouts[0]!;
+ expect(workout.title).toBe('Push A');
+ expect(workout.localDay).toBe('2026-10-31');
+ expect(new Date(workout.startedAt).getHours()).toBe(18);
+ expect(new Date(workout.startedAt).getMinutes()).toBe(2);
+ expect(new Date(workout.endedAt).getHours()).toBe(19);
+ expect(workout.sets.map(set=>set.kind)).toEqual(['warm-up','working','working','working']);
+ expect(workout.sets.map(set=>set.position)).toEqual([0,1,2,3]);
+ expect(workout.sets.map(set=>[set.weight,set.reps])).toEqual([[20,12],[60,8],[55,6],[40,10]]);
+ expect(workout.sets[0]?.notes).toBe('bar path, slow\neccentric');
+ expect(workout.sets.every(set=>set.exercise==='Bench Press')).toBe(true);
+});
+
+test('a no-break space in a Hevy date and optional seconds still use local wall time',()=>{
+ const raw='title,start_time,exercise_title,weight_kg,reps\n'+
+  'Upper,"31 Oct 2026,\u00A018:02:05",Bench,60,8';
+ const result=parseImportCsv('hevy','nbsp.csv',raw);
+ expect(result.workouts[0]?.localDay).toBe('2026-10-31');
+ expect(new Date(result.workouts[0]!.startedAt).getMinutes()).toBe(2);
+ expect(new Date(result.workouts[0]!.startedAt).getSeconds()).toBe(5);
+});
+
+test('a spreadsheet or UTF-16 file is a binary failure, not a generic read error',()=>{
+ expect(()=>parseImportCsv('hevy','document:1234','PK\u0003\u0004fake')).toThrow('binary export');
+ try{parseImportCsv('hevy','document:1234','t\u0000i\u0000');}catch(error){
+  expect(error).toBeInstanceOf(ImportParseError);
+  expect(importFailureText(error as ImportParseError,'en')).toContain('Excel');
+  expect(importFailureText(error as ImportParseError,'ar')).toContain('Excel');
+  expect(importFailureText(error as ImportParseError,'ar')).not.toContain('binary export');
+ }
+});
+
+test('parse failures name the row in Arabic and English',()=>{
+ expect(()=>parseImportCsv('hevy','bad.csv','title,start_time,exercise_title,weight_kg,reps\n'+
+  'Upper,"31 Feb 2026, 07:34",Bench,60,8')).toThrow('Invalid workout date');
+ try{parseImportCsv('csv','bad.csv','date,exercise,weight,reps\n2026-10-20,Bench,abc,8');}
+ catch(error){
+  const parsed=error as ImportParseError;
+  expect(importFailureText(parsed,'en')).toContain('Row 2');
+  expect(importFailureText(parsed,'ar')).toContain('2');
+ }
+});
+
+test('source detection follows the header, not the file name',()=>{
+ expect(detectImportSource(['Date','Workout Name','Exercise Name','Weight','Reps'])).toBe('strong');
+ expect(detectImportSource(['Date','Exercise','Weight (kgs)','Reps'])).toBe('fitnotes');
+ expect(detectImportSource(['date','exercise','weight_kg','reps'])).toBe('csv');
 });

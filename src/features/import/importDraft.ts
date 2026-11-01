@@ -1,7 +1,8 @@
 import type { ImportParseError, ParsedImport } from './importCsv';
 import type { ImportOutcome } from './importRepository';
 import type { ImportPlan } from './importPlanning';
-type Draft={parsed:ParsedImport|null;error:ImportParseError|null;source:string;fileName:string};
+type Draft={parsed:ParsedImport|null;error:ImportParseError|null;source:string;fileName:string;
+ cacheUri?:string|null};
 let draft:Draft|null=null;
 let pending:ImportPlan|null=null;
 let outcome:{ok:true;result:ImportOutcome}|{ok:false;reason:string}|null=null;

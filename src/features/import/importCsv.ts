@@ -1,5 +1,5 @@
 /** Offline CSV import. Column assumptions must be checked against actual app exports. */
-import { translate, type AppLanguage } from '../../i18n';
+import { pluralForm, translate, type AppLanguage, type TranslationKey } from '../../i18n';
 export type Importer='hevy'|'strong'|'fitnotes'|'csv';
 export type WeightUnit='kg'|'lb';
 export type ParsedSet={exercise:string;position:number;kind:'working'|'warm-up';
@@ -8,10 +8,15 @@ export type ParsedWorkout={key:string;title:string;startedAt:string;endedAt:stri
  localDay:string;dateOnly:boolean;sets:ParsedSet[]};
 export type ParsedImport={source:Importer;fileName:string;fileHash:string;columns:string[];
  workouts:ParsedWorkout[];ignored:number;nonStrengthRows:number;warmupMarked:boolean;needsUnit:boolean};
+export type ImportFailure='columns'|'row'|'set'|'date'|'ambiguous-date'|'end-time'|'unit'|
+ 'unit-conflict'|'empty'|'cardio'|'quote'|'binary'|'too-large';
 export class ImportParseError extends Error{
+ readonly failure:ImportFailure;
  constructor(public readonly code:'invalid'|'empty'|'too-large',message:string,
-  public readonly expected:string[]=[],public readonly found:string[]=[]){
+  public readonly expected:string[]=[],public readonly found:string[]=[],
+  failure?:ImportFailure,public readonly row:number|null=null,public readonly count:number|null=null){
   super(message);this.name='ImportParseError';
+  this.failure=failure??(code==='too-large'?'too-large':code==='empty'?'empty':'columns');
  }
 }
 export const MAX_CSV_BYTES=25*1024*1024;
@@ -78,7 +83,7 @@ export function readCsv(input:string):{columns:string[];rows:string[][]}{
    row=[];cell='';
   }else cell+=ch;
  }
- if(quoted)throw new ImportParseError('invalid','CSV has an unclosed quoted field.');
+ if(quoted)throw new ImportParseError('invalid','CSV has an unclosed quoted field.',[],[],'quote');
  row.push(cell);if(row.some(v=>v.trim()!==''))rows.push(row);
  const columns=(rows.shift()??[]).map(x=>x.trim());
  return {columns,rows};
@@ -91,11 +96,13 @@ const fields:Record<Importer,{date:string[];exercise:string[];weight:string[];re
 };
 export function expectedColumns(importer:Importer):string[]{const f=fields[importer];
  return [...f.date.slice(0,1),...f.exercise.slice(0,1),...f.weight.slice(0,1),...f.reps.slice(0,1)];}
-/** Parse dates without guessing between day/month and month/day. */
+/** Parse dates without guessing between day/month and month/day.
+ * Named months ("31 Oct 2026, 18:02") are the phone's local wall time. */
 function whenFrom(value:string):{iso:string;day:string;dateOnly:boolean}{
- const v=value.trim();if(!v)throw new Error('Missing workout date');
- const slash=/^(\d{1,2})[\\/.](\d{1,2})[\\/.](\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(v);
- const named=/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4}),?\s+(\d{1,2}):(\d{2})$/.exec(v);
+ const v=value.trim().replace(/[\u00A0\u202F\u2007\u2009]/g,' ').replace(/\s+/g,' ');
+ if(!v)throw new Error('Missing workout date');
+ const slash=/^(\d{1,2})[\\/.](\d{1,2})[\\/.](\d{4})(?: (\d{1,2}):(\d{2}))?$/.exec(v);
+ const named=/^(\d{1,2}) ([A-Za-z]{3,9}) (\d{4}),? (\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(v);
  const iso=/^(\d{4})-(\d{2})-(\d{2})(?:[T\s]|$)/.exec(v);
  const dateOnly=/^\d{4}-\d{2}-\d{2}$/.test(v)||
   (slash!==null&&slash[4]===undefined);
@@ -110,11 +117,11 @@ function whenFrom(value:string):{iso:string;day:string;dateOnly:boolean}{
    slash[5]?Number(slash[5]):0);
  }else if(named){
   const months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  const month=months.indexOf(named[2]!.toLowerCase())+1;
+  const month=months.indexOf(named[2]!.toLowerCase().slice(0,3))+1;
   if(!month)throw new Error('Invalid workout date: '+v);
   const year=Number(named[3]),day=Number(named[1]);
   expected={year,month,day};
-  date=new Date(year,month-1,day,Number(named[4]),Number(named[5]));
+  date=new Date(year,month-1,day,Number(named[4]),Number(named[5]),named[6]?Number(named[6]):0);
  }else if(dateOnly){
   const [year,month,day]=v.split('-').map(Number);
   expected={year:year!,month:month!,day:day!};
@@ -148,6 +155,9 @@ export function localDayFromIso(iso:string):string{
 }
 export function parseImportCsv(source:Importer,fileName:string,raw:string,language:AppLanguage='en'):ParsedImport{
  if(utf8Bytes(raw).length>MAX_CSV_BYTES)throw new ImportParseError('too-large','This file is too large to import.');
+ const body=raw.replace(/^\uFEFF/,'');
+ if(body.includes('\u0000')||body.startsWith('PK\u0003\u0004')||body.startsWith('\u00D0\u00CF\u0011\u00E0'))
+  throw new ImportParseError('invalid','This file looks like a spreadsheet or a binary export, not a CSV.',[],[],'binary');
  const {columns,rows}=readCsv(raw);
  const indexes=new Map(columns.map((name,i)=>[normalized(name),i]));
  const f=fields[source],col=(names:string[])=>names.map(x=>indexes.get(normalized(x))).find(x=>x!==undefined);
@@ -171,7 +181,7 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string,langua
   const row=rows[index]!;const v=(i:number|undefined)=>(i===undefined?'':row[i]??'').trim();
   const selectedWeight=weightColumns.find(column=>v(column)!=='')??wt;
   if(!v(dt)&&!v(ex)&&!v(re)&&!v(selectedWeight)){ignored++;continue;}
-  if(!v(dt)||!v(ex))throw new ImportParseError('invalid','Row '+(index+2)+' has no date or exercise.',expectedColumns(source),columns);
+  if(!v(dt)||!v(ex))throw new ImportParseError('invalid','Row '+(index+2)+' has no date or exercise.',expectedColumns(source),columns,'row',index+2);
   const reps=v(re);
   if(!reps&&(v(distance)||v(duration))){
    // Distance/timed cardio is not a strength set, even if set_type is "normal".
@@ -186,15 +196,15 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string,langua
   }
   const repCount=reps?Number(reps):0,weightString=v(selectedWeight).replace(/\s/g,'');
   const weight=weightString===''?0:Number(weightString.replace(',','.'));
-  if(!Number.isInteger(repCount)||repCount<0||repCount>500||
-    !Number.isFinite(weight)||weight<0)throw new ImportParseError('invalid','Invalid set on row '+(index+2)+'.',expectedColumns(source),columns);
+ if(!Number.isInteger(repCount)||repCount<0||repCount>500||
+   !Number.isFinite(weight)||weight<0)throw new ImportParseError('invalid','Invalid set on row '+(index+2)+'.',expectedColumns(source),columns,'set',index+2);
   let date:ReturnType<typeof whenFrom>;
   try{date=whenFrom(v(dt));}catch(reason){
    const ambiguity=reason instanceof Error&&reason.message.startsWith('Ambiguous workout date');
    throw new ImportParseError('invalid',ambiguity?
     reason.message+' Row '+(index+2)+'. Convert dates to unambiguous YYYY-MM-DD before importing.':
     'Invalid workout date on row '+(index+2)+'.',
-    expectedColumns(source),columns);
+    expectedColumns(source),columns,ambiguity?'ambiguous-date':'date',index+2);
   }
   const sessionTitle=v(title)||translate(language,'im1.importedWorkout');
   const key=date.iso+'|'+sessionTitle;
@@ -202,7 +212,7 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string,langua
   if(!workout){workout={key,title:sessionTitle,startedAt:date.iso,endedAt:date.iso,
     localDay:date.day,dateOnly:date.dateOnly,sets:[]};sessions.set(key,workout);}
   if(v(end)){
-   try{workout.endedAt=whenFrom(v(end)).iso;}catch{throw new ImportParseError('invalid','Invalid end time on row '+(index+2));}
+   try{workout.endedAt=whenFrom(v(end)).iso;}catch{throw new ImportParseError('invalid','Invalid end time on row '+(index+2),[],[],'end-time',index+2);}
   }
   const header=columns[selectedWeight!]!.toLowerCase();
   const normalizedHeader=normalized(header);
@@ -211,9 +221,9 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string,langua
   const unitValue=v(unitCol).toLowerCase();
   const declared:WeightUnit|null=/^(kg|kgs|kilograms)$/.test(unitValue)?'kg':
     /^(lb|lbs|pounds)$/.test(unitValue)?'lb':null;
-  if(unitValue&&!declared)throw new ImportParseError('invalid','Unknown weight unit on row '+(index+2));
+  if(unitValue&&!declared)throw new ImportParseError('invalid','Unknown weight unit on row '+(index+2),[],[],'unit',index+2);
   if(explicit&&declared&&explicit!==declared)
-    throw new ImportParseError('invalid','Conflicting weight units on row '+(index+2));
+    throw new ImportParseError('invalid','Conflicting weight units on row '+(index+2),[],[],'unit-conflict',index+2);
   const unit:WeightUnit|null=explicit??declared;
   if(!unit)needsUnit=true;
   const kind= /warm.?up|^w$|warmup/i.test(setMarker)?'warm-up':'working';
@@ -227,14 +237,55 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string,langua
  const workouts=[...sessions.values()].sort((a,b)=>a.startedAt.localeCompare(b.startedAt));
  if(!workouts.length)throw new ImportParseError('empty',
   nonStrengthRows?'No strength workouts found. '+nonStrengthRows+' cardio/timed rows without reps cannot be imported yet.':'No workouts found in this file.',
-  expectedColumns(source),columns);
+  expectedColumns(source),columns,nonStrengthRows?'cardio':'empty',null,nonStrengthRows||null);
  return {source,fileName,fileHash:sha256(raw.replace(/^\uFEFF/,'')),columns,workouts,ignored,
   nonStrengthRows,warmupMarked:marked,needsUnit};
 }
-/** Reject spreadsheet copies before trying to decode them as CSV. */
-export function csvFileTypeError(fileName:string,source:Importer,language:AppLanguage='en'):string|null{
- if(/\.csv$/i.test(fileName.trim()))return null;
+const SPREADSHEET_EXT=/\.(xlsx|xlsm|xlsb|xls|numbers|ods|pdf|zip|jpe?g|png|gif|heic|webp|mp4|mov)$/i;
+const CSV_EXT=/\.csv$/i;
+const CSV_MIME=/^(text\/csv|text\/comma-separated-values|application\/csv|text\/plain|application\/octet-stream|text\/tab-separated-values)$/;
+const BAD_MIME=/^(image|video|audio)\//;
+/** Reject spreadsheets and other non-CSV files. A missing extension, a content-provider
+ * name such as "document:1234", or a CSV MIME type is read and checked by the parser. */
+export function csvFileTypeError(fileName:string,source:Importer,language:AppLanguage='en',mimeType?:string|null):string|null{
+ const name=(fileName??'').trim();
+ const mime=(mimeType??'').split(';')[0]!.trim().toLowerCase();
+ if(CSV_EXT.test(name))return null;
+ if(SPREADSHEET_EXT.test(name)||BAD_MIME.test(mime)||/spreadsheet|opendocument/.test(mime)||mime==='application/pdf'||mime==='application/vnd.ms-excel')
+  return translate(language,source==='hevy'?'im1.wrongFileHevy':'im1.wrongFile');
+ if(CSV_MIME.test(mime))return null;
+ if(!name||!name.includes('.')||/[:/]/.test(name)||/\.(txt|text|tsv)$/i.test(name))return null;
  return translate(language,source==='hevy'?'im1.wrongFileHevy':'im1.wrongFile');
+}
+/** Hevy, Strong and FitNotes are recognized from the header. Anything else stays generic CSV. */
+export function detectImportSource(columns:string[]):Importer{
+ const names=new Set(columns.map(normalized));
+ if(names.has('exercisetitle')&&(names.has('starttime')||names.has('endtime')))return 'hevy';
+ if(names.has('exercisename'))return 'strong';
+ if(names.has('exercise')&&names.has('date')&&(names.has('weightkgs')||names.has('weightlbs')))return 'fitnotes';
+ return 'csv';
+}
+const FAILURE_KEY:Record<ImportFailure,'columns'|'row'|'set'|'date'|'ambiguousDate'|'endTime'|'unit'|'unitConflict'|'empty'|'quote'|'binary'>={
+ columns:'columns',row:'row',set:'set',date:'date','ambiguous-date':'ambiguousDate','end-time':'endTime',
+ unit:'unit','unit-conflict':'unitConflict',empty:'empty',quote:'quote',binary:'binary',
+ cardio:'empty','too-large':'empty',
+};
+/** The sentence shown for a failed parse, in the app language. */
+export function importFailureText(error:ImportParseError,language:AppLanguage):string{
+ if(error.failure==='too-large')return translate(language,'im1.tooLarge');
+ if(error.failure==='cardio'){
+  const count=error.count??0;
+  return translate(language,('im2.failure.cardio.'+pluralForm(language,count)) as TranslationKey,{count});
+ }
+ const key=FAILURE_KEY[error.failure];
+ return translate(language,('im2.failure.'+key) as TranslationKey,{row:error.row??0});
+}
+/** A file that could not be opened, as distinct from a CSV the parser rejected. */
+export function readFailureMessage(reason:unknown,language:AppLanguage):string{
+ const raw=reason instanceof Error?reason.message:typeof reason==='string'?reason:'';
+ if(/security|permission|not allowed|eacces|denied/i.test(raw))return translate(language,'im1.readDenied');
+ if(/not found|enoent|no such|inputstream|was null/i.test(raw))return translate(language,'im1.readMissing');
+ return translate(language,'im1.readFailed');
 }
 export function fromImportWeight(value:number,unit:WeightUnit):number{
  return unit==='kg'?value:value/2.2046226218;
