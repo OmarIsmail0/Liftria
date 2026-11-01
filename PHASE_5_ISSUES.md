@@ -269,6 +269,34 @@ The owner installed the build from PR #86 on their phone and listed problems. Po
    - **Rest timer bugs (owner point 6: "buggy and looks weird").** Audit `src/features/train/restClock.ts`, `restAlerts.ts`, `RestOrb.tsx` and the active-workout rest UI for: time drifting or jumping after the app goes to the background and comes back; +15/−15/skip racing with the scheduled notification (the notification must move or cancel with every change); the timer surviving a set undo, an edit or a superset round; a stale timer after finishing the workout; double notifications; the orb's ring and the number disagreeing. Base everything on the stored `rest_deadline` and wall-clock time, never on an interval counter. Add tests for each case with fake timers. Leave the rest timer's *look* to the redesign; only fix what is broken (for example text overlapping or clipping).
    - Strings in English and Arabic. Don't touch `src/design/**`, import, the exercise lists, Health files, or workflows.
 
+33. **PR AS: `Phase 5 / Workout redesign (Hevy style)`** (builder: **Cursor**, Grok 4.7; **starts after PR AQ and PR AR merge**, from `main`)
+   - Owner, 2026-11-01: "I like Hevy's design, we can reuse it or improve it"; Liftria orange stays the accent. Claude's proposal (approved): the whole workout is one scrolling list with a compact set table per exercise, and the rest timer is a slim bar instead of the orb. Don't copy Hevy's assets, icons or text; the layout pattern is common to Hevy, Strong and others.
+   - **Active workout (`app/(tabs)/train/active.tsx` and its components):**
+     - **Top bar:** workout name (editable), elapsed time, sets logged, total volume (weight unit through `weightUnitLabel`), and a Finish button.
+     - **One list of every exercise** (replace the chip tabs and the one-exercise view). Each exercise block has a thumbnail and name (tapping them opens the exercise detail from PR AQ), a ⋯ menu (replace, superset with…, note, reorder, rest time, remove), an optional note line, and the rest time ("Rest 2:00", tap to change; remembered per exercise).
+     - **Set table:** columns SET · PREVIOUS · weight · REPS · ✓.
+       - **SET:** shows 1, 2, 3, or W, D, F for warm-up, drop and failure sets. Tap it to change the type.
+       - **PREVIOUS:** the matching set from the last session of this exercise, as "80 × 8", or "—".
+       - **Weight and REPS:** compact numeric inputs (`keyboardType="decimal-pad"` / `number-pad`, next-field focus). Suggested values show as **placeholder** text in those inputs and are never saved until ✓, keeping the existing rule. RPE/RIR stays a column only when the setting is on.
+       - **✓:** logs the set (placeholders become the values when the fields are empty). The row gets the train tint and a check. Tapping ✓ again un-logs it with the existing undo.
+       - **Add set:** "+ Add set" under the table. Swipe a row (or long-press → Delete) to delete a set.
+     - **Supersets:** a coloured bar on the left of linked exercises, with the existing smart-scroll to the next exercise.
+     - Bottom of the list: "+ Add exercise" (opens the multi-select picker) and "Discard workout".
+     - Remove the large fixed stepper panel and the "Not logged · suggested values are not saved" lines. Put one short line at the top of a new workout instead: "Grey numbers are suggestions — tap ✓ to log."
+   - **Rest timer bar:** after ✓, a bar slides up above the tab bar: "Rest 1:28", a progress line, −15, +15, Skip. The workout stays scrollable behind it. It uses PR AR's clock and notification logic and stays in sync with the notification. When rest ends: a short haptic and the bar shows "Rest over" for 3 s. Remove the rest orb screen from the workout, and keep `RestOrb` only if something else uses it.
+   - **Exercise picker (`pick.tsx`):** multi-select with checkmarks; each row shows a thumbnail, name and main muscle; muscle and equipment filter chips; a sticky "Add N exercises" button; recent exercises first. Keep PR AQ's performance work.
+   - **Template builder (`template.tsx` / `create.tsx`):** the same exercise blocks and set table (sets × weight × reps targets, no ✓), so a routine looks like the workout it becomes.
+   - **Train home (`TrainHome.tsx`):**
+     - **Top:** "Start empty workout", then **My routines** as cards. Each card shows the name, the first exercises ("Bench, OHP, Rows +3"), last done, and a Start button. Long-press or ⋯ offers edit, duplicate and delete.
+     - **Lower down:** the starter templates go into an "Explore" section, and import becomes one small row, "Switching from another app?".
+   - **Rules:**
+     - Every number goes through the existing formatters (Arabic digits rules, `bidiIsolate`, `weightUnitLabel`). RTL mirrors the table (SET on the right).
+     - Screen readers: each row is announced as "Set 2, previous 80 kilograms times 8, 80 kilograms, 8 reps, not logged", and ✓ is a button with a label. Touch targets stay at least 44 dp.
+     - Keep the existing data model, suggestions and undo. This is a UI change. No schema change unless a per-exercise rest time needs one (an additive migration, covered by backup and Delete all).
+   - **Tests:** the set table maps placeholders to values only on ✓; previous-set lookup; set-type cycling; rest bar timing with fake timers; RTL column order; the accessibility label format; existing workout tests stay green.
+   - **Screenshots:** update `dev/demo-workout`, `dev/demo-superset` and the Train home shots in English, Arabic, light and dark. Add `dev/demo-workout?auto=1&state=rest` showing the rest bar. Claude adds any new routes to the screenshot list.
+   - Don't touch `src/design/**` tokens (Claude's PR #88 sets the dark-mode values; use the existing primitives and tokens), Health files, import, or workflows.
+
 **Not in Phase 5:** barcode scanning (Claude first measures how many Egyptian products Open Food Facts has), Wear OS (wearable gate), social features, ads.
 
 
