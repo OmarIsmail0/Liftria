@@ -34,6 +34,34 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     icon: { light: './assets/brand/icon-light.png', dark: './assets/brand/icon-dark.png' },
     bundleIdentifier: 'com.liftria.app',
     supportsTablet: false,
+    // Files and the share sheet can open a CSV in Liftria. Rank is Alternate so we
+    // don't become the default app for every text file.
+    infoPlist: {
+      LSSupportsOpeningDocumentsInPlace: true,
+      CFBundleDocumentTypes: [
+        {
+          CFBundleTypeName: 'Comma Separated Values',
+          CFBundleTypeRole: 'Viewer',
+          LSHandlerRank: 'Alternate',
+          LSItemContentTypes: [
+            'public.comma-separated-values-text',
+            'public.delimited-values-text',
+            'public.plain-text',
+          ],
+        },
+      ],
+      UTImportedTypeDeclarations: [
+        {
+          UTTypeIdentifier: 'public.comma-separated-values-text',
+          UTTypeDescription: 'Comma Separated Values',
+          UTTypeConformsTo: ['public.delimited-values-text', 'public.plain-text'],
+          UTTypeTagSpecification: {
+            'public.filename-extension': ['csv'],
+            'public.mime-type': ['text/csv', 'text/comma-separated-values'],
+          },
+        },
+      ],
+    },
   },
   // iPhone system texts (app name under the icon, permission prompts) in English and Arabic.
   // Under "ios" in each file, so Android doesn't get untranslated-default strings (lint error).
@@ -58,6 +86,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.READ_EXTERNAL_STORAGE',
       'android.permission.WRITE_EXTERNAL_STORAGE',
     ],
+    // Open a CSV from Files or Downloads. Sharing into the app (ACTION_SEND) is the expo-sharing plugin.
+    intentFilters: [
+      {
+        action: 'VIEW',
+        category: ['DEFAULT'],
+        data: [
+          { mimeType: 'text/csv' },
+          { mimeType: 'text/comma-separated-values' },
+          { mimeType: 'text/plain' },
+          { mimeType: 'application/octet-stream' },
+        ],
+      },
+    ],
   },
   plugins: [
     'expo-router',
@@ -81,6 +122,27 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-secure-store',
     // RTL from the first launch on an Arabic phone (otherwise only after a restart).
     './plugins/withArabicFirstLaunchRtl',
+    // Share sheet: text/csv, text/comma-separated-values, text/plain, application/octet-stream.
+    // iOS uses the document types above, not a share extension.
+    ['expo-sharing', {
+      android: {
+        enabled: true,
+        singleShareMimeTypes: [
+          'text/csv',
+          'text/comma-separated-values',
+          'text/plain',
+          'application/octet-stream',
+        ],
+        multipleShareMimeTypes: [
+          'text/csv',
+          'text/comma-separated-values',
+          'text/plain',
+          'application/octet-stream',
+        ],
+      },
+    }],
+    // text/plain file shares carry EXTRA_STREAM, which expo-sharing would otherwise ignore.
+    './plugins/withIncomingCsv',
     'react-native-health-connect',
     // Read-only Apple Health. `NSHealthUpdateUsageDescription: false` omits the write
     // prompt (the plugin adds one by default). `background: false` omits background delivery.

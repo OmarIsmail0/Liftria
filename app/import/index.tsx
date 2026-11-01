@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
-import { parseImportCsv, csvFileTypeError, ImportParseError, MAX_CSV_BYTES, type Importer } from '../../src/features/import/importCsv';
+import { parseImportCsv, csvFileTypeError, ImportParseError, MAX_CSV_BYTES, readFailureMessage, type Importer } from '../../src/features/import/importCsv';
 import { setImportDraft } from '../../src/features/import/importDraft';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 
@@ -26,7 +26,8 @@ export default function ImportStart(){
    const result=await DocumentPicker.getDocumentAsync({copyToCacheDirectory:true,multiple:false,type:'*/*'});
    if(result.canceled||!result.assets[0])return;
    const asset=result.assets[0],file=new File(asset.uri);
-   const wrongType=csvFileTypeError(asset.name,source,language);
+   const fileName=asset.name??'';
+   const wrongType=csvFileTypeError(fileName,source,language,asset.mimeType);
    if(wrongType){
     try{await file.delete();}catch{/* Picker cache cleanup is best effort. */}
     setError(wrongType);return;
@@ -35,19 +36,21 @@ export default function ImportStart(){
    try{
     tooLarge=(asset.size??file.size??0)>MAX_CSV_BYTES;
     if(!tooLarge)text=await file.text();
+   }catch(reason){
+    setError(readFailureMessage(reason,language));return;
    }finally{try{await file.delete();}catch{/* Source picker cache cleanup is best effort. */}}
    try{
     if(tooLarge)throw new ImportParseError('too-large',t('im1.tooLarge'));
-    const parsed=parseImportCsv(source,asset.name,text,language);
-    setImportDraft({parsed,error:null,source,fileName:asset.name});
+    const parsed=parseImportCsv(source,fileName||'import.csv',text,language);
+    setImportDraft({parsed,error:null,source,fileName:fileName||'import.csv'});
    }catch(reason){
     if(reason instanceof ImportParseError)
-     setImportDraft({parsed:null,error:reason,source,fileName:asset.name});
+     setImportDraft({parsed:null,error:reason,source,fileName:fileName||'import.csv'});
     else throw reason;
    }
    router.push('/import/preview');
-  }catch{
-   setError(t('im1.readFailed'));
+  }catch(reason){
+   setError(readFailureMessage(reason,language));
   }finally{setReading(false);}
  };
  return <Screen>
@@ -66,6 +69,7 @@ export default function ImportStart(){
   </Card>
   <View style={{gap:12}}>
    {error&&<Typography>{error}</Typography>}
+   <Typography tone="secondary" size="small">{t('im1.shareHint')}</Typography>
    <Button label={reading?t('im1.reading'):t('im1.choose')} disabled={reading}
     size="xl" variant="train" fullWidth onPress={()=>void pick()}/>
   </View>

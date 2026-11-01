@@ -1,4 +1,4 @@
-import { TEMPORARY_FILE_FOLDERS, deleteEverythingOnPhone, exportFileName, isExportFileName, type DeletionOps } from '../storage';
+import { TEMPORARY_FILE_FOLDERS, deleteEverythingOnPhone, exportFileName, isCachedFileUri, isExportFileName, safeImportFileName, type DeletionOps } from '../storage';
 import { BACKUP_TABLES } from '../backup';
 import { DB_MIGRATIONS, DB_NAME, dbOperation, deleteLocalDatabase, initializeDatabase } from '../../../services/database';
 import { deleteKey, saveKey } from '../../../services/secure-storage';
@@ -49,6 +49,7 @@ const LEFTOVER_FILES = [
   'liftria-workouts-2026-10-28.csv',
   'liftria-diary-2026-10-28.csv',
   'liftria-measurements-2026-10-28.csv',
+  'IncomingImport/shared.csv',
 ];
 
 /** Every table holds at least one row, the Anthropic key is saved, a Hiku photo is kept,
@@ -110,6 +111,15 @@ test('the guard notices a table, the key or a file that Delete all leaves behind
     'water_logs: 1 row(s)', 'SecureStore liftria.anthropic.api-key', 'file ImageManipulator/7d4e8a31.jpg',
   ]);
   expect(await deleteKey()).toEqual({ status: 'missing' });
+});
+
+test('a shared CSV in the cache is ours, and the original file is not', () => {
+  expect(isCachedFileUri('file:///cache/IncomingImport/shared.csv')).toBe(true);
+  expect(isCachedFileUri('file:///cache')).toBe(false);
+  expect(isCachedFileUri('content://com.android.providers.downloads.documents/document/1234')).toBe(false);
+  expect(isCachedFileUri('file:///var/mobile/Containers/Data/workout.csv')).toBe(false);
+  expect(safeImportFileName('document:1234')).toBe('document_1234.csv');
+  expect(safeImportFileName('Hevy.csv')).toBe('Hevy.csv');
 });
 
 test('export copies are named the way Delete all recognises them', () => {
