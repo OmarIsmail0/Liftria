@@ -14,6 +14,7 @@ import { storeUndo } from '../../../src/features/train/historyUndo';
 import { readRecords } from '../../../src/services/database/gymRepositories';
 import { estimatedOneRepMax, type ExerciseRecord } from '../../../src/services/database/gymMath';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
+import { historySetSpoken, historySetTitle, setMarkFromStored } from '../../../src/features/train/setTable';
 export default function SessionDetail(){
  const {t,language}=useLanguage();
  const {id}=useLocalSearchParams<{id:string}>();
@@ -34,7 +35,7 @@ export default function SessionDetail(){
   if(result.ok&&result.value){
    setData(result.value);setTitle(result.value.session.title);setNotes(result.value.session.notes??'');
    setDraft(result.value.exercises.flatMap(e=>e.sets.map(s=>({
-    id:s.id,sessionExerciseId:s.sessionExerciseId,position:s.position,kind:s.kind,side:s.side,
+    id:s.id,sessionExerciseId:s.sessionExerciseId,position:s.position,kind:s.kind,mark:s.mark,side:s.side,
     weight:s.weight,reps:s.reps,rpe:s.rpe??null,rir:s.rir??null,
    }))));
   }else setError(t('sessionDetail.loadError'));
@@ -94,7 +95,7 @@ export default function SessionDetail(){
    {editing?draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{
     const i=draft.indexOf(s);
     return <View key={s.id??e.id+':'+i} style={{gap:8,paddingBottom:12}}>
-     <Typography tone="secondary" size="small">{s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}{s.side?' '+sideLabel(s.side,language):''}</Typography>
+     <Typography tone="secondary" size="small">{historySetTitle(language,s)}{s.side?' '+sideLabel(s.side,language):''}</Typography>
      <GymStepper label={t('sessionDetail.weight')} value={fromKg(s.weight,unit)} unit={weightUnitLabel(language,unit)}
        step={fromKg(workoutWeightStep(e.type,unit,smallPlates),unit)}
        onChange={v=>change(i,{weight:toKg(v,unit)})}/>
@@ -111,16 +112,19 @@ export default function SessionDetail(){
       (r.maxRepsSessionId===id&&s.reps===r.maxReps)||
       (r.bestEstimatedOneRepMaxSessionId===id&&r.bestEstimatedOneRepMax!==null&&
         estimatedOneRepMax(e.type,s)===r.bestEstimatedOneRepMax));
-    return <ListRow key={s.id} title={s.kind==='warm-up'?t('sessionDetail.warmup'):t('sessionDetail.set',{count:s.position+1})}
-      detail={displayWeight(s.weight,e.type,unit,language)+' × '+s.reps+(s.side?' · '+sideLabel(s.side,language):'')+
-       (s.rpe!=null?' · '+t('effort.rpeValue',{value:s.rpe}):'')+(s.rir!=null?' · '+t('effort.rirValue',{value:s.rir}):'')}
+    const title=historySetTitle(language,s);
+    const detail=displayWeight(s.weight,e.type,unit,language)+' × '+s.reps+(s.side?' · '+sideLabel(s.side,language):'')+
+     (s.rpe!=null?' · '+t('effort.rpeValue',{value:s.rpe}):'')+(s.rir!=null?' · '+t('effort.rirValue',{value:s.rir}):'');
+    const shown=setMarkFromStored(s.kind,s.mark);
+    return <ListRow key={s.id} title={title} detail={detail}
+      accessibilityLabel={shown==='drop'||shown==='failure'?historySetSpoken(language,s)+'. '+detail:undefined}
       suffix={pr?<Typography bold size="small" tone="secondary">{t('sessionDetail.record')}</Typography>:undefined}/>;
    })}
    {editing&&<Button label={t('sessionDetail.addSet')} variant="secondary" onPress={()=>{
     const used=draft.filter(s=>s.sessionExerciseId===e.id);
     const next=Math.max(-1,...used.filter(s=>s.kind==='working').map(s=>s.position))+1;
     setDraft(old=>[...old,...(e.unilateral?(['L','R'] as const):([null] as const)).map(side=>({
-     sessionExerciseId:e.id,position:next,side,weight:0,reps:1,kind:'working' as const,
+     sessionExerciseId:e.id,position:next,side,weight:0,reps:1,kind:'working' as const,mark:null,
     }))]);
    }}/>}
   </Card>)}

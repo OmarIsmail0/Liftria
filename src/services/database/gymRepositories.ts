@@ -237,6 +237,28 @@ export async function recentExerciseIds(limit=8): Promise<DbResult<string[]>> {
       'GROUP BY se.exercise_id ORDER BY MAX(s.started_at) DESC LIMIT ?',
     [limit])).map(row=>row.exercise_id));
 }
+export type ExerciseHistorySet = {
+  sessionId: string; position: number; kind: 'working' | 'warm-up';
+  mark: 'drop' | 'failure' | null; side: 'L' | 'R' | null; weight: number; reps: number;
+};
+/** Finished sets for one exercise, newest session first, so History and the exercise screen can show D and F. */
+export async function exerciseSessionSets(exerciseId: string): Promise<DbResult<ExerciseHistorySet[]>> {
+  return dbOperation(async db => (await db.getAllAsync<{
+    session_id: string; position: number; kind: 'working' | 'warm-up'; mark: string | null;
+    side: 'L' | 'R' | null; weight: number; reps: number;
+  }>(
+    'SELECT s.id AS session_id, st.position, st.kind, st.mark, st.side, st.weight, st.reps '+
+    'FROM sets st JOIN session_exercises se ON se.id=st.session_exercise_id '+
+    'JOIN sessions s ON s.id=se.session_id '+
+    "WHERE se.exercise_id=? AND s.state='finished' AND st.reps>0 "+
+    'ORDER BY s.started_at DESC, st.position, st.side',
+    [exerciseId],
+  )).map(row => ({
+    sessionId: row.session_id, position: row.position, kind: row.kind,
+    mark: row.kind === 'working' && (row.mark === 'drop' || row.mark === 'failure') ? row.mark : null,
+    side: row.side, weight: row.weight, reps: row.reps,
+  })));
+}
 export async function exerciseSessions(exerciseId:string,limit=15): Promise<DbResult<Session[]>> {
   return dbOperation(async db=>(await db.getAllAsync<SessionRow>(
     'SELECT DISTINCT s.* FROM sessions s JOIN session_exercises se ON se.session_id=s.id '+
