@@ -20,7 +20,7 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 // New application id com.liftria.app gets a fresh on-device database. Do not rename
 // databases after shipping to friends without an explicit migration/copy strategy.
 export const DB_NAME = 'liftria.db';
-export const DB_SCHEMA_VERSION = 9;
+export const DB_SCHEMA_VERSION = 10;
 
 /** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
 export const DB_MIGRATIONS = [
@@ -249,6 +249,10 @@ export const DB_MIGRATIONS = [
   { version: 9, sql: `
     ALTER TABLE session_exercises ADD COLUMN rest_sec INTEGER
       CHECK(rest_sec IS NULL OR (rest_sec>=0 AND rest_sec<=3600));
+  ` },
+  { version: 10, sql: `
+    ALTER TABLE sets ADD COLUMN mark TEXT
+      CHECK(mark IN ('drop','failure') OR mark IS NULL);
   ` },
 ] as const;
 
