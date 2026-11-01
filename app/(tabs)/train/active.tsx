@@ -2,14 +2,15 @@ import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, AppState, Linking, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
+import { AccessibilityInfo, AppState, Linking, Platform, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Field, Header, ListRow, Screen, SegmentedControl, Sheet, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { GymStepper } from '../../../src/features/train/GymStepper';
-import { askRestPermission, cancelSessionRestAlerts, scheduleRestOver } from '../../../src/features/train/restAlerts';
-import { displayRest, elapsedLabel, restAnnouncement, restAt, shiftRest } from '../../../src/features/train/restClock';
+import { askRestPermission, cancelSessionRestAlerts, prepareRestAlerts, runNotificationTurn } from '../../../src/features/train/restAlerts';
+import { elapsedLabel, nextClockDelay, restAnnouncement, restVisual, selectCurrentRest, shiftRest } from '../../../src/features/train/restClock';
+import { alignWorkoutNotifications, subscribeWorkoutChanges, suppressWorkoutNotificationPrompt, syncWorkoutNotifications } from '../../../src/features/train/workoutNotification';
 import { editLoggedSet, logWorkoutSet, readWorkout, readInProgressWorkout, removeLoggedSet,
   updateRestDeadline, previousWorkingSets, suggestionForSlot, reorderActiveExercise,
   saveWorkoutExerciseNote, readWorkoutExerciseNote, previousExerciseNote, updateActiveSuperset, workoutNumbers,
@@ -44,7 +45,7 @@ function slotsFor(exercise:ActiveExercise,sets:ActiveSet[]):Slot[] {
   return result;
 }
 export default function ActiveWorkoutScreen() {
-  const {id}=useLocalSearchParams<{id?:string}>();
+  const {id,auto}=useLocalSearchParams<{id?:string;auto?:string}>();
   const {theme}=useTheme();
   const {t,language}=useLanguage();
   const insets=useSafeAreaInsets();
@@ -56,7 +57,6 @@ export default function ActiveWorkoutScreen() {
   const [edit,setEdit]=useState<ActiveSet|null>(null);
   const [pendingUndo,setPendingUndo]=useState<ActiveSet|null>(null);
   const [lastLogged,setLastLogged]=useState<ActiveSet|null>(null);
-  const [restSet,setRestSet]=useState<ActiveSet|null>(null);
   const [restVisible,setRestVisible]=useState(false);
   const [askVisible,setAskVisible]=useState(false);
   const [finishVisible,setFinishVisible]=useState(false);
@@ -96,9 +96,20 @@ export default function ActiveWorkoutScreen() {
     void getTypedSetting('units.weight').then(result=>{if(result.ok)setWeightUnit(result.value);});
     void getTypedSetting('units.smallPlates').then(result=>{if(result.ok)setSmallPlates(result.value);});
     void getTypedSetting('train.effortField').then(result=>{if(result.ok)setEffortMode(result.value);});
+    void syncWorkoutNotifications(language);
     return()=>setFocused(false);
-  },[refresh]));
-  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
+  },[refresh,language]));
+  useEffect(()=>{
+    let timer:ReturnType<typeof setTimeout>;
+    let live=true;
+    const tick=()=>{
+      if(!live)return;
+      setNow(Date.now());
+      timer=setTimeout(tick,nextClockDelay(Date.now()));
+    };
+    timer=setTimeout(tick,nextClockDelay(Date.now()));
+    return()=>{live=false;clearTimeout(timer);};
+  },[]);
   const exerciseIds=(view?.exercises??[]).map(e=>e.exerciseId).join('|');
   useEffect(()=>{
     let live=true;
@@ -117,11 +128,10 @@ export default function ActiveWorkoutScreen() {
   const barbell=!!exercise&&isPlateLoadedBarbell(exercise.type,muscleLookup[exercise.exerciseId]?.equipment);
   const slots=useMemo(()=>exercise&&view?slotsFor(exercise,view.sets):[],[exercise,view]);
   const current=slots.find(slot=>!slot.logged)??null;
-  const latestRest=view?.sets.filter(s=>s.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0]??null;
-  const visibleRest=restSet??latestRest;
-  const deadline=visibleRest?.restDeadline??null;
-  const rest=restAt(deadline,now);
-  const restLabel=rest.status==='running'?displayRest(deadline,now,language):rest.status==='over'?t('active.restOver'):t('active.restTimer');
+  const rest=view?selectCurrentRest(view.sets,view.state,now):{set:null,status:'idle' as const,remainingMs:0};
+  const restExercise=view?.exercises.find(e=>e.id===rest.set?.sessionExerciseId);
+  const visual=restVisual(rest.set?.restDeadline??null,rest.set?.loggedAt??null,restExercise?.restSec??0,now,language);
+  const restLabel=rest.status==='idle'?t('active.restTimer'):visual.label;
   const stats=view?workoutNumbers(view):null;
   const step=workoutWeightStep(exercise?.type??'weighted',weightUnit,smallPlates);
   const exerciseId=exercise?.exerciseId,exerciseRowId=exercise?.id,repMax=exercise?.repMax;
@@ -152,19 +162,27 @@ export default function ActiveWorkoutScreen() {
     return()=>{live=false;};
   },[exerciseRowId,exerciseId]);
   useEffect(()=>{
-    if(!view)return;
     const sub=AppState.addEventListener('change',state=>{
-      if(state==='active'){void cancelSessionRestAlerts(view.id).catch(()=>setError(t('active.cancelAlertError')));return;}
-      if(state!=='background')return;
-      const latest=view.sets.filter(row=>row.restDeadline).sort((a,b)=>b.loggedAt.localeCompare(a.loggedAt))[0];
-      if(latest?.restDeadline&&restAt(latest.restDeadline).status==='running'){
-        const active=view.exercises.find(e=>e.id===latest.sessionExerciseId);
-        void scheduleRestOver(latest.restDeadline,view.id,(active?exerciseName(language,active.exerciseId,active.name):view.title),latest.id,language)
-          .catch(()=>setError(t('active.scheduleError')));
-      }
+      if(state!=='active')return;
+      setNow(Date.now());
+      void refresh();
     });
     return()=>sub.remove();
-  },[view,t,language]);
+  },[refresh]);
+  useEffect(()=>subscribeWorkoutChanges(()=>{void refresh();}),[refresh]);
+  const workoutId=view?.id,workoutState=view?.state;
+  useEffect(()=>{
+    if(!workoutId||workoutState!=='in-progress'||suppressWorkoutNotificationPrompt(auto))return;
+    let live=true;
+    void (async()=>{
+      const asked=await getSetting('rest.permissionPromptSeen');
+      if(!live)return;
+      if(!asked.ok||asked.value!=='yes'){setAskVisible(true);return;}
+      const granted=await prepareRestAlerts(language).catch(()=>false);
+      if(live)setDenied(!granted);
+    })();
+    return()=>{live=false;};
+  },[workoutId,workoutState,language,auto]);
   useEffect(()=>{
     if(!focused||rest.status==='idle')return;
     const remaining=rest.remainingMs;
@@ -183,10 +201,16 @@ export default function ActiveWorkoutScreen() {
         rpe:effortMode==='rpe'&&effortValue.trim()?Number(effortValue):null,
         rir:effortMode==='rir'&&effortValue.trim()?Number(effortValue):null,
       };
-      const result=await editLoggedSet(edit.id,view.id,kg,reps,effort);
-      if(result.ok&&result.value){setEdit(null);setError(null);await refresh();}
-      else setError(t('active.editError'));
-      setBusy(false);return;
+      const editing=edit;
+      try{
+        await runNotificationTurn(async()=>{
+          await cancelSessionRestAlerts(view.id);
+          const result=await editLoggedSet(editing.id,view.id,kg,reps,effort);
+          if(!result.ok||!result.value)throw new Error('edit');
+          await alignWorkoutNotifications(language);
+        });
+      }catch{setError(t('active.editError'));setBusy(false);return;}
+      setEdit(null);setError(null);setBusy(false);await refresh();return;
     }
     if(reps<1){setError(t('active.needReps'));return;}
     if(kg>500||reps>100){setError(t('active.largeValues'));return;}
@@ -195,22 +219,28 @@ export default function ActiveWorkoutScreen() {
       current?.position;
     if(position===undefined){setError(t('active.allLoggedError'));return;}
     setBusy(true);setError(null);
-    try{await cancelSessionRestAlerts(view.id);}catch{setError(t('active.cancelAlertError'));setBusy(false);return;}
     // A unilateral set is incomplete until the second side is logged.
     const roundReady=!exercise.unilateral||current?.side!=='L';
     const superset=kind==='working'&&roundReady?supersetAfterSet(view.exercises,selected):
       {nextIndex:null,startRest:kind!=='working'};
     const effectiveRest=superset.startRest?exercise.restSec:0;
     const effort=effortMode==='off'||!effortValue.trim()?null:Number(effortValue);
-    const saved=await logWorkoutSet({sessionId:view.id,sessionExerciseId:exercise.id,
-      position,side:exercise.unilateral?(current?.side??'L'):null,weight:kg,reps,kind,
-      restSec:effectiveRest,rpe:kind==='working'&&effortMode==='rpe'?effort:null,
-      rir:kind==='working'&&effortMode==='rir'?effort:null});
+    let saved:Awaited<ReturnType<typeof logWorkoutSet>>|undefined;
+    try{
+      saved=await runNotificationTurn(async()=>{
+        await cancelSessionRestAlerts(view.id);
+        const result=await logWorkoutSet({sessionId:view.id,sessionExerciseId:exercise.id,
+          position,side:exercise.unilateral?(current?.side??'L'):null,weight:kg,reps,kind,
+          restSec:effectiveRest,rpe:kind==='working'&&effortMode==='rpe'?effort:null,
+          rir:kind==='working'&&effortMode==='rir'?effort:null});
+        await alignWorkoutNotifications(language);
+        return result;
+      });
+    }catch{setError(t('active.cancelAlertError'));setBusy(false);return;}
     setBusy(false);
-    if(!saved.ok){setError(t('active.saveError'));return;}
+    if(!saved||!saved.ok){setError(t('active.saveError'));return;}
     if(haptics)Vibration.vibrate(12);
     setLastLogged(saved.value);
-    setRestSet(saved.value);
     if(kind==='working'){setReps(0);setEffortValue('');}
     if(kind==='working'&&superset.nextIndex!==null&&superset.nextIndex!==selected)
       choose(superset.nextIndex);
@@ -218,43 +248,51 @@ export default function ActiveWorkoutScreen() {
     await refresh();
     if(saved.value.restDeadline){
       const asked=await getSetting('rest.permissionPromptSeen');
-      if(asked.ok&&asked.value!=='yes'){setAskVisible(true);}
-      else {setRestVisible(true);void armNotification(saved.value,exerciseName(language,exercise.exerciseId,exercise.name));}
+      if(asked.ok&&asked.value==='yes')setRestVisible(true);
     }
-  };
-  const armNotification=async(set:ActiveSet,name:string)=>{
-    if(!set.restDeadline||!view||AppState.currentState==='active')return;
-    try{await scheduleRestOver(set.restDeadline,view.id,name,set.id,language);}
-    catch{setError(t('active.scheduleError'));}
   };
   const allow=async(grant:boolean)=>{
     setAskVisible(false);
     await setSetting('rest.permissionPromptSeen','yes');
     if(grant){const approved=await askRestPermission(language).catch(()=>false);
       setDenied(!approved);
-      if(approved&&restSet&&exercise)void armNotification(restSet,exerciseName(language,exercise.exerciseId,exercise.name));
     }else setDenied(true);
-    setRestVisible(true);
+    try{await syncWorkoutNotifications(language);}
+    catch{setError(t('active.scheduleError'));}
+    if(rest.status==='running')setRestVisible(true);
   };
   const undo=async(item:ActiveSet)=>{
     if(!view)return;
-    try{await cancelSessionRestAlerts(view.id);}catch{setError(t('active.undoAlertError'));return;}
-    const result=await removeLoggedSet(item.id,view.id);
-    if(!result.ok||!result.value){setError(t('active.undoError'));return;}
-
-    setLastLogged(null);setRestSet(null);setRestVisible(false);setPendingUndo(null);
+    let removed=false;
+    try{
+      await runNotificationTurn(async()=>{
+        await cancelSessionRestAlerts(view.id);
+        const result=await removeLoggedSet(item.id,view.id);
+        removed=!!(result.ok&&result.value);
+        if(removed)await alignWorkoutNotifications(language);
+      });
+    }catch{setError(t('active.undoAlertError'));return;}
+    if(!removed){setError(t('active.undoError'));return;}
+    setLastLogged(null);setRestVisible(false);setPendingUndo(null);
     setKg(item.weight);setReps(item.reps);setEdit(null);await refresh();
   };
   const adjust=async(delta:number)=>{
-    if(!view||!visibleRest)return;
-    const next=shiftRest(deadline,delta,now);
-    try{await cancelSessionRestAlerts(view.id);}catch{setError(t('active.adjustAlertError'));return;}
-    const saved=await updateRestDeadline(visibleRest.id,view.id,next);
-    if(saved.ok&&saved.value){
-      const updated={...visibleRest,restDeadline:next};
-      setRestSet(updated);await refresh();
-      if(next&&restAt(next).status==='running'&&exercise)void armNotification(updated,exerciseName(language,exercise.exerciseId,exercise.name));
-    }
+    if(!view||!rest.set)return;
+    const target=rest.set;
+    const next=shiftRest(target.restDeadline,delta,Date.now());
+    let savedOk=false;
+    try{
+      await runNotificationTurn(async()=>{
+        await cancelSessionRestAlerts(view.id);
+        const saved=await updateRestDeadline(target.id,view.id,next);
+        savedOk=!!(saved.ok&&saved.value);
+        if(savedOk)await alignWorkoutNotifications(language);
+      });
+    }catch{setError(t('active.adjustAlertError'));return;}
+    if(!savedOk){setError(t('active.adjustAlertError'));return;}
+    setView(currentView=>currentView?{...currentView,sets:currentView.sets.map(set=>
+      set.id===target.id?{...set,restDeadline:next}:set)}:currentView);
+    await refresh();
   };
   const choose=(index:number)=>{setSelected(index);setEdit(null);setSuggestion(null);setKg(0);setReps(0);
     setEffortValue('');exerciseScroll.current?.scrollTo({x:Math.max(0,index-1)*145,animated:true});};
@@ -375,8 +413,8 @@ export default function ActiveWorkoutScreen() {
         onPress={()=>void log()}/>
       {edit&&<Button label={t('active.cancelEdit')} variant="ghost" onPress={()=>{setEdit(null);setKg(0);setReps(0);}}/>}
     </View>
-    <Sheet visible={askVisible} title={t('active.restPermissionTitle')}
-      description={t('active.restPermissionDesc')}
+    <Sheet visible={askVisible&&!suppressWorkoutNotificationPrompt(auto)} title={t('active.restPermissionTitle')}
+      description={t(Platform.OS==='android'?'active.restPermissionDesc':'active.restPermissionDescIos')}
       onClose={()=>void allow(false)}>
       <Button label={t('active.restAllow')} variant="train" fullWidth onPress={()=>void allow(true)}/>
       <Button label={t('active.restAppOnly')} variant="secondary" fullWidth onPress={()=>void allow(false)}/>
@@ -384,8 +422,7 @@ export default function ActiveWorkoutScreen() {
     <Sheet visible={restVisible} title={restLabel}
       description={t('active.restPendingDesc')}
       onClose={()=>setRestVisible(false)}>
-      <RestOrb remainingMs={rest.remainingMs} totalMs={(view.exercises.find(e=>e.id===visibleRest?.sessionExerciseId)?.restSec??120)*1000}
-        label={restLabel} />
+      <RestOrb fraction={visual.fraction} label={restLabel} />
       <Chip kind="pending" label={t('active.devicePending')}/>
       <Typography tone="secondary" size="small">{t('active.nextSet',{name:exercise?exerciseName(language,exercise.exerciseId,exercise.name):t('active.nextExercise'),set:current?t('active.set',{count:current.position+1}):t('active.chooseExercise')})}</Typography>
       <Typography tone="secondary">{lastLogged?
