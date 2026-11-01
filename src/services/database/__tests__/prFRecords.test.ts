@@ -7,18 +7,18 @@ const workout:HistoryDetail={
  exercises:[
   {id:'1',exerciseId:'bench',name:'Bench',type:'weighted',unilateral:false,position:0,
    primary:['chest'],secondary:[],sets:[
-    {id:'1a',sessionExerciseId:'1',position:0,kind:'working',side:null,weight:60,reps:8,loggedAt:'2026-10-21T10:20:00Z',restDeadline:null},
-    {id:'1b',sessionExerciseId:'1',position:99,kind:'warm-up',side:null,weight:30,reps:12,loggedAt:'2026-10-21T10:05:00Z',restDeadline:null},
+    {id:'1a',sessionExerciseId:'1',position:0,kind:'working',mark:null,side:null,weight:60,reps:8,loggedAt:'2026-10-21T10:20:00Z',restDeadline:null},
+    {id:'1b',sessionExerciseId:'1',position:99,kind:'warm-up',mark:null,side:null,weight:30,reps:12,loggedAt:'2026-10-21T10:05:00Z',restDeadline:null},
    ]},
   {id:'2',exerciseId:'db',name:'Dumbbells',type:'dumbbell',unilateral:true,position:1,
    primary:['shoulders'],secondary:[],sets:[
-    {id:'2L',sessionExerciseId:'2',position:0,kind:'working',side:'L',weight:20,reps:8,loggedAt:'2026-10-21T10:30:00Z',restDeadline:null},
-    {id:'2R',sessionExerciseId:'2',position:0,kind:'working',side:'R',weight:20,reps:8,loggedAt:'2026-10-21T10:30:10Z',restDeadline:null},
-    {id:'2incomplete',sessionExerciseId:'2',position:1,kind:'working',side:'L',weight:20,reps:8,loggedAt:'2026-10-21T10:32:00Z',restDeadline:null},
+    {id:'2L',sessionExerciseId:'2',position:0,kind:'working',mark:null,side:'L',weight:20,reps:8,loggedAt:'2026-10-21T10:30:00Z',restDeadline:null},
+    {id:'2R',sessionExerciseId:'2',position:0,kind:'working',mark:null,side:'R',weight:20,reps:8,loggedAt:'2026-10-21T10:30:10Z',restDeadline:null},
+    {id:'2incomplete',sessionExerciseId:'2',position:1,kind:'working',mark:null,side:'L',weight:20,reps:8,loggedAt:'2026-10-21T10:32:00Z',restDeadline:null},
    ]},
   {id:'3',exerciseId:'assist',name:'Assisted',type:'assisted',unilateral:false,position:2,
    primary:['lats'],secondary:[],sets:[
-    {id:'3a',sessionExerciseId:'3',position:0,kind:'working',side:null,weight:25,reps:8,loggedAt:'2026-10-21T10:40:00Z',restDeadline:null},
+    {id:'3a',sessionExerciseId:'3',position:0,kind:'working',mark:null,side:null,weight:25,reps:8,loggedAt:'2026-10-21T10:40:00Z',restDeadline:null},
    ]},
  ],
 };

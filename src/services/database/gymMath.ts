@@ -2,6 +2,10 @@ import type { ExerciseType } from './gymTypes';
 export type SetKind = 'working' | 'warm-up';
 export type SetSide = 'L' | 'R' | null;
 export type LoggedSet = { weight: number; reps: number; kind: SetKind; side: SetSide };
+/**
+ * Drop sets and failure sets stay `kind: 'working'`. Their type is `sets.mark`,
+ * so volume and records keep counting them as working sets. Only warm-ups are excluded.
+ */
 export function setVolume(type: ExerciseType, set: LoggedSet): number {
   if (set.kind === 'warm-up' || set.reps <= 0) return 0;
   if (type === 'assisted') return 0;
@@ -33,6 +37,7 @@ export type ExerciseRecord = {
 export function calculateRecords(observations: RecordObservation[]): ExerciseRecord[] {
   const groups = new Map<string, RecordObservation[]>();
   for (const row of observations) {
+    // Drop and failure stay kind 'working' (sets.mark), so they still count. Warm-ups do not.
     if (row.kind !== 'working' || row.reps <= 0) continue;
     const key = row.exerciseId + ':' + (row.side ?? '-');
     groups.set(key, [...(groups.get(key) ?? []),row]);

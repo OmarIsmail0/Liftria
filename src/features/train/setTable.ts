@@ -1,7 +1,7 @@
 import {
   bidiIsolate, formatNumber, pluralForm, translate, type AppLanguage, type TranslationKey,
 } from '../../i18n';
-import { fromKg, type WeightUnit } from './workoutUnits';
+import { fromKg, sideLabel, type WeightUnit } from './workoutUnits';
 
 /** Long-press a set row for about half a second to delete it. */
 export const SET_HOLD_DELETE_MS = 500;
@@ -20,6 +20,8 @@ export type PlannedSet = {
   position: number;
   side: 'L' | 'R' | null;
   kind: 'working' | 'warm-up';
+  /** Absent on a row built before the mark was stored. Null is a plain working set or warm-up. */
+  mark?: 'drop' | 'failure' | null;
 };
 
 export type PlannedRow = {
@@ -62,6 +64,17 @@ export function setMarkGlyph(mark: SetMark, workingNumber: number): string {
 /** Drop and failure stay working sets in the database. Only a warm-up changes kind. */
 export function persistedKind(mark: SetMark): 'working' | 'warm-up' {
   return mark === 'warm-up' ? 'warm-up' : 'working';
+}
+
+/** The sets.mark column. Working and warm-up store null so kind keeps its old meaning. */
+export function persistedMark(mark: SetMark): 'drop' | 'failure' | null {
+  return mark === 'drop' || mark === 'failure' ? mark : null;
+}
+
+export function setMarkFromStored(kind: 'working' | 'warm-up', mark: string | null | undefined): SetMark {
+  if (kind === 'warm-up') return 'warm-up';
+  if (mark === 'drop' || mark === 'failure') return mark;
+  return 'working';
 }
 
 /** Logical order. A row laid out as flexDirection 'row' mirrors in RTL, so SET sits on the right. */
@@ -175,9 +188,55 @@ export function rowKey(sessionExerciseId: string, position: number, side: 'L' | 
 function markFor(
   key: string, logged: PlannedSet | null, marks: Readonly<Record<string, SetMark>>,
 ): SetMark {
-  const chosen = marks[logged?.id ?? ''] ?? marks[key];
+  const chosen = (logged ? marks[logged.id] : undefined) ?? marks[key];
   if (chosen) return chosen;
-  return logged?.kind === 'warm-up' ? 'warm-up' : 'working';
+  if (!logged) return 'working';
+  return setMarkFromStored(logged.kind, logged.mark);
+}
+
+/** Visible set name in History and on the exercise screen. Drop and failure stay D and F. */
+export function historySetTitle(language: AppLanguage, input: {
+  kind: 'working' | 'warm-up';
+  mark?: string | null;
+  position: number;
+}): string {
+  const shown = setMarkFromStored(input.kind, input.mark);
+  if (shown === 'warm-up') return translate(language, 'sessionDetail.warmup');
+  if (shown === 'drop' || shown === 'failure') return setMarkGlyph(shown, 0);
+  return translate(language, 'sessionDetail.set', { count: input.position + 1 });
+}
+
+/** Spoken name for a drop or failure set. Other sets use the same words as the title. */
+export function historySetSpoken(language: AppLanguage, input: {
+  kind: 'working' | 'warm-up';
+  mark?: string | null;
+  position: number;
+}): string {
+  const shown = setMarkFromStored(input.kind, input.mark);
+  if (shown === 'drop') return translate(language, 'workout.drop');
+  if (shown === 'failure') return translate(language, 'workout.failure');
+  return historySetTitle(language, input);
+}
+
+/** One line of logged sets. Drop and failure keep the D and F glyphs from the set table. */
+export function markedSetLine(
+  language: AppLanguage,
+  sets: readonly {
+    kind: 'working' | 'warm-up';
+    mark?: string | null;
+    weight: number;
+    reps: number;
+    side?: 'L' | 'R' | null;
+  }[],
+  unit: WeightUnit,
+): string {
+  return sets.map(set => {
+    const shown = setMarkFromStored(set.kind, set.mark);
+    const cell = previousCellText(language, set.weight, set.reps, unit);
+    const glyph = shown === 'working' ? '' : setMarkGlyph(shown, 0) + ' ';
+    const side = set.side ? ' ' + sideLabel(set.side, language) : '';
+    return glyph + cell + side;
+  }).join(' · ');
 }
 
 /** Rows for one exercise: planned working slots, logged extras, and legacy warm-ups. */

@@ -21,7 +21,7 @@ import { askRestPermission, cancelSessionRestAlerts, prepareRestAlerts, runNotif
 import { restBarPhase } from '../../../src/features/train/restBar';
 import { elapsedLabel, nextClockDelay, restAnnouncement, selectCurrentRest, shiftRest } from '../../../src/features/train/restClock';
 import {
-  buildSetRows, cycleSetMark, persistedKind, type PlannedRow, type SetMark,
+  buildSetRows, cycleSetMark, persistedKind, persistedMark, type PlannedRow, type SetMark,
 } from '../../../src/features/train/setTable';
 import { supersetAfterSet } from '../../../src/features/train/superset';
 import { alignWorkoutNotifications, subscribeWorkoutChanges, suppressWorkoutNotificationPrompt, syncWorkoutNotifications } from '../../../src/features/train/workoutNotification';
@@ -248,7 +248,8 @@ export default function ActiveWorkoutScreen() {
     await runLogged(async () => {
       const result = await logWorkoutSet({
         sessionId: view.id, sessionExerciseId: exercise.id, position: row.position,
-        side: exercise.unilateral ? row.side : null, kind, weight: kg, reps: values.reps, restSec: effectiveRest,
+        side: exercise.unilateral ? row.side : null, kind, mark: persistedMark(row.mark),
+        weight: kg, reps: values.reps, restSec: effectiveRest,
         rpe: kind === 'working' && effortMode === 'rpe' ? effortNumber : null,
         rir: kind === 'working' && effortMode === 'rir' ? effortNumber : null,
       });
@@ -318,7 +319,7 @@ export default function ActiveWorkoutScreen() {
     await runLogged(async () => {
       const result = await logWorkoutSet({
         sessionId: view.id, sessionExerciseId: set.sessionExerciseId, position: set.position,
-        side: set.side, kind: set.kind, weight: set.weight, reps: set.reps,
+        side: set.side, kind: set.kind, mark: set.mark, weight: set.weight, reps: set.reps,
         restSec: 0, rpe: set.rpe ?? null, rir: set.rir ?? null,
       });
       if (!result.ok) throw new Error('restore');
@@ -331,9 +332,10 @@ export default function ActiveWorkoutScreen() {
     if (!row.loggedId) return;
     const set = view.sets.find(item => item.id === row.loggedId);
     const kind = persistedKind(next);
-    if (!set || set.kind === kind) return;
+    const mark = persistedMark(next);
+    if (!set || (set.kind === kind && set.mark === mark)) return;
     await runLogged(async () => {
-      const result = await updateLoggedSetKind(set.id, view.id, kind);
+      const result = await updateLoggedSetKind(set.id, view.id, kind, mark);
       if (!result.ok || !result.value) throw new Error('kind');
     });
   };
