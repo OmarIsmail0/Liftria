@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { bundledFonts } from '../src/design/fonts';
 import { LanguageProvider, useLanguage } from '../src/i18n/LanguageProvider';
 import { ThemeProvider, useTheme } from '../src/design/ThemeProvider';
+import { OpaqueStack } from '../src/navigation/OpaqueStack';
 import { handleNotificationOpen, subscribeRestNotificationResponse } from '../src/features/train/restAlerts';
 import { useWorkoutNotificationSync } from '../src/features/train/workoutNotification';
 import { readWorkout } from '../src/features/train/workoutData';
@@ -50,14 +51,13 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
   return <NavigationThemeProvider value={navigationTheme}>
     <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'}
       translucent backgroundColor="transparent" />
-    <Stack screenOptions={{ headerShown: false,
-      contentStyle: { backgroundColor: theme.background } }}>
+    <OpaqueStack>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="settings" />
       <Stack.Screen name="dev" />
-    </Stack>
+    </OpaqueStack>
   </NavigationThemeProvider>;
 }
 

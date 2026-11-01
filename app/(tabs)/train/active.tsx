@@ -26,8 +26,9 @@ import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import { MUSCLES, type Exercise } from '../../../src/services/database/gymTypes';
 import { summarizeActiveMuscles } from '../../../src/features/train/activeMuscleLoad';
 import { BodyMap } from '../../../src/features/train/BodyMap';
+import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 import { muscleLabel } from '../../../src/i18n/muscles';
-import { formatNumber, weightUnitLabel } from '../../../src/i18n';
+import { bidiIsolate, formatNumber, weightUnitLabel } from '../../../src/i18n';
 import { formatEditableNumber } from '../../../src/i18n/editableNumber';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 
@@ -298,6 +299,8 @@ export default function ActiveWorkoutScreen() {
     setEffortValue('');exerciseScroll.current?.scrollTo({x:Math.max(0,index-1)*145,animated:true});};
   const selectEdit=(s:ActiveSet)=>{setEdit(s);setKg(s.weight);setReps(s.reps);setKind(s.kind);
     setEffortValue(formatEditableNumber(s.rpe??s.rir,'effort'));};
+  const exerciseTitle=exercise?exerciseName(language,exercise.exerciseId,exercise.name):'';
+  const exerciseRecord=exercise?muscleLookup[exercise.exerciseId]:undefined;
   if(!view)return <Screen embedded safeBottom><Header title={t('active.workout')} onBack={()=>router.replace('/(tabs)/train')}/>
     <Typography tone="secondary">{error??t('active.opening')}</Typography></Screen>;
   return <Screen embedded safeBottom scroll={false}>
@@ -333,7 +336,16 @@ export default function ActiveWorkoutScreen() {
         {view.exercises.map((e,index)=><Button key={e.id} label={exerciseName(language,e.exerciseId,e.name)}
           variant={selected===index?'train':'secondary'} onPress={()=>choose(index)}/>)}
       </ScrollView>
-      {exercise?<Card title={exerciseName(language,exercise.exerciseId,exercise.name)} rim="train">
+      {exercise?<Card rim="train">
+        <Pressable accessibilityRole="button"
+          accessibilityLabel={t('exerciseRow.open',{name:bidiIsolate(language,exerciseTitle)})}
+          onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:exercise.exerciseId}})}
+          style={{flexDirection:'row',alignItems:'center',gap:theme.space[2],minHeight:theme.size.touch.min}}>
+          <View style={{width:theme.space[2],height:theme.space[2],borderRadius:theme.radius.pill,
+            backgroundColor:theme.color.domain.train}}/>
+          {exerciseRecord&&<ExerciseThumbnail exercise={exerciseRecord}/>}
+          <Typography size="head" lines={2}>{exerciseTitle}</Typography>
+        </Pressable>
         <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
           <Button label={t('active.exerciseOptions')} variant="secondary" onPress={()=>setMenuOpen(true)}/>
         </View>

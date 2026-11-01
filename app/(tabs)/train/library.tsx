@@ -4,9 +4,14 @@ import { joinList, type TranslationKey } from '../../../src/i18n';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, SectionList, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, SectionList, TextInput, View } from 'react-native';
+import { ExerciseResultRow } from '../../../src/features/train/ExerciseResultRow';
 import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
 import { librarySections } from '../../../src/features/train/exerciseSections';
+import {
+  EXERCISE_SEARCH_DEBOUNCE_MS, EXERCISE_SECTION_HEADER_HEIGHT, exerciseListWindow, exerciseRowIdentity,
+  exerciseThumbnailKey, frameAt, sectionListLayouts, useDeferredQuery,
+} from '../../../src/features/train/exerciseRows';
 import { resultCardEdges } from '../../../src/features/train/resultCardEdges';
 import { Button, Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -16,7 +21,13 @@ import { recentExerciseIds } from '../../../src/services/database/gymRepositorie
 
 const groups = ['All', ...Object.keys(MUSCLE_GROUPS)] as const;
 
-type BrowseRow = { id: string; exercise: Exercise; title: string; detail: string };
+type BrowseRow = {
+  id: string;
+  exercise: Exercise;
+  title: string;
+  detail: string;
+  identity: ReturnType<typeof exerciseRowIdentity>;
+};
 
 function libraryDetail(exercise: Exercise, language: 'en' | 'ar', t: (key: TranslationKey, params?: Record<string, string | number>) => string): string {
   const muscles = joinList(language, exercise.primaryMuscles.map(muscle => t(`muscle.${muscle}` as TranslationKey)));
@@ -33,12 +44,14 @@ export default function ExerciseLibrary() {
     name === 'Neck' ? t('polish.groupNeck') : t('library.legs');
   const params = useLocalSearchParams<{ query?: string }>();
   const [query, setQuery] = useState(params.query ?? '');
+  const appliedQuery = useDeferredQuery(query, EXERCISE_SEARCH_DEBOUNCE_MS);
   const [group, setGroup] = useState<string>('All');
   const [all, setAll] = useState<Exercise[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const edges = resultCardEdges(theme);
+  const edges = useMemo(() => resultCardEdges(theme), [theme]);
+  const themeKey = theme.mode + ':' + theme.effectiveStyle;
   useFocusEffect(useCallback(() => {
     let active = true;
     async function refresh() {
@@ -56,33 +69,50 @@ export default function ExerciseLibrary() {
     return () => { active = false; };
   }, [t]));
   const filtered = useMemo(() => {
-    let rows = searchExercises(all, query, null, language);
+    let rows = searchExercises(all, appliedQuery, null, language);
     if (group !== 'All') {
       const muscles = MUSCLE_GROUPS[group as keyof typeof MUSCLE_GROUPS];
       if (muscles) rows = rows.filter(exercise => exercise.primaryMuscles.some(muscle => (muscles as readonly string[]).includes(muscle))
         || exercise.secondaryMuscles.some(muscle => (muscles as readonly string[]).includes(muscle)));
     }
     return rows;
-  }, [all, query, group, language]);
-  const rows = useMemo<BrowseRow[]>(() => filtered.map(exercise => ({
-    id: exercise.id,
-    exercise,
-    title: exerciseName(language, exercise.id, exercise.name),
-    detail: libraryDetail(exercise, language, t),
-  })), [filtered, language, t]);
-  const browsing = query.trim() === '';
+  }, [all, appliedQuery, group, language]);
+  const rows = useMemo<BrowseRow[]>(() => filtered.map(exercise => {
+    const title = exerciseName(language, exercise.id, exercise.name);
+    const detail = libraryDetail(exercise, language, t);
+    return {
+      id: exercise.id,
+      exercise,
+      title,
+      detail,
+      identity: exerciseRowIdentity(exercise.id, title, detail,
+        exerciseThumbnailKey(exercise.primaryMuscles, exercise.secondaryMuscles), themeKey),
+    };
+  }), [filtered, language, t, themeKey]);
+  const browsing = appliedQuery.trim() === '';
   const showList = !loading && !error;
   const sections = useMemo(
     () => librarySections(showList ? rows : [], row => row.title, browsing),
     [showList, rows, browsing],
   );
+  const frames = useMemo(
+    () => sectionListLayouts(sections.map(section => ({ letter: section.letter, count: section.data.length }))),
+    [sections],
+  );
+  const getItemLayout = useCallback((_: unknown, index: number) => frameAt(frames, index), [frames]);
   const showResults = sections.length > 0;
   const recentRows = useMemo(() => recent.flatMap(id => {
     const exercise = all.find(item => item.id === id);
     if (!exercise) return [];
     return [{ exercise, title: exerciseName(language, exercise.id, exercise.name), detail: libraryDetail(exercise, language, t) }];
   }), [recent, all, language, t]);
-  const openExercise = (id: string) => router.push({ pathname: '/(tabs)/train/exercise/[id]', params: { id } });
+  const openExercise = useCallback((id: string) => {
+    router.push({ pathname: '/(tabs)/train/exercise/[id]', params: { id } });
+  }, []);
+  const renderItem = useCallback(({ item, index, section }: {
+    item: BrowseRow; index: number; section: { data: readonly BrowseRow[] };
+  }) => <ExerciseResultRow identity={item.identity} exercise={item.exercise} edges={edges.body}
+    divider={index !== section.data.length - 1} onOpen={openExercise} />, [edges, openExercise]);
   const cardTitle = !browsing ? t('library.results', { count: rows.length }) : group === 'All'
     ? t('library.allResults', { count: rows.length }) : t('library.groupResults', { name: groupLabel(group), count: rows.length });
   return <Screen embedded scroll={false}>
@@ -93,6 +123,9 @@ export default function ExerciseLibrary() {
       keyboardShouldPersistTaps="handled"
       stickySectionHeadersEnabled={false}
       contentContainerStyle={{ paddingVertical: theme.space[3] }}
+      getItemLayout={getItemLayout}
+      removeClippedSubviews={Platform.OS === 'android'}
+      {...exerciseListWindow}
       ListHeaderComponent={<View style={{ gap: theme.space[3] }}>
         <Header title={t('library.title')} subtitle={t('library.subtitle')} onBack={() => router.back()}
           right={<Button label={t('library.new')} variant="secondary" onPress={() => router.push('/(tabs)/train/create')} />} />
@@ -120,7 +153,7 @@ export default function ExerciseLibrary() {
           <Card title={t('library.recent')}>{recentRows.map(row => <ListRow key={row.exercise.id} title={row.title}
             detail={row.detail} leading={<ExerciseThumbnail exercise={row.exercise} />}
             onPress={() => openExercise(row.exercise.id)} />)}</Card>}
-        {showList && !showResults && <EmptyState title={query.trim() ? t('library.noMatch', { query }) : t('library.noGroup')}
+        {showList && !showResults && <EmptyState title={appliedQuery.trim() ? t('library.noMatch', { query: appliedQuery }) : t('library.noGroup')}
           description={t('library.emptyHint')}
           action={<Button label={t('library.createNamed', { name: query.trim() || t('library.exercise') })}
             onPress={() => router.push({ pathname: '/(tabs)/train/create', params: { name: query.trim() } })} />} />}
@@ -129,17 +162,11 @@ export default function ExerciseLibrary() {
         </View>}
       </View>}
       renderSectionHeader={({ section }) => section.letter === '' ? null : <View accessible accessibilityRole="header"
-        accessibilityLabel={section.letter} style={[edges.body, { paddingBottom: theme.space[3] }]}>
+        accessibilityLabel={section.letter} style={[edges.body, {
+          height: EXERCISE_SECTION_HEADER_HEIGHT, justifyContent: 'center', overflow: 'hidden' }]}>
         <Typography size="small" bold>{section.letter}</Typography>
       </View>}
-      renderItem={({ item, index, section }) => {
-        const endOfSection = index === section.data.length - 1;
-        const isLast = endOfSection && section.data === sections[sections.length - 1]?.data;
-        return <View style={[edges.body, isLast ? null : { paddingBottom: theme.space[3] }]}>
-          <ListRow title={item.title} detail={item.detail} leading={<ExerciseThumbnail exercise={item.exercise} />}
-            divider={!endOfSection} onPress={() => openExercise(item.id)} />
-        </View>;
-      }}
+      renderItem={renderItem}
       ListFooterComponent={<View>
         {showResults && <View style={edges.bottom} />}
         <View style={{ marginTop: theme.space[3] }}>

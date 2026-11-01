@@ -1,4 +1,5 @@
-import {Stack} from 'expo-router';
-export default function EatStack(){
-  return <Stack screenOptions={{headerShown:false,contentStyle:{backgroundColor:'transparent'}}}/>;
+import { OpaqueStack } from '../../../src/navigation/OpaqueStack';
+
+export default function EatStack() {
+  return <OpaqueStack />;
 }

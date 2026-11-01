@@ -1,6 +1,6 @@
-import { Stack } from 'expo-router';
+import { OpaqueStack } from '../../../src/navigation/OpaqueStack';
 
 /** Progress subpages retain the Progress capsule tab. */
 export default function ProgressStack() {
-  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }} />;
+  return <OpaqueStack />;
 }
