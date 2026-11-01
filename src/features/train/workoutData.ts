@@ -26,7 +26,8 @@ type WorkoutRow = {id:string;title:string;template_id:string|null;started_at:str
   ended_at:string|null;state:ActiveWorkout['state'];notes:string|null};
 type ExerciseRow = {id:string;exercise_id:string;name:string;type:ExerciseType;
   unilateral:number;position:number;target_sets:number|null;rep_min:number|null;
-  rep_max:number|null;rest_sec:number|null;default_rest:number|null;superset_group:string|null;note:string|null};
+  rep_max:number|null;session_rest:number|null;rest_sec:number|null;default_rest:number|null;
+  superset_group:string|null;note:string|null};
 type SetRow = {id:string;session_exercise_id:string;position:number;side:'L'|'R'|null;
   weight:number;reps:number;kind:'working'|'warm-up';logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null};
 
@@ -36,7 +37,7 @@ const asWorkout = (row:WorkoutRow,exercises:ExerciseRow[],sets:SetRow[]):ActiveW
   exercises:exercises.map(e=>({
     id:e.id,exerciseId:e.exercise_id,name:e.name,type:e.type,unilateral:e.unilateral===1,
     position:e.position,targetSets:e.target_sets??3,repMin:e.rep_min??8,repMax:e.rep_max??12,
-    restSec:e.rest_sec??e.default_rest??120,supersetGroup:e.superset_group,note:e.note,
+    restSec:e.session_rest??e.rest_sec??e.default_rest??120,supersetGroup:e.superset_group,note:e.note,
   })),
   sets:sets.map(s=>({
     id:s.id,sessionExerciseId:s.session_exercise_id,position:s.position,side:s.side,
@@ -51,7 +52,7 @@ export async function readWorkout(id:string):Promise<DbResult<ActiveWorkout|null
     if(!session)return null;
     const exercises=await db.getAllAsync<ExerciseRow>(
       'SELECT se.id,se.exercise_id,e.name,e.type,e.unilateral,se.position,se.note,se.superset_group,'+
-      'te.target_sets,te.rep_min,te.rep_max,te.rest_sec,t.rest_sec AS default_rest '+
+      'se.rest_sec AS session_rest,te.target_sets,te.rep_min,te.rep_max,te.rest_sec,t.rest_sec AS default_rest '+
       'FROM session_exercises se JOIN exercises e ON e.id=se.exercise_id '+
       'JOIN sessions s ON s.id=se.session_id '+
       'LEFT JOIN templates t ON t.id=s.template_id '+
@@ -320,6 +321,55 @@ export async function previousExerciseNote(exerciseId:string):Promise<DbResult<s
   "SELECT se.note FROM session_exercises se JOIN sessions s ON s.id=se.session_id "+
   "WHERE se.exercise_id=? AND s.state='finished' AND se.note IS NOT NULL AND length(trim(se.note))>0 "+
   "ORDER BY s.started_at DESC LIMIT 1",[exerciseId]))?.note??null);
+}
+/** Remember a rest duration on this exercise for the rest of the workout. */
+export async function updateExerciseRest(sessionExerciseId:string,restSec:number):Promise<DbResult<boolean>>{
+  if(!Number.isInteger(restSec)||restSec<0||restSec>3600)return {
+    ok:false,error:{code:'db-error',message:'Invalid rest'}};
+  return dbOperation(async db=>(await db.runAsync(
+    "UPDATE session_exercises SET rest_sec=? WHERE id=? AND session_id IN "+
+    "(SELECT id FROM sessions WHERE state='in-progress')",[restSec,sessionExerciseId])).changes>0);
+}
+/** Warm-up is the only stored kind. Drop and failure stay working sets. */
+export async function updateLoggedSetKind(setId:string,sessionId:string,kind:'working'|'warm-up')
+ :Promise<DbResult<boolean>>{
+  return dbOperation(async db=>(await db.runAsync(
+    'UPDATE sets SET kind=? WHERE id=? AND session_exercise_id IN '+
+    '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
+    "WHERE s.id=? AND s.state='in-progress')",[kind,setId,sessionId])).changes>0);
+}
+/** Remove one exercise from an in-progress workout and keep the order contiguous. */
+export async function removeActiveExercise(sessionId:string,sessionExerciseId:string)
+ :Promise<DbResult<boolean>>{
+  return dbOperation(async db=>{
+    let removed=false;
+    await db.withExclusiveTransactionAsync(async tx=>{
+      const active=await tx.getFirstAsync<{id:string}>(
+        "SELECT id FROM sessions WHERE id=? AND state='in-progress'",[sessionId]);
+      const row=await tx.getFirstAsync<{id:string;superset_group:string|null}>(
+        'SELECT id,superset_group FROM session_exercises WHERE id=? AND session_id=?',
+        [sessionExerciseId,sessionId]);
+      if(!active||!row)return;
+      await tx.runAsync('DELETE FROM sets WHERE session_exercise_id=?',[sessionExerciseId]);
+      await tx.runAsync('DELETE FROM session_exercises WHERE id=?',[sessionExerciseId]);
+      const rest=await tx.getAllAsync<{id:string;position:number;superset_group:string|null}>(
+        'SELECT id,position,superset_group FROM session_exercises WHERE session_id=? ORDER BY position',
+        [sessionId]);
+      for(let index=0;index<rest.length;index++){
+        const item=rest[index];
+        if(item&&item.position!==index)await tx.runAsync(
+          'UPDATE session_exercises SET position=? WHERE id=?',[index,item.id]);
+      }
+      if(row.superset_group){
+        const members=rest.filter(item=>item.superset_group===row.superset_group);
+        if(members.length<2)await tx.runAsync(
+          'UPDATE session_exercises SET superset_group=NULL WHERE session_id=? AND superset_group=?',
+          [sessionId,row.superset_group]);
+      }
+      removed=true;
+    });
+    return removed;
+  });
 }
 /** Update or remove 2–3 adjacent links in an in-progress workout only. */
 export async function updateActiveSuperset(sessionId:string,first:number,count:0|2|3)
