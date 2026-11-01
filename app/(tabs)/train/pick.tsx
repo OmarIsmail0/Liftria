@@ -211,7 +211,7 @@ export default function AddWorkoutExercise() {
         {count === 0 ? <Pressable accessibilityRole="button" accessibilityState={{ disabled: true }} disabled
           accessibilityLabel={addLabel}
           style={{ minHeight: addButtonHeight, borderRadius: theme.radius.pill, alignItems: 'center',
-            justifyContent: 'center', opacity: 1, backgroundColor: theme.surface.control,
+            justifyContent: 'center', opacity: 1, backgroundColor: theme.color.bg.raised, // opaque: the list scrolls underneath
             borderWidth: theme.size.border.thin, borderColor: theme.surface.hairline }}>
           <Typography tone="tertiary" bold>{addLabel}</Typography>
         </Pressable> : <Button label={addLabel} variant="train" fullWidth disabled={busy}
