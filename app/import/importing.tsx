@@ -2,7 +2,7 @@ import { Stack, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, BackHandler, View } from 'react-native';
 import { Card, Header, Screen, Typography } from '../../src/design/primitives';
-import { commitImport } from '../../src/features/import/importRepository';
+import { commitImport, commitOutcomeMessage } from '../../src/features/import/importRepository';
 import { peekPendingImport, setImportOutcome, takePendingImport } from '../../src/features/import/importDraft';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 export default function Importing(){
@@ -25,9 +25,9 @@ export default function Importing(){
    AccessibilityInfo.announceForAccessibility(t('im3.a11y',{count:completed,total:overall}));
   },language).then(result=>{
    if(result.ok){setCount(result.value.workouts);setImportOutcome({ok:true,result:result.value});}
-   else setImportOutcome({ok:false,reason:t('im3.failed')});
+   else setImportOutcome({ok:false,reason:commitOutcomeMessage(result.error.message,language)});
    router.replace('/import/result');
-  }).catch(()=>{setImportOutcome({ok:false,reason:t('im3.nothing')});
+  }).catch(()=>{setImportOutcome({ok:false,reason:t('im3.failed')});
    router.replace('/import/result');});
  },[t,language]);
  return <Screen>

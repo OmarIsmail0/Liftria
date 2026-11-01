@@ -4,7 +4,7 @@ import { newGymId } from '../../services/database/exerciseLibrary';
 import { setVolume } from '../../services/database/gymMath';
 import type { ExerciseType } from '../../services/database/gymTypes';
 import { restDeadline } from './restClock';
-import { cancelSessionRestAlerts } from './restAlerts';
+import { cancelSessionRestAlerts, dismissWorkoutNotification } from './restAlerts';
 import {canLinkSuperset,supersetGroupsValid} from './superset';
 
 export type ActiveExercise = {
@@ -134,6 +134,9 @@ export async function logWorkoutSet(input:SetInput):Promise<DbResult<ActiveSet>>
         'VALUES (?,?,?,?,?,?,?,?,?,?,?)',
         [id,input.sessionExerciseId,input.position,input.kind,input.side,input.weight,input.reps,now,deadline,
          input.rpe??null,input.rir??null]);
+      // A new set replaces any earlier rest. A superset step with no rest leaves the timer idle.
+      await tx.runAsync('UPDATE sets SET rest_deadline=NULL WHERE id!=? AND session_exercise_id IN '+
+        '(SELECT id FROM session_exercises WHERE session_id=?)',[id,input.sessionId]);
       logged={id,sessionExerciseId:input.sessionExerciseId,position:input.position,
         side:input.side,kind:input.kind,weight:input.weight,reps:input.reps,
         loggedAt:now,restDeadline:deadline,rpe:input.rpe??null,rir:input.rir??null};
@@ -143,10 +146,20 @@ export async function logWorkoutSet(input:SetInput):Promise<DbResult<ActiveSet>>
   });
 }
 export async function removeLoggedSet(setId:string,sessionId:string):Promise<DbResult<boolean>> {
-  return dbOperation(async db=>(await db.runAsync(
-    'DELETE FROM sets WHERE id=? AND session_exercise_id IN '+
-    '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
-    "WHERE s.id=? AND s.state='in-progress')",[setId,sessionId])).changes>0);
+  return dbOperation(async db=>{
+    let removed=false;
+    await db.withExclusiveTransactionAsync(async tx=>{
+      removed=(await tx.runAsync(
+        'DELETE FROM sets WHERE id=? AND session_exercise_id IN '+
+        '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
+        "WHERE s.id=? AND s.state='in-progress')",[setId,sessionId])).changes>0;
+      if(!removed)return;
+      // Undoing the set that started rest must not revive an earlier deadline.
+      await tx.runAsync('UPDATE sets SET rest_deadline=NULL WHERE session_exercise_id IN '+
+        '(SELECT id FROM session_exercises WHERE session_id=?)',[sessionId]);
+    });
+    return removed;
+  });
 }
 export async function editLoggedSet(setId:string,sessionId:string,weight:number,reps:number,
  effort?:{rpe:number|null;rir:number|null}):Promise<DbResult<boolean>> {
@@ -156,7 +169,7 @@ export async function editLoggedSet(setId:string,sessionId:string,weight:number,
    (effort.rir!==null&&(!Number.isInteger(effort.rir)||effort.rir<0||effort.rir>20))))
    return {ok:false,error:{code:'db-error',message:'Invalid effort rating'}};
   return dbOperation(async db=>(await db.runAsync(
-    'UPDATE sets SET weight=?,reps=?'+(effort?',rpe=?,rir=?':'')+' WHERE id=? AND session_exercise_id IN '+
+    'UPDATE sets SET weight=?,reps=?,rest_deadline=NULL'+(effort?',rpe=?,rir=?':'')+' WHERE id=? AND session_exercise_id IN '+
     '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
     "WHERE s.id=? AND s.state='in-progress')",[weight,reps,...(effort?[effort.rpe,effort.rir]:[]),setId,sessionId])).changes>0);
 }
@@ -171,9 +184,14 @@ export function shouldAdvanceRotation(sequence:unknown,nextIndex:number,template
   return templateId!==null&&Array.isArray(sequence)&&sequence.length>0&&
     sequence[nextIndex%sequence.length]===templateId;
 }
-/** Finishing never writes untouched suggested sets. Rotation advances only after finish. */
+/** Finishing never writes untouched suggested sets. Rotation advances only after finish.
+ * Notification cleanup is best effort: a denied permission or a busy notification queue must not block it. */
+function releaseWorkoutNotifications(id:string): void {
+  void cancelSessionRestAlerts(id).catch(()=>undefined);
+  void dismissWorkoutNotification().catch(()=>undefined);
+}
 export async function completeWorkout(id:string,notes:string|null):Promise<DbResult<boolean>> {
-  try{await cancelSessionRestAlerts(id);}catch{return {ok:false,error:{code:'db-error',message:'Could not cancel rest alerts. Retry finish.'}};}
+  releaseWorkoutNotifications(id);
   return dbOperation(async db=>{
     let updated=false;
     await db.withExclusiveTransactionAsync(async tx=>{
@@ -199,7 +217,7 @@ export async function completeWorkout(id:string,notes:string|null):Promise<DbRes
 }
 /** Discard is exposed only from home / finish summary, with an explicit confirmation. */
 export async function discardInProgressWorkout(id:string):Promise<DbResult<boolean>> {
-  try{await cancelSessionRestAlerts(id);}catch{return {ok:false,error:{code:'db-error',message:'Could not cancel rest alerts. Retry discard.'}};}
+  releaseWorkoutNotifications(id);
   return dbOperation(async db=>{
     let removed=false;
     await db.withExclusiveTransactionAsync(async tx=>{

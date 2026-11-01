@@ -40,9 +40,10 @@ beforeEach(()=>{
 
 test('rest IDs survive process loss and cancel stored, scheduled and displayed alerts only for the session',async()=>{
   await cancelSessionRestAlerts('workout-1');
-  expect(cancel).toHaveBeenCalledTimes(2);
+  expect(cancel).toHaveBeenCalledTimes(3);
   expect(cancel).toHaveBeenCalledWith('persisted-1');
   expect(cancel).toHaveBeenCalledWith('native-after-kill');
+  expect(cancel).toHaveBeenCalledWith('liftria-rest:workout-1');
   expect(cancel).not.toHaveBeenCalledWith('unrelated');
   expect(cancel).not.toHaveBeenCalledWith('other-native');
   expect(dismiss).toHaveBeenCalledTimes(1);

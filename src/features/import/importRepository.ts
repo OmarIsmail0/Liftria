@@ -1,6 +1,7 @@
 /** Atomic import persistence; never retains source CSV bytes or a file copy. */
-import { translate, type AppLanguage } from '../../i18n';
+import { translate, type AppLanguage, type TranslationKey } from '../../i18n';
 import { dbOperation, type DbResult } from '../../services/database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { newGymId, listExercises, bundledExercises } from '../../services/database/exerciseLibrary';
 import { readStrengthObservations } from '../../services/database/historyRepository';
 import type { RecordObservation } from '../../services/database/gymMath';
@@ -50,11 +51,43 @@ export async function lastImportBatch():Promise<DbResult<ImportBatch|null>>{
    skipped:b.skipped_count,createdExercises:decodeBatchMetadata(b.created_exercises).ids,createdAt:b.created_at};
  });
 }
+const COMMIT_FAILURE:Record<string,TranslationKey>={
+ already:'im3.alreadyImported',stale:'im3.stale',missing:'im3.missingExercise',
+ unmapped:'im3.unmapped',unit:'im3.missingUnit',storage:'im3.storage',
+};
+/** Maps a rolled-back commit error to a translated sentence key. Unknown errors stay generic. */
+export function commitFailureKey(error:unknown):TranslationKey|null{
+ const message=error instanceof Error?error.message:'';
+ if(message.includes('already imported'))return COMMIT_FAILURE.already!;
+ if(message.includes('changed since preview'))return COMMIT_FAILURE.stale!;
+ if(message.includes('no longer exists'))return COMMIT_FAILURE.missing!;
+ if(message.includes('Unmapped exercise'))return COMMIT_FAILURE.unmapped!;
+ if(message.includes('Missing unit'))return COMMIT_FAILURE.unit!;
+ if(/disk is full|SQLITE_FULL|disk full/i.test(message))return COMMIT_FAILURE.storage!;
+ return null;
+}
+const COMMIT_MESSAGE=new Set<TranslationKey>([
+ 'im3.alreadyImported','im3.stale','im3.missingExercise','im3.unmapped','im3.missingUnit','im3.storage',
+]);
+/** A commit failure key becomes the sentence for that failure. Anything else stays the generic failure. */
+export function commitOutcomeMessage(message:string,language:AppLanguage):string{
+ if(COMMIT_MESSAGE.has(message as TranslationKey))return translate(language,message as TranslationKey);
+ return translate(language,'im3.failed');
+}
 /** Records, muscle map and history are derived live from the rows this transaction inserts. */
 export async function commitImport(plan:ImportPlan,
   onProgress?:(completed:number,total:number)=>void,language:AppLanguage='en'):Promise<DbResult<ImportOutcome>>{
- if(!canImportPlan(plan))return {ok:false,error:{code:'db-error',message:'Import needs a nonempty valid plan and explicit units.'}};
- return dbOperation(async db=>{
+ if(!canImportPlan(plan))return {ok:false,error:{code:'db-error',message:'im3.missingUnit'}};
+ let failure:TranslationKey|null=null;
+ const result=await dbOperation(async db=>{
+  try{return await commitImportTransaction(db,plan,onProgress,language);}
+  catch(error){failure=commitFailureKey(error);throw error;}
+ });
+ if(!result.ok&&failure)return {ok:false,error:{code:'db-error',message:failure}};
+ return result;
+}
+async function commitImportTransaction(db:SQLiteDatabase,plan:ImportPlan,
+  onProgress?:(completed:number,total:number)=>void,language:AppLanguage='en'):Promise<ImportOutcome>{
   const id=newGymId(),made:string[]=[],seededPack:string[]=[],when=new Date().toISOString();
   const map=new Map(plan.mappings.map(m=>[m.name,m]));
   let result:ImportOutcome|null=null;
@@ -149,8 +182,7 @@ export async function commitImport(plan:ImportPlan,
     custom:made.length};
   });
   if(!result)throw new Error('No import');
-  return result as ImportOutcome;
- });
+  return result;
 }
 export type UndoOutcome={sessions:number;sets:number;custom:number;keptCustom:number};
 /** Latest batch only; removes import rows even if user edited them. */

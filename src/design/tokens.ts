@@ -12,8 +12,8 @@ const palette = {
   dark: {
     color: {
       bg: { base: '#0F1216', surface: '#161A20', raised: '#1E232B', glass: 'rgba(30,35,43,0.78)' },
-      border: { subtle: '#272D37', strong: '#636D7B', control: '#929CAA' },
-      text: { primary: '#EEF1F5', secondary: '#BFC6D1', tertiary: '#A3ACBA', inverse: '#0F1216' },
+      border: { subtle: '#2F3642', strong: '#636D7B', control: '#929CAA' },
+      text: { primary: '#EEF1F5', secondary: '#C6CDD7', tertiary: '#AEB6C3', inverse: '#0F1216' },
       action: { primary: { bg: '#EEF1F5', fg: '#0F1216' } },
       domain: { train: '#FF8F6B', eat: '#FFCF5E', health: '#46E0BC', hiku: '#BDB1FF' },
       on: { train: '#1A0D06', hiku: '#120E2B' },
@@ -28,26 +28,27 @@ const palette = {
       board: { bg: '#0A0C0F' },
       chip: { hiku: { bg: 'rgba(169,156,255,0.15)', fg: '#BDB1FF' } },
     },
-    aurora: { base: '#06070C' },
+    aurora: { base: '#08090D' },
     glass: {
-      card: 'rgba(17,19,30,0.86)', highlight: 'rgba(255,255,255,0.06)',
+      // Near-opaque and one clear step above the page, so cards read without the glow behind them.
+      card: 'rgba(24,27,36,0.97)', highlight: 'rgba(255,255,255,0.05)',
       border: 'rgba(255,255,255,0.08)',
       // CSS design reference only. Primitives use platform-native shadow properties.
       shadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 18px 44px rgba(0,0,0,0.50)',
     },
     rim: { strength: 0.25, glow: 0.12 },
     ambient: {
-      train: 'rgba(255,94,126,0.45)', hiku: 'rgba(123,92,255,0.50)',
+      train: 'rgba(255,94,126,0.26)', hiku: 'rgba(123,92,255,0.28)',
       health: 'rgba(25,194,160,0.38)', eat: 'rgba(255,190,80,0.26)',
     },
     train: { gradEnd: '#FF6A6A' },
     orb: { 1: '#FFCF5E', 2: '#FF8F6B', 3: '#7B5CFF', ink: '#120B22', highlight: '#FFFFFF' },
     rest: { 1: '#FFC2A3', 2: '#FF8F6B', 3: '#D9487A' },
     // Sheets are opaque: the page behind must never read through the panel.
-    sheet: { glass: 'rgba(17,19,30,1)', scrim: 'rgba(0,0,0,0.55)' },
+    sheet: { glass: 'rgba(30,34,44,1)', scrim: 'rgba(0,0,0,0.60)' },
     elevation: { card: '0 1px 2px rgba(0,0,0,0.30), 0 10px 28px rgba(0,0,0,0.28)', thumb: '0 1px 3px rgba(0,0,0,0.40)' },
     // One even hairline per surface; the domain color lives in the title dot, not the edge.
-    surface: { hairline: 'rgba(255,255,255,0.09)', control: 'rgba(255,255,255,0.08)', pressed: 'rgba(255,255,255,0.06)' },
+    surface: { hairline: 'rgba(255,255,255,0.12)', control: 'rgba(255,255,255,0.10)', pressed: 'rgba(255,255,255,0.08)' },
     orbEmpty: { fillOpacity: 0.30, haloOpacity: 0.28, rimWidth: 1.5, rimStart: 0.9, rimEnd: 0.35 },
   },
   light: {

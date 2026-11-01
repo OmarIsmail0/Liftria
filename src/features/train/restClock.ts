@@ -32,10 +32,62 @@ export function elapsedLabel(startedAt: string, nowMs: number = Date.now()): str
   const seconds = Number.isFinite(start) ? Math.max(0, Math.floor((nowMs - start) / 1000)) : 0;
   return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
 }
-/** Only four TalkBack announcements per rest, not once per second. */
-export function restAnnouncement(previousMs: number, currentMs: number, language: AppLanguage = 'en'): string | null {
-  for (const [threshold, key] of [[30000,'active.30seconds'],[10000,'active.10seconds'],[0,'active.restOver']] as const) {
-    if (previousMs > threshold && currentMs <= threshold) return translate(language, key);
+/** Delay until the next wall-clock second, so a timer doesn't drift ahead of the deadline. */
+export function nextClockDelay(nowMs: number): number {
+  const delay = 1000 - (nowMs % 1000);
+  return delay === 0 ? 1000 : delay;
+}
+/**
+ * Ring and label share the ceiled seconds. The total grows when rest is extended, so
+ * +30 s does not pin the ring at full while the number shows the extra time.
+ */
+export function restVisual(
+  deadline: string | null, loggedAt: string | null, plannedSec: number, nowMs: number, language: AppLanguage = 'en',
+): { status: RestState['status']; remainingMs: number; totalMs: number; fraction: number; label: string } {
+  const state = restAt(deadline, nowMs);
+  const label = displayRest(deadline, nowMs, language);
+  if (state.status !== 'running' || !deadline) {
+    return { status: state.status, remainingMs: 0, totalMs: 0, fraction: 0, label };
   }
-  return null;
+  const end = Date.parse(deadline);
+  const start = loggedAt ? Date.parse(loggedAt) : Number.NaN;
+  const plannedMs = Number.isFinite(plannedSec) && plannedSec > 0 ? Math.round(plannedSec * 1000) : 0;
+  const spanMs = Number.isFinite(start) ? Math.max(0, end - start) : 0;
+  const totalMs = Math.max(plannedMs, spanMs, state.remainingMs, 1000);
+  const shown = Math.ceil(state.remainingMs / 1000);
+  const totalShown = Math.max(1, Math.ceil(totalMs / 1000));
+  return {
+    status: 'running', remainingMs: state.remainingMs, totalMs, label,
+    fraction: Math.max(0, Math.min(1, shown / totalShown)),
+  };
+}
+/** A clock label fits the big metric; a word ("Rest over") uses a smaller line so it stays inside the ring. */
+export function restOrbTextSize(label: string): 'metric-xl' | 'head' {
+  return /^\d+:\d{2}$/.test(label) ? 'metric-xl' : 'head';
+}
+export type RestSetRef = {
+  id: string; loggedAt: string; restDeadline: string | null; sessionExerciseId: string;
+};
+/**
+ * Rest belongs to the latest logged set only, and only while that workout is still
+ * in progress. An earlier deadline must not revive after a superset step, an undo or a finish.
+ */
+export function selectCurrentRest<T extends RestSetRef>(
+  sets: readonly T[], workoutState: string, nowMs: number,
+): { set: T | null; status: RestState['status']; remainingMs: number } {
+  if (workoutState !== 'in-progress') return { set: null, status: 'idle', remainingMs: 0 };
+  const latest = [...sets].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt) || b.id.localeCompare(a.id))[0];
+  if (!latest?.restDeadline) return { set: null, status: 'idle', remainingMs: 0 };
+  const state = restAt(latest.restDeadline, nowMs);
+  if (state.status === 'idle') return { set: null, status: 'idle', remainingMs: 0 };
+  return { set: latest, status: state.status, remainingMs: state.remainingMs };
+}
+/** Only four TalkBack announcements per rest, not once per second.
+ * A jump (the app was backgrounded) announces the lowest threshold it crossed. */
+export function restAnnouncement(previousMs: number, currentMs: number, language: AppLanguage = 'en'): string | null {
+  let message: string | null = null;
+  for (const [threshold, key] of [[30000, 'active.30seconds'], [10000, 'active.10seconds'], [0, 'active.restOver']] as const) {
+    if (previousMs > threshold && currentMs <= threshold) message = translate(language, key);
+  }
+  return message;
 }

@@ -22,8 +22,23 @@ jest.mock('expo-notifications', () => ({
   setNotificationChannelAsync: jest.fn(async () => undefined),
   getPermissionsAsync: jest.fn(async () => ({ granted: true })),
   scheduleNotificationAsync: jest.fn(async () => 'scheduled-1'),
+  getAllScheduledNotificationsAsync: jest.fn(async () => []),
+  getPresentedNotificationsAsync: jest.fn(async () => []),
+  cancelScheduledNotificationAsync: jest.fn(async () => undefined),
+  dismissNotificationAsync: jest.fn(async () => undefined),
 }));
-jest.mock('../../services/database', () => ({ dbOperation: jest.fn(async () => ({ ok: true, value: undefined })) }));
+jest.mock('../../services/database', () => ({
+  dbOperation: jest.fn(async (fn: (db: {
+    getAllAsync: () => Promise<unknown[]>;
+    runAsync: () => Promise<{ changes: number }>;
+  }) => Promise<unknown>) => ({
+    ok: true,
+    value: await fn({
+      getAllAsync: async () => [],
+      runAsync: async () => ({ changes: 1 }),
+    }),
+  })),
+}));
 
 /** Words an Arabic reader should never meet. Weight units are كغ and رطل, not kg and lb. */
 const latinWords = (text: string): string[] =>
