@@ -17,12 +17,12 @@ export type LoggedValues = { weight: number; reps: number; effort: string };
 
 /** Compact SET · PREVIOUS · weight · REPS · ✓ table. Placeholders are not saved. */
 export function SetTable({
-  rows, history, unit, effort, drafts, loggedValues, repMax, expectedRows, weightStep,
+  rows, history, weightUnit, effort, drafts, loggedValues, repMax, expectedRows, weightStep,
   busy, onDraft, onLog, onUnlog, onCycle, onDelete, onAdd, onReject,
 }: {
   rows: readonly PlannedRow[];
   history: readonly PreviousSet[];
-  unit: WeightUnit;
+  weightUnit: WeightUnit;
   effort: 'off' | 'rpe' | 'rir';
   drafts: Readonly<Record<string, SetDraft>>;
   loggedValues: Readonly<Record<string, LoggedValues>>;
@@ -42,7 +42,8 @@ export function SetTable({
   const { t, language } = useLanguage();
   const repsInputs: Record<string, TextInput | null> = {};
   const columns = setTableColumns({ effort: effort !== 'off', check: true });
-  const unitWord = weightUnitLabel(language, unit);
+  const storedUnit = weightUnit;
+  const unitWord = weightUnitLabel(language, storedUnit);
   const headers: Record<(typeof columns)[number], string> = {
     set: t('workout.columnSet'),
     previous: t('workout.columnPrevious'),
@@ -68,18 +69,18 @@ export function SetTable({
       const suggestion = logged || row.mark !== 'working' ? null : suggestionForSlot(
         [...history], row.position, row.side, repMax, expectedRows, weightStep,
       );
-      const weightText = draft?.weight ?? (logged ? formatEditableNumber(fromKg(logged.weight, unit), 'load') : '');
+      const weightText = draft?.weight ?? (logged ? formatEditableNumber(fromKg(logged.weight, weightUnit), 'load') : '');
       const repsText = draft?.reps ?? (logged ? formatEditableNumber(logged.reps, 'count') : '');
       const effortText = draft?.effort ?? logged?.effort ?? '';
-      const placeholderWeight = suggestion ? formatEditableNumber(fromKg(suggestion.weight, unit), 'load') : '';
+      const placeholderWeight = suggestion ? formatEditableNumber(fromKg(suggestion.weight, weightUnit), 'load') : '';
       const placeholderReps = suggestion ? formatEditableNumber(suggestion.reps, 'count') : '';
       const glyph = setMarkGlyph(row.mark, row.workingNumber ?? 0);
       const side = row.side ? sideLabel(row.side, language) : '';
       const setLabel = side ? glyph + ' ' + side : glyph;
-      const effectiveWeight = weightText.trim() === '' ? (suggestion?.weight ?? null) : toKg(Number(weightText), unit);
+      const effectiveWeight = weightText.trim() === '' ? (suggestion?.weight ?? null) : toKg(Number(weightText), weightUnit);
       const effectiveReps = repsText.trim() === '' ? (suggestion?.reps ?? null) : Number(repsText);
       const sentence = setRowAccessibilityLabel({
-        language, setLabel, unit, logged: !!logged,
+        language, setLabel, unit: storedUnit, logged: !!logged,
         previousKg: previous?.weight ?? null, previousReps: previous?.reps ?? null,
         weightKg: effectiveWeight !== null && Number.isFinite(effectiveWeight) ? effectiveWeight : null,
         reps: effectiveReps !== null && Number.isInteger(effectiveReps) ? effectiveReps : null,
@@ -91,7 +92,7 @@ export function SetTable({
         if (logged) { onUnlog(row); return; }
         const committed = commitSetDraft({
           weightText, repsText,
-          placeholderWeight: suggestion ? fromKg(suggestion.weight, unit) : null,
+          placeholderWeight: suggestion ? fromKg(suggestion.weight, weightUnit) : null,
           placeholderReps: suggestion?.reps ?? null,
         });
         if (!committed.ok) { onReject(committed.reason); return; }
@@ -114,20 +115,20 @@ export function SetTable({
         </Pressable>
         <Pressable accessibilityRole="button"
           accessibilityLabel={previous
-            ? previousCellText(language, previous.weight, previous.reps, unit)
+            ? previousCellText(language, previous.weight, previous.reps, weightUnit)
             : t('workout.previousNone')}
           disabled={!previous || !!logged}
           onPress={() => {
             if (!previous) return;
             write({
-              weight: formatEditableNumber(fromKg(previous.weight, unit), 'load'),
+              weight: formatEditableNumber(fromKg(previous.weight, weightUnit), 'load'),
               reps: formatEditableNumber(previous.reps, 'count'),
             });
           }}
           onLongPress={() => onDelete(row)} delayLongPress={SET_HOLD_DELETE_MS}
           style={[columnBox('previous'), cellHit]}>
           <Typography tone="tertiary" size="small" lines={1}>
-            {previous ? previousCellText(language, previous.weight, previous.reps, unit) : t('workout.noPrevious')}
+            {previous ? previousCellText(language, previous.weight, previous.reps, weightUnit) : t('workout.noPrevious')}
           </Typography>
         </Pressable>
         {field('weight', weightText, placeholderWeight, 'decimal-pad', t('active.weightUnit', { unit: unitWord }),

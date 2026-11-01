@@ -433,7 +433,7 @@ export default function ActiveWorkoutScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
             <Pressable accessibilityRole="button"
               accessibilityLabel={t('exerciseRow.open', { name: bidiIsolate(language, exerciseName(language, exercise.exerciseId, exercise.name)) })}
-              onPress={() => router.push({ pathname: '/(tabs)/train/exercise/[id]', params: { id: exercise.exerciseId } })}
+              onPress={() => router.push({ pathname:'/(tabs)/train/exercise/[id]', params: { id: exercise.exerciseId } })}
               style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.space[2], minHeight: theme.size.touch.min }}>
               {record ? <ExerciseFigure exercise={record} /> : null}
               <View style={{ flex: 1 }}>
@@ -465,7 +465,7 @@ export default function ActiveWorkoutScreen() {
               </Typography>
             </Pressable>
           </View>
-          <SetTable rows={rows} history={history[exercise.exerciseId] ?? []} unit={weightUnit} effort={effortMode}
+          <SetTable rows={rows} history={history[exercise.exerciseId] ?? []} weightUnit={weightUnit} effort={effortMode}
             drafts={drafts} loggedValues={loggedValues} repMax={exercise.repMax}
             expectedRows={exercise.targetSets * (exercise.unilateral ? 2 : 1)} weightStep={step} busy={busy}
             onDraft={(key, draft) => setDrafts(current => ({ ...current, [key]: draft }))}

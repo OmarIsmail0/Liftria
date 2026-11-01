@@ -48,16 +48,20 @@ export function cycleSetMark(mark: SetMark): SetMark {
   return SET_MARK_ORDER[(index + 1) % SET_MARK_ORDER.length] ?? 'working';
 }
 
+const MARK_GLYPH: Record<'warm-up' | 'drop' | 'failure', string> = {
+  'warm-up': 'W',
+  drop: 'D',
+  failure: 'F',
+};
+
+export function setMarkGlyph(mark: SetMark, workingNumber: number): string {
+  if (mark === 'working') return String(workingNumber);
+  return MARK_GLYPH[mark];
+}
+
 /** Drop and failure stay working sets in the database. Only a warm-up changes kind. */
 export function persistedKind(mark: SetMark): 'working' | 'warm-up' {
   return mark === 'warm-up' ? 'warm-up' : 'working';
-}
-
-export function setMarkGlyph(mark: SetMark, workingNumber: number): string {
-  if (mark === 'warm-up') return 'W';
-  if (mark === 'drop') return 'D';
-  if (mark === 'failure') return 'F';
-  return String(workingNumber);
 }
 
 /** Logical order. A row laid out as flexDirection 'row' mirrors in RTL, so SET sits on the right. */
