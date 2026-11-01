@@ -1,4 +1,5 @@
 /* Liftria exercise figures: side view, muscle-shaped segments, highlighted from the exercise's muscles. */
+// eslint-disable-next-line no-unused-vars -- loaded by the mockup page as a global
 const FIG = (() => {
   const lerp = (a, b, t) => a + (b - a) * t;
   // Smooth width at t from control points [[t,w],...] (cosine interpolation).
