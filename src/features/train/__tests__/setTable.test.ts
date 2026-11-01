@@ -1,7 +1,8 @@
 import { restDeadline } from '../restClock';
 import { REST_OVER_HOLD_MS, restBarPhase } from '../restBar';
 import {
-  SET_HOLD_DELETE_MS, buildSetRows, commitSetDraft, cycleSetMark, persistedKind,
+  SET_HOLD_DELETE_MS, buildSetRows, commitSetDraft, cycleSetMark, historySetSpoken, historySetTitle,
+  markedSetLine, persistedKind, persistedMark,
   previousCellText, previousForWorkingSet, rowKey, setMarkGlyph, setRowAccessibilityLabel,
   setTableColumns, uncheckedRowPayload, visualColumnOrder,
 } from '../setTable';
@@ -50,6 +51,10 @@ test('set type cycles working, warm-up, drop, failure and only warm-up changes t
   expect(persistedKind('warm-up')).toBe('warm-up');
   expect(persistedKind('drop')).toBe('working');
   expect(persistedKind('failure')).toBe('working');
+  expect(persistedMark('drop')).toBe('drop');
+  expect(persistedMark('failure')).toBe('failure');
+  expect(persistedMark('working')).toBeNull();
+  expect(persistedMark('warm-up')).toBeNull();
   const id = 'exercise';
   const rows = buildSetRows({
     sessionExerciseId: id, targetSets: 3, unilateral: false, extraRows: 0,
@@ -57,6 +62,26 @@ test('set type cycles working, warm-up, drop, failure and only warm-up changes t
   });
   expect(rows.map(row => setMarkGlyph(row.mark, row.workingNumber ?? 0))).toEqual(['W', '1', 'D']);
   expect(rows.map(row => row.workingNumber)).toEqual([null, 1, null]);
+  const reloaded = buildSetRows({
+    sessionExerciseId: id, targetSets: 3, unilateral: false, extraRows: 0, marks: {},
+    sets: [
+      { id: 'a', position: 0, side: null, kind: 'working', mark: 'drop' },
+      { id: 'b', position: 1, side: null, kind: 'working', mark: 'failure' },
+      { id: 'c', position: 2, side: null, kind: 'warm-up' },
+    ],
+  });
+  expect(reloaded.map(row => row.mark)).toEqual(['drop', 'failure', 'warm-up']);
+  expect(historySetTitle('en', { kind: 'working', mark: 'drop', position: 0 })).toBe('D');
+  expect(historySetTitle('en', { kind: 'working', mark: 'failure', position: 1 })).toBe('F');
+  expect(historySetTitle('en', { kind: 'warm-up', mark: null, position: 0 })).toBe('Warm-up');
+  expect(historySetTitle('en', { kind: 'working', mark: null, position: 1 })).toBe('Set 2');
+  expect(historySetTitle('ar', { kind: 'working', mark: null, position: 1 })).toBe('المجموعة 2');
+  expect(historySetSpoken('ar', { kind: 'working', mark: 'drop', position: 0 })).toBe('مجموعة تنازلية');
+  expect(historySetSpoken('en', { kind: 'working', mark: 'failure', position: 2 })).toBe('Failure');
+  expect(markedSetLine('en', [
+    { kind: 'working', mark: 'drop', weight: 40, reps: 10 },
+    { kind: 'working', mark: 'failure', weight: 55, reps: 6 },
+  ], 'kg')).toBe('D 40 × 10 · F 55 × 6');
 });
 
 test('RTL column order puts SET on the right and keeps a logical row', () => {

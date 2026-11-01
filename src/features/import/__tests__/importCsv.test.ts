@@ -132,6 +132,9 @@ test('verified Hevy 14-column CSV: dates, missing weight, cardio, set indexes, e
  expect(pull.sets.map(s=>s.position)).toEqual([0,2,3]);
  expect(pull.sets.map(s=>s.weight)).toEqual([13.61,18.14,11.34]);
  expect(pull.sets.every(s=>s.kind==='working')).toBe(true);
+ expect(pull.sets.map(s=>s.mark)).toEqual([null,'drop',null]);
+ const afternoon=result.workouts.find(w=>w.title==='Afternoon workout 💪')!;
+ expect(afternoon.sets[0]).toMatchObject({kind:'working',mark:'failure'});
  const legs=result.workouts.find(w=>w.title==='Day 3 Legs')!;
  expect(legs.sets).toHaveLength(1);
  expect(legs.sets[0]).toMatchObject({exercise:'Crunch (Machine)',weight:0,reps:15});
@@ -180,6 +183,7 @@ test('current Hevy export: quoted commas, a note line break, named dates and set
  expect(new Date(workout.startedAt).getMinutes()).toBe(2);
  expect(new Date(workout.endedAt).getHours()).toBe(19);
  expect(workout.sets.map(set=>set.kind)).toEqual(['warm-up','working','working','working']);
+ expect(workout.sets.map(set=>set.mark)).toEqual([null,null,'failure','drop']);
  expect(workout.sets.map(set=>set.position)).toEqual([0,1,2,3]);
  expect(workout.sets.map(set=>[set.weight,set.reps])).toEqual([[20,12],[60,8],[55,6],[40,10]]);
  expect(workout.sets[0]?.notes).toBe('bar path, slow\neccentric');

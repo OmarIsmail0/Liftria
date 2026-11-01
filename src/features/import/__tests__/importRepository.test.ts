@@ -26,7 +26,7 @@ const mockRun=jest.fn(async(sql:string,args:unknown[]=[])=>{
  }else if(sql.startsWith('INSERT INTO sets')){
   if(mockFailSet)throw new Error('disk full');
   mockState.sets.push({id:args[0],session_exercise_id:args[1],position:args[2],kind:args[3],
-   side:null,weight:args[4],reps:args[5],logged_at:args[6]});
+   side:null,weight:args[4],reps:args[5],logged_at:args[6],mark:args[7]??null});
  }else if(sql.startsWith('INSERT INTO app_settings')){
   const row=mockState.settings.find(x=>x.key===args[0]);if(row)row.value=args[1];
   else mockState.settings.push({key:args[0],value:args[1]});
@@ -94,6 +94,19 @@ jest.mock('../../../services/database/historyRepository',()=>({
 beforeEach(()=>{mockState=mockInitial();mockCounter=0;mockFailSet=false;});
 const csv='date,exercise,weight_kg,reps\n2026-10-21,Demo Lift,60,8\n2026-10-22,Demo Lift,70,6';
 const context:ImportContext={days:[],importedHashes:[],remembered:{},exercises:[],observations:[]};
+test('a Hevy dropset and failure stay working sets and keep their mark',async()=>{
+ const raw='title,start_time,exercise_title,set_index,set_type,weight_kg,reps\n'+
+  'Push,"31 Oct 2026, 18:02",Bench,0,warmup,20,12\n'+
+  'Push,"31 Oct 2026, 18:02",Bench,1,normal,60,8\n'+
+  'Push,"31 Oct 2026, 18:02",Bench,2,failure,55,6\n'+
+  'Push,"31 Oct 2026, 18:02",Bench,3,dropset,40,10\n';
+ const plan=createImportPlan(parseImportCsv('hevy','hevy.csv',raw),context,'kg');
+ expect(plan.workouts[0]?.sets.map(set=>set.kind)).toEqual(['warm-up','working','working','working']);
+ expect(plan.workouts[0]?.sets.map(set=>set.mark)).toEqual([null,null,'failure','drop']);
+ expect((await commitImport(plan)).ok).toBe(true);
+ expect(mockState.sets.map(set=>set.kind)).toEqual(['warm-up','working','working','working']);
+ expect(mockState.sets.map(set=>set.mark)).toEqual([null,null,'failure','drop']);
+});
 test('one commit inserts provenance and a later identical hash adds nothing',async()=>{
  const p=createImportPlan(parseImportCsv('csv','demo.csv',csv),context,null);
  expect(p.setCount).toBe(2);

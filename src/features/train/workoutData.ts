@@ -15,6 +15,8 @@ export type ActiveExercise = {
 export type ActiveSet = {
   id:string; sessionExerciseId:string; position:number; side:'L'|'R'|null;
   weight:number; reps:number; kind:'working'|'warm-up';
+  /** Null for a working set or a warm-up. Drop and failure stay kind 'working'. */
+  mark:'drop'|'failure'|null;
   loggedAt:string; restDeadline:string|null; rpe?:number|null; rir?:number|null;
 };
 export type ActiveWorkout = {
@@ -29,7 +31,13 @@ type ExerciseRow = {id:string;exercise_id:string;name:string;type:ExerciseType;
   rep_max:number|null;session_rest:number|null;rest_sec:number|null;default_rest:number|null;
   superset_group:string|null;note:string|null};
 type SetRow = {id:string;session_exercise_id:string;position:number;side:'L'|'R'|null;
-  weight:number;reps:number;kind:'working'|'warm-up';logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null};
+  weight:number;reps:number;kind:'working'|'warm-up';mark:string|null;
+  logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null};
+/** Drop and failure are the only stored marks. A warm-up never keeps one. */
+export function storedSetMark(kind:'working'|'warm-up', mark:string|null|undefined):'drop'|'failure'|null {
+  if(kind!=='working')return null;
+  return mark==='drop'||mark==='failure'?mark:null;
+}
 
 const asWorkout = (row:WorkoutRow,exercises:ExerciseRow[],sets:SetRow[]):ActiveWorkout => ({
   id:row.id,title:row.title,templateId:row.template_id,startedAt:row.started_at,
@@ -41,7 +49,8 @@ const asWorkout = (row:WorkoutRow,exercises:ExerciseRow[],sets:SetRow[]):ActiveW
   })),
   sets:sets.map(s=>({
     id:s.id,sessionExerciseId:s.session_exercise_id,position:s.position,side:s.side,
-    weight:s.weight,reps:s.reps,kind:s.kind,loggedAt:s.logged_at,restDeadline:s.rest_deadline,
+    weight:s.weight,reps:s.reps,kind:s.kind,mark:storedSetMark(s.kind,s.mark),
+    loggedAt:s.logged_at,restDeadline:s.rest_deadline,
     rpe:s.rpe??null,rir:s.rir??null,
   })),
 });
@@ -96,7 +105,8 @@ export async function startManualWorkout(title:string, templateId:string|null=nu
   });
 }
 export type SetInput={sessionId:string;sessionExerciseId:string;position:number;
-  side:'L'|'R'|null;kind:'working'|'warm-up';weight:number;reps:number;restSec:number;
+  side:'L'|'R'|null;kind:'working'|'warm-up';mark?:'drop'|'failure'|null;
+  weight:number;reps:number;restSec:number;
   rpe?:number|null;rir?:number|null};
 export function validateSet(input:SetInput,language:AppLanguage='en'):string|null {
   if(!Number.isFinite(input.weight)||input.weight<0||input.weight>10000)return translate(language,'setError.weight');
@@ -126,20 +136,23 @@ export async function logWorkoutSet(input:SetInput):Promise<DbResult<ActiveSet>>
         'AND ((side IS NULL AND ? IS NULL) OR side=?) LIMIT 1',
         [input.sessionExerciseId,input.position,input.side,input.side]);
       if(prior){logged={id:prior.id,sessionExerciseId:prior.session_exercise_id,
-        position:prior.position,side:prior.side,kind:prior.kind,weight:prior.weight,reps:prior.reps,
+        position:prior.position,side:prior.side,kind:prior.kind,mark:storedSetMark(prior.kind,prior.mark),
+        weight:prior.weight,reps:prior.reps,
         loggedAt:prior.logged_at,restDeadline:prior.rest_deadline,rpe:prior.rpe??null,rir:prior.rir??null};return;}
       const id=newGymId(),now=new Date().toISOString();
       const deadline=input.restSec>0?restDeadline(now,input.restSec):null;
+      const mark=storedSetMark(input.kind,input.mark);
       await tx.runAsync('INSERT INTO sets '+
-        '(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline,rpe,rir) '+
-        'VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+        '(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline,rpe,rir,mark) '+
+        'VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
         [id,input.sessionExerciseId,input.position,input.kind,input.side,input.weight,input.reps,now,deadline,
-         input.rpe??null,input.rir??null]);
+         input.rpe??null,input.rir??null,mark]);
       // A new set replaces any earlier rest. A superset step with no rest leaves the timer idle.
       await tx.runAsync('UPDATE sets SET rest_deadline=NULL WHERE id!=? AND session_exercise_id IN '+
         '(SELECT id FROM session_exercises WHERE session_id=?)',[id,input.sessionId]);
       logged={id,sessionExerciseId:input.sessionExerciseId,position:input.position,
-        side:input.side,kind:input.kind,weight:input.weight,reps:input.reps,
+        side:input.side,kind:input.kind,mark:storedSetMark(input.kind,input.mark),
+        weight:input.weight,reps:input.reps,
         loggedAt:now,restDeadline:deadline,rpe:input.rpe??null,rir:input.rir??null};
     });
     if(!logged)throw new Error('Set was not logged');
@@ -234,6 +247,7 @@ export async function discardInProgressWorkout(id:string):Promise<DbResult<boole
   });
 }
 export function workoutNumbers(view:ActiveWorkout):{sets:number;volume:number;pending:number} {
+  // Drop and failure stay kind 'working', so they still count toward volume.
   const working=view.sets.filter(s=>s.kind==='working'&&s.reps>0);
   let completed=0,volume=0,planned=0;
   for(const e of view.exercises){
@@ -330,13 +344,14 @@ export async function updateExerciseRest(sessionExerciseId:string,restSec:number
     "UPDATE session_exercises SET rest_sec=? WHERE id=? AND session_id IN "+
     "(SELECT id FROM sessions WHERE state='in-progress')",[restSec,sessionExerciseId])).changes>0);
 }
-/** Warm-up is the only stored kind. Drop and failure stay working sets. */
-export async function updateLoggedSetKind(setId:string,sessionId:string,kind:'working'|'warm-up')
- :Promise<DbResult<boolean>>{
+/** Warm-up is the only stored kind. Drop and failure stay working sets and are written to mark. */
+export async function updateLoggedSetKind(setId:string,sessionId:string,kind:'working'|'warm-up',
+ mark:'drop'|'failure'|null):Promise<DbResult<boolean>>{
+  const stored=storedSetMark(kind,mark);
   return dbOperation(async db=>(await db.runAsync(
-    'UPDATE sets SET kind=? WHERE id=? AND session_exercise_id IN '+
+    'UPDATE sets SET kind=?,mark=? WHERE id=? AND session_exercise_id IN '+
     '(SELECT se.id FROM session_exercises se JOIN sessions s ON s.id=se.session_id '+
-    "WHERE s.id=? AND s.state='in-progress')",[kind,setId,sessionId])).changes>0);
+    "WHERE s.id=? AND s.state='in-progress')",[kind,stored,setId,sessionId])).changes>0);
 }
 /** Remove one exercise from an in-progress workout and keep the order contiguous. */
 export async function removeActiveExercise(sessionId:string,sessionExerciseId:string)

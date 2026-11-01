@@ -9,22 +9,28 @@ const escaped=(cell:Cell):string=>{
 export function csvRows(rows:readonly Cell[][]):string{
  return rows.map(row=>row.map(escaped).join(',')).join('\r\n')+'\r\n';
 }
+/** Spreadsheet value for sets.mark. Kind stays working or warm-up, unchanged. */
+export function csvSetType(kind:string|null, mark:string|null):string{
+ if(mark==='drop'||mark==='failure')return mark;
+ if(kind==='warm-up'||kind==='working')return kind;
+ return '';
+}
 export async function workoutCsv():Promise<DbResult<string>>{
  return dbOperation(async db=>{
   const rows=await db.getAllAsync<{
    session_id:string;title:string;started_at:string;ended_at:string|null;state:string;
-   exercise_name:string|null;position:number|null;kind:string|null;side:string|null;
+   exercise_name:string|null;position:number|null;kind:string|null;mark:string|null;side:string|null;
    weight:number|null;reps:number|null;rpe:number|null;rir:number|null;note:string|null;
   }>(`SELECT s.id AS session_id,s.title,s.started_at,s.ended_at,s.state,
-     e.name AS exercise_name,st.position,st.kind,st.side,st.weight,st.reps,st.rpe,st.rir,se.note
+     e.name AS exercise_name,st.position,st.kind,st.mark,st.side,st.weight,st.reps,st.rpe,st.rir,se.note
      FROM sessions s LEFT JOIN session_exercises se ON se.session_id=s.id
      LEFT JOIN exercises e ON e.id=se.exercise_id
      LEFT JOIN sets st ON st.session_exercise_id=se.id
      ORDER BY s.started_at,se.position,st.position,st.side`);
   return csvRows([['Session ID','Workout','Started','Finished','State','Exercise',
-   'Set','Kind','Side','Weight kg','Reps','RPE','RIR','Note'],...rows.map(r=>
+   'Set','Kind','Set type','Side','Weight kg','Reps','RPE','RIR','Note'],...rows.map(r=>
    [r.session_id,r.title,r.started_at,r.ended_at,r.state,r.exercise_name,
-    r.position,r.kind,r.side,r.weight,r.reps,r.rpe,r.rir,r.note])]);
+    r.position,r.kind,csvSetType(r.kind,r.mark),r.side,r.weight,r.reps,r.rpe,r.rir,r.note])]);
  });
 }
 export async function measurementsCsv():Promise<DbResult<string>>{

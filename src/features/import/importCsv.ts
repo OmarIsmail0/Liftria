@@ -3,6 +3,7 @@ import { pluralForm, translate, type AppLanguage, type TranslationKey } from '..
 export type Importer='hevy'|'strong'|'fitnotes'|'csv';
 export type WeightUnit='kg'|'lb';
 export type ParsedSet={exercise:string;position:number;kind:'working'|'warm-up';
+ mark:'drop'|'failure'|null;
  weight:number;reps:number;unit:WeightUnit|null;notes:string|null;loggedAt:string};
 export type ParsedWorkout={key:string;title:string;startedAt:string;endedAt:string;
  localDay:string;dateOnly:boolean;sets:ParsedSet[]};
@@ -227,11 +228,14 @@ export function parseImportCsv(source:Importer,fileName:string,raw:string,langua
   const unit:WeightUnit|null=explicit??declared;
   if(!unit)needsUnit=true;
   const kind= /warm.?up|^w$|warmup/i.test(setMarker)?'warm-up':'working';
+  // Drop and failure stay working sets. The mark is what History shows as D or F.
+  const mark:'drop'|'failure'|null=kind==='warm-up'?null:
+    /drop|^d$/i.test(setMarker)?'drop':/fail|^f$/i.test(setMarker)?'failure':null;
   if(setType!==undefined||/^[WDF]$/i.test(orderMarker))marked=true;
   const positionValue=v(setIndex);
   const position=positionValue&&Number.isInteger(Number(positionValue))&&Number(positionValue)>=0?
     Number(positionValue):workout.sets.filter(s=>s.exercise===v(ex)).length;
-  workout.sets.push({exercise:v(ex),position,kind,weight,reps:repCount,
+  workout.sets.push({exercise:v(ex),position,kind,mark,weight,reps:repCount,
     unit,notes:v(notes)||null,loggedAt:date.iso});
  }
  const workouts=[...sessions.values()].sort((a,b)=>a.startedAt.localeCompare(b.startedAt));

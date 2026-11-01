@@ -161,9 +161,10 @@ async function commitImportTransaction(db:SQLiteDatabase,plan:ImportPlan,
      const unit=set.unit??plan.unit;
      if(!unit)throw new Error('Missing unit: import rolled back');
      // Importer files do not carry L/R: null is an ordinary completed set for those sessions.
-     await tx.runAsync('INSERT INTO sets(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline) '+
-      'VALUES(?,?,?,?,NULL,?,?,?,NULL)',[
+     await tx.runAsync('INSERT INTO sets(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline,mark) '+
+      'VALUES(?,?,?,?,NULL,?,?,?,NULL,?)',[
        newGymId(),seId,set.position,set.kind,fromImportWeight(set.weight,unit),set.reps,set.loggedAt,
+       set.kind==='working'?set.mark:null,
       ]);
     }
     processed++;

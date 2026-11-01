@@ -51,6 +51,7 @@ test('export, then restore on another phone, keeps every row of every table', as
   expect(Object.keys(before)).toEqual(SCHEMA_TABLES);
   expect(lostInRoundTrip(before, after)).toEqual([]);
   expect(after).toEqual(before);
+  expect(after.sets?.map(row => row.mark)).toEqual(['drop']);
 });
 
 test('a table added to the schema and the fixture is noticed, not silently dropped', async () => {

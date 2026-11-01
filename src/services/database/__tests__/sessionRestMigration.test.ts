@@ -27,7 +27,7 @@ test('v9 remembers per-exercise rest without touching sets already logged', asyn
   await migrateDatabase(db);
 
   const version = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
-  expect(version?.user_version).toBe(9);
+  expect(version?.user_version).toBe(10);
   expect(await db.getFirstAsync<{ rest_sec: number | null; reps: number }>(
     'SELECT se.rest_sec, st.reps FROM session_exercises se JOIN sets st ON st.session_exercise_id=se.id WHERE se.id=?',
     ['se'])).toEqual({ rest_sec: null, reps: 8 });

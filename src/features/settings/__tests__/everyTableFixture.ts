@@ -57,7 +57,7 @@ export const EVERY_TABLE_ROWS: Record<string, Row[]> = {
   }],
   sets: [{
     id: 'set-1', session_exercise_id: 'se-1', position: 0, kind: 'working', side: null,
-    weight: 100, reps: 5, logged_at: AT, rest_deadline: null, rpe: 8, rir: null,
+    weight: 100, reps: 5, logged_at: AT, rest_deadline: null, rpe: 8, rir: null, mark: 'drop',
   }],
   foods: [{
     id: 'food-1', name_en: 'Ful medames', name_ar: 'فول مدمس', aliases: '[]', source: 'custom',

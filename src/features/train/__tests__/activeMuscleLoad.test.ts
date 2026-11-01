@@ -10,7 +10,7 @@ const makeWorkout = (sets:ActiveWorkout['sets'],unilateral=false):ActiveWorkout=
     repMin:8,repMax:12,restSec:120}],sets,
 });
 const set=(position:number,kind:'working'|'warm-up',side:'L'|'R'|null=null):ActiveWorkout['sets'][number]=>({
-  id:position+':'+side+':'+kind,sessionExerciseId:'se1',position,kind,side,weight:50,reps:8,
+  id:position+':'+side+':'+kind,sessionExerciseId:'se1',position,kind,mark:null,side,weight:50,reps:8,
   loggedAt:'2026-10-21T10:00:00Z',restDeadline:null,
 });
 test('no completed set gives no invented muscle credit',()=>{

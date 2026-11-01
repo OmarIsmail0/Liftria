@@ -9,12 +9,15 @@ import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Sheet, Typogra
 import { useTheme } from '../../../../src/design/ThemeProvider';
 import { type Exercise } from '../../../../src/services/database/gymTypes';
 import { ensureExercisePack, getExercise } from '../../../../src/services/database/exerciseLibrary';
-import { appendExerciseToActiveSession, exerciseSessions, listTemplates, readRecords, saveTemplate,
-  type Template } from '../../../../src/services/database/gymRepositories';
+import { appendExerciseToActiveSession, exerciseSessionSets, exerciseSessions, listTemplates, readRecords, saveTemplate,
+  type ExerciseHistorySet, type Template } from '../../../../src/services/database/gymRepositories';
 import { readInProgressWorkout } from '../../../../src/features/train/workoutData';
 import type { ExerciseRecord } from '../../../../src/services/database/gymMath';
 import { exerciseName } from '../../../../src/i18n/exerciseNames';
 import { localizedExerciseInstructions } from '../../../../src/i18n/exerciseInstructions';
+import { getTypedSetting } from '../../../../src/services/database/settings';
+import { historySetSpoken, markedSetLine } from '../../../../src/features/train/setTable';
+import type { WeightUnit } from '../../../../src/features/train/workoutUnits';
 
 export default function ExerciseDetail(){
   const {id}=useLocalSearchParams<{id:string}>();
@@ -23,6 +26,8 @@ export default function ExerciseDetail(){
   const [exercise,setExercise]=useState<Exercise|null>(null);
   const [records,setRecords]=useState<ExerciseRecord[]>([]);
   const [sessions,setSessions]=useState<{id:string;title:string;startedAt:string}[]>([]);
+  const [historySets,setHistorySets]=useState<ExerciseHistorySet[]>([]);
+  const [unit,setUnit]=useState<WeightUnit>('kg');
   const [loading,setLoading]=useState(true);
   const [choosing,setChoosing]=useState(false);
   const [templates,setTemplates]=useState<Template[]>([]);
@@ -59,15 +64,17 @@ export default function ExerciseDetail(){
       const loaded = await ensureExercisePack();
       if(!live)return;
       if(!loaded.ok){setLoading(false);return;}
-      const [e,recent,pr]=await Promise.all([
-        getExercise(id),exerciseSessions(id),readRecords(),
+      const [e,recent,pr,logged]=await Promise.all([
+        getExercise(id),exerciseSessions(id),readRecords(),exerciseSessionSets(id),
       ]);
       if(!live)return;
       setExercise(e.ok?e.value:null);
       setSessions(recent.ok?recent.value:[]);
+      setHistorySets(logged.ok?logged.value:[]);
       setRecords(pr.ok?pr.value.filter(record=>record.exerciseId===id):[]);
       setLoading(false);
     })();
+    void getTypedSetting('units.weight').then(result=>{if(result.ok)setUnit(result.value);});
     return()=>{live=false;};
   },[id]));
   if(loading)return <Screen embedded><Header title={t('exerciseDetail.loadTitle')} onBack={()=>router.back()}/><Typography>{t('exerciseDetail.loading')}</Typography></Screen>;
@@ -108,8 +115,14 @@ export default function ExerciseDetail(){
       </Card>
       <Card title={t('exerciseDetail.recentTitle')}>
         {sessions.length===0?<Typography tone="secondary">{t('exerciseDetail.noSession')}</Typography>:
-          sessions.slice(0,5).map(s=><ListRow key={s.id} title={s.title}
-            detail={latinDigits(new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>)}
+          sessions.slice(0,5).map(s=>{
+            const marked=historySets.filter(set=>set.sessionId===s.id&&(set.mark==='drop'||set.mark==='failure'));
+            const line=markedSetLine(language,marked,unit);
+            const date=latinDigits(new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'));
+            const spoken=marked.map(set=>historySetSpoken(language,set)).join(', ');
+            return <ListRow key={s.id} title={s.title} detail={line?date+' · '+line:date}
+              accessibilityLabel={spoken?s.title+'. '+spoken:undefined}/>;
+          })}
       </Card>
       <Card title={t('exerciseDetail.howTo')}>
         {instructionDisplay.untranslated&&<Typography tone="secondary" size="small">

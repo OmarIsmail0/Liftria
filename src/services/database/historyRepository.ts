@@ -8,6 +8,7 @@ import type { ExerciseType, Muscle } from './gymTypes';
 export type HistorySession={id:string;title:string;startedAt:string;endedAt:string;notes:string|null;
   source:string;importer:string|null;importedAt?:string|null};
 export type HistorySet={id:string;sessionExerciseId:string;position:number;kind:'working'|'warm-up';
+  mark:'drop'|'failure'|null;
   side:'L'|'R'|null;weight:number;reps:number;loggedAt:string;restDeadline:string|null;rpe?:number|null;rir?:number|null};
 export type HistoryExercise={id:string;exerciseId:string;name:string;type:ExerciseType;unilateral:boolean;
   position:number;primary:Muscle[];secondary:Muscle[];sets:HistorySet[];note?:string|null;supersetGroup?:string|null};
@@ -19,7 +20,12 @@ type Snapshot={
 };
 export type DeletedWorkout={id:string;title:string;snapshot:Snapshot};
 export type SetEdit={id?:string;sessionExerciseId:string;position:number;kind:'working'|'warm-up';
+  mark?:'drop'|'failure'|null;
   side:'L'|'R'|null;weight:number;reps:number;rpe?:number|null;rir?:number|null};
+function storedSetMark(kind:'working'|'warm-up', mark:string|null|undefined):'drop'|'failure'|null {
+  if(kind!=='working')return null;
+  return mark==='drop'||mark==='failure'?mark:null;
+}
 function parseMuscles(s:string|null):Muscle[]{try{return JSON.parse(s??'[]') as Muscle[];}catch{return [];}}
 export async function listCompletedWorkouts(limit=250):Promise<DbResult<HistorySession[]>>{
   return dbOperation(async db=>(await db.getAllAsync<{
@@ -50,13 +56,13 @@ export async function readHistoryDetail(id:string):Promise<DbResult<HistoryDetai
     for(const e of rows){
       const sets=await db.getAllAsync<{
         id:string;session_exercise_id:string;position:number;kind:HistorySet['kind'];
-        side:HistorySet['side'];weight:number;reps:number;logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null
+        side:HistorySet['side'];mark:string|null;weight:number;reps:number;logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null
       }>("SELECT * FROM sets WHERE session_exercise_id=? ORDER BY position,side",[e.id]);
       exercises.push({id:e.id,exerciseId:e.exercise_id,name:e.name,type:e.type,
         unilateral:e.unilateral===1,position:e.position,note:e.note,supersetGroup:e.superset_group,primary:parseMuscles(e.primary_muscles),
         secondary:parseMuscles(e.secondary_muscles),
         sets:sets.map(s=>({id:s.id,sessionExerciseId:s.session_exercise_id,position:s.position,
-          kind:s.kind,side:s.side,weight:s.weight,reps:s.reps,loggedAt:s.logged_at,
+          kind:s.kind,mark:storedSetMark(s.kind,s.mark),side:s.side,weight:s.weight,reps:s.reps,loggedAt:s.logged_at,
           restDeadline:s.rest_deadline,rpe:s.rpe??null,rir:s.rir??null}))});
     }
     return {session:{id:session.id,title:session.title,startedAt:session.started_at,
@@ -67,6 +73,7 @@ export async function readHistoryDetail(id:string):Promise<DbResult<HistoryDetai
 export function historyNumbers(detail:HistoryDetail):{sets:number;volume:number}{
   let sets=0,volume=0;
   for(const e of detail.exercises){
+    // Drop and failure stay kind 'working', so history volume still counts them.
     const working=e.sets.filter(s=>s.kind==='working'&&s.reps>0);
     const byPosition=new Map<number,HistorySet[]>();
     for(const set of working)byPosition.set(set.position,[...(byPosition.get(set.position)??[]),set]);
@@ -104,11 +111,11 @@ export async function saveFinishedWorkout(id:string,title:string,notes:string|nu
       await tx.runAsync('DELETE FROM sets WHERE session_exercise_id IN '+
         '(SELECT id FROM session_exercises WHERE session_id=?)',[id]);
       for(const e of edits)await tx.runAsync(
-        'INSERT INTO sets(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline,rpe,rir) '+
-        'VALUES(?,?,?,?,?,?,?,?,NULL,?,?)',[
+        'INSERT INTO sets(id,session_exercise_id,position,kind,side,weight,reps,logged_at,rest_deadline,rpe,rir,mark) '+
+        'VALUES(?,?,?,?,?,?,?,?,NULL,?,?,?)',[
           e.id??newGymId(),e.sessionExerciseId,e.position,e.kind,e.side,e.weight,e.reps,
           e.id?when.get(e.id)??session.ended_at??session.started_at:
-            session.ended_at??session.started_at,e.rpe??null,e.rir??null,
+            session.ended_at??session.started_at,e.rpe??null,e.rir??null,storedSetMark(e.kind,e.mark),
         ]);
       await tx.runAsync('UPDATE sessions SET title=?,notes=?,edited_at=? WHERE id=?',
         [title.trim(),notes,new Date().toISOString(),id]);
