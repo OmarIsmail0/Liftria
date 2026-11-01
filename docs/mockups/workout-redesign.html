@@ -24,7 +24,7 @@
   --train:#FF8F6B;--train2:#FF6A6A;--onTrain:#1A0D06;--tint:rgba(255,138,92,.16);--logged:rgba(255,138,92,.13);
   --primaryBg:#EEF1F5;--primaryFg:#0F1216;--glowA:rgba(255,94,126,.26);--glowB:rgba(123,92,255,.28);
   --health:#46E0BC;--warm:#F2B44C;--danger:#FF7A7A;--scrim:rgba(0,0,0,.6);--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.28);
-  --muscleBase:#3A404C;--muscleP:#FF8F6B;--muscleS:#9A5A47;
+  --muscleBase:#3A404C;--muscleP:#FF8F6B;--muscleS:#B8705A;--figure:#8A93A3;--poseBg:#232733;--gear:#4A5160;--gearDark:#6B7383;
 }
 [data-theme=light]{
   --base:#EEF0F7;--card:rgba(255,255,255,.97);--raised:#FFFFFF;--sheet:#FFFFFF;--hair:rgba(16,24,40,.08);
@@ -32,7 +32,7 @@
   --train:#A83E18;--train2:#C9452E;--onTrain:#FFFFFF;--tint:rgba(210,85,42,.10);--logged:rgba(210,85,42,.09);
   --primaryBg:#12161C;--primaryFg:#FFFFFF;--glowA:rgba(255,150,120,.30);--glowB:rgba(160,140,255,.30);
   --health:#126B57;--warm:#8A5C00;--danger:#C93636;--scrim:rgba(16,24,40,.36);--shadow:0 1px 2px rgba(16,24,40,.05),0 6px 18px rgba(16,24,40,.07);
-  --muscleBase:#D5DAE2;--muscleP:#D2552A;--muscleS:#E9A58C;
+  --muscleBase:#D5DAE2;--muscleP:#D2552A;--muscleS:#EDA488;--figure:#9AA3B1;--poseBg:#F4F6F9;--gear:#C9CFD8;--gearDark:#8A93A1;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:#1b1d22;font-family:var(--font-body);}
@@ -72,6 +72,11 @@ h2{font:700 17px/1.2 var(--font-head);margin:0}
 .chip.on{background:var(--tint);border-color:var(--train);color:var(--train)}
 .thumb{width:42px;height:42px;border-radius:12px;background:var(--ctl);border:1px solid var(--hair);display:grid;place-items:center;flex:none;cursor:pointer}
 .thumb svg{width:30px;height:34px}
+.posebox{width:56px;height:56px;border-radius:14px;background:var(--poseBg);border:1px solid var(--hair);display:grid;place-items:center;flex:none;cursor:pointer}
+.pose .gear{fill:var(--gear)} .pose .plate{fill:var(--gearDark)} .pose .bar,.pose .bar2{stroke:var(--gearDark);stroke-width:2.5;fill:var(--gearDark)}
+.pose .cable{stroke:var(--gear);stroke-width:1.5} .pose .benchline{stroke:var(--gear);stroke-width:5;stroke-linecap:round}
+tr.deleting td{transition:opacity .2s;opacity:.35}
+.holdtip{font-size:12px;color:var(--t3);margin:4px 2px 0}
 /* workout */
 .topbar{position:sticky;top:0;z-index:4;background:color-mix(in srgb,var(--base) 92%,transparent);backdrop-filter:blur(8px);padding:6px 16px 10px;border-bottom:1px solid var(--hair)}
 .stats{display:flex;gap:14px;white-space:nowrap;font-size:13px;color:var(--t2);margin-top:4px}
@@ -143,7 +148,7 @@ tr.logged .check{background:var(--train);border-color:var(--train);color:var(--o
   <button id="themeBtn">Light / Dark</button>
   <button id="langBtn">English / العربية</button>
 </div>
-<div class="note" id="note">Clickable mockup. Try ✓ on a set, the set number (W/D/F), +/− on the rest bar, ⋯ on an exercise, and the exercise name.</div>
+<div class="note" id="note">Clickable mockup. Try ✓ on a set, hold a set row to delete it, tap the set number (W/D/F), ⋯ on an exercise, the exercise photo, and the picker's filters.</div>
 <div class="phone" id="phone" data-theme="dark" data-lang="en" dir="ltr">
   <div class="backdrop"></div>
   <div class="status"><span id="clock">9:41</span><span>●●● ▮</span></div>
@@ -175,7 +180,7 @@ const T={
   addN:n=>n?`Add ${n} exercise${n>1?'s':''}`:'Select exercises',search:'Search exercises',recent:'Recent',all:'All exercises',
   primary:'Primary',secondary:'Secondary',front:'Front',back:'Back',howTo:'How to',history:'History',routineName:'Routine name',
   save:'Save',restOver:'Rest over',logged:'Set logged · rest started',setType:'Set type',warm:'Warm-up',normal:'Normal',drop:'Drop set',fail:'Failure',
-  notifTitle:'Upper A · Bench Press',notifSet:'Set 3 of 4 · 0:42:10',notifRest:'Rest 1:28 · next: Bench Press, set 3',days:'3 days ago',week:'Last week'},
+  holdTip:'Hold a set to delete it.',setDeleted:'Set deleted',undo:'Undo',equipment:'Equipment',muscle:'Muscle',notifTitle:'Upper A · Bench Press',notifSet:'Set 3 of 4 · 0:42:10',notifRest:'Rest 1:28 · next: Bench Press, set 3',days:'3 days ago',week:'Last week'},
  ar:{rest:'راحة',skip:'تخطٍّ',train:'التمرين',startEmpty:'ابدأ تمرينًا فارغًا',routines:'روتيناتي',newRoutine:'روتين جديد',start:'ابدأ',
   lastDone:'آخر مرة',explore:'استكشف',starter:'روتينات جاهزة',importRow:'قادم من تطبيق آخر؟ استورد سجلك',
   finish:'إنهاء',elapsed:'الوقت',sets:'المجموعات',volume:'الحجم',hint:'الأرقام الرمادية اقتراحات — اضغط ✓ للتسجيل.',set:'المجموعة',previous:'السابق',
@@ -184,17 +189,43 @@ const T={
   addN:n=>n?`إضافة ${n} ${n===1?'تمرين':n===2?'تمرينين':'تمارين'}`:'اختر تمارين',search:'ابحث عن تمرين',recent:'الأخيرة',all:'كل التمارين',
   primary:'أساسية',secondary:'ثانوية',front:'أمام',back:'خلف',howTo:'طريقة الأداء',history:'السجل',routineName:'اسم الروتين',
   save:'حفظ',restOver:'انتهت الراحة',logged:'سُجّلت المجموعة · بدأت الراحة',setType:'نوع المجموعة',warm:'إحماء',normal:'عادية',drop:'دروب سِت',fail:'حتى الفشل',
-  notifTitle:'الجزء العلوي A · ضغط البنش',notifSet:'المجموعة 3 من 4 · 0:42:10',notifRest:'راحة 1:28 · التالي: ضغط البنش، المجموعة 3',days:'قبل 3 أيام',week:'الأسبوع الماضي'}
+  holdTip:'اضغط مطولًا على المجموعة لحذفها.',setDeleted:'حُذفت المجموعة',undo:'تراجع',equipment:'المعدات',muscle:'العضلة',notifTitle:'الجزء العلوي A · ضغط البنش',notifSet:'المجموعة 3 من 4 · 0:42:10',notifRest:'راحة 1:28 · التالي: ضغط البنش، المجموعة 3',days:'قبل 3 أيام',week:'الأسبوع الماضي'}
 };
+
+/* Drawn pose figures (side view). Joints in a 100×100 box; segment colour = muscle role. */
+const POSE={
+ bench:{gear:'<rect x="16" y="60" width="62" height="5" rx="2.5" class="gear"/><rect x="24" y="65" width="4" height="22" class="gear"/><rect x="66" y="65" width="4" height="22" class="gear"/><line x1="12" y1="26" x2="54" y2="26" class="bar"/><rect x="14" y="17" width="5" height="18" rx="1.5" class="plate"/><rect x="47" y="17" width="5" height="18" rx="1.5" class="plate"/>',
+  head:[20,53],torso:[[27,55],[60,55]],upper:[[30,55],[33,41]],fore:[[33,41],[32,27]],thigh:[[60,55],[73,62]],shin:[[73,62],[75,84]],hl:{torso:'p',upper:'s'}},
+ incline:{gear:'<line x1="62" y1="66" x2="34" y2="40" class="benchline"/><rect x="58" y="66" width="4" height="22" class="gear"/>',
+  head:[33,35],torso:[[38,42],[60,62]],upper:[[40,44],[45,32]],fore:[[45,32],[42,18]],thigh:[[60,62],[74,63]],shin:[[74,63],[76,86]],dumb:[42,16],hl:{torso:'p',upper:'s'}},
+ row:{gear:'<rect x="26" y="68" width="24" height="5" rx="2.5" class="gear"/><rect x="76" y="62" width="5" height="22" rx="2" class="gear"/><line x1="46" y1="54" x2="92" y2="54" class="cable"/>',
+  head:[37,28],torso:[[39,36],[40,66]],upper:[[39,40],[27,51]],fore:[[27,51],[46,54]],thigh:[[40,66],[64,60]],shin:[[64,60],[78,68]],hl:{torso:'p',upper:'s'}},
+ ohp:{gear:'<line x1="28" y1="9" x2="72" y2="9" class="bar"/><rect x="29" y="1" width="5" height="16" rx="1.5" class="plate"/><rect x="66" y="1" width="5" height="16" rx="1.5" class="plate"/>',
+  head:[50,23],torso:[[50,31],[50,62]],upper:[[50,33],[45,20]],fore:[[45,20],[49,9]],thigh:[[50,62],[51,79]],shin:[[51,79],[50,96]],hl:{upper:'p',torso:'s'}},
+ curl:{gear:'',head:[50,23],torso:[[50,31],[50,62]],upper:[[50,33],[50,50]],fore:[[50,50],[62,40]],thigh:[[50,62],[51,79]],shin:[[51,79],[50,96]],dumb:[64,39],hl:{upper:'p'}},
+ push:{gear:'<line x1="58" y1="64" x2="60" y2="4" class="cable"/><rect x="56" y="1" width="10" height="5" rx="2" class="gear"/>',
+  head:[46,22],torso:[[47,30],[50,62]],upper:[[47,33],[48,50]],fore:[[48,50],[58,64]],thigh:[[50,62],[51,79]],shin:[[51,79],[50,96]],hl:{upper:'p'}},
+ squat:{gear:'<rect x="49" y="28" width="5" height="16" rx="1.5" class="plate"/>',
+  head:[56,26],torso:[[53,34],[40,62]],upper:[[52,37],[44,44]],fore:[[44,44],[50,36]],thigh:[[40,62],[63,65]],shin:[[63,65],[54,90]],hl:{thigh:'p',torso:'s'}},
+ lat:{gear:'<line x1="22" y1="14" x2="74" y2="14" class="bar"/><line x1="48" y1="14" x2="48" y2="0" class="cable"/><rect x="36" y="72" width="26" height="5" rx="2.5" class="gear"/><rect x="58" y="62" width="14" height="5" rx="2.5" class="gear"/>',
+  head:[48,33],torso:[[48,41],[50,70]],upper:[[48,43],[35,29]],fore:[[35,29],[34,14]],thigh:[[50,70],[68,70]],shin:[[68,70],[66,92]],hl:{torso:'p',upper:'s'}},
+};
+const W={torso:13,upper:8,fore:6,thigh:11,shin:8};
+function poseSvg(id,size=52){const P=POSE[id];const col=k=>P.hl[k]==='p'?'var(--muscleP)':P.hl[k]==='s'?'var(--muscleS)':'var(--figure)';
+ const seg=k=>{const [[a,b],[c,d]]=P[k];return `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${col(k)}" stroke-width="${W[k]}" stroke-linecap="round"/>`;};
+ const dumb=P.dumb?`<rect x="${P.dumb[0]-7}" y="${P.dumb[1]-2}" width="14" height="4" rx="2" class="bar2"/><rect x="${P.dumb[0]-8}" y="${P.dumb[1]-5}" width="4" height="10" rx="1.5" class="plate"/><rect x="${P.dumb[0]+4}" y="${P.dumb[1]-5}" width="4" height="10" rx="1.5" class="plate"/>`:'';
+ return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true" class="pose">${P.gear}
+  ${seg('shin')}${seg('thigh')}${seg('torso')}${seg('upper')}${seg('fore')}
+  <circle cx="${P.head[0]}" cy="${P.head[1]}" r="6.5" fill="var(--figure)"/>${dumb}</svg>`;}
 const EX={
- bench:{en:'Bench Press (Barbell)',ar:'ضغط البنش (بار)',mEn:'Chest',mAr:'الصدر',p:['chest'],s:['shoulders','triceps']},
- incline:{en:'Incline Dumbbell Press',ar:'ضغط مائل بالدمبل',mEn:'Upper chest',mAr:'أعلى الصدر',p:['chest'],s:['shoulders']},
- row:{en:'Seated Cable Row',ar:'تجديف بالكابل جالسًا',mEn:'Back',mAr:'الظهر',p:['back'],s:['biceps']},
- ohp:{en:'Overhead Press (Barbell)',ar:'ضغط فوق الرأس (بار)',mEn:'Shoulders',mAr:'الأكتاف',p:['shoulders'],s:['triceps']},
- curl:{en:'Bicep Curl (Dumbbell)',ar:'تمرين البايسبس (دمبل)',mEn:'Biceps',mAr:'البايسبس',p:['biceps'],s:[]},
- push:{en:'Triceps Pushdown (Cable)',ar:'دفع الترايسبس (كابل)',mEn:'Triceps',mAr:'الترايسبس',p:['triceps'],s:[]},
- squat:{en:'Squat (Barbell)',ar:'سكوات (بار)',mEn:'Quads',mAr:'الفخذ الأمامي',p:['quads'],s:['glutes']},
- lat:{en:'Lat Pulldown (Cable)',ar:'سحب أمامي (كابل)',mEn:'Back',mAr:'الظهر',p:['back'],s:['biceps']},
+ bench:{eq:'barbell',en:'Bench Press (Barbell)',ar:'ضغط البنش (بار)',mEn:'Chest',mAr:'الصدر',p:['chest'],s:['shoulders','triceps']},
+ incline:{eq:'dumbbell',en:'Incline Dumbbell Press',ar:'ضغط مائل بالدمبل',mEn:'Upper chest',mAr:'أعلى الصدر',p:['chest'],s:['shoulders']},
+ row:{eq:'cable',en:'Seated Cable Row',ar:'تجديف بالكابل جالسًا',mEn:'Back',mAr:'الظهر',p:['back'],s:['biceps']},
+ ohp:{eq:'barbell',en:'Overhead Press (Barbell)',ar:'ضغط فوق الرأس (بار)',mEn:'Shoulders',mAr:'الأكتاف',p:['shoulders'],s:['triceps']},
+ curl:{eq:'dumbbell',en:'Bicep Curl (Dumbbell)',ar:'تمرين البايسبس (دمبل)',mEn:'Biceps',mAr:'البايسبس',p:['biceps'],s:[]},
+ push:{eq:'cable',en:'Triceps Pushdown (Cable)',ar:'دفع الترايسبس (كابل)',mEn:'Triceps',mAr:'الترايسبس',p:['triceps'],s:[]},
+ squat:{eq:'barbell',en:'Squat (Barbell)',ar:'سكوات (بار)',mEn:'Quads',mAr:'الفخذ الأمامي',p:['quads'],s:['glutes']},
+ lat:{eq:'machine',en:'Lat Pulldown (Cable)',ar:'سحب أمامي (كابل)',mEn:'Back',mAr:'الظهر',p:['back'],s:['biceps']},
 };
 const state={screen:'workout',lang:'en',theme:'dark',elapsed:42*60+10,rest:null,restTotal:120,picked:new Set(['ohp','curl']),detail:'bench',
  workout:[
@@ -229,6 +260,7 @@ function bodySvg(view,id,size=34){
   <rect x="19" y="73" width="10" height="26" rx="5" fill="${c('quads')}"/><rect x="31" y="73" width="10" height="26" rx="5" fill="${c('quads')}"/>
   <rect x="20" y="100" width="8" height="18" rx="4" fill="var(--muscleBase)"/><rect x="32" y="100" width="8" height="18" rx="4" fill="var(--muscleBase)"/>
  </svg>`}
+function exThumb(id){return `<div class="posebox" onclick="event.stopPropagation();openDetail('${id}')">${poseSvg(id,48)}</div>`;}
 function tabbar(){ $('#tabbar').innerHTML=['home','train','eat','prog','hiku'].map(k=>`<div class="tab ${k==='train'?'on':''}">${ICON[k]}</div>`).join('');}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),1600);}
 function go(s){state.screen=s;document.querySelectorAll('[data-go]').forEach(b=>b.classList.toggle('on',b.dataset.go===s));render();screen.scrollTop=0;}
@@ -263,18 +295,18 @@ function renderWorkout(){
   <div class="pad" style="padding-top:12px;gap:4px">
   <div class="hint">${tr('hint')}</div>
   ${state.workout.map((e,ei)=>`<div class="ex ${e.ss?'ss':''}">
-    <div class="exhead"><div class="thumb" onclick="openDetail('${e.id}')">${bodySvg('front',e.id,20)}</div>
-     <div class="exname" onclick="openDetail('${e.id}')">${exName(e.id)}</div><div class="iconbtn" style="width:34px;height:34px" onclick="menu(${ei})">⋯</div></div>
+    <div class="exhead">${exThumb(e.id)}
+     <div style="flex:1;cursor:pointer" onclick="openDetail('${e.id}')"><div class="exname">${exName(e.id)}</div><div class="sub">${exMuscle(e.id)}</div></div><div class="iconbtn" style="width:34px;height:34px" onclick="menu(${ei})">⋯</div></div>
     <div class="exmeta"><span class="pill" onclick="restSheet(${ei})">⏱ ${tr('restLabel')} ${fmt(e.rest)}</span>${e.ss?`<span class="pill" style="color:var(--warm)">⇅ Superset</span>`:''}<span style="opacity:.8">${tr('note')}…</span></div>
     <table class="sets"><thead><tr><th>${tr('set')}</th><th>${tr('previous')}</th><th>${u}</th><th>${tr('reps')}</th><th>✓</th></tr></thead><tbody>
-    ${e.sets.map((x,si)=>`<tr class="${x.done?'logged':''}">
+    ${e.sets.map((x,si)=>`<tr class="${x.done?'logged':''}" onpointerdown="holdStart(event,${ei},${si},this)" onpointerup="holdEnd()" onpointerleave="holdEnd()" oncontextmenu="return false">
       <td><span class="setno ${x.t}" onclick="setType(${ei},${si})">${x.t}</span></td>
       <td class="prev" onclick="usePrev(${ei},${si})"><bdi dir="ltr">${x.prev||'—'}</bdi></td>
       <td><input class="num" inputmode="decimal" value="${x.done?x.val[0]:x.kg}" placeholder="${x.sk}" oninput="edit(${ei},${si},0,this.value)" aria-label="${u}"></td>
       <td><input class="num" inputmode="numeric" value="${x.done?x.val[1]:x.reps}" placeholder="${x.sr}" oninput="edit(${ei},${si},1,this.value)" aria-label="${tr('reps')}"></td>
       <td><button class="check" onclick="toggle(${ei},${si})" aria-label="log">✓</button></td></tr>`).join('')}
     </tbody></table>
-    <button class="addset" onclick="addSet(${ei})">${tr('addSet')}</button></div>`).join('<div class="divider"></div>')}
+    <button class="addset" onclick="addSet(${ei})">${tr('addSet')}</button>${ei===0?`<div class="holdtip">${tr('holdTip')}</div>`:''}</div>`).join('<div class="divider"></div>')}
   <div style="height:8px"></div>
   <button class="btn block" style="color:var(--train)" onclick="go('picker')">${tr('addExercise')}</button>
   <button class="btn ghost" style="color:var(--danger)">${tr('discard')}</button>
@@ -293,6 +325,13 @@ function setType(ei,si){const cyc=['1','W','D','F'];const x=state.workout[ei].se
  sheet(`<div style="font:700 16px var(--font-head);margin-bottom:6px">${tr('setType')}</div>`+
   [['W',tr('warm')],['N',tr('normal')],['D',tr('drop')],['F',tr('fail')]].map(([k,l])=>`<div class="menuitem" onclick="pickType(${ei},${si},'${k}')"><span class="setno ${k}">${k==='N'?'1':k}</span>${l}</div>`).join(''));}
 function pickType(ei,si,k){const sets=state.workout[ei].sets;sets[si].t=k==='N'?'N':k;let n=0;sets.forEach(s=>{if(s.t!=='W'&&s.t!=='D'&&s.t!=='F'){n++;s.t=String(n)}});closeSheet();render();}
+let holdT=null,lastDel=null;
+function holdStart(ev,ei,si,row){if(ev.target.closest('input,button,.setno,.prev'))return;holdEnd();row.classList.add('deleting');holdT=setTimeout(()=>{holdT=null;delSet(ei,si)},550);}
+function holdEnd(){if(holdT){clearTimeout(holdT);holdT=null;document.querySelectorAll('tr.deleting').forEach(r=>r.classList.remove('deleting'));}}
+function renumber(sets){let n=0;sets.forEach(s=>{if(!['W','D','F'].includes(s.t)){n++;s.t=String(n)}});}
+function delSet(ei,si){const sets=state.workout[ei].sets;lastDel={ei,si,set:sets.splice(si,1)[0]};renumber(sets);if(navigator.vibrate)navigator.vibrate(15);render();
+ const t=$('#toast');t.innerHTML=`${tr('setDeleted')} · <u style="cursor:pointer" onclick="undoDel()">${tr('undo')}</u>`;t.style.pointerEvents='auto';t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>{t.classList.remove('show');t.style.pointerEvents='none'},3500);}
+function undoDel(){if(!lastDel)return;const sets=state.workout[lastDel.ei].sets;sets.splice(lastDel.si,0,lastDel.set);renumber(sets);lastDel=null;$('#toast').classList.remove('show');render();}
 function addSet(ei){const s=state.workout[ei].sets;const last=s[s.length-1];s.push({t:String(s.filter(x=>/\d/.test(x.t)).length+1),prev:'—',kg:'',reps:'',sk:last.done?last.val[0]:last.sk,sr:last.done?last.val[1]:last.sr,done:false});render();}
 function menu(ei){sheet(`<div style="font:700 16px var(--font-head);margin-bottom:4px">${exName(state.workout[ei].id)}</div>`+
  [['⇄',tr('replace')],['⇅',tr('superset')],['✎',tr('note')],['↕',tr('reorder')],['⏱',tr('restTime')]].map(([i,l])=>`<div class="menuitem" onclick="closeSheet()"><span>${i}</span>${l}</div>`).join('')+
@@ -308,16 +347,29 @@ $('#plus15').onclick=()=>{if(state.rest!=null){state.rest+=15;state.restTotal=Ma
 $('#skip').onclick=()=>{state.rest=null;$('#restbar').classList.remove('show');renderNotif();};
 setInterval(()=>{state.elapsed++;const el=$('#elapsed');if(el)el.textContent=fmt(state.elapsed);
  if(state.rest!=null){state.rest--;tickRest();if(state.rest<=-3){state.rest=null;$('#restbar').classList.remove('show');renderNotif();}}},1000);
+const MUS={en:['All','Chest','Back','Shoulders','Arms','Legs'],ar:['الكل','الصدر','الظهر','الأكتاف','الذراعان','الأرجل']};
+const MUSKEY=['all','chest','back','shoulders','arms','legs'];
+const EQ={en:['Any','Barbell','Dumbbell','Machine','Cable','Bodyweight','Kettlebell','Bands'],ar:['الكل','بار','دمبل','جهاز','كابل','وزن الجسم','كيتل بل','أحزمة مطاطية']};
+const EQKEY=['any','barbell','dumbbell','machine','cable','body','kettlebell','bands'];
+const MUSGROUP={chest:['chest'],back:['back'],shoulders:['shoulders'],arms:['biceps','triceps'],legs:['quads','glutes']};
+state.mf='all';state.ef='any';
 function renderPicker(){
- const ids=Object.keys(EX);const n=state.picked.size;
+ const n=state.picked.size;
+ const ok=id=>(state.mf==='all'||EX[id].p.some(m=>MUSGROUP[state.mf].includes(m)))&&(state.ef==='any'||EX[id].eq===state.ef);
+ const ids=Object.keys(EX).filter(ok);const eqName=k=>EQ[state.lang][EQKEY.indexOf(k)];
+ const row=id=>`<div class="pickrow ${state.picked.has(id)?'sel':''}" onclick="pick('${id}')">${exThumb(id)}
+   <div style="min-width:0"><div style="font-weight:700">${exName(id)}</div><div class="sub">${exMuscle(id)} · ${eqName(EX[id].eq)}</div></div><div class="tick">${state.picked.has(id)?'✓':''}</div></div>`;
+ const recent=ids.filter(id=>['bench','incline','row'].includes(id)), rest=ids.filter(id=>!recent.includes(id));
  screen.innerHTML=`<div class="pad" style="padding-bottom:180px">
   <div class="between"><div class="iconbtn" onclick="go('workout')">✕</div><h2 style="flex:1">${tr('addExercise').replace('+ ','')}</h2></div>
   <input class="search" placeholder="${tr('search')}">
-  <div class="chips">${(state.lang==='ar'?['الكل','الصدر','الظهر','الأكتاف','الذراعان','الأرجل','بار','دمبل','كابل']:['All','Chest','Back','Shoulders','Arms','Legs','Barbell','Dumbbell','Cable']).map((c,i)=>`<span class="chip ${i===0?'on':''}">${c}</span>`).join('')}</div>
-  <div class="section">${tr('recent')}</div>
-  <div>${ids.map((id,i)=>`${i===3?`<div class="section" style="margin-top:12px">${tr('all')}</div>`:''}<div class="pickrow ${state.picked.has(id)?'sel':''}" onclick="pick('${id}')">
-   <div class="thumb" onclick="event.stopPropagation();openDetail('${id}')">${bodySvg('front',id,20)}</div>
-   <div><div style="font-weight:700">${exName(id)}</div><div class="sub">${exMuscle(id)}</div></div><div class="tick">${state.picked.has(id)?'✓':''}</div></div>`).join('')}</div></div>
+  <div class="section" style="margin-top:0">${tr('muscle')}</div>
+  <div class="chips">${MUS[state.lang].map((c,i)=>`<span class="chip ${state.mf===MUSKEY[i]?'on':''}" onclick="state.mf='${MUSKEY[i]}';render()">${c}</span>`).join('')}</div>
+  <div class="section" style="margin-top:0">${tr('equipment')}</div>
+  <div class="chips">${EQ[state.lang].map((c,i)=>`<span class="chip ${state.ef===EQKEY[i]?'on':''}" onclick="state.ef='${EQKEY[i]}';render()">${c}</span>`).join('')}</div>
+  ${recent.length?`<div class="section">${tr('recent')}</div><div>${recent.map(row).join('')}</div>`:''}
+  ${rest.length?`<div class="section" style="margin-top:12px">${tr('all')}</div><div>${rest.map(row).join('')}</div>`:''}
+  ${ids.length?'':`<div class="sub" style="text-align:center;padding:24px">${state.lang==='ar'?'لا توجد تمارين بهذه الفلاتر':'No exercises match these filters'}</div>`}</div>
   <div class="sticky"><button class="btn primary block" ${n?'':'style="opacity:.5"'} onclick="addPicked()">${tr('addN')(n)}</button></div>`;
 }
 function pick(id){state.picked.has(id)?state.picked.delete(id):state.picked.add(id);const st=screen.scrollTop;render();screen.scrollTop=st;}
@@ -328,6 +380,7 @@ function renderDetail(){const id=state.detail,ex=EX[id],m=k=>T[state.lang][k];
  const mus={chest:['Chest','الصدر'],back:['Back','الظهر'],shoulders:['Shoulders','الأكتاف'],triceps:['Triceps','الترايسبس'],biceps:['Biceps','البايسبس'],quads:['Quads','الفخذ الأمامي'],glutes:['Glutes','الأرداف']};
  const L=a=>a.map(k=>mus[k][state.lang==='ar'?1:0]).join(state.lang==='ar'?'، ':', ')||'—';
  screen.innerHTML=`<div class="pad"><div class="between"><div class="iconbtn" onclick="go(backTo)">${state.lang==='ar'?'›':'‹'}</div><h2 style="flex:1">${exName(id)}</h2></div>
+  <div class="card" style="display:grid;place-items:center;background:var(--poseBg)">${poseSvg(id,190)}</div>
   <div class="card"><div class="muscles"><div style="text-align:center">${bodySvg('front',id,90)}<div class="sub">${m('front')}</div></div><div style="text-align:center">${bodySvg('back',id,90)}<div class="sub">${m('back')}</div></div></div>
   <div class="legend"><span><i class="dot" style="background:var(--muscleP)"></i>${m('primary')}: ${L(ex.p)}</span><span><i class="dot" style="background:var(--muscleS)"></i>${m('secondary')}: ${L(ex.s)}</span></div></div>
   <div class="card"><h2>${m('howTo')}</h2><ol class="sub" style="padding-inline-start:18px;margin:8px 0 0;line-height:1.6">${state.lang==='ar'?'<li>اضبط وضعيتك وثبّت قدميك.</li><li>أنزل الوزن ببطء وتحكم.</li><li>ادفع للأعلى مع الزفير.</li>':'<li>Set up and plant your feet.</li><li>Lower the weight under control.</li><li>Press up as you breathe out.</li>'}</ol></div>
@@ -335,7 +388,7 @@ function renderDetail(){const id=state.detail,ex=EX[id],m=k=>T[state.lang][k];
 function renderBuilder(){const ex=['bench','incline','row'];
  screen.innerHTML=`<div class="pad"><div class="between"><div class="iconbtn" onclick="go('home')">✕</div><h2 style="flex:1">${tr('newRoutine')}</h2><button class="btn small primary">${tr('save')}</button></div>
   <input class="search" value="${state.lang==='ar'?'الجزء العلوي A':'Upper A'}" aria-label="${tr('routineName')}">
-  ${ex.map(id=>`<div class="card" style="padding:12px"><div class="exhead"><div class="thumb" onclick="openDetail('${id}')">${bodySvg('front',id,20)}</div><div class="exname" onclick="openDetail('${id}')">${exName(id)}</div><span style="color:var(--t3)">⋯</span></div>
+  ${ex.map(id=>`<div class="card" style="padding:12px"><div class="exhead">${exThumb(id)}<div style="flex:1;cursor:pointer" onclick="openDetail('${id}')"><div class="exname">${exName(id)}</div><div class="sub">${exMuscle(id)}</div></div><span style="color:var(--t3)">⋯</span></div>
    <div class="exmeta"><span class="pill">⏱ ${tr('restLabel')} 2:00</span></div>
    <table class="sets"><thead><tr><th>${tr('set')}</th><th>${tr('kg')}</th><th>${tr('reps')}</th></tr></thead><tbody>${[1,2,3].map(n=>`<tr><td><span class="setno">${n}</span></td><td><input class="num" placeholder="80"></td><td><input class="num" placeholder="8"></td></tr>`).join('')}</tbody></table>
    <button class="addset">${tr('addSet')}</button></div>`).join('')}
