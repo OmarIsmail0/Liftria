@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { deleteCachedImportFile } from '../../src/features/settings/storage';
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Typography } from '../../src/design/primitives';
@@ -28,6 +29,10 @@ export default function ImportPreview(){
   else setError(t('im2.readFailed'));
  },[t]);
  useEffect(()=>{if(draft?.parsed)void Promise.resolve().then(()=>load());},[load,draft?.parsed]);
+ useEffect(()=>{
+  const uri=getImportDraft()?.cacheUri??null;
+  return()=>{void deleteCachedImportFile(uri);};
+ },[]);
  useEffect(()=>{void getTypedSetting('units.weight').then(r=>{if(r.ok)setDisplayUnit(r.value);});},[]);
  const plan=draft?.parsed&&context?createImportPlan(draft.parsed,context,unit,decisions,displayUnit,language):null;
  const suggestions=draft?.parsed&&context?

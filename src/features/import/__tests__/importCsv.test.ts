@@ -1,6 +1,6 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { ImportParseError, readCsv, parseImportCsv, sha256, fromImportWeight, csvFileTypeError, detectImportSource, importFailureText } from '../importCsv';
+const {readFileSync}=jest.requireActual('fs') as {readFileSync:(file:string,encoding:'utf8')=>string};
+const {join}=jest.requireActual('path') as {join:(...parts:string[])=>string};
 test('SHA-256 UTF-8 deterministic vectors; no Web Crypto dependency',()=>{
  expect(sha256('')).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
  expect(sha256('abc')).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
@@ -163,7 +163,7 @@ test('file type guard rejects XLSX copies and explains how to export a real Hevy
 
 /** Synthetic Hevy export in the current 14-column shape. Not a real person's file. */
 test('current Hevy export: quoted commas, a note line break, named dates and set types',()=>{
- const raw=readFileSync(join(__dirname,'fixtures','hevy-current.csv'),'utf8');
+ const raw=readFileSync(join(process.cwd(),'src/features/import/__tests__/fixtures/hevy-current.csv'),'utf8');
  expect(detectImportSource(readCsv(raw).columns)).toBe('hevy');
  const result=parseImportCsv('hevy','document:1234',raw);
  expect(result.columns).toEqual([

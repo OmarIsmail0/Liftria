@@ -16,7 +16,9 @@ export async function clearHealthCacheOnPhone(language: AppLanguage = 'en'): Pro
  * copies (the camera capture and the re-encoded JPEG), and expo-document-picker the copy of
  * a picked backup or import file. Each flow deletes its copy, but it stays if the app closes
  * mid-flow. The modules recreate the folder on their next use. */
-export const TEMPORARY_FILE_FOLDERS = ['ImagePicker', 'ImageManipulator', 'DocumentPicker'] as const;
+/** Copies of a CSV opened from the share sheet or Files, kept only until the preview closes. */
+export const INCOMING_IMPORT_FOLDER = 'IncomingImport';
+export const TEMPORARY_FILE_FOLDERS = ['ImagePicker', 'ImageManipulator', 'DocumentPicker', INCOMING_IMPORT_FOLDER] as const;
 export type ExportKind = 'backup' | 'workouts' | 'diary' | 'measurements';
 /** Name of the export copy written to the cache root for the share sheet. */
 export function exportFileName(kind: ExportKind, date: Date = new Date()): string {
@@ -74,6 +76,34 @@ export async function deleteEverythingOnPhone(confirmation:string, ops: Deletion
     message:translate(language,'dataStorage.deleteFilesFailed')};
   clearImportDraft();
   return {ok:true};
+}
+
+/** A share can arrive as `document:1234`. Keep the cache name inside one folder. */
+export function safeImportFileName(name: string): string {
+  const cleaned = name.replace(/[\\/:*?"<>|\u0000]/g, '_').replace(/^\.+/, '').slice(-80);
+  const base = cleaned || 'import.csv';
+  return /\.csv$/i.test(base) ? base : base + '.csv';
+}
+/** True only for a file under the cache directory, never the user's original. */
+export function isCachedFileUri(uri: string): boolean {
+  const cache = Paths.cache.uri.replace(/\/+$/, '');
+  const target = uri.replace(/\/+$/, '');
+  return target.startsWith(cache + '/');
+}
+export async function writeIncomingImportFile(name: string, text: string): Promise<string> {
+  const folder = new Directory(Paths.cache, INCOMING_IMPORT_FOLDER);
+  if (!folder.exists) folder.create();
+  const file = new File(folder, safeImportFileName(name));
+  if (file.exists) file.delete();
+  file.write(text);
+  return file.uri;
+}
+export async function deleteCachedImportFile(uri: string | null | undefined): Promise<void> {
+  if (!uri || !isCachedFileUri(uri)) return;
+  try {
+    const file = new File(uri);
+    if (file.exists) file.delete();
+  } catch { /* The copy is already gone. */ }
 }
 
 export async function healthRecordCount():Promise<number|null> {
