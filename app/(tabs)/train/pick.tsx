@@ -1,11 +1,12 @@
-import { pluralForm, type TranslationKey } from '../../../src/i18n';
+import type { ReactNode } from 'react';
+import type { TranslationKey } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { equipmentLabel } from '../../../src/i18n/equipment';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Platform, Pressable, View } from 'react-native';
+import { useCallback, useRef, useMemo, useState } from 'react';
+import { FlatList, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Field, Header, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -18,6 +19,7 @@ import {
   EQUIPMENT_FILTERS, MUSCLE_FILTERS, exerciseMatchesFilters,
   type EquipmentFilter, type MuscleFilter,
 } from '../../../src/features/train/exerciseFilters';
+import { addExerciseButtonLabel } from '../../../src/features/train/pickLabel';
 import { resultCardEdges } from '../../../src/features/train/resultCardEdges';
 import {
   EXERCISE_SEARCH_DEBOUNCE_MS, exerciseListWindow, exerciseRowIdentity, exerciseThumbnailKey,
@@ -39,6 +41,21 @@ const EQUIPMENT_KEY: Record<EquipmentFilter, TranslationKey> = {
   machine: 'pick.equipMachine', cable: 'pick.equipCable', bodyweight: 'pick.equipBodyweight',
   kettlebell: 'pick.equipKettlebell', bands: 'pick.equipBands', other: 'pick.equipOther',
 };
+
+/** One sideways row. Logical order, so Arabic starts at the right and the first chip stays in view. */
+function ChipRow({ children }: { children: ReactNode }) {
+  const { theme } = useTheme();
+  const scroller = useRef<ScrollView>(null);
+  const showStart = useCallback(() => {
+    scroller.current?.scrollTo({ x: 0, animated: false });
+  }, []);
+  return <ScrollView horizontal ref={scroller} showsHorizontalScrollIndicator={false}
+    keyboardShouldPersistTaps="handled" nestedScrollEnabled
+    contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}
+    onContentSizeChange={showStart}>
+    {children}
+  </ScrollView>;
+}
 
 export default function AddWorkoutExercise() {
   const { theme } = useTheme();
@@ -140,7 +157,11 @@ export default function AddWorkoutExercise() {
       addLabel={t('exerciseRow.add')} marked={replaceId ? undefined : selected.has(item.id)} />,
   [add, edges, openExercise, replaceId, rows.length, selected, t]);
   const count = selected.size;
-  const chip = (label: string, on: boolean, press: () => void) => <Pressable key={label}
+  const addLabel = addExerciseButtonLabel(language, count);
+  const addButtonHeight = theme.size.touch.min;
+  const miniBarHeight = theme.size.touch.workout;
+  const listBottomPad = replaceId ? theme.space[4] : addButtonHeight + miniBarHeight + insets.bottom;
+  const chip = (key: string, label: string, on: boolean, press: () => void) => <Pressable key={key}
     accessibilityRole="button" accessibilityState={{ selected: on }} onPress={press}
     style={{ minHeight: theme.size.touch.min, paddingHorizontal: theme.space[3], borderRadius: theme.radius.pill,
       alignItems: 'center', justifyContent: 'center', borderWidth: theme.size.border.thin,
@@ -156,7 +177,7 @@ export default function AddWorkoutExercise() {
         keyExtractor={item => item.id}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
-        contentContainerStyle={{ paddingBottom: replaceId ? theme.space[4] : 120 + insets.bottom }}
+        contentContainerStyle={{ paddingBottom: listBottomPad }}
         getItemLayout={flatListItemLayout}
         removeClippedSubviews={Platform.OS === 'android'}
         {...exerciseListWindow}
@@ -166,13 +187,13 @@ export default function AddWorkoutExercise() {
             <View style={{ gap: theme.space[3] }}>
               <Field label={t('pick.search')} value={query} onChangeText={setQuery} />
               <Typography size="label" tone="tertiary">{t('pick.muscleFilter')}</Typography>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-                {MUSCLE_FILTERS.map(value => chip(t(MUSCLE_KEY[value]), muscle === value, () => setMuscle(value)))}
-              </View>
+              <ChipRow>
+                {MUSCLE_FILTERS.map(value => chip(value, t(MUSCLE_KEY[value]), muscle === value, () => setMuscle(value)))}
+              </ChipRow>
               <Typography size="label" tone="tertiary">{t('pick.equipmentFilter')}</Typography>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-                {EQUIPMENT_FILTERS.map(value => chip(t(EQUIPMENT_KEY[value]), equipment === value, () => setEquipment(value)))}
-              </View>
+              <ChipRow>
+                {EQUIPMENT_FILTERS.map(value => chip(value, t(EQUIPMENT_KEY[value]), equipment === value, () => setEquipment(value)))}
+              </ChipRow>
               {recent.length > 0 && rows.length > 0 && <Typography size="label" tone="tertiary">{t('pick.recentFirst')}</Typography>}
               {rows.length === 0 && <Typography tone="secondary">
                 {muscle === 'all' && equipment === 'any' ? t('pick.noMatch') : t('pick.noFilterMatch')}
@@ -186,10 +207,15 @@ export default function AddWorkoutExercise() {
           {error && <Typography>{error}</Typography>}
         </View>}
       />
-      {!replaceId && <View style={{ position: 'absolute', start: theme.layout.gutter, end: theme.layout.gutter,
-        bottom: theme.space[2] + insets.bottom }}>
-        <Button label={t((`pick.addCount.${pluralForm(language, count)}`) as TranslationKey, { count })}
-          variant="train" fullWidth disabled={busy || count === 0} onPress={() => void commit()} />
+      {!replaceId && <View style={{ position: 'absolute', start: theme.layout.gutter, end: theme.layout.gutter, bottom: 0 }}>
+        {count === 0 ? <Pressable accessibilityRole="button" accessibilityState={{ disabled: true }} disabled
+          accessibilityLabel={addLabel}
+          style={{ minHeight: addButtonHeight, borderRadius: theme.radius.pill, alignItems: 'center',
+            justifyContent: 'center', opacity: 1, backgroundColor: theme.surface.control,
+            borderWidth: theme.size.border.thin, borderColor: theme.surface.hairline }}>
+          <Typography tone="tertiary" bold>{addLabel}</Typography>
+        </Pressable> : <Button label={addLabel} variant="train" fullWidth disabled={busy}
+          onPress={() => void commit()} />}
       </View>}
     </View>
   </Screen>;
