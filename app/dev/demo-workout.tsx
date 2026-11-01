@@ -3,20 +3,31 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Card, Header, Screen, Typography } from '../../src/design/primitives';
 import { ensureExercisePack } from '../../src/services/database/exerciseLibrary';
 import { addSessionExercise } from '../../src/services/database/gymRepositories';
-import { readInProgressWorkout, startManualWorkout } from '../../src/features/train/workoutData';
+import { logWorkoutSet, readInProgressWorkout, readWorkout, startManualWorkout } from '../../src/features/train/workoutData';
 
 /** Hidden developer route. Writes a real empty session and zero logged sets. */
 export default function DemoWorkoutScreen(){
-  const {auto}=useLocalSearchParams<{auto?:string}>();
+  const {auto,state}=useLocalSearchParams<{auto?:string;state?:string}>();
   const started=useRef(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState<string|null>(null);
+  const showRest=useCallback(async(sessionId:string)=>{
+    const loaded=await readWorkout(sessionId);
+    const exercise=loaded.ok?loaded.value?.exercises[0]:undefined;
+    if(!loaded.ok||!loaded.value||!exercise||loaded.value.sets.length>0)return;
+    await logWorkoutSet({
+      sessionId,sessionExerciseId:exercise.id,position:0,side:null,kind:'working',
+      weight:80,reps:8,restSec:exercise.restSec||90,
+    });
+  },[]);
   const create=useCallback(async()=>{
     setBusy(true);
     const active=await readInProgressWorkout();
     if(!active.ok){setError('Could not read the active session.');setBusy(false);return;}
-    if(active.value){router.replace({pathname:'/(tabs)/train/active',
-      params:auto==='1'?{id:active.value.id,auto:'1'}:{id:active.value.id}});return;}
+    if(active.value){
+      if(state==='rest')await showRest(active.value.id);
+      router.replace({pathname:'/(tabs)/train/active',
+        params:auto==='1'?{id:active.value.id,auto:'1'}:{id:active.value.id}});return;}
     const seeded=await ensureExercisePack();
     if(!seeded.ok){setError('Exercise pack unavailable.');setBusy(false);return;}
     const session=await startManualWorkout('Demo · Upper A');
@@ -25,9 +36,10 @@ export default function DemoWorkoutScreen(){
       const added=await addSessionExercise(session.value,id,i);
       if(!added.ok){setError('Exercise setup incomplete; return to Train and discard demo.');setBusy(false);return;}
     }
+    if(state==='rest')await showRest(session.value);
     router.replace({pathname:'/(tabs)/train/active',
       params:auto==='1'?{id:session.value,auto:'1'}:{id:session.value}});
-  },[auto]);
+  },[auto,showRest,state]);
   // liftria://dev/demo-workout?auto=1 opens TR-8 without a tap, for the emulator visual check.
   useEffect(()=>{
     if(auto!=='1'||started.current)return;
@@ -37,7 +49,7 @@ export default function DemoWorkoutScreen(){
   return <Screen>
     <Header title="Demo workout" onBack={()=>router.back()}/>
     <Card rim="train" title="Screenshot setup">
-      <Typography tone="secondary">Creates an empty workout with Bench Press and Shoulder Press. No sets are logged. Resume your existing workout instead if one is in progress.</Typography>
+      <Typography tone="secondary">Creates an empty workout with Bench Press and Shoulder Press. Add ?state=rest to log one set and show the rest bar. Resume your existing workout instead if one is in progress.</Typography>
       <Button label={busy?'Opening…':'Open demo active workout'} variant="train"
         disabled={busy} onPress={()=>void create()}/>
       {error&&<Typography>{error}</Typography>}

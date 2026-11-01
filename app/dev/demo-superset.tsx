@@ -61,7 +61,7 @@ export default function DemoSuperset(){
  return <Screen>
    <Header title={t('gymParity.demoSuperset')} onBack={()=>router.back()}/>
    <Card rim="train">
-    <Typography tone="secondary">{t('gymParity.warmupDisclaimer')}</Typography>
+    <Typography tone="secondary">{t('gymParity.supersetEnd')}</Typography>
     {error&&<Typography tone="secondary">{t('gymParity.demoError')}</Typography>}
     <Button label={t('gymParity.demoSuperset')} disabled={busy} onPress={()=>void begin()}/>
    </Card>
