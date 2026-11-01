@@ -4,7 +4,7 @@ import { newGymId } from '../../services/database/exerciseLibrary';
 import { setVolume } from '../../services/database/gymMath';
 import type { ExerciseType } from '../../services/database/gymTypes';
 import { restDeadline } from './restClock';
-import { cancelSessionRestAlerts, dismissWorkoutNotification, runNotificationTurn } from './restAlerts';
+import { cancelSessionRestAlerts, dismissWorkoutNotification } from './restAlerts';
 import {canLinkSuperset,supersetGroupsValid} from './superset';
 
 export type ActiveExercise = {
@@ -184,17 +184,14 @@ export function shouldAdvanceRotation(sequence:unknown,nextIndex:number,template
   return templateId!==null&&Array.isArray(sequence)&&sequence.length>0&&
     sequence[nextIndex%sequence.length]===templateId;
 }
-/** Finishing never writes untouched suggested sets. Rotation advances only after finish. */
-async function endWorkoutNotifications(id:string,failure:string):Promise<DbResult<boolean>|null> {
-  try{
-    await cancelSessionRestAlerts(id);
-    await dismissWorkoutNotification();
-    return null;
-  }catch{return {ok:false,error:{code:'db-error',message:failure}};}
+/** Finishing never writes untouched suggested sets. Rotation advances only after finish.
+ * Notification cleanup is best effort: a denied permission or a busy notification queue must not block it. */
+function releaseWorkoutNotifications(id:string): void {
+  void cancelSessionRestAlerts(id).catch(()=>undefined);
+  void dismissWorkoutNotification().catch(()=>undefined);
 }
 export async function completeWorkout(id:string,notes:string|null):Promise<DbResult<boolean>> {
-  const blocked=await runNotificationTurn(()=>endWorkoutNotifications(id,'Could not cancel rest alerts. Retry finish.'));
-  if(blocked)return blocked;
+  releaseWorkoutNotifications(id);
   return dbOperation(async db=>{
     let updated=false;
     await db.withExclusiveTransactionAsync(async tx=>{
@@ -220,8 +217,7 @@ export async function completeWorkout(id:string,notes:string|null):Promise<DbRes
 }
 /** Discard is exposed only from home / finish summary, with an explicit confirmation. */
 export async function discardInProgressWorkout(id:string):Promise<DbResult<boolean>> {
-  const blocked=await runNotificationTurn(()=>endWorkoutNotifications(id,'Could not cancel rest alerts. Retry discard.'));
-  if(blocked)return blocked;
+  releaseWorkoutNotifications(id);
   return dbOperation(async db=>{
     let removed=false;
     await db.withExclusiveTransactionAsync(async tx=>{

@@ -10,7 +10,7 @@ import { useTheme } from '../../../src/design/ThemeProvider';
 import { GymStepper } from '../../../src/features/train/GymStepper';
 import { askRestPermission, cancelSessionRestAlerts, prepareRestAlerts, runNotificationTurn } from '../../../src/features/train/restAlerts';
 import { elapsedLabel, nextClockDelay, restAnnouncement, restVisual, selectCurrentRest, shiftRest } from '../../../src/features/train/restClock';
-import { alignWorkoutNotifications, subscribeWorkoutChanges, syncWorkoutNotifications } from '../../../src/features/train/workoutNotification';
+import { alignWorkoutNotifications, subscribeWorkoutChanges, suppressWorkoutNotificationPrompt, syncWorkoutNotifications } from '../../../src/features/train/workoutNotification';
 import { editLoggedSet, logWorkoutSet, readWorkout, readInProgressWorkout, removeLoggedSet,
   updateRestDeadline, previousWorkingSets, suggestionForSlot, reorderActiveExercise,
   saveWorkoutExerciseNote, readWorkoutExerciseNote, previousExerciseNote, updateActiveSuperset, workoutNumbers,
@@ -45,7 +45,7 @@ function slotsFor(exercise:ActiveExercise,sets:ActiveSet[]):Slot[] {
   return result;
 }
 export default function ActiveWorkoutScreen() {
-  const {id}=useLocalSearchParams<{id?:string}>();
+  const {id,auto}=useLocalSearchParams<{id?:string;auto?:string}>();
   const {theme}=useTheme();
   const {t,language}=useLanguage();
   const insets=useSafeAreaInsets();
@@ -172,7 +172,7 @@ export default function ActiveWorkoutScreen() {
   useEffect(()=>subscribeWorkoutChanges(()=>{void refresh();}),[refresh]);
   const workoutId=view?.id,workoutState=view?.state;
   useEffect(()=>{
-    if(!workoutId||workoutState!=='in-progress')return;
+    if(!workoutId||workoutState!=='in-progress'||suppressWorkoutNotificationPrompt(auto))return;
     let live=true;
     void (async()=>{
       const asked=await getSetting('rest.permissionPromptSeen');
@@ -182,7 +182,7 @@ export default function ActiveWorkoutScreen() {
       if(live)setDenied(!granted);
     })();
     return()=>{live=false;};
-  },[workoutId,workoutState,language]);
+  },[workoutId,workoutState,language,auto]);
   useEffect(()=>{
     if(!focused||rest.status==='idle')return;
     const remaining=rest.remainingMs;
@@ -413,7 +413,7 @@ export default function ActiveWorkoutScreen() {
         onPress={()=>void log()}/>
       {edit&&<Button label={t('active.cancelEdit')} variant="ghost" onPress={()=>{setEdit(null);setKg(0);setReps(0);}}/>}
     </View>
-    <Sheet visible={askVisible} title={t('active.restPermissionTitle')}
+    <Sheet visible={askVisible&&!suppressWorkoutNotificationPrompt(auto)} title={t('active.restPermissionTitle')}
       description={t(Platform.OS==='android'?'active.restPermissionDesc':'active.restPermissionDescIos')}
       onClose={()=>void allow(false)}>
       <Button label={t('active.restAllow')} variant="train" fullWidth onPress={()=>void allow(true)}/>

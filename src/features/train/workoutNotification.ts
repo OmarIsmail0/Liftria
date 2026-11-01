@@ -33,6 +33,11 @@ function emitWorkoutChange(): void {
 export function resetWorkoutNotificationCache(): void {
   channelsFor = null;
 }
+/** Screenshot routes pass auto=1. They must show the workout, not the permission sheet. */
+export function suppressWorkoutNotificationPrompt(auto: string | string[] | undefined): boolean {
+  const flag = Array.isArray(auto) ? auto[0] : auto;
+  return flag === '1';
+}
 
 export function formatClock(language: AppLanguage, ms: number): string {
   return formatDate(language, new Date(ms), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });

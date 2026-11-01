@@ -25,8 +25,8 @@ export default function DemoSuperset(){
   }
   const group=await updateActiveSuperset(session.value,0,3);
   if(!group.ok||!group.value){setError(true);return;}
-  router.replace({pathname:'/(tabs)/train/active',params:{id:session.value}});
- },[]);
+  router.replace({pathname:'/(tabs)/train/active',params:auto==='1'?{id:session.value,auto:'1'}:{id:session.value}});
+ },[auto]);
  const begin=useCallback(async()=>{
   if(busy)return;setBusy(true);setError(false);
   try{

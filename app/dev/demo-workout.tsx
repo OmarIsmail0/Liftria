@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Card, Header, Screen, Typography } from '../../src/design/primitives';
 import { ensureExercisePack } from '../../src/services/database/exerciseLibrary';
 import { addSessionExercise } from '../../src/services/database/gymRepositories';
@@ -11,11 +11,12 @@ export default function DemoWorkoutScreen(){
   const started=useRef(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState<string|null>(null);
-  const create=async()=>{
+  const create=useCallback(async()=>{
     setBusy(true);
     const active=await readInProgressWorkout();
     if(!active.ok){setError('Could not read the active session.');setBusy(false);return;}
-    if(active.value){router.replace({pathname:'/(tabs)/train/active',params:{id:active.value.id}});return;}
+    if(active.value){router.replace({pathname:'/(tabs)/train/active',
+      params:auto==='1'?{id:active.value.id,auto:'1'}:{id:active.value.id}});return;}
     const seeded=await ensureExercisePack();
     if(!seeded.ok){setError('Exercise pack unavailable.');setBusy(false);return;}
     const session=await startManualWorkout('Demo · Upper A');
@@ -24,14 +25,15 @@ export default function DemoWorkoutScreen(){
       const added=await addSessionExercise(session.value,id,i);
       if(!added.ok){setError('Exercise setup incomplete; return to Train and discard demo.');setBusy(false);return;}
     }
-    router.replace({pathname:'/(tabs)/train/active',params:{id:session.value}});
-  };
+    router.replace({pathname:'/(tabs)/train/active',
+      params:auto==='1'?{id:session.value,auto:'1'}:{id:session.value}});
+  },[auto]);
   // liftria://dev/demo-workout?auto=1 opens TR-8 without a tap, for the emulator visual check.
   useEffect(()=>{
     if(auto!=='1'||started.current)return;
     started.current=true;
     void Promise.resolve().then(create);
-  },[auto]);
+  },[auto,create]);
   return <Screen>
     <Header title="Demo workout" onBack={()=>router.back()}/>
     <Card rim="train" title="Screenshot setup">
