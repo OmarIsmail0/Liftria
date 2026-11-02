@@ -25,7 +25,7 @@ export function poseRoleColors(theme: Pick<LiftriaTheme, 'mode' | 'color'>): Rec
     m: { fill: theme.color.track, stroke: outline, strokeWidth: 1.25 },
     p: { fill: train, stroke: outline, strokeWidth: 1.25 },
     s: { fill: tintHex(train, 0.55), stroke: outline, strokeWidth: 1.25 },
-    skin: { fill: theme.color.border.strong, stroke: 'none', strokeWidth: 0 },
+    skin: { fill: theme.color.track, stroke: 'none', strokeWidth: 0 },
     eq: { fill: lightGear, stroke: 'none', strokeWidth: 0 },
     eqd: { fill: darkGear, stroke: 'none', strokeWidth: 0 },
   };

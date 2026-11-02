@@ -8,7 +8,6 @@ import { poseRoleColors } from '../poseColors';
 import {
   cachedBuiltPose, highlightForExercise, POSE_OVERRIDES, poseForExercise, type PoseSubject,
 } from '../poseTable';
-import { rotateList } from '../poseTransform';
 
 const pack = bundledExercises();
 const byId = (id: string): PoseSubject => {
@@ -99,19 +98,13 @@ test('a pose is built once for the same exercise and muscles', () => {
   expect(other).not.toBe(first);
 });
 
-test('path transforms are rotate lists the figure can nest', () => {
+test('arm paths are rotated in the path data, with no transform left to render', () => {
   for (const key of POSE_KEYS) {
     for (const part of buildPose(key).primitives) {
-      if (part.kind !== 'path' || !part.transform) continue;
-      const steps = rotateList(part.transform);
-      expect(steps?.join(' ')).toBe(part.transform);
+      expect('transform' in part).toBe(false);
+      if (part.kind === 'path') expect(part.d).not.toContain('NaN');
     }
   }
-  expect(rotateList('rotate(35 950 350) rotate(120 915 525)')).toEqual([
-    'rotate(35 950 350)', 'rotate(120 915 525)',
-  ]);
-  expect(rotateList('translate(1 2)')).toBeNull();
-  expect(rotateList('rotate(35 950 350) scale(2)')).toBeNull();
 });
 
 test('role colours match the body map in light and dark', () => {
