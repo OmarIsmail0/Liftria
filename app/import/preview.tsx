@@ -8,7 +8,7 @@ import { readImportContext } from '../../src/features/import/importRepository';
 import { canImportPlan, createImportPlan, resolveImportMappings, keepAllAsOwn, type ImportChoice, type ImportContext } from '../../src/features/import/importPlanning';
 import { expectedColumns, importFailureText, importerLabel, type WeightUnit } from '../../src/features/import/importCsv';
 import { useTheme } from '../../src/design/ThemeProvider';
-import { ExerciseThumbnail } from '../../src/features/train/ExerciseThumbnail';
+import { ExerciseFigure } from '../../src/features/train/ExerciseFigure';
 import { bundledExercises } from '../../src/services/database/exerciseLibrary';
 import { getTypedSetting } from '../../src/services/database/settings';
 import {formatNumber, bidiIsolate, latinDigits, pluralForm, type TranslationKey, weightUnitLabel} from '../../src/i18n';
@@ -103,7 +103,7 @@ export default function ImportPreview(){
     {mappings.map(m=><View key={m.name} style={{gap:theme.space[2],paddingVertical:theme.space[2]}}>
      <View style={{flexDirection:'row',alignItems:'center',gap:theme.space[2]}}>
       {imageForId(m.resolvedId??m.suggestedId) &&
-        <ExerciseThumbnail exercise={imageForId(m.resolvedId??m.suggestedId)!}/>}
+        <ExerciseFigure exercise={imageForId(m.resolvedId??m.suggestedId)!}/>}
       <Typography bold>{t((`im2.matchCount.${pluralForm(language,m.count)}`) as TranslationKey,{name:m.name,count:m.count})}</Typography>
      </View>
      <Typography tone="secondary">{m.resolvedId?t("im2.currentLibrary"):t("im2.currentOwn")}</Typography>
@@ -126,7 +126,7 @@ export default function ImportPreview(){
      plan.changes.length===0?<Typography tone="secondary">{t("im2.noRecords")}</Typography>:
      plan.changes.slice(0,6).map((change,i)=><ListRow key={i} title={change.exerciseName}
        leading={exerciseCatalog.find(e=>e.name===change.exerciseName)?
-         <ExerciseThumbnail exercise={exerciseCatalog.find(e=>e.name===change.exerciseName)!}/>:undefined}
+         <ExerciseFigure exercise={exerciseCatalog.find(e=>e.name===change.exerciseName)!}/>:undefined}
        detail={bidiIsolate(language,change.before)+' → '+bidiIsolate(language,change.after)}/>)}
     <Typography tone="secondary" size="small">{t("im2.rmEstimate")}</Typography>
    </Card>

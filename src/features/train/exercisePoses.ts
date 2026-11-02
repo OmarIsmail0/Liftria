@@ -7,12 +7,13 @@
  */
 import { bodyBack } from 'react-native-body-highlighter/dist/assets/bodyBack';
 import { bodyFront } from 'react-native-body-highlighter/dist/assets/bodyFront';
+import { rotatePathData, type Rotation } from './rotatePath';
 
 export type PoseView = 'front' | 'back';
 /** m = muscle, p = primary, s = secondary, skin = limb fill under muscles, eq/eqd = equipment light/dark. */
 export type PoseRole = 'm' | 'p' | 's' | 'skin' | 'eq' | 'eqd';
 export type PosePrimitive =
-  | { kind: 'path'; d: string; role: PoseRole; transform?: string }
+  | { kind: 'path'; d: string; role: PoseRole }
   | { kind: 'line'; x1: number; y1: number; x2: number; y2: number; width: number; role: PoseRole }
   | { kind: 'circle'; cx: number; cy: number; r: number; role: PoseRole }
   | { kind: 'rect'; x: number; y: number; width: number; height: number; rx: number; role: PoseRole };
@@ -147,9 +148,9 @@ export function buildPose(key: PoseKey, highlight?: { primary: readonly string[]
   const spec: PoseSpec = POSES[key];
   const primary = highlight?.primary ?? spec.primary, secondary = highlight?.secondary ?? spec.secondary;
   const role = (slug: string): PoseRole => primary.includes(slug) ? 'p' : secondary.includes(slug) ? 's' : 'm';
-  const paths = (slugs: readonly string[], side: 'left' | 'right' | 'common', transform?: string): PosePrimitive[] =>
+  const paths = (slugs: readonly string[], side: 'left' | 'right' | 'common', rotations: readonly Rotation[] = []): PosePrimitive[] =>
     slugs.flatMap(slug => partPaths(spec.view, slug, side).map(d =>
-      transform ? { kind: 'path' as const, d, role: role(slug), transform } : { kind: 'path' as const, d, role: role(slug) }));
+      ({ kind: 'path' as const, d: rotatePathData(d, rotations), role: role(slug) })));
   const cx = CENTER[spec.view], joints = ARM[spec.view];
   const arm = (side: 'left' | 'right') => {
     const mirror = side === 'right', sign = mirror ? -1 : 1;
@@ -159,8 +160,8 @@ export function buildPose(key: PoseKey, highlight?: { primary: readonly string[]
     const elbow = rotatePoint(E, S, a1);
     const wrist = rotatePoint(rotatePoint(W, E, a2), S, a1);
     const hand = rotatePoint(rotatePoint(H, E, a2), S, a1);
-    // i18n-stored-ids: an SVG transform, never shown as text.
-    const upper = `rotate(${a1} ${S[0]} ${S[1]})`, lower = `${upper} rotate(${a2} ${E[0]} ${E[1]})`;
+    const upper: Rotation[] = [{ degrees: a1, cx: S[0], cy: S[1] }];
+    const lower: Rotation[] = [...upper, { degrees: a2, cx: E[0], cy: E[1] }];
     const primitives: PosePrimitive[] = [
       line(S, elbow, 66, 'skin'), line(elbow, wrist, 54, 'skin'),
       ...paths(UPPER_ARM[spec.view], side, upper), ...paths(['forearm'], side, lower),

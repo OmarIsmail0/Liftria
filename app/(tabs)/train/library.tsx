@@ -6,7 +6,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, SectionList, TextInput, View } from 'react-native';
 import { ExerciseResultRow } from '../../../src/features/train/ExerciseResultRow';
-import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
+import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
 import { librarySections } from '../../../src/features/train/exerciseSections';
 import {
   EXERCISE_SEARCH_DEBOUNCE_MS, EXERCISE_SECTION_HEADER_HEIGHT, exerciseListWindow, exerciseRowIdentity,
@@ -151,7 +151,7 @@ export default function ExerciseLibrary() {
         {error && <Card><Typography>{error}</Typography><Button label={t('common.back')} onPress={() => router.back()} /></Card>}
         {showList && browsing && group === 'All' && recentRows.length > 0 &&
           <Card title={t('library.recent')}>{recentRows.map(row => <ListRow key={row.exercise.id} title={row.title}
-            detail={row.detail} leading={<ExerciseThumbnail exercise={row.exercise} />}
+            detail={row.detail} leading={<ExerciseFigure exercise={row.exercise} />}
             onPress={() => openExercise(row.exercise.id)} />)}</Card>}
         {showList && !showResults && <EmptyState title={appliedQuery.trim() ? t('library.noMatch', { query: appliedQuery }) : t('library.noGroup')}
           description={t('library.emptyHint')}
