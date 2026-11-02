@@ -117,7 +117,7 @@ test('role colours match the body map in light and dark', () => {
     expect(colors.p.stroke).toBe(theme.color.border.control);
     expect(colors.s.fill).toBe(tintHex(theme.color.domain.train, 0.55));
     expect(colors.s.stroke).toBe(theme.color.border.control);
-    expect(colors.skin.fill).toBe(theme.color.border.strong);
+    expect(colors.skin.fill).toBe(colors.m.fill);
     expect(colors.eq.stroke).toBe('none');
     expect(colors.eqd.stroke).toBe('none');
     expect(colors.eq.fill).not.toBe(colors.eqd.fill);
