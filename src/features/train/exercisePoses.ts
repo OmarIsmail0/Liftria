@@ -159,8 +159,8 @@ export function buildPose(key: PoseKey, highlight?: { primary: readonly string[]
     const elbow = rotatePoint(E, S, a1);
     const wrist = rotatePoint(rotatePoint(W, E, a2), S, a1);
     const hand = rotatePoint(rotatePoint(H, E, a2), S, a1);
-    const upper = `rotate(${a1} ${S[0]} ${S[1]})`;
-    const lower = `${upper} rotate(${a2} ${E[0]} ${E[1]})`;
+    // i18n-stored-ids: an SVG transform, never shown as text.
+    const upper = `rotate(${a1} ${S[0]} ${S[1]})`, lower = `${upper} rotate(${a2} ${E[0]} ${E[1]})`;
     const primitives: PosePrimitive[] = [
       line(S, elbow, 66, 'skin'), line(elbow, wrist, 54, 'skin'),
       ...paths(UPPER_ARM[spec.view], side, upper), ...paths(['forearm'], side, lower),
