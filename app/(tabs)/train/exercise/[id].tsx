@@ -4,6 +4,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { BodyMap } from '../../../../src/features/train/BodyMap';
+import { ExerciseFigure } from '../../../../src/features/train/ExerciseFigure';
 import { equipmentLabel } from '../../../../src/i18n/equipment';
 import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Sheet, Typography } from '../../../../src/design/primitives';
 import { useTheme } from '../../../../src/design/ThemeProvider';
@@ -90,6 +91,7 @@ export default function ExerciseDetail(){
       <Header title={exerciseName(language,exercise.id,exercise.name)} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
         onBack={()=>router.back()}/>
       <Card rim="train">
+        <ExerciseFigure exercise={exercise} crop="full" />
         <BodyMap primary={exercise.primaryMuscles} secondary={exercise.secondaryMuscles}/>
         {exercise.type!=='weighted'||exercise.unilateral?
           <Typography tone="secondary">{exercise.type==='dumbbell'?t('exerciseDetail.weightPerHand'):exercise.type==='assisted'?t('exerciseDetail.assistanceWeight'):exercise.type==='bodyweight'?t('exerciseDetail.bodyweight'):''}{exercise.unilateral?t('exerciseDetail.separateSides'):''}</Typography>:null}

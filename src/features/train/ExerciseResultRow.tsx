@@ -8,7 +8,7 @@ import { bidiIsolate } from '../../i18n';
 import { chevronPointsLeft } from '../../i18n/layout';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import type { Exercise } from '../../services/database/gymTypes';
-import { ExerciseThumbnail } from './ExerciseThumbnail';
+import { ExerciseFigure } from './ExerciseFigure';
 import {
   EXERCISE_ROW_HEIGHT, exerciseRowIdentityEqual, type ExerciseRowIdentity,
 } from './exerciseRows';
@@ -49,7 +49,7 @@ export const ExerciseResultRow = memo(function ExerciseResultRow({
       <Pressable accessibilityRole="button" accessibilityLabel={t('exerciseRow.open', { name })}
         onPress={open}
         style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.space[3] }}>
-        <ExerciseThumbnail exercise={exercise} />
+        <ExerciseFigure exercise={exercise} />
         <View style={{ flex: 1, gap: theme.space[1] }}>
           <Typography bold lines={1}>{identity.title}</Typography>
           <Typography tone="secondary" size="small" lines={1}>{identity.detail}</Typography>

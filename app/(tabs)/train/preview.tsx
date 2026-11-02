@@ -4,7 +4,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
-import { ExerciseThumbnail } from '../../../src/features/train/ExerciseThumbnail';
+import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
 import { startManualWorkout, readInProgressWorkout, completeWorkout, type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
 import { listTemplates, exerciseSessions, type Template } from '../../../src/services/database/gymRepositories';
@@ -77,7 +77,7 @@ export default function WorkoutPreview() {
     </Card>
     <Card title={t('preview.upNext')}>
       {template?template.exercises.map((e,i)=><ListRow key={i}
-        leading={lookup[e.exerciseId]?<ExerciseThumbnail exercise={lookup[e.exerciseId]!} />:undefined}
+        leading={lookup[e.exerciseId]?<ExerciseFigure exercise={lookup[e.exerciseId]!} />:undefined}
         title={lookup[e.exerciseId]?exerciseName(language,e.exerciseId,lookup[e.exerciseId]!.name):t('preview.exercise')}
         onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.exerciseId}})}
         detail={t('preview.sets',{

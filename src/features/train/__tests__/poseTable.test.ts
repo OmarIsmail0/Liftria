@@ -134,6 +134,25 @@ test('role colours match the body map in light and dark', () => {
   expect(poseRoleColors(createTheme('light', 'solid')).p.fill).toBe('#A83E18');
 });
 
+test('the exercise screen draws the whole figure above the muscle map', () => {
+  const { readFileSync } = jest.requireActual('fs') as {
+    readFileSync: (file: string, encoding: 'utf8') => string;
+  };
+  const { join } = jest.requireActual('path') as { join: (...parts: string[]) => string };
+  const read = (file: string) => readFileSync(join(process.cwd(), file), 'utf8');
+  const detail = read('app/(tabs)/train/exercise/[id].tsx');
+  const figureAt = detail.indexOf('ExerciseFigure');
+  const mapAt = detail.indexOf('<BodyMap');
+  expect(figureAt).toBeGreaterThan(0);
+  expect(mapAt).toBeGreaterThan(figureAt);
+  expect(detail).toContain('crop="full"');
+  expect(read('src/features/train/ExerciseResultRow.tsx')).toContain('ExerciseFigure');
+  expect(read('app/(tabs)/train/pick.tsx')).toContain('withPickerFigureLead');
+  expect(read('app/(tabs)/train/library.tsx')).toContain('ExerciseFigure');
+  expect(read('app/(tabs)/train/preview.tsx')).toContain('ExerciseFigure');
+  expect(read('app/import/preview.tsx')).toContain('ExerciseFigure');
+});
+
 test('a square crop stays square and a tall figure keeps its aspect', () => {
   expect(viewBoxSize('692 9 784 784', 52)).toEqual({ width: 52, height: 52 });
   expect(viewBoxSize('731 -151 705 1550', 220)).toEqual({ width: 220, height: 484 });
