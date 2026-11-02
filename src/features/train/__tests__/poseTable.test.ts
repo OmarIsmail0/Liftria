@@ -6,8 +6,7 @@ import { buildPose, POSE_KEYS, type PoseKey } from '../exercisePoses';
 import { tintHex } from '../exerciseRows';
 import { poseRoleColors } from '../poseColors';
 import {
-  cachedBuiltPose, highlightForExercise, PICKER_FIGURE_LEAD_ID, POSE_OVERRIDES,
-  poseForExercise, withPickerFigureLead, type PoseSubject,
+  cachedBuiltPose, highlightForExercise, POSE_OVERRIDES, poseForExercise, type PoseSubject,
 } from '../poseTable';
 import { rotateList } from '../poseTransform';
 
@@ -147,7 +146,6 @@ test('the exercise screen draws the whole figure above the muscle map', () => {
   expect(mapAt).toBeGreaterThan(figureAt);
   expect(detail).toContain('crop="full"');
   expect(read('src/features/train/ExerciseResultRow.tsx')).toContain('ExerciseFigure');
-  expect(read('app/(tabs)/train/pick.tsx')).toContain('withPickerFigureLead');
   expect(read('app/(tabs)/train/library.tsx')).toContain('ExerciseFigure');
   expect(read('app/(tabs)/train/preview.tsx')).toContain('ExerciseFigure');
   expect(read('app/import/preview.tsx')).toContain('ExerciseFigure');
@@ -157,13 +155,4 @@ test('a square crop stays square and a tall figure keeps its aspect', () => {
   expect(viewBoxSize('692 9 784 784', 52)).toEqual({ width: 52, height: 52 });
   expect(viewBoxSize('731 -151 705 1550', 220)).toEqual({ width: 220, height: 484 });
   expect(viewBoxSize('bad', 40)).toEqual({ width: 40, height: 40 });
-});
-
-test('the picker without a workout leads with a lat pulldown', () => {
-  const rows = [{ id: '3_4_Sit-Up' }, { id: PICKER_FIGURE_LEAD_ID }, { id: 'Pullups' }];
-  expect(withPickerFigureLead(rows, undefined).map(row => row.id)).toEqual([
-    PICKER_FIGURE_LEAD_ID, '3_4_Sit-Up', 'Pullups',
-  ]);
-  expect(withPickerFigureLead(rows, 'workout-1')).toBe(rows);
-  expect(withPickerFigureLead([{ id: 'Pullups' }], undefined)).toEqual([{ id: 'Pullups' }]);
 });

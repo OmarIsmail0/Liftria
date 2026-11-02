@@ -133,21 +133,3 @@ export function cachedBuiltPose(exercise: PoseSubject): BuiltPose | null {
   builtPoses.set(key, built);
   return built;
 }
-
-/**
- * The visual check opens `train/pick` with no workout id, and the list is alphabetical,
- * so a mapped exercise would sit off the first screen. That route leads with a lat pulldown.
- * A real add always passes the workout id and keeps recent-then-name order.
- */
-export const PICKER_FIGURE_LEAD_ID = 'Wide-Grip_Lat_Pulldown';
-
-export function withPickerFigureLead<T extends { id: string }>(
-  rows: readonly T[], workoutId: string | undefined,
-): readonly T[] {
-  if (workoutId) return rows;
-  const index = rows.findIndex(row => row.id === PICKER_FIGURE_LEAD_ID);
-  if (index <= 0) return rows;
-  const lead = rows[index];
-  if (!lead) return rows;
-  return [lead, ...rows.slice(0, index), ...rows.slice(index + 1)];
-}

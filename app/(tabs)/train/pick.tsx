@@ -20,7 +20,6 @@ import {
   type EquipmentFilter, type MuscleFilter,
 } from '../../../src/features/train/exerciseFilters';
 import { addExerciseButtonLabel } from '../../../src/features/train/pickLabel';
-import { withPickerFigureLead } from '../../../src/features/train/poseTable';
 import { resultCardEdges } from '../../../src/features/train/resultCardEdges';
 import {
   EXERCISE_SEARCH_DEBOUNCE_MS, exerciseListWindow, exerciseRowIdentity, exerciseThumbnailKey,
@@ -63,7 +62,6 @@ export default function AddWorkoutExercise() {
   const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const { id, replaceId } = useLocalSearchParams<{ id: string; replaceId?: string }>();
-  const workoutId = Array.isArray(id) ? id[0] : id;
   const [query, setQuery] = useState('');
   const appliedQuery = useDeferredQuery(query, EXERCISE_SEARCH_DEBOUNCE_MS);
   const [all, setAll] = useState<Exercise[]>([]);
@@ -94,7 +92,7 @@ export default function AddWorkoutExercise() {
     .filter(exercise => exerciseMatchesFilters(exercise, muscle, equipment)), [all, appliedQuery, language, muscle, equipment]);
   const ordered = useMemo(() => {
     const rank = new Map(recent.map((exerciseId, index) => [exerciseId, index]));
-    const sorted = [...matches].sort((a, b) => {
+    return [...matches].sort((a, b) => {
       const left = rank.get(a.id);
       const right = rank.get(b.id);
       if (left === undefined && right === undefined) return 0;
@@ -102,11 +100,7 @@ export default function AddWorkoutExercise() {
       if (right === undefined) return -1;
       return left - right;
     });
-    // The visual check opens train/pick on a fresh install: no workout id and no recents.
-    // Alphabetical order would hide every pose, so that route leads with a lat pulldown.
-    if (workoutId || recent.length > 0) return sorted;
-    return withPickerFigureLead(sorted, undefined);
-  }, [matches, recent, workoutId]);
+  }, [matches, recent]);
   const rows = useMemo<PickRow[]>(() => ordered.map(exercise => {
     const title = exerciseName(language, exercise.id, exercise.name);
     const primary = exercise.primaryMuscles[0];
