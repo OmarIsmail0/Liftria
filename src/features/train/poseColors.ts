@@ -16,16 +16,22 @@ export interface RolePaint {
  * Equipment is a lighter and a darker neutral: the same border tokens, swapped so the
  * darker gear stays darker in both modes.
  */
+/** The body map's muscle grey (react-native-body-highlighter asset colour). */
+export const BODY_MAP_MUSCLE = '#3F3F3F';
+
 export function poseRoleColors(theme: Pick<LiftriaTheme, 'mode' | 'color'>): Record<PoseRole, RolePaint> {
   const train = theme.color.domain.train;
+  // The body map draws every muscle in the library's own grey (each asset part carries
+  // color #3f3f3f, which wins over defaultFill) in both modes, so the figure matches it.
+  const muscle = BODY_MAP_MUSCLE;
   const outline = theme.color.border.control;
   const lightGear = theme.mode === 'dark' ? theme.color.border.control : theme.color.border.subtle;
   const darkGear = theme.mode === 'dark' ? theme.color.border.strong : theme.color.border.control;
   return {
-    m: { fill: theme.color.track, stroke: outline, strokeWidth: 1.25 },
+    m: { fill: muscle, stroke: theme.color.border.subtle, strokeWidth: 1.25 },
     p: { fill: train, stroke: outline, strokeWidth: 1.25 },
     s: { fill: tintHex(train, 0.55), stroke: outline, strokeWidth: 1.25 },
-    skin: { fill: theme.color.track, stroke: 'none', strokeWidth: 0 },
+    skin: { fill: muscle, stroke: 'none', strokeWidth: 0 },
     eq: { fill: lightGear, stroke: 'none', strokeWidth: 0 },
     eqd: { fill: darkGear, stroke: 'none', strokeWidth: 0 },
   };
