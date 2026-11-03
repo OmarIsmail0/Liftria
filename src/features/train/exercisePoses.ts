@@ -26,7 +26,7 @@ export type BuiltPose = {
   primitives: PosePrimitive[];
 };
 type Point = [number, number];
-type Hands = { L: Point; R: Point; LW: Point; RW: Point };
+type Hands = { L: Point; R: Point; LW: Point; RW: Point; LE: Point; RE: Point; LK: Point; RK: Point };
 type PoseSpec = {
   view: PoseView;
   /** Body-map slugs drawn in the primary and secondary colours. */
@@ -36,6 +36,10 @@ type PoseSpec = {
   shoulder: number;
   elbow: number;
   legs: boolean;
+  /** Hip rotation in degrees for the whole leg, mirrored for the right leg (positive spreads the legs). */
+  hip?: number;
+  /** A different shoulder and elbow rotation for the right arm (curls show one arm up, one down). */
+  rightArm?: { shoulder: number; elbow: number };
   viewBox: string;
   thumbViewBox: string;
   behind?: (h: Hands) => PosePrimitive[];
@@ -60,6 +64,11 @@ const LEGS: Record<PoseView, string[]> = {
   front: ['adductors', 'quadriceps', 'knees', 'tibialis', 'calves', 'ankles', 'feet'],
 };
 const UPPER_ARM: Record<PoseView, string[]> = { back: ['triceps'], front: ['biceps', 'triceps'] };
+/** Hip joint and knee of the body's left leg in the standing body map. */
+const LEG: Record<PoseView, { HIP: Point; K: Point }> = {
+  back: { HIP: [1025, 700], K: [1010, 1000] },
+  front: { HIP: [300, 660], K: [296, 1000] },
+};
 
 export function rotatePoint(p: Point, c: Point, degrees: number): Point {
   const r = degrees * Math.PI / 180, dx = p[0] - c[0], dy = p[1] - c[1];
@@ -134,6 +143,58 @@ const POSES = {
     viewBox: '800 45 567 1388', thumbViewBox: '737 714 694 694',
     front: () => [rect(930, 1338, 308, 44, 10, 'eq')],
   },
+  shoulderPressMachine: {
+    view: 'front', primary: ['deltoids'], secondary: ['triceps', 'trapezius'], shoulder: 82, elbow: 78, legs: false,
+    viewBox: '21 -37 685 838', thumbViewBox: '-55 -37 838 838',
+    behind: () => [rect(250, 250, 228, 520, 40, 'eq')],
+    seat: [rect(200, 700, 328, 50, 16, 'eq')],
+    front: h => [rect(h.L[0] - 14, h.L[1] - 70, 28, 140, 12, 'eqd'), rect(h.R[0] - 14, h.R[1] - 70, 28, 140, 12, 'eqd')],
+  },
+  lateralRaiseMachine: {
+    view: 'front', primary: ['deltoids'], secondary: ['trapezius'], shoulder: 70, elbow: -4, legs: false,
+    viewBox: '-263 50 1254 766', thumbViewBox: '-26 30 780 780',
+    behind: () => [rect(250, 250, 228, 520, 40, 'eq')],
+    seat: [rect(200, 700, 328, 50, 16, 'eq')],
+    front: h => [rect(h.LE[0] - 40, h.LE[1] - 50, 80, 36, 14, 'eqd'), rect(h.RE[0] - 40, h.RE[1] - 50, 80, 36, 14, 'eqd')],
+  },
+  chestPressMachine: {
+    view: 'front', primary: ['chest'], secondary: ['triceps', 'deltoids'], shoulder: 45, elbow: -150, legs: false,
+    viewBox: '72 70 585 727', thumbViewBox: '0 70 727 727',
+    behind: () => [rect(250, 250, 228, 520, 40, 'eq')],
+    seat: [rect(200, 700, 328, 50, 16, 'eq')],
+    front: h => [rect(h.L[0] - 14, h.L[1] - 60, 28, 120, 12, 'eqd'), rect(h.R[0] - 14, h.R[1] - 60, 28, 120, 12, 'eqd')],
+  },
+  pecDeck: {
+    view: 'front', primary: ['chest'], secondary: ['deltoids'], shoulder: 80, elbow: 84, legs: false,
+    viewBox: '5 1 718 798', thumbViewBox: '-35 1 798 798',
+    behind: h => [rect(250, 250, 228, 520, 40, 'eq'),
+      rect(h.LE[0] - 46, h.L[1] - 40, 40, h.LE[1] - h.L[1] + 70, 16, 'eq'), rect(h.RE[0] + 6, h.R[1] - 40, 40, h.RE[1] - h.R[1] + 70, 16, 'eq')],
+    seat: [rect(200, 700, 328, 50, 16, 'eq')],
+  },
+  tricepsPushdown: {
+    view: 'back', primary: ['triceps'], secondary: ['forearm'], shoulder: -10, elbow: 22, legs: true,
+    viewBox: '724 -56 721 1451', thumbViewBox: '721 -29 726 726',
+    behind: h => [line([1084, 20], [1084, 520], 5, 'eqd'), { kind: 'circle', cx: 1084, cy: 20, r: 22, role: 'eqd' },
+      line([1084, 520], h.L, 10, 'eqd'), line([1084, 520], h.R, 10, 'eqd')],
+  },
+  bicepCurl: {
+    view: 'front', primary: ['biceps'], secondary: ['forearm'], shoulder: -8, elbow: -4, legs: true,
+    rightArm: { shoulder: -14, elbow: 150 },
+    viewBox: '101 47 615 1344', thumbViewBox: '73 72 672 672',
+    front: h => [...dumbbellUpright(h.L), ...dumbbellLevel(h.R)],
+  },
+  hipAdduction: {
+    view: 'front', primary: ['adductors'], secondary: ['quadriceps'], shoulder: -6, elbow: -4, legs: true, hip: 14,
+    viewBox: '37 48 654 1320', thumbViewBox: '34 585 660 660',
+    behind: () => [rect(170, 600, 388, 70, 24, 'eq')],
+    front: h => [rect(h.LK[0] + 38, h.LK[1] - 70, 36, 140, 14, 'eqd'), rect(h.RK[0] - 74, h.RK[1] - 70, 36, 140, 14, 'eqd')],
+  },
+  hipAbduction: {
+    view: 'back', primary: ['gluteal'], secondary: ['hamstring'], shoulder: -6, elbow: -4, legs: true, hip: 14,
+    viewBox: '764 48 641 1323', thumbViewBox: '753 586 661 661',
+    behind: () => [rect(890, 640, 388, 70, 24, 'eq')],
+    front: h => [rect(h.LK[0] - 78, h.LK[1] - 70, 36, 140, 14, 'eqd'), rect(h.RK[0] + 42, h.RK[1] - 70, 36, 140, 14, 'eqd')],
+  },
 } satisfies Record<string, PoseSpec>;
 
 export type PoseKey = keyof typeof POSES;
@@ -156,7 +217,8 @@ export function buildPose(key: PoseKey, highlight?: { primary: readonly string[]
     const mirror = side === 'right', sign = mirror ? -1 : 1;
     const at = (p: Point): Point => mirror ? [2 * cx - p[0], p[1]] : p;
     const S = at(joints.S), E = at(joints.E), W = at(joints.W), H = at(joints.H);
-    const a1 = sign * spec.shoulder, a2 = sign * spec.elbow;
+    const angles = mirror && spec.rightArm ? spec.rightArm : spec;
+    const a1 = sign * angles.shoulder, a2 = sign * angles.elbow;
     const elbow = rotatePoint(E, S, a1);
     const wrist = rotatePoint(rotatePoint(W, E, a2), S, a1);
     const hand = rotatePoint(rotatePoint(H, E, a2), S, a1);
@@ -167,15 +229,25 @@ export function buildPose(key: PoseKey, highlight?: { primary: readonly string[]
       ...paths(UPPER_ARM[spec.view], side, upper), ...paths(['forearm'], side, lower),
       { kind: 'circle', cx: round(hand[0]), cy: round(hand[1]), r: 30, role: 'skin' },
     ];
-    return { primitives, hand, wrist };
+    return { primitives, hand, wrist, elbow };
   };
   const left = arm('left'), right = arm('right');
-  const hands: Hands = { L: left.hand, R: right.hand, LW: left.wrist, RW: right.wrist };
+  const hip = spec.hip ?? 0;
+  const legJoints = (side: 'left' | 'right') => {
+    const mirror = side === 'right', sign = mirror ? -1 : 1;
+    const at = (p: Point): Point => mirror ? [2 * cx - p[0], p[1]] : p;
+    const HIP = at(LEG[spec.view].HIP);
+    return { rotations: hip ? [{ degrees: sign * hip, cx: HIP[0], cy: HIP[1] }] : [], knee: rotatePoint(at(LEG[spec.view].K), HIP, sign * hip) };
+  };
+  const leftLeg = legJoints('left'), rightLeg = legJoints('right');
+  const hands: Hands = { L: left.hand, R: right.hand, LW: left.wrist, RW: right.wrist, LE: left.elbow, RE: right.elbow,
+    LK: leftLeg.knee, RK: rightLeg.knee };
   const sides = ['left', 'right', 'common'] as const;
   const primitives: PosePrimitive[] = [
     ...(spec.behind?.(hands) ?? []),
     ...sides.flatMap(side => paths(TRUNK[spec.view], side)),
-    ...(spec.legs ? sides.flatMap(side => paths(LEGS[spec.view], side)) : []),
+    ...(spec.legs ? [...paths(LEGS[spec.view], 'left', leftLeg.rotations), ...paths(LEGS[spec.view], 'right', rightLeg.rotations),
+      ...paths(LEGS[spec.view], 'common')] : []),
     ...(spec.seat ?? []),
     ...left.primitives, ...right.primitives,
     ...(spec.front?.(hands) ?? []),

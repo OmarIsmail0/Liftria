@@ -4,7 +4,7 @@ import type { Muscle } from '../../../services/database/gymTypes';
 import { viewBoxSize } from '../ExerciseFigure';
 import { buildPose, POSE_KEYS, type PoseKey } from '../exercisePoses';
 import { tintHex } from '../exerciseRows';
-import { poseRoleColors } from '../poseColors';
+import { BODY_MAP_MUSCLE, poseRoleColors } from '../poseColors';
 import {
   cachedBuiltPose, highlightForExercise, POSE_OVERRIDES, poseForExercise, type PoseSubject,
 } from '../poseTable';
@@ -34,6 +34,9 @@ test('every pose is reachable and overrides name real pack exercises', () => {
     const pose = poseForExercise(exercise);
     if (pose) reached.add(pose);
   }
+  // The pack has no machine lateral raise; Hevy's "Lateral Raise (Machine)" imports as a custom exercise.
+  const custom = poseForExercise(subject('Lateral Raise (Machine)', 'machine', ['shoulders']));
+  if (custom) reached.add(custom);
   expect([...reached].sort()).toEqual([...POSE_KEYS].sort());
 });
 
@@ -51,6 +54,16 @@ test('name rules map variants the override list does not spell out', () => {
   expect(poseForExercise(byId('Dumbbell_One-Arm_Triceps_Extension'))).toBe('overheadTricepsExtension');
   expect(poseForExercise(byId('Standing_Dumbbell_Calf_Raise'))).toBe('calfRaise');
   expect(poseForExercise(subject('Close-Grip Front Lat Pulldown', 'cable', ['lats'], ['biceps']))).toBe('latPulldown');
+  // The owner's most-used Hevy names, which import as custom exercises when no pack name matches.
+  expect(poseForExercise(subject('Chest Press (Machine)', 'machine', ['chest']))).toBe('chestPressMachine');
+  expect(poseForExercise(subject('Butterfly (Pec Deck)', 'machine', ['chest']))).toBe('pecDeck');
+  expect(poseForExercise(subject('Shoulder Press (Machine Plates)', 'machine', ['shoulders']))).toBe('shoulderPressMachine');
+  expect(poseForExercise(subject('Lateral Raise (Machine)', 'machine', ['shoulders']))).toBe('lateralRaiseMachine');
+  expect(poseForExercise(subject('Triceps Rope Pushdown', 'cable', ['triceps']))).toBe('tricepsPushdown');
+  expect(poseForExercise(subject('Bicep Curl (Dumbbell)', 'dumbbell', ['biceps']))).toBe('bicepCurl');
+  expect(poseForExercise(subject('Hip Adduction (Machine)', 'machine', ['adductors']))).toBe('hipAdduction');
+  expect(poseForExercise(subject('Hip Abduction (Machine)', 'machine', ['abductors']))).toBe('hipAbduction');
+  expect(poseForExercise(subject('Rear Delt Reverse Fly (Machine)', 'machine', ['shoulders']))).toBe('rearDeltFly');
 });
 
 test('unmapped exercises, including side-view lifts, fall back', () => {
@@ -58,7 +71,7 @@ test('unmapped exercises, including side-view lifts, fall back', () => {
     'Barbell_Bench_Press_-_Medium_Grip', 'Barbell_Squat', 'Barbell_Deadlift',
     'Bent_Over_Barbell_Row', 'Barbell_Hip_Thrust', 'Barbell_Lunge',
     'Straight-Arm_Pulldown', 'Dumbbell_Flyes', 'Scapular_Pull-Up', 'Rocky_Pull-Ups_Pulldowns',
-    'Barbell_Shoulder_Press', 'Standing_Dumbbell_Upright_Row', 'Triceps_Pushdown',
+    'Barbell_Shoulder_Press', 'Standing_Dumbbell_Upright_Row',
     'Seated_Calf_Raise', 'Donkey_Calf_Raises',
   ];
   for (const id of unmapped) expect(poseForExercise(byId(id))).toBeNull();
@@ -111,8 +124,8 @@ test('role colours match the body map in light and dark', () => {
   for (const mode of ['light', 'dark'] as const) {
     const theme = createTheme(mode, 'solid');
     const colors = poseRoleColors(theme);
-    expect(colors.m.fill).toBe(theme.color.track);
-    expect(colors.m.stroke).toBe(theme.color.border.control);
+    expect(colors.m.fill).toBe(BODY_MAP_MUSCLE);
+    expect(colors.m.stroke).toBe(theme.color.border.subtle);
     expect(colors.p.fill).toBe(theme.color.domain.train);
     expect(colors.p.stroke).toBe(theme.color.border.control);
     expect(colors.s.fill).toBe(tintHex(theme.color.domain.train, 0.55));
