@@ -31,5 +31,5 @@
 
 **الكلمات المفتاحية:** طعام,تمارين,سعرات,وزن,لياقة
 
-**رابط الدعم:** يُضاف من المالك
-**رابط سياسة الخصوصية:** يُضاف من المالك
+**رابط الدعم:** https://omarismail0.github.io/Liftria/support.html#ar
+**رابط سياسة الخصوصية:** https://omarismail0.github.io/Liftria/privacy.html#ar

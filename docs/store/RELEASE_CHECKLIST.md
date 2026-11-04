@@ -31,7 +31,8 @@ Capture required iPhone and Android phone sizes from a running build. Never subm
 
 ## Owner / Claude release gates
 - Owner: configure `LIFTRIA_*` Android signing secrets according to `scripts/configure_release_signing.py`; Claude builds and verifies the signed release.
-- Owner: provide Apple Developer membership for device builds and App Store submission, plus a working public support URL and privacy policy URL. Do not use invented URLs.
+- Owner: provide Apple Developer membership for device builds and App Store submission.
+- Support and privacy policy pages: `site/` is published by `.github/workflows/pages.yml` to https://omarismail0.github.io/Liftria/support.html and https://omarismail0.github.io/Liftria/privacy.html (Arabic at `#ar`). One-time owner step: Settings → Pages → Source: GitHub Actions. Use the privacy URL in Play Console (App content → Privacy policy) and App Store Connect. Keep `site/privacy.html` in step with the in-app privacy page (`p4.privacy.*`).
 - Owner and Claude: check Hiku's user-triggered Anthropic processing, optional photo Beta, privacy disclosures, permissions, age/category questionnaires, local-first claim, and both localized store listings.
 - Claude: verify the iOS light/dark app icon, Android adaptive icon, native splash appearances, and screenshots. Release builds have dev routes disabled.
 
