@@ -31,5 +31,5 @@ Liftria is for personal tracking; it does not provide medical advice.
 
 **Keywords:** food diary,workout log,weight,calories,macros,gym,fitness
 
-**Support URL:** OWNER TO PROVIDE
-**Privacy policy URL:** OWNER TO PROVIDE
+**Support URL:** https://omarismail0.github.io/Liftria/support.html
+**Privacy policy URL:** https://omarismail0.github.io/Liftria/privacy.html
