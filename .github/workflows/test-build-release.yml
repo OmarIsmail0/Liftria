@@ -1,0 +1,41 @@
+# Copies the APK from a finished Android build to the "test-build" prerelease, so the owner
+# can download it on the phone without signing in to GitHub. Started by hand with the run id
+# of a successful "Phase 0" build. The APK is a test build (not the store-signed release).
+name: Test build download
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run id of a successful Phase 0 build with the APK artifact'
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: liftria-phase0-s22-arm64-apks
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: apks
+      - name: Publish to the test-build prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          find apks -name '*.apk' -print
+          apk=$(find apks -name '*release*.apk' | head -n1)
+          [ -n "$apk" ] || apk=$(find apks -name '*.apk' | head -n1)
+          [ -n "$apk" ] || { echo "::error::No APK in the artifact"; exit 1; }
+          cp "$apk" liftria-test.apk
+          notes="Test build for the owner's phone, from build run $RUN_ID. Signed with a temporary key: not the store release. Install: open liftria-test.apk on the phone and allow installs from this source."
+          if gh release view test-build --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload test-build liftria-test.apk --clobber --repo "$REPO"
+            gh release edit test-build --notes "$notes" --repo "$REPO"
+          else
+            gh release create test-build liftria-test.apk --prerelease --title "Liftria test build" --notes "$notes" --repo "$REPO" --target main
+          fi
