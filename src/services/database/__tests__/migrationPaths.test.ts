@@ -66,12 +66,15 @@ test.each(Array.from({ length: DB_SCHEMA_VERSION }, (_, version) => version))(
   });
 
 test('a migration that fails part way leaves the old version and every existing row in place', async () => {
-  const db = await databaseAt('broken.db', DB_SCHEMA_VERSION - 1);
+  // Version 10 adds sets.mark. Later migrations only add indexes with IF NOT EXISTS, which
+  // cannot be made to fail this way, so the failure is staged inside the version 10 step.
+  const beforeMark = 9;
+  const db = await databaseAt('broken.db', beforeMark);
   await db.runAsync("INSERT INTO app_settings (key,value) VALUES ('keep','yes')");
-  // Simulate a failure inside the last migration: its column already exists, so ALTER throws.
+  // Simulate a failure inside that migration: its column already exists, so ALTER throws.
   await db.execAsync("ALTER TABLE sets ADD COLUMN mark TEXT;");
   await expect(migrateDatabase(db)).rejects.toThrow();
-  expect(await versionOf(db)).toBe(DB_SCHEMA_VERSION - 1);
+  expect(await versionOf(db)).toBe(beforeMark);
   expect(await db.getFirstAsync('SELECT value FROM app_settings WHERE key=?', ['keep'])).toEqual({ value: 'yes' });
 });
 
