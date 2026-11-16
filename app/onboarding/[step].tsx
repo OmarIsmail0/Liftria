@@ -82,13 +82,15 @@ function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, prima
 }) {
   const { theme } = useTheme();
   const { t } = useLanguage();
+  const title = t(onboardingTitleKey(step) ?? titles[step]);
   return <Screen scroll={false}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <Header mode="large" title={t(onboardingTitleKey(step) ?? titles[step])} onBack={onBack} right={onSkip
-        ? <Button label={t('onboarding.skip')} size="sm" variant="plain" onPress={onSkip} /> : undefined} />
+      {(onBack || onSkip) && <Header mode="inline" title="" onBack={onBack} right={onSkip
+        ? <Button label={t('onboarding.skip')} size="sm" variant="plain" onPress={onSkip} /> : undefined} />}
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{
         paddingVertical: theme.space[4], gap: theme.space[4], flexGrow: 1,
       }}>
+        <Typography size="largeTitle">{title}</Typography>
         <Typography tone="secondary" size="secondary">{t(onboardingDescriptionKey(step) ?? descriptions[step])}</Typography>
         {children}
       </ScrollView>
