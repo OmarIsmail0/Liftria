@@ -20,12 +20,16 @@ const ROLE = {
 
 type Role = typeof ROLE[TypographySize];
 
-export function Typography({ children, tone = 'primary', size = 'body', bold = false, numeric = false, lines }: {
+export function Typography({ children, tone = 'primary', size = 'body', bold = false, numeric = false, lines, header = false, maxScale }: {
   children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: TypographySize; bold?: boolean;
   /** Fixed-width digits for values. Metric sizes already use them. */
   numeric?: boolean;
   /** Cap the line count; the last line ends with an ellipsis. */
   lines?: number;
+  /** Announce as a heading to screen readers. */
+  header?: boolean;
+  /** Cap on system font scaling, only where a fixed table would break. Omit so text can grow. */
+  maxScale?: number;
 }) {
   const { theme } = useTheme();
   const role: Role = ROLE[size];
@@ -38,7 +42,8 @@ export function Typography({ children, tone = 'primary', size = 'body', bold = f
     : bold ? theme.type.body.strong : theme.type.body;
   const weight = bold && spec.weight === '400' ? '600' : spec.weight;
   const tabular = numeric || role === 'metric';
-  return <Text allowFontScaling numberOfLines={lines} ellipsizeMode="tail"
+  return <Text allowFontScaling maxFontSizeMultiplier={maxScale} accessibilityRole={header ? 'header' : undefined}
+    numberOfLines={lines} ellipsizeMode="tail"
     textBreakStrategy="balanced" lineBreakStrategyIOS="standard" style={{
     fontSize: spec.size, lineHeight: spec.line, fontWeight: weight,
     fontVariant: tabular ? ['tabular-nums'] : undefined,
@@ -56,10 +61,12 @@ export function Screen({ children, scroll = true, padded = true, embedded = fals
   // `safeBottom` puts that inset back when the tab bar is hidden, on Android and iPhone.
   const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !safeBottom ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
+  // One shared reading width: on a tablet or a phone in landscape content centres instead of stretching edge to edge.
+  const column: ViewStyle = { width: '100%', maxWidth: theme.layout.maxContentWidth, alignSelf: 'center' };
   return <View style={[layout, { backgroundColor: theme.background }]}>
     {scroll
-      ? <ScrollView automaticallyAdjustKeyboardInsets={Platform.OS==='ios'} contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
-      : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}
+      ? <ScrollView automaticallyAdjustKeyboardInsets={Platform.OS==='ios'} contentContainerStyle={{ ...column, paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+      : <View style={{ ...column, flex: 1, paddingHorizontal: padding }}>{children}</View>}
   </View>;
 }
 
@@ -88,7 +95,7 @@ export function Header({ title, subtitle, onBack, right, mode }: {
     return <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2], minHeight: theme.size.touch.min }}>
       {back}
       <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
-        <Text allowFontScaling numberOfLines={2} style={{
+        <Text allowFontScaling accessibilityRole="header" numberOfLines={2} style={{
           color: theme.color.text.primary, fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600',
         }}>{title}</Text>
         {secondary}
@@ -99,7 +106,7 @@ export function Header({ title, subtitle, onBack, right, mode }: {
   return <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: theme.space[3], minHeight: theme.size.touch.min }}>
     {back}
     <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
-      <Typography size="largeTitle" lines={2}>{title}</Typography>
+      <Typography size="largeTitle" lines={2} header>{title}</Typography>
       {secondary}
     </View>
     {right}
@@ -119,7 +126,7 @@ export function Card({ children, title, rim = 'none', flat = false }: {
     backgroundColor: theme.cardFill, borderRadius: theme.radius.md, overflow: 'hidden',
     padding: theme.space[4], gap: theme.space[3],
   }}>
-    {title ? <Typography size="title">{title}</Typography> : null}
+    {title ? <Typography size="title" header>{title}</Typography> : null}
     {withoutTrailingDivider(children)}
   </Animated.View>;
 }
@@ -148,7 +155,7 @@ export function SectionHeader({ title, actionLabel, onAction }: {
   const { theme } = useTheme();
   return <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     minHeight: theme.space[8], paddingHorizontal: theme.space[1], gap: theme.space[3] }}>
-    <Text allowFontScaling style={{ flexShrink: 1, color: theme.color.text.secondary,
+    <Text allowFontScaling accessibilityRole="header" style={{ flexShrink: 1, color: theme.color.text.secondary,
       fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line, fontWeight: '600' }}>{title}</Text>
     {actionLabel && onAction ? <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} onPress={onAction}
       style={{ minHeight: theme.size.touch.min, justifyContent: 'center', paddingHorizontal: theme.space[1] }}>

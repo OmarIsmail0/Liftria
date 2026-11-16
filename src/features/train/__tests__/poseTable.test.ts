@@ -136,7 +136,7 @@ test('role colours match the body map in light and dark', () => {
     expect(colors.eq.fill).not.toBe(colors.eqd.fill);
   }
   expect(poseRoleColors(createTheme('dark', 'aurora')).s.fill).toBe('rgba(255,138,92,0.55)');
-  expect(poseRoleColors(createTheme('light', 'solid')).p.fill).toBe('#C2410C');
+  expect(poseRoleColors(createTheme('light', 'solid')).p.fill).toBe('#B83B09');
 });
 
 test('the exercise screen draws the whole figure above the muscle map', () => {

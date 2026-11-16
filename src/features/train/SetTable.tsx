@@ -107,7 +107,7 @@ export function SetTable({
           style={[columnBox('set'), cellHit]}>
           <View style={{ minWidth: 34, minHeight: 30, paddingHorizontal: theme.space[1], borderRadius: theme.radius.sm,
             alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surface.control }}>
-            <Text style={{ color: markColor(row.mark), fontWeight: '600',
+            <Text maxFontSizeMultiplier={1.4} style={{ color: markColor(row.mark), fontWeight: '600',
               fontSize: theme.type.body.size }}>{glyph}</Text>
             {side ? <Text style={{ color: theme.color.text.tertiary, fontSize: theme.type.caption.size }}>{side}</Text> : null}
           </View>
@@ -126,7 +126,7 @@ export function SetTable({
           }}
           onLongPress={() => onDelete(row)} delayLongPress={SET_HOLD_DELETE_MS}
           style={[columnBox('previous'), cellHit]}>
-          <Typography tone="secondary" size="secondary" lines={1}>
+          <Typography tone="secondary" size="secondary" lines={1} maxScale={1.4}>
             {previous ? previousCellText(language, previous.weight, previous.reps, weightUnit) : t('workout.noPrevious')}
           </Typography>
         </Pressable>
@@ -165,6 +165,7 @@ export function SetTable({
       <TextInput ref={inputRef} value={value} placeholder={placeholder} onChangeText={onChange}
         onSubmitEditing={onSubmit} keyboardType={keyboard} returnKeyType={onSubmit ? 'next' : 'done'}
         accessibilityLabel={label} placeholderTextColor={theme.color.text.tertiary}
+        maxFontSizeMultiplier={1.4}
         style={{
           width: '100%', minHeight: theme.size.touch.min, borderRadius: theme.radius.sm, textAlign: 'center',
           backgroundColor: done ? theme.color.tint.success : theme.color.bg.raised,

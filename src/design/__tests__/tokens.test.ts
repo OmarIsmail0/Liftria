@@ -75,15 +75,15 @@ describe.each(['dark', 'light'] as ColorScheme[])('%s v2 tokens', mode => {
     expect(t.color.border.subtle).toBe(mode === 'light' ? '#E3E1DC' : '#2B2D32');
     expect(t.color.text.primary).toBe(mode === 'light' ? '#17181A' : '#F2F3F5');
     expect(t.color.text.secondary).toBe(mode === 'light' ? '#5C6066' : '#A9ADB4');
-    expect(t.color.text.tertiary).toBe(mode === 'light' ? '#6E7279' : '#8D9199');
-    expect(t.color.accent).toBe(mode === 'light' ? '#C2410C' : '#FF8A5C');
+    expect(t.color.text.tertiary).toBe(mode === 'light' ? '#666A71' : '#8D9199');
+    expect(t.color.accent).toBe(mode === 'light' ? '#B83B09' : '#FF8A5C');
     expect(t.color.on.accent).toBe(mode === 'light' ? '#FFFFFF' : '#1A0D06');
     expect(t.color.tint.accent).toBe(mode === 'light' ? '#FBE9DF' : '#3A2218');
     expect(t.color.status.success).toBe(mode === 'light' ? '#177A45' : '#5BD08F');
     expect(t.color.tint.success).toBe(mode === 'light' ? '#E3F3E9' : '#16301F');
     expect(t.color.status.danger).toBe(mode === 'light' ? '#B3261E' : '#FF7A7A');
     expect(t.color.macro).toEqual(mode === 'light'
-      ? { protein: '#2E6BD3', carbs: '#9A6C00', fat: '#B8406F' }
+      ? { protein: '#2E6BD3', carbs: '#8F6500', fat: '#B8406F' }
       : { protein: '#8CBEFF', carbs: '#FFCF5E', fat: '#FF9AC0' });
   });
 
