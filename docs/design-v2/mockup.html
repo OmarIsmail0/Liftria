@@ -1,0 +1,312 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liftria Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Figtree:wght@400;600;700&display=swap">
+<style>
+/* Layout: one review column; the mockup stage sits "Now | Proposed" side by side and stacks on phones. */
+:root{--bg:#F6F5F3;--card:#FFFFFF;--fg:#17181A;--muted:#5C6066;--line:#E2E0DB;--accent:#C2410C;--accent-soft:#FBE9DF;--ok:#177A45;--warn:#8A5C00;--bad:#B3261E;
+--display:'Archivo',system-ui,sans-serif;--body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111214;--card:#1A1B1E;--fg:#EDEEF0;--muted:#A4A8AF;--line:#2C2E33;--accent:#FF8A5C;--accent-soft:#3A2218;--ok:#5BD08F;--warn:#F2B44C;--bad:#FF7A7A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111214;--card:#1A1B1E;--fg:#EDEEF0;--muted:#A4A8AF;--line:#2C2E33;--accent:#FF8A5C;--accent-soft:#3A2218;--ok:#5BD08F;--warn:#F2B44C;--bad:#FF7A7A;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.55 var(--body)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800}
+h2{font-size:26px;font-weight:800}
+h3{font-size:17px;font-weight:600}
+p{margin:0;max-width:66ch}
+.muted{color:var(--muted)}
+section{display:flex;flex-direction:column;gap:20px}
+.lead{font-size:18px}
+.step{font:700 13px var(--body);color:var(--accent)}
+.toc{display:flex;flex-wrap:wrap;gap:8px}
+.toc a{color:var(--fg);text-decoration:none;border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:8px;font-weight:600;font-size:14px}
+.toc a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ask{border:2px solid var(--accent);background:var(--card);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.ask ol{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:start;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:600}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.sc{font:800 18px var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.p{display:inline-block;font:700 12px var(--body);padding:2px 7px;border-radius:5px;margin-inline-end:8px;font-variant-numeric:tabular-nums}
+.p0,.p1{background:var(--bad);color:var(--bg)}.p2{background:var(--warn);color:var(--bg)}.p3{border:1px solid var(--line);color:var(--muted)}
+.finds{display:flex;flex-direction:column;gap:10px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px}
+summary{cursor:pointer;padding:14px 16px;font-weight:700;display:flex;justify-content:space-between;gap:12px;align-items:center}
+summary span{font-weight:400;color:var(--muted);font-size:14px}
+.fb{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:4px 16px 18px}
+.fb img{border-radius:10px;border:1px solid var(--line)}
+.fb ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;min-width:0}
+.fb li b{font-weight:700}.fb li em{display:block;color:var(--muted);font-style:normal;font-size:14.5px}
+@media(max-width:560px){.fb{grid-template-columns:1fr}.fb img{width:140px}}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.sw div{font-size:12px;line-height:1.3}.sw i{display:block;height:40px;border-radius:8px;border:1px solid var(--line);margin-bottom:4px}
+.sw code{color:var(--muted);font-size:11px}
+.ts div{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0;font-family:system-ui,-apple-system,Roboto,sans-serif}
+.ts small{color:var(--muted);font:13px var(--body);white-space:nowrap}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:none;color:var(--fg);font:600 14px var(--body);padding:9px 14px;cursor:pointer;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.stage{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:10px;align-items:center;max-width:100%}
+.col h3{font-size:14px;color:var(--muted)}
+.now{width:340px;max-width:100%;border-radius:28px;border:1px solid var(--line);display:block}
+.note{font-size:13.5px;color:var(--muted);max-width:340px;text-align:center}
+
+/* ---------- Liftria v2 tokens (the proposal itself; scoped to the mock) ---------- */
+.lv{--b:#F4F3F1;--s:#FFFFFF;--s2:#ECEAE6;--sep:#E3E1DC;--t:#17181A;--t2:#5C6066;--t3:#6E7279;--a:#C2410C;--on:#FFFFFF;--at:#FBE9DF;--ok:#177A45;--okt:#E3F3E9;--no:#B3261E;--pr:#2E6BD3;--cb:#9A6C00;--ft:#B8406F;
+font-family:system-ui,-apple-system,'SF Pro Text',Roboto,'Segoe UI',sans-serif;color:var(--t);font-size:16px;line-height:22px;font-variant-numeric:tabular-nums}
+.lv[data-m="dark"]{--b:#0D0E10;--s:#18191C;--s2:#232529;--sep:#2B2D32;--t:#F2F3F5;--t2:#A9ADB4;--t3:#8D9199;--a:#FF8A5C;--on:#1A0D06;--at:#3A2218;--ok:#5BD08F;--okt:#16301F;--no:#FF7A7A;--pr:#8CBEFF;--cb:#FFCF5E;--ft:#FF9AC0}
+.ph{width:340px;max-width:100%;height:700px;background:var(--b);border-radius:28px;border:1px solid var(--sep);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.ph *{box-sizing:border-box}
+.sb{height:28px;flex:none;display:flex;align-items:center;padding-inline:20px;font-size:12px;font-weight:600}
+.scr{flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:16px}
+.scr>*{flex:none}
+.hd{display:flex;align-items:flex-end;justify-content:space-between;padding-top:8px}
+.lt{font-size:30px;line-height:36px;font-weight:700}
+.sub{font-size:14px;line-height:20px;color:var(--t2)}
+.ib{width:44px;height:44px;border:0;background:none;color:var(--t);display:grid;place-items:center;cursor:pointer;border-radius:22px;flex:none}
+.ib svg,.tb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav{display:flex;align-items:center;gap:4px;margin-inline:-10px;min-height:48px}
+.nav b{flex:1;font-size:17px;font-weight:600}
+.cd{background:var(--s);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.sh{display:flex;justify-content:space-between;align-items:center;font-size:14px;line-height:20px;font-weight:600;color:var(--t2);margin-bottom:-8px;padding-inline:4px;min-height:28px}
+.tx{border:0;background:none;color:var(--a);font:600 14px/20px inherit;font-family:inherit;cursor:pointer;padding:4px}
+.gl{background:var(--s);border-radius:12px;overflow:hidden}
+.rw{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 16px;border:0;background:none;color:inherit;font:inherit;width:100%;text-align:start;cursor:pointer}
+.rw+.rw{border-top:1px solid var(--sep)}
+.rw .g{flex:1;min-width:0}.rw .g small{display:block;font-size:14px;line-height:20px;color:var(--t2)}
+.rw .v{color:var(--t2);font-size:14px;white-space:nowrap}
+.ch{width:8px;height:14px;flex:none;stroke:var(--t3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+[dir="rtl"] .ch,[dir="rtl"] .flip{transform:scaleX(-1)}
+.bt{border:0;border-radius:12px;min-height:48px;padding:0 20px;font:600 16px/22px inherit;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.bf{background:var(--a);color:var(--on)}.bn{background:var(--at);color:var(--a)}.bg{background:var(--s2);color:var(--t)}.bd{background:none;color:var(--no)}
+.bs{min-height:36px;border-radius:8px;padding:0 14px;font-size:14px}
+.w{width:100%}
+.big{font-size:44px;line-height:48px;font-weight:700}
+.un{font-size:14px;line-height:20px;color:var(--t2);font-weight:400}
+.pb{height:8px;border-radius:4px;background:var(--s2);overflow:hidden}.pb i{display:block;height:100%;background:var(--a);border-radius:4px}
+.mc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mc div{display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:16px;color:var(--t2)}
+.mc b{font-size:15px;line-height:22px;color:var(--t);font-weight:600;white-space:nowrap}.mc b .un{font-size:12px}
+.mc .pb{height:4px}
+.st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.st div{font-size:12px;line-height:16px;color:var(--t2)}.st b{display:block;font-size:20px;line-height:26px;color:var(--t);font-weight:600}
+.sg{display:flex;background:var(--s2);border-radius:8px;padding:2px}
+.sg button{flex:1;border:0;background:none;color:var(--t);font:600 14px/20px inherit;font-family:inherit;min-height:32px;border-radius:6px;cursor:pointer}
+.sg button.on{background:var(--s);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.tb{flex:none;display:flex;background:var(--s);border-top:1px solid var(--sep);padding:6px 4px 10px}
+.tb button{flex:1;border:0;background:none;color:var(--t3);font:500 11px/14px inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px;justify-content:center;cursor:pointer}
+.tb button.on{color:var(--a);font-weight:700}
+.ex{display:flex;align-items:center;gap:12px}
+.th{width:44px;height:44px;border-radius:8px;background:var(--s2);display:grid;place-items:center;flex:none;color:var(--t3)}
+.ex b{flex:1;color:var(--a);font-weight:600}
+.tbl{display:grid;grid-template-columns:36px 1fr 64px 64px 44px;gap:6px;align-items:center;text-align:center}
+.tbl .h{font-size:12px;line-height:16px;color:var(--t2);font-weight:600}
+.tbl .r{display:contents}
+.tbl .c{min-height:40px;display:grid;place-items:center;border-radius:8px}
+.tbl .n{font-weight:600}.tbl .pv{color:var(--t2);font-size:13px;white-space:nowrap}
+.tbl .in{background:var(--s2);font-weight:600}
+.tbl button{border:0;background:var(--s2);color:var(--t2);width:44px;height:40px;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+.tbl .r.dn .c,.tbl .r.dn button{background:var(--okt)}.tbl .r.dn button{background:var(--ok);color:var(--s)}
+.tbl svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.rest{flex:none;background:var(--s);border-top:1px solid var(--sep);padding:10px 16px 14px;display:flex;align-items:center;gap:8px}
+.rest b{font-size:20px;line-height:26px;flex:1}
+.stp{display:flex;align-items:center;gap:4px}
+.stp button{width:36px;height:36px;border-radius:8px;border:0;background:var(--s2);color:var(--t);font:600 18px inherit;cursor:pointer}
+.add{color:var(--a);font-weight:600}
+.cp{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:16px;background:var(--s2);font-size:14px;font-weight:500}
+.cp.on{background:var(--at);color:var(--a)}
+.inp{min-height:48px;border-radius:12px;background:var(--s2);padding:0 14px;display:flex;align-items:center;color:var(--t3)}
+.es{text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;padding:8px}
+.kit{padding:16px;border-radius:12px;background:var(--b);display:flex;flex-direction:column;gap:14px;min-width:0}
+.kit .bar{gap:8px}
+@media (prefers-reduced-motion:no-preference){.pb i{transition:width .2s}}
+</style>
+
+<div class="wrap">
+<header style="display:flex;flex-direction:column;gap:16px">
+  <div class="step">Liftria design pass · steps 1 to 3 of 5 · waiting for your approval</div>
+  <h1>A calmer, more familiar Liftria</h1>
+  <p class="lead">The app works, but it does not look like the apps people already trust. This page shows what is wrong today, the new set of design rules, and a mockup you can tap through next to the current screens.</p>
+  <nav class="toc" aria-label="Sections"><a href="#mockups">Try the mockup</a><a href="#audit">What is wrong today</a><a href="#system">New design rules</a><a href="#next">What happens next</a></nav>
+  <div class="ask">
+    <h3>What I need from you</h3>
+    <ol>
+      <li><b>Approve or change the direction</b> in the mockup below. Nothing in the app changes until you say yes.</li>
+      <li><b>Fonts:</b> I propose the phone's own system font (San Francisco on iPhone, Roboto on Android) in place of Archivo and Figtree. It is the biggest single step toward "familiar". Say no if you want to keep the current fonts.</li>
+      <li><b>Tab bar:</b> a standard bar with a label under every icon replaces the floating capsule.</li>
+    </ol>
+  </div>
+</header>
+
+<section id="mockups">
+  <div class="step">Step 3</div>
+  <h2>Now and proposed, side by side</h2>
+  <p class="muted">The right phone is live: tap the tab bar, start the workout, tick a set, add water, open Settings from the gear on Today. All numbers are made-up examples.</p>
+  <div class="bar">
+    <div class="seg" id="scrSeg" role="group" aria-label="Screen"></div>
+    <div class="seg" role="group" aria-label="Mode"><button id="mLight" data-mode="light">Light</button><button id="mDark" data-mode="dark">Dark</button></div>
+    <div class="seg" role="group" aria-label="Language"><button id="lEn" data-lang="en">English</button><button id="lAr" data-lang="ar">العربية</button></div>
+  </div>
+  <div class="stage">
+    <div class="col"><h3>Now</h3><img class="now" id="nowImg" alt="Current Liftria screen" width="340"><div class="note" id="nowNote"></div></div>
+    <div class="col"><h3>Proposed</h3><div class="ph lv" id="ph" data-m="light" dir="ltr"></div><div class="note">The exercise drawings and the body map stay as they are; the grey squares stand in for them here.</div></div>
+  </div>
+</section>
+
+<section id="audit">
+  <div class="step">Step 1</div>
+  <h2>What is wrong today</h2>
+  <p>I reviewed 250 emulator screenshots of the current build (light, dark and Arabic) and the design code, and scored them with the impeccable review rules for Apple and Android apps. The short verdict: the code underneath is tidy, but the look was invented from scratch, so it does not read as a native app.</p>
+  <div class="tw"><table>
+    <tr><th>Area</th><th>Score</th><th>Main finding</th></tr>
+    <tr><td>Platform conformance</td><td class="sc">1 / 4</td><td>Custom floating tab bar with no labels, pill buttons everywhere, hand-made glass and glow, card stacks where lists belong.</td></tr>
+    <tr><td>Visual hierarchy (critique)</td><td class="sc">1 / 4</td><td>Most screens are equal-weight cards. Three different styles are used for "the main button".</td></tr>
+    <tr><td>Appearance and theming</td><td class="sc">3 / 4</td><td>Good: almost every colour and size comes from one tokens file (37 stray colours, 6 stray font sizes). Dark mode still carries the glow.</td></tr>
+    <tr><td>Accessibility</td><td class="sc">3 / 4</td><td>Good: 48 dp touch targets and labels on controls. Tab icons have no visible text; some text is capped from scaling.</td></tr>
+    <tr><td>Performance, tablets</td><td class="sc">not scored</td><td>Not measured in this pass. This redesign does not change either.</td></tr>
+  </table></div>
+  <p class="muted">Severity: P1 is a real problem to fix before release, P2 is an annoyance, P3 is polish. I found no P0 (nothing blocks a task).</p>
+  <div class="finds" id="finds"></div>
+  <div class="panel"><h3>What already works, and stays</h3>
+    <p class="muted">The workout screen's set table, hold to delete and rest timer. The exercise picker and filters. The exercise drawings and the body map. Correct right-to-left mirroring in Arabic. Honest empty states that never invent data. The tokens file, which lets most screens improve by changing one place.</p></div>
+</section>
+
+<section id="system">
+  <div class="step">Step 2</div>
+  <h2>The new design rules</h2>
+  <p>Fewer choices, used the same way everywhere. Orange is kept as the only accent and means "you can act here". Greys do the rest. Green, red and the three macro colours are for data and status only.</p>
+  <div class="two">
+    <div class="panel"><h3>Colours, light</h3><div class="sw" id="swL"></div></div>
+    <div class="panel"><h3>Colours, dark</h3><div class="sw" id="swD"></div></div>
+  </div>
+  <div class="two">
+    <div class="panel"><h3>Text sizes (6, down from 11)</h3><div class="ts">
+      <div><span style="font-size:44px;line-height:48px;font-weight:700">1,536</span><small>Metric 44 · hero numbers</small></div>
+      <div><span style="font-size:30px;line-height:36px;font-weight:700">Large title</span><small>30 · tab screens</small></div>
+      <div><span style="font-size:20px;line-height:26px;font-weight:600">Title</span><small>20 · cards, stats</small></div>
+      <div><span style="font-size:16px;line-height:22px">Body and buttons</span><small>16</small></div>
+      <div><span style="font-size:14px;line-height:20px">Secondary text</span><small>14</small></div>
+      <div><span style="font-size:12px;line-height:16px">Caption, table heads</span><small>12 · smallest</small></div>
+    </div><p class="muted" style="font-size:14px">No capital-letter labels and no letter-spacing anywhere, so English and Arabic follow one rule. Numbers use fixed-width digits.</p></div>
+    <div class="panel"><h3>Spacing, corners, depth, motion</h3>
+      <table><tr><th>Spacing</th><td>4, 8, 12, 16, 24, 32. Screen edge 16. Between sections 24.</td></tr>
+      <tr><th>Corners</th><td>8 small controls, 12 cards and buttons, 16 sheets. Fully round only for chips.</td></tr>
+      <tr><th>Depth</th><td>Flat. A card is a lighter surface on the page, with no shadow. Only sheets and the rest bar get a shadow or top line.</td></tr>
+      <tr><th>Motion</th><td>120 ms for presses, 220 ms for screens and sheets, standard platform transitions. Honours "reduce motion".</td></tr>
+      <tr><th>Touch</th><td>48 minimum for every control, 8 between neighbours.</td></tr>
+      <tr><th>Removed</th><td>Aurora gradients, glass cards, the glowing orb, the capsule tab bar, title dots, dashed hint boxes.</td></tr></table></div>
+  </div>
+  <div class="two">
+    <div class="panel"><h3>Core parts, light</h3><div class="kit lv" data-m="light" id="kitL"></div></div>
+    <div class="panel"><h3>Core parts, dark</h3><div class="kit lv" data-m="dark" id="kitD"></div></div>
+  </div>
+</section>
+
+<section id="next">
+  <div class="step">Steps 4 and 5</div>
+  <h2>What happens after you approve</h2>
+  <p>I build it in eight small pull requests, in this order, each checked with emulator screenshots in light, dark and Arabic, with before and after pictures attached. No data, database or feature changes; design and layout only.</p>
+  <div class="tw"><table>
+    <tr><th>#</th><th>Area</th><th>What changes</th></tr>
+    <tr><td>1</td><td>Tokens and shared parts</td><td>New colours, text sizes, spacing; buttons, cards, rows, inputs, chips, sheets. Most screens improve from this alone.</td></tr>
+    <tr><td>2</td><td>Navigation</td><td>Standard tab bar with labels; one header style with large titles.</td></tr>
+    <tr><td>3</td><td>Today</td><td>Calories, training and habits at a glance; orb removed.</td></tr>
+    <tr><td>4</td><td>Train</td><td>Home, routines, history, records, library; workout screen restyled only.</td></tr>
+    <tr><td>5</td><td>Eat</td><td>Meals first; day summary; search, portion and targets screens.</td></tr>
+    <tr><td>6</td><td>Progress</td><td>Weight chart on the home; plain list to the detail pages.</td></tr>
+    <tr><td>7</td><td>Hiku</td><td>Clear setup state without a key; calmer review screens.</td></tr>
+    <tr><td>8</td><td>Settings and onboarding</td><td>Grouped lists; shorter first-run screens.</td></tr>
+  </table></div>
+</section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const I={home:'<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',train:'<path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/>',eat:'<path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 3c-2 2-3 5-3 8h3zM17 11v10"/>',prog:'<path d="M4 20h16M5 15l4-4 4 3 6-7"/>',hiku:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16v4M17 18h4"/>',gear:'<circle cx="12" cy="12" r="8.2" stroke-width="2.6" stroke-dasharray="3.2 3.24" stroke-linecap="butt"/><circle cx="12" cy="12" r="6.6"/><circle cx="12" cy="12" r="2.6"/>',search:'<circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/>',back:'<path d="M15 5l-7 7 7 7"/>',down:'<path d="M5 9l7 7 7-7"/>',more:'<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',body:'<circle cx="12" cy="6" r="2.5"/><path d="M8 21v-6l-1-5h10l-1 5v6"/>'};
+const ic=(n,c)=>`<svg viewBox="0 0 24 24" class="${c||''}" aria-hidden="true">${I[n]}</svg>`;
+const CH='<svg class="ch" viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>';
+const CK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const T={en:{today:'Today',train:'Train',eat:'Eat',progress:'Progress',hiku:'Hiku',workout:'Workout',settings:'Settings',date:'Mon, Nov 16',left:'kcal left',eaten:'eaten',target:'target',protein:'Protein',carbs:'Carbs',fat:'Fat',logFood:'Log food',training:'Training',nextUp:'Next in your routine · 6 exercises',start:'Start',habits:'Today',water:'Water',steps:'Steps',hc:'From Health Connect',weight:'Weight',startEmpty:'Start empty workout',routines:'Routines',neu:'New',exs:'6 exercises',last3:'Last done 3 days ago',last5:'Last done 5 days ago',library:'Library',exercises:'Exercises',history:'History',records:'Records',muscles:'Muscles and recovery',imp:'Import from Hevy, Strong or CSV',w12:'12 workouts',finish:'Finish',duration:'Duration',volume:'Volume',sets:'Sets',bench:'Bench Press (Barbell)',lat:'Lat Pulldown (Cable)',set:'Set',prev:'Previous',reps:'Reps',addSet:'Add set',rest:'Rest',skip:'Skip',day:'Today, Nov 16',breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',snacks:'Snacks',addFood:'Add food',foul:'Foul medames',bread:'Baladi bread',koshari:'Koshari',w4:'4 weeks',m3:'3 months',y1:'1 year',wchg:'Down 0.3 kg in 4 weeks',strength:'Strength',sv:'Bench 80 kg × 5',nutrition:'Nutrition',nv:'Average 2,140 kcal',meas:'Measurements',photos:'Photos',health:'Health',appearance:'Appearance',theme:'Theme',light:'Light',dark:'Dark',language:'Language',plan:'Your plan',profile:'Profile and goals',targets:'Calorie and macro targets',prefs:'Preferences',units:'Units and display',notif:'Notifications',key:'Hiku and API key',data:'Data',backup:'Backup and restore',import:'Import history',privacy:'Privacy',about:'About',del:'Delete all data',hikuT:'Estimate a meal',hikuB:'Describe what you ate or take a photo. Hiku needs your own Anthropic API key.',addKey:'Add API key',pieces:'1 piece',ex:'Example',chip1:'All',chip2:'Chest',ph:'Search exercises',emT:'No workouts yet',emB:'Finished workouts appear here.',tonal:'Start',plain:'Cancel'},
+ar:{today:'اليوم',train:'التمرين',eat:'الطعام',progress:'التقدم',hiku:'هيكو',workout:'التمرين',settings:'الإعدادات',date:'الاثنين، 16 نوفمبر',left:'سعرة متبقية',eaten:'تم تناولها',target:'الهدف',protein:'بروتين',carbs:'كربوهيدرات',fat:'دهون',logFood:'تسجيل طعام',training:'التمرين',nextUp:'التالي في برنامجك · 6 تمارين',start:'ابدأ',habits:'اليوم',water:'الماء',steps:'الخطوات',hc:'من Health Connect',weight:'الوزن',startEmpty:'ابدأ تمرينًا فارغًا',routines:'البرامج',neu:'جديد',exs:'6 تمارين',last3:'آخر مرة قبل 3 أيام',last5:'آخر مرة قبل 5 أيام',library:'المكتبة',exercises:'التمارين',history:'السجل',records:'الأرقام القياسية',muscles:'العضلات والاستشفاء',imp:'استيراد من Hevy أو Strong أو CSV',w12:'12 تمرينًا',finish:'إنهاء',duration:'المدة',volume:'الحجم',sets:'المجموعات',bench:'ضغط البنش (بار)',lat:'سحب عالٍ (كابل)',set:'مجموعة',prev:'السابق',reps:'تكرار',addSet:'إضافة مجموعة',rest:'راحة',skip:'تخطي',day:'اليوم، 16 نوفمبر',breakfast:'الإفطار',lunch:'الغداء',dinner:'العشاء',snacks:'وجبات خفيفة',addFood:'إضافة طعام',foul:'فول مدمس',bread:'عيش بلدي',koshari:'كشري',w4:'4 أسابيع',m3:'3 أشهر',y1:'سنة',wchg:'انخفاض 0.3 كجم في 4 أسابيع',strength:'القوة',sv:'بنش 80 كجم × 5',nutrition:'التغذية',nv:'المتوسط 2,140 سعرة',meas:'القياسات',photos:'الصور',health:'الصحة',appearance:'المظهر',theme:'السمة',light:'فاتح',dark:'داكن',language:'اللغة',plan:'خطتك',profile:'الملف الشخصي والأهداف',targets:'أهداف السعرات والمغذيات',prefs:'التفضيلات',units:'الوحدات والعرض',notif:'الإشعارات',key:'هيكو ومفتاح API',data:'البيانات',backup:'النسخ الاحتياطي والاستعادة',import:'استيراد السجل',privacy:'الخصوصية',about:'حول',del:'حذف كل البيانات',hikuT:'تقدير وجبة',hikuB:'صف ما أكلته أو التقط صورة. يحتاج هيكو إلى مفتاح Anthropic API خاص بك.',addKey:'إضافة مفتاح API',pieces:'قطعة واحدة',ex:'مثال',chip1:'الكل',chip2:'الصدر',ph:'ابحث في التمارين',emT:'لا توجد تمارين بعد',emB:'تظهر التمارين المنتهية هنا.',tonal:'ابدأ',plain:'إلغاء'}};
+const S={scr:'today',mode:'light',lang:'en',water:3,done:{b1:true},range:0};
+const t=k=>T[S.lang][k];
+const kg=()=>S.lang==='ar'?'كجم':'kg',kc=()=>S.lang==='ar'?'سعرة':'kcal',g=()=>S.lang==='ar'?'جم':'g',L=()=>S.lang==='ar'?'لتر':'L';
+const row=(a,b,v,go)=>`<button class="rw" ${go?`data-go="${go}"`:''}><span class="g">${a}${b?`<small>${b}</small>`:''}</span>${v?`<span class="v">${v}</span>`:''}${CH}</button>`;
+const macros=()=>`<div class="mc">${[['protein',92,150,'pr'],['carbs',180,250,'cb'],['fat',48,70,'ft']].map(m=>`<div>${t(m[0])}<b>${m[1]}<span class="un"> / ${m[2]} ${g()}</span></b><div class="pb"><i style="width:${m[1]/m[2]*100}%;background:var(--${m[3]})"></i></div></div>`).join('')}</div>`;
+const sum=()=>`<div><div class="big">664 <span class="un">${t('left')}</span></div></div><div class="pb"><i style="width:70%"></i></div><div class="sub">1,536 ${t('eaten')} · 2,200 ${t('target')}</div>${macros()}`;
+const V={
+today:()=>`<div class="hd"><div><div class="lt">${t('today')}</div><div class="sub">${t('date')}</div></div><button class="ib" data-go="settings" aria-label="${t('settings')}">${ic('gear')}</button></div>
+<div class="cd">${sum()}<button class="bt bn w" data-go="eat">${t('logFood')}</button></div>
+<div class="sh">${t('training')}</div><div class="cd" style="flex-direction:row;align-items:center"><div style="flex:1;min-width:0"><b>Upper A</b><div class="sub">${t('nextUp')}</div></div><button class="bt bf" data-go="workout">${t('start')}</button></div>
+<div class="sh">${t('habits')}</div><div class="gl"><div class="rw" style="cursor:default"><span class="g">${t('water')}<small>${(S.water*.25).toFixed(2)} / 2.5 ${L()}</small></span><span class="stp"><button data-w="-1" aria-label="−">−</button><button data-w="1" aria-label="+">+</button></span></div>${row(t('steps'),t('hc'),'6,240','progress')}${row(t('weight'),'','79.2 '+kg(),'progress')}</div>`,
+train:()=>`<div class="hd"><div class="lt">${t('train')}</div><button class="ib" aria-label="${t('ph')}">${ic('search')}</button></div>
+<button class="bt bf w" data-go="workout">${t('startEmpty')}</button>
+<div class="sh">${t('routines')}<button class="tx">${t('neu')}</button></div><div class="gl">${row('Upper A',t('exs')+' · '+t('last3'),'','workout')}${row('Lower B',t('exs')+' · '+t('last5'),'','workout')}</div>
+<div class="sh">${t('library')}</div><div class="gl">${row(t('exercises'),'','876')}${row(t('history'),'',t('w12'))}${row(t('records'))}${row(t('muscles'))}</div>
+<div class="gl">${row(t('imp'))}</div>`,
+workout:()=>{const n=Object.values(S.done).filter(Boolean).length;const blk=(id,name,rows)=>`<div class="cd"><div class="ex"><span class="th">${ic('body')}</span><b>${name}</b><button class="ib" aria-label="…">${ic('more')}</button></div><div class="tbl"><span class="h">${t('set')}</span><span class="h">${t('prev')}</span><span class="h">${kg()}</span><span class="h">${t('reps')}</span><span class="h"></span>${rows.map((r,i)=>{const k=id+(i+1);return `<div class="r ${S.done[k]?'dn':''}"><span class="c n">${i+1}</span><span class="c pv">${r[0]} × ${r[1]}</span><span class="c in">${r[0]}</span><span class="c in">${r[1]}</span><button data-set="${k}" aria-label="${t('set')} ${i+1}" aria-pressed="${!!S.done[k]}">${CK}</button></div>`}).join('')}</div><button class="bt bg bs w">+ ${t('addSet')}</button></div>`;
+return `<div class="nav"><button class="ib" data-go="train" aria-label="${t('train')}">${ic('down')}</button><b>Upper A</b><button class="bt bf bs" data-go="train" style="margin-inline-end:10px">${t('finish')}</button></div>
+<div class="st"><div><b>12:04</b>${t('duration')}</div><div><b>${(n*400).toLocaleString('en')} ${kg()}</b>${t('volume')}</div><div><b>${n}</b>${t('sets')}</div></div>${blk('b',t('bench'),[[80,5],[80,5],[80,5]])}${blk('l',t('lat'),[[55,10],[55,10],[55,9]])}`},
+eat:()=>{const meal=(k,kcal,items)=>`<div class="sh">${t(k)}<span>${kcal?kcal+' '+kc():''}</span></div><div class="gl">${items.map(i=>`<button class="rw"><span class="g">${i[0]}<small>${i[1]}</small></span><span class="v">${i[2]}</span></button>`).join('')}<button class="rw add">+ ${t('addFood')}</button></div>`;
+return `<div class="hd"><div class="lt">${t('eat')}</div></div><div class="nav" style="justify-content:space-between;margin-inline:-10px;margin-block:-8px"><button class="ib flip" aria-label="‹">${ic('back')}</button><b style="text-align:center">${t('day')}</b><button class="ib" aria-label="›" style="transform:scaleX(${S.lang==='ar'?1:-1})">${ic('back')}</button></div>
+<div class="cd">${sum()}</div>${meal('breakfast',420,[[t('foul'),'250 '+g(),280],[t('bread'),t('pieces'),140]])}${meal('lunch','1,116',[[t('koshari'),'760 '+g(),'1,116']])}${meal('dinner','',[])}${meal('snacks','',[])}`},
+progress:()=>`<div class="hd"><div class="lt">${t('progress')}</div></div><div class="sg">${['w4','m3','y1'].map((k,i)=>`<button class="${S.range===i?'on':''}" data-r="${i}">${t(k)}</button>`).join('')}</div>
+<div class="cd"><div class="sub">${t('weight')}</div><div class="big">79.2 <span class="un">${kg()}</span></div><div class="sub" style="color:var(--ok)">${t('wchg')}</div>
+<svg viewBox="0 0 300 110" role="img" aria-label="${t('weight')}" style="width:100%;height:auto;direction:ltr"><g stroke="var(--sep)" stroke-width="1"><path d="M0 20H262M0 55H262M0 90H262"/></g><g fill="var(--t2)" font-size="11"><text x="268" y="24">79.8</text><text x="268" y="59">79.5</text><text x="268" y="94">79.2</text></g><path d="M6 24 L70 38 L134 46 L198 70 L250 88" fill="none" stroke="var(--a)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="250" cy="88" r="4.5" fill="var(--a)"/></svg></div>
+<div class="gl">${row(t('strength'),t('sv'))}${row(t('nutrition'),t('nv'))}${row(t('meas'))}${row(t('photos'))}${row(t('health'),t('hc'))}</div>`,
+hiku:()=>`<div class="hd"><div class="lt">${t('hiku')}</div></div><div class="cd es"><b style="font-size:20px;line-height:26px">${t('hikuT')}</b><div class="sub">${t('hikuB')}</div><button class="bt bf w">${t('addKey')}</button></div>`,
+settings:()=>`<div class="nav"><button class="ib flip" data-go="today" aria-label="${t('today')}">${ic('back')}</button><b>${t('settings')}</b></div>
+<div class="sh">${t('appearance')}</div><div class="gl"><button class="rw" data-tm><span class="g">${t('theme')}</span><span class="v">${t(S.mode)}</span>${CH}</button><button class="rw" data-lg><span class="g">${t('language')}</span><span class="v">${S.lang==='ar'?'العربية':'English'}</span>${CH}</button></div>
+<div class="sh">${t('plan')}</div><div class="gl">${row(t('profile'))}${row(t('targets'),'','2,200 '+kc())}</div>
+<div class="sh">${t('prefs')}</div><div class="gl">${row(t('units'),'',kg())}${row(t('notif'))}${row(t('key'))}</div>
+<div class="sh">${t('data')}</div><div class="gl">${row(t('backup'))}${row(t('import'))}${row(t('privacy'))}${row(t('about'),'','1.0.0')}</div>
+<button class="bt bd w">${t('del')}</button>`};
+const TABS=['today','train','eat','progress','hiku'],TI={today:'home',train:'train',eat:'eat',progress:'prog',hiku:'hiku'};
+const PICK=[['today','Today'],['train','Train'],['workout','Workout'],['eat','Eat'],['progress','Progress'],['settings','Settings']];
+function draw(){const ph=$('#ph');ph.dataset.m=S.mode;ph.dir=S.lang==='ar'?'rtl':'ltr';ph.lang=S.lang;
+ const tabs=TABS.includes(S.scr);const rest=S.scr==='workout';
+ const keep=ph.querySelector('.scr')?.scrollTop||0,same=ph.dataset.s===S.scr;
+ ph.innerHTML=`<div class="sb">9:41</div><div class="scr">${V[S.scr]()}</div>${rest?`<div class="rest"><b>${t('rest')} 1:32</b><button class="bt bg bs">−15</button><button class="bt bg bs">+15</button><button class="bt bn bs">${t('skip')}</button></div>`:''}${tabs?`<nav class="tb">${TABS.map(k=>`<button class="${k===S.scr?'on':''}" data-go="${k}" ${k===S.scr?'aria-current="page"':''}>${ic(TI[k])}${t(k)}</button>`).join('')}</nav>`:''}`;
+ ph.dataset.s=S.scr;if(same)ph.querySelector('.scr').scrollTop=keep;
+ $('#scrSeg').innerHTML=PICK.map(p=>`<button data-pick="${p[0]}" aria-pressed="${S.scr===p[0]}">${p[1]}</button>`).join('');
+ $('#mLight').setAttribute('aria-pressed',S.mode==='light');$('#mDark').setAttribute('aria-pressed',S.mode==='dark');
+ $('#lEn').setAttribute('aria-pressed',S.lang==='en');$('#lAr').setAttribute('aria-pressed',S.lang==='ar');
+ const base=PICK.some(p=>p[0]===S.scr)?S.scr:'hiku';const v=base==='hiku'?'light':S.lang==='ar'?'ar':S.mode;
+ $('#nowImg').src=`shots/${base}-${v}.jpg`;
+ $('#nowNote').textContent=base==='hiku'?'Hiku today (light).':S.lang==='ar'?'The current Arabic screenshots exist in dark mode only.':'';}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(d.pick)S.scr=d.pick;else if(d.mode)S.mode=d.mode;else if(d.lang)S.lang=d.lang;else if(d.go)S.scr=d.go;
+ else if(d.w)S.water=Math.max(0,Math.min(10,S.water+ +d.w));else if(d.set)S.done[d.set]=!S.done[d.set];
+ else if(d.r)S.range=+d.r;else if('tm'in d)S.mode=S.mode==='light'?'dark':'light';else if('lg'in d)S.lang=S.lang==='en'?'ar':'en';else return;draw();});
+draw();
+
+/* audit findings */
+const F=[
+['Every screen','today-light','8 findings',[[1,'The tab bar is a floating capsule with icons and no labels.','People cannot tell Eat, Progress and Hiku apart without tapping. Apple and Android both ask for a labelled bar. Fix: standard bar, icon plus label.'],[1,'Three different looks for "the main button".','Orange gradient on Train, black pill on Hiku and onboarding, outlined pill on Today. Fix: one filled orange button per screen; a soft tinted one for second place; plain text for the rest.'],[1,'Everything is a rounded outlined pill or a card.','When all controls weigh the same, nothing stands out. Fix: lists for navigation, cards only for a summary.'],[1,'Aurora gradient, glass and glow on every screen.','Decoration competes with the content and looks unlike any familiar app. Fix: plain solid backgrounds.'],[2,'Headers differ on every tab.','Small title with date, title with subtitle and a Search pill, title with a Quick add pill, a circled back button. Fix: one header with a large title; actions as icons.'],[2,'The same privacy line repeats as a subtitle.','"On this phone", "Stored on your phone", "Finished sessions on this phone". Fix: say it once in onboarding and Privacy.'],[2,'Capital-letter labels with wide spacing, and a coloured dot before each card title.','Neither carries meaning, and wide spacing is wrong for Arabic. Fix: remove both.'],[2,'Dark mode is the light design with a purple glow.','Cards barely separate from the page. Fix: a neutral dark palette with clear surface steps.']]],
+['Today','today-dark','4 findings',[[1,'A glowing orb showing one number fills 40% of the screen.','Three grey lines under it explain the orb. Fix: a compact calories summary with eaten, target and macros.'],[1,'Training is missing from Today.','The next workout is not shown at all. Fix: a "next workout" row with a Start button.'],[2,'"Quick actions" is a card holding a single button.','Fix: put Log food inside the calories summary.'],[2,'"Remove glass" has the same weight as "Add glass".','Fix: a small minus and plus stepper on a Water row.']]],
+['Train','trainactive-light','5 findings',[[1,'"Discard workout" is a filled orange-red button right under "Resume workout".','Two similar buttons, one of which deletes your session. Fix: Resume stays filled; Discard becomes red text with a confirmation.'],[1,'Starter routines are two large outlined buttons inside a card.','They read as actions, not as routines you own. Fix: a plain Routines list with a "New" link.'],[2,'A loose sentence and two "Explore" headings.','"Start without a plan, or build a repeatable template." floats with no container; Explore appears as a label and again as a card title.'],[2,'History and Records are not on the first view.','Fix: a Library list with Exercises, History, Records, Muscles.'],[3,'Search is a large pill in the header.','Fix: a search icon.']]],
+['Workout','workout-light','3 findings, the layout stays',[[2,'The Finish button is a red-orange blob.','In light mode it reads as a warning. Fix: a normal small filled button.'],[2,'The hint sits in a dashed orange box.','Dashed borders look unfinished. Fix: a one-time plain tip, or drop it.'],[2,'The last rows scroll under the system buttons.','Fix: bottom padding for the system bar, and a rest bar pinned above it.']]],
+['Eat','eat-light','4 findings',[[1,'The meals are below the fold.','Logging food is the job of this screen, yet the orb and Water come first. Fix: summary, then Breakfast, Lunch, Dinner, Snacks with "Add food" in each.'],[1,'The day switcher looks like three tabs.','"Previous day / Today / Next day" as plain words. Fix: arrows around the date.'],[2,'"Set a target" is a lone pill on the left.','Fix: fold it into the summary when no target exists.'],[2,'Over target is shown with a yellow ring in Arabic and no other cue.','Fix: state it in words next to the number, in both languages.']]],
+['Progress','progress-light','2 findings',[[1,'Three cards of explanation and one small number.','A progress screen without a chart. Fix: the weight chart on the home, then a plain list to Strength, Nutrition, Measurements, Photos, Health.'],[2,'Each card exists to hold one link.','Fix: list rows that show the latest value on the right.']]],
+['Hiku, History, Settings','history-light','4 findings',[[1,'History shows a "Delete" button on every workout.','A destructive action is one tap away from a list people scroll. Fix: swipe or hold to delete, with a confirmation.'],[2,'Hiku offers "Describe a meal" as the main button before an API key exists.','Fix: without a key, the one main action is "Add API key".'],[2,'Settings groups are cards with descriptions under most rows.','Fix: a standard grouped list showing the current value on the right.'],[3,'The welcome screen is mostly empty.','Fix: tighten onboarding copy in the last pull request.']]]];
+$('#finds').innerHTML=F.map((f,i)=>`<details ${i===0?'open':''}><summary>${f[0]}<span>${f[2]}</span></summary><div class="fb"><img src="shots/${f[1]}.jpg" alt="Current ${f[0]} screen" loading="lazy" width="150"><ul>${f[3].map(x=>`<li><span class="p p${x[0]}">P${x[0]}</span><b>${x[1]}</b><em>${x[2]}</em></li>`).join('')}</ul></div></details>`).join('');
+
+/* design system */
+const C=[['--b','Page','#F4F3F1','#0D0E10'],['--s','Surface','#FFFFFF','#18191C'],['--s2','Control fill','#ECEAE6','#232529'],['--sep','Divider','#E3E1DC','#2B2D32'],['--t','Text','#17181A','#F2F3F5'],['--t2','Secondary text','#5C6066','#A9ADB4'],['--a','Accent','#C2410C','#FF8A5C'],['--at','Accent tint','#FBE9DF','#3A2218'],['--ok','Done','#177A45','#5BD08F'],['--no','Delete','#B3261E','#FF7A7A'],['--pr','Protein','#2E6BD3','#8CBEFF'],['--cb','Carbs','#9A6C00','#FFCF5E'],['--ft','Fat','#B8406F','#FF9AC0']];
+const sw=i=>C.map(c=>`<div><i style="background:${c[i]}"></i>${c[1]}<br><code>${c[i]}</code></div>`).join('');
+$('#swL').innerHTML=sw(2);$('#swD').innerHTML=sw(3);
+const kit=`<div class="bar"><button class="bt bf">Start workout</button><button class="bt bn">Log food</button><button class="bt bg">Add set</button><button class="tx">Cancel</button><button class="bt bd">Delete</button></div>
+<div class="bar"><span class="cp on">All</span><span class="cp">Chest</span><span class="cp">Back</span><span class="cp">Barbell</span></div>
+<div class="inp">Search exercises</div>
+<div class="sg"><button class="on">4 weeks</button><button>3 months</button><button>1 year</button></div>
+<div class="gl"><div class="rw"><span class="g">Units and display</span><span class="v">kg</span>${CH}</div><div class="rw"><span class="g">Upper A<small>6 exercises · Last done 3 days ago</small></span>${CH}</div></div>
+<div class="cd"><div class="st"><div><b>12:04</b>Duration</div><div><b>3,150 kg</b>Volume</div><div><b>9</b>Sets</div></div></div>
+<div class="cd es"><b>No workouts yet</b><div class="sub">Finished workouts appear here.</div><button class="bt bn">Start empty workout</button></div>`;
+$('#kitL').innerHTML=kit;$('#kitD').innerHTML=kit;
+</script>
