@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {formatDate, pluralForm, type TranslationKey} from '../../src/i18n';
 import { router,useLocalSearchParams } from 'expo-router';
+import { devRoutesEnabled } from '../../src/navigation/devRoutes';
 import {View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import {File,Paths} from 'expo-file-system';
@@ -31,7 +32,8 @@ const DEMO_BACKUP:BackupData={
 };
 export default function DataAndStorage() {
   const {demoBackup}=useLocalSearchParams<{demoBackup?:string}>();
-  const isDemo=demoBackup==='1';
+  // Demo preview is a developer/screenshot route: a release build ignores the parameter.
+  const isDemo=devRoutesEnabled()&&demoBackup==='1';
   const { theme, resetLocalPreferences } = useTheme();
   const { language,resetLanguage, t } = useLanguage();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);

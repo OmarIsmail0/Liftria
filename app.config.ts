@@ -147,7 +147,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Read-only Apple Health. `NSHealthUpdateUsageDescription: false` omits the write
     // prompt (the plugin adds one by default). `background: false` omits background delivery.
     ['@kingstinct/react-native-healthkit', {
-      NSHealthShareUsageDescription: 'Liftria reads steps, heart rate, workouts, sleep and body measurements from Apple Health to show them in the app. It never writes to Apple Health.',
+      NSHealthShareUsageDescription: 'Liftria reads steps, heart rate, calories, workouts, sleep and body measurements from Apple Health to show them in the app. It never writes to Apple Health.',
       NSHealthUpdateUsageDescription: false,
       background: false,
     }],

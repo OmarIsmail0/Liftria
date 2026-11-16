@@ -1,3 +1,4 @@
+jest.mock('expo-notifications', () => ({ cancelAllScheduledNotificationsAsync: jest.fn(async () => undefined), dismissAllNotificationsAsync: jest.fn(async () => undefined) }));
 import { canDeleteEverything, deleteEverythingOnPhone, formatLocalDatabaseSize,
   deletionIncludesAppFiles, type DeletionOps } from '../storage';
 import { DB_MIGRATIONS, isMissingDatabaseError } from '../../../services/database';

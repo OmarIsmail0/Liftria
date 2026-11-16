@@ -74,3 +74,11 @@ test('verified Hevy equipment suffixes match bundled Leg Press and Glute Kickbac
    status:'custom',resolvedId:null,
   });
 });
+
+test('exercise names that match Object members are read as ordinary names, not inherited members',()=>{
+ const hostile=parseImportCsv('csv','h.csv','date,exercise,weight,reps\n2026-10-21,constructor,60,8\n2026-10-22,__proto__,35,7\n2026-10-23,toString,20,5');
+ const rows=resolveImportMappings(hostile,empty);
+ expect(rows.map(r=>r.name).sort()).toEqual(['__proto__','constructor','toString']);
+ for(const row of rows)expect(['custom','suggested']).toContain(row.status);
+ expect(({} as Record<string,unknown>).polluted).toBeUndefined();
+});

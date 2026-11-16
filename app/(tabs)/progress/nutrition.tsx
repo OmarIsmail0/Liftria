@@ -1,5 +1,6 @@
 import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useState} from 'react';
+import {devRoutesEnabled} from '../../../src/navigation/devRoutes';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
@@ -19,7 +20,9 @@ import {targetSafety} from '../../../src/features/onboarding/targetEstimate';
 
 export default function NutritionTrends(){
  const {t,language}=useLanguage();
- const {demoAdaptive}=useLocalSearchParams<{demoAdaptive?:'early'|'ready'}>();
+ const {demoAdaptive:demoParam}=useLocalSearchParams<{demoAdaptive?:'early'|'ready'}>();
+ // Demo data is a developer/screenshot route: a release build ignores the parameter.
+ const demoAdaptive=devRoutesEnabled()?demoParam:undefined;
  const [range,setRange]=useState<RangeKey>('4w'),[entries,setEntries]=useState<DiaryEntry[]>([]);
  const [target,setTarget]=useState<Target|null>(null),[hidden,setHidden]=useState(false),[error,setError]=useState(false);
  const [burn,setBurn]=useState<BurnResult|null>(null);
