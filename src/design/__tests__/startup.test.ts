@@ -32,10 +32,10 @@ describe('TASK-2: startup style is resolved before first navigation frame', () =
     expect(resolveEffectiveStyle('aurora', settings.highTextContrast, settings.reduceTransparency)).toBe('solid');
   });
 
-  it('high contrast false means Aurora', async () => {
+  it('high contrast false stays Solid', async () => {
     const settings = await resolveStartupAccessibility(okChecks(false));
     expect(settings.source).toBe('resolved');
-    expect(resolveEffectiveStyle('aurora', settings.highTextContrast, settings.reduceTransparency)).toBe('aurora');
+    expect(resolveEffectiveStyle('aurora', settings.highTextContrast, settings.reduceTransparency)).toBe('solid');
   });
 
   it('a rejected accessibility read fails closed to Solid', async () => {

@@ -2,7 +2,6 @@ import { Tabs, usePathname } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { AmbientBackdrop } from '../../src/design/primitives/VisualEffects';
 import { CapsuleNav } from '../../src/design/primitives';
 import { activeCapsuleTab } from '../../src/navigation/routes';
 import WorkoutMiniBar from '../../src/features/train/WorkoutMiniBar';
@@ -13,7 +12,6 @@ export default function TabsLayout() {
   const { t } = useLanguage();
   const pathname = usePathname();
   return <View style={{ flex: 1, backgroundColor: theme.background }}>
-    {theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     <Tabs initialRouteName="today" screenOptions={{
       headerShown: false,
       sceneStyle: { backgroundColor: 'transparent' },

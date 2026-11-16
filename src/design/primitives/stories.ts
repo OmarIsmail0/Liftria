@@ -12,9 +12,12 @@ export const primitiveStories = [
   { id: 'toggle', title: 'Toggle' },
   { id: 'field', title: 'Field' },
   { id: 'list-row', title: 'ListRow' },
+  { id: 'list-group', title: 'ListGroup' },
+  { id: 'stat-block', title: 'StatBlock' },
+  { id: 'progress-bar', title: 'ProgressBar' },
   { id: 'empty-state', title: 'EmptyState' },
   { id: 'skeleton', title: 'Skeleton' },
-  { id: 'orb', title: 'Pulse Orb' },
+  { id: 'orb', title: 'Orb' },
   { id: 'capsule-nav', title: 'CapsuleNav' },
 ] as const;
 export type PrimitiveStoryId = typeof primitiveStories[number]['id'];

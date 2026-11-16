@@ -135,8 +135,8 @@ test('role colours match the body map in light and dark', () => {
     expect(colors.eqd.stroke).toBe('none');
     expect(colors.eq.fill).not.toBe(colors.eqd.fill);
   }
-  expect(poseRoleColors(createTheme('dark', 'aurora')).s.fill).toBe('rgba(255,143,107,0.55)');
-  expect(poseRoleColors(createTheme('light', 'solid')).p.fill).toBe('#A83E18');
+  expect(poseRoleColors(createTheme('dark', 'aurora')).s.fill).toBe('rgba(255,138,92,0.55)');
+  expect(poseRoleColors(createTheme('light', 'solid')).p.fill).toBe('#C2410C');
 });
 
 test('the exercise screen draws the whole figure above the muscle map', () => {

@@ -3,8 +3,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import {
-  Banner, Button, CapsuleNav, Card, Chip, EmptyState, Field, Header, ListRow,
-  Orb, Screen, Sheet, Skeleton, Snackbar, Stepper, Toggle, Typography,
+  Banner, Button, CapsuleNav, Card, Chip, EmptyState, Field, Header, ListGroup, ListRow,
+  Orb, ProgressBar, Screen, SectionHeader, Sheet, Skeleton, Snackbar, StatBlock, Stepper, Toggle, Typography,
   type CapsuleTab,
 } from '../../../src/design/primitives';
 import { buttonVariants, provenanceKinds } from '../../../src/design/primitives';
@@ -14,7 +14,7 @@ import { backOrReplace } from '../../../src/navigation/back';
 export default function PrimitiveStory() {
   const { name } = useLocalSearchParams<{ name: string }>();
   const id = Array.isArray(name) ? name[0] : name;
-  const { theme, setMode, setStyle, preferences, reduceMotion } = useTheme();
+  const { theme, setMode, preferences, reduceMotion } = useTheme();
   const [count, setCount] = useState(8);
   const [isOn, setIsOn] = useState(false);
   const [value, setValue] = useState('');
@@ -25,6 +25,7 @@ export default function PrimitiveStory() {
   const [hidden, setHidden] = useState(false);
   const [breathing, setBreathing] = useState(true);
   const [eaten, setEaten] = useState(1420);
+  const [range, setRange] = useState<'4w' | '3m' | '1y'>('4w');
   const label = primitiveStories.find(story => story.id === id)?.title ?? 'Unknown component';
   const alert = (text: string) => setMessage(text);
 
@@ -32,35 +33,31 @@ export default function PrimitiveStory() {
     <Header title={label} subtitle="Native component test · hidden route" onBack={() => backOrReplace(router, '/dev/primitives')} />
     {!id || !isPrimitiveStoryId(id) ? <EmptyState title="No matching story" description="Return to the primitive list." /> : <>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-        <Button label={preferences.mode === 'dark' ? 'Light' : 'Dark'} size="sm"
+        <Button label={preferences.mode === 'dark' ? 'Light' : 'Dark'} size="sm" variant="neutral"
           onPress={() => setMode(preferences.mode === 'dark' ? 'light' : 'dark')} />
-        <Button label={preferences.style === 'solid' ? 'Aurora Rim' : 'Solid'} size="sm" variant="secondary"
-          onPress={() => setStyle(preferences.style === 'solid' ? 'aurora' : 'solid')} />
       </View>
-      {id === 'screen' && <Card title="Screen safe area">
-        <Typography>Fixed ambient background, content scrolls, and native safe-area insets apply.</Typography>
+      {id === 'screen' && <Card title="Screen">
+        <Typography>Page background, content scrolls, and native safe-area insets apply.</Typography>
       </Card>}
-      {id === 'header' && <Header title="Today" subtitle="Card header example" onBack={() => alert('Back button works')} right={<Chip kind="phone" />} />}
-      {id === 'card' && <>
-        <Card title="Eating" rim="eat"><Typography tone="secondary">Honey rim</Typography></Card>
-        <Card title="Training" rim="train"><Typography tone="secondary">Coral rim</Typography></Card>
-        <Card title="Activity" rim="health"><Typography tone="secondary">Teal rim</Typography></Card>
-        <Card title="Hiku" rim="hiku"><Typography tone="secondary">Lavender rim</Typography></Card>
-        <Card title="Neutral" rim="none"><Typography tone="secondary">No domain rim</Typography></Card>
+      {id === 'header' && <>
+        <Header title="Today" subtitle="Monday, Nov 16" right={<Button label="Gear" size="sm" variant="plain" onPress={() => alert('Gear')} />} />
+        <Header mode="inline" title="Workout" onBack={() => alert('Back')} right={<Button label="Done" size="sm" variant="plain" onPress={() => alert('Done')} />} />
       </>}
-      {id === 'button' && <Card title="All button variants">
+      {id === 'card' && <>
+        <Card title="Calories"><Typography tone="secondary">Flat surface, no shadow.</Typography></Card>
+        <Card title="Training"><Typography tone="secondary">Title uses the title size.</Typography></Card>
+      </>}
+      {id === 'button' && <Card title="Buttons">
         {buttonVariants.map(variant => <Button key={variant} label={variant} variant={variant}
           onPress={() => alert(`Pressed ${variant}`)} fullWidth />)}
-        <Button label="Start workout" variant="train" fullWidth onPress={() => alert("Workout started")} />
-        <Button label="Small button" size="sm" onPress={() => alert('Small')} />
-        <Button label="Extra large log set" size="xl" variant="train" fullWidth onPress={() => alert('Logged')} />
+        <Button label="Small button" size="sm" variant="neutral" onPress={() => alert('Small')} />
         <Button label="Disabled" disabled onPress={() => alert('Should not happen')} />
       </Card>}
-      {id === 'chip' && <Card title="Provenance (informative, not buttons)">
+      {id === 'chip' && <Card title="Chips">
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
+          <Chip kind="phone" label="All" selected />
+          <Chip kind="phone" label="Chest" />
           {provenanceKinds.map(kind => <Chip key={kind} kind={kind} />)}
-          <Chip kind="stale" label="2 d ago" />
-          <Chip kind="measured" label="From Health Connect" />
         </View>
       </Card>}
       {id === 'banner' && <Card title="Inline feedback">
@@ -73,56 +70,76 @@ export default function PrimitiveStory() {
           onDismiss={() => alert('Dismissed')} />
         <Button label="Show removed state" onPress={() => alert('Meal removed')} />
       </Card>}
-      {id === 'sheet' && <Card title="Native modal sheet">
+      {id === 'sheet' && <Card title="Sheet">
         <Button label="Open confirmation sheet" onPress={() => setSheetOpen(true)} />
         <Sheet visible={sheetOpen} title="Delete this workout?" onClose={() => setSheetOpen(false)}
           description="This can't be undone." destructive>
-          <Button label="Delete workout" variant="danger" fullWidth
+          <Button label="Delete workout" variant="destructive" fullWidth
             onPress={() => { setSheetOpen(false); alert('Deleted'); }} />
         </Sheet>
       </Card>}
       {id === 'stepper' && <Card title="Stepper">
         <Stepper label="Repetitions" value={count} onChange={setCount} min={0} max={20} unit="reps" />
       </Card>}
-      {id === 'toggle' && <Card title="Accessible switch">
+      {id === 'toggle' && <Card title="Switch">
         <Toggle label="Hide numbers" detail="Replaces calorie totals with words." value={isOn} onChange={setIsOn} />
       </Card>}
-      {id === 'field' && <Card title="Labeled input">
+      {id === 'field' && <Card title="Field">
         <Field label="Name" value={value} onChangeText={setValue} placeholder="Enter a name" />
         <Field label="Quantity" value={String(count)} keyboardType="numeric" onChangeText={next => setCount(Number(next) || 0)} />
       </Card>}
-      {id === 'list-row' && <Card title="64dp row">
-        <ListRow title="Health Connect" detail="Permissions and source details" onPress={() => alert('Health Connect row')} />
-        <ListRow title="Export and backup" detail="Future · Not available yet" />
+      {id === 'list-row' && <Card title="Rows">
+        <ListRow title="Health Connect" detail="Permissions and source details" value="On" onPress={() => alert('Health Connect row')} />
+        <ListRow title="Export and backup" detail="Not available yet" />
+      </Card>}
+      {id === 'list-group' && <>
+        <SectionHeader title="Library" actionLabel="New" onAction={() => alert('New')} />
+        <ListGroup>
+          <ListRow title="Exercises" onPress={() => alert('Exercises')} />
+          <ListRow title="History" value="12" onPress={() => alert('History')} />
+          <ListRow title="Upper A" detail="6 exercises · last done 3 days ago" onPress={() => alert('Routine')} />
+        </ListGroup>
+      </>}
+      {id === 'stat-block' && <Card>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <StatBlock value="12:04" label="Duration" />
+          <StatBlock value="3,150 kg" label="Volume" />
+          <StatBlock value="9" label="Sets" />
+        </View>
+      </Card>}
+      {id === 'progress-bar' && <Card title="Progress">
+        <ProgressBar progress={0.62} label="Calories" />
+        <ProgressBar progress={1} label="Full" />
+        <ProgressBar progress={0} label="Empty" />
       </Card>}
       {id === 'empty-state' && <Card>
-        <EmptyState title="No target yet" description="Set a target whenever you're ready."
-          action={<Button label="Set target" onPress={() => alert('Action tapped')} />} />
+        <EmptyState title="No workouts yet" description="Finished workouts appear here."
+          action={<Button label="Start empty workout" variant="tonal" onPress={() => alert('Action tapped')} />} />
       </Card>}
-      {id === 'skeleton' && <Card title="Static loading placeholder">
-        <Skeleton /><Skeleton height={theme.size.touch.workout} />
-        <Typography tone="secondary" size="small">No spinner or shimmer for short waits.</Typography>
+      {id === 'skeleton' && <Card title="Loading">
+        <Skeleton /><Skeleton height={52} />
+        <Typography tone="secondary" size="secondary">No spinner or shimmer for short waits.</Typography>
       </Card>}
       {id === 'orb' && <>
-        <Typography tone="secondary" size="small">First-day empty glass orb: no calorie target and no invented ring.</Typography>
+        <Typography tone="secondary" size="secondary">Flat orb. No glow. Reduce motion: {reduceMotion ? 'on' : 'off'}.</Typography>
         <Orb eaten={eaten} target={noTarget ? null : 2650} hidden={hidden} active={breathing}
           onPress={() => alert('Open today\'s Eat diary')} />
-        <Card title="Pulse Orb states" rim="eat">
-        <Typography tone="secondary">Estimate · Eaten of target</Typography>
-        <Typography tone="secondary" size="small">Reduce motion active: {reduceMotion ? 'Yes — orb stays still' : 'No'}</Typography>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-          <Button size="sm" label="Add 180" onPress={() => setEaten(v => v + 180)} />
-          <Button size="sm" label="First day: 0" onPress={() => { setEaten(0); setNoTarget(true); }} />
-          <Button size="sm" label="Reset sample" onPress={() => { setEaten(1420); setNoTarget(false); }} />
-          <Button size="sm" label="No target" onPress={() => setNoTarget(v => !v)} />
-          <Button size="sm" label="Hide numbers" onPress={() => setHidden(v => !v)} />
-          <Button size="sm" label="Pause" onPress={() => setBreathing(v => !v)} />
+          <Button size="sm" variant="neutral" label="Add 180" onPress={() => setEaten(v => v + 180)} />
+          <Button size="sm" variant="neutral" label="First day: 0" onPress={() => { setEaten(0); setNoTarget(true); }} />
+          <Button size="sm" variant="neutral" label="Reset sample" onPress={() => { setEaten(1420); setNoTarget(false); }} />
+          <Button size="sm" variant="neutral" label="No target" onPress={() => setNoTarget(v => !v)} />
+          <Button size="sm" variant="neutral" label="Hide numbers" onPress={() => setHidden(v => !v)} />
+          <Button size="sm" variant="neutral" label="Pause" onPress={() => setBreathing(v => !v)} />
         </View>
-        </Card>
       </>}
-      {id === 'capsule-nav' && <Card title="Five-tab capsule">
+      {id === 'capsule-nav' && <Card title="Capsule">
         <CapsuleNav active={selectedTab} onSelect={setSelectedTab} />
-        <Typography tone="secondary" size="small">Selected tab: {selectedTab}</Typography>
+        <Typography tone="secondary" size="secondary">Selected tab: {selectedTab}</Typography>
+        <View style={{ gap: theme.space[2] }}>
+          <Typography size="secondary" tone="secondary">Range control, shown here so the track is easy to find.</Typography>
+          <Button label={range} variant="plain" onPress={() => setRange(range === '4w' ? '3m' : range === '3m' ? '1y' : '4w')} />
+        </View>
       </Card>}
       {message !== 'Meal removed' && <Snackbar message={message} onDismiss={() => setMessage('Meal removed')} />}
     </>}

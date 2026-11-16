@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
-import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider, router, type Theme } from 'expo-router';
 import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
-import { bundledFonts } from '../src/design/fonts';
 import { LanguageProvider, useLanguage } from '../src/i18n/LanguageProvider';
 import { ThemeProvider, useTheme } from '../src/design/ThemeProvider';
 import { OpaqueStack } from '../src/navigation/OpaqueStack';
@@ -12,15 +10,15 @@ import { useWorkoutNotificationSync } from '../src/features/train/workoutNotific
 import { readWorkout } from '../src/features/train/workoutData';
 import * as Notifications from 'expo-notifications';
 
-// Font loading and initial accessibility resolution both occur behind the native splash.
+// Initial accessibility and saved theme resolve behind the native splash.
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
-function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
+function ReadyNavigator() {
   const { ready, theme } = useTheme();
   const { language } = useLanguage();
   useWorkoutNotificationSync(language);
   useEffect(()=>{
-    if(!ready||!fontsLoaded)return;
+    if(!ready)return;
     const openSession=(sessionId:string)=>{
       void readWorkout(sessionId).then(result=>{
         if(result.ok&&result.value?.state==='in-progress')
@@ -38,11 +36,11 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
       }
     }).catch(()=>{});
     return()=>sub.remove();
-  },[ready,fontsLoaded]);
+  },[ready]);
   useEffect(() => {
-    if (ready && fontsLoaded) void SplashScreen.hideAsync().catch(() => {});
-  }, [ready, fontsLoaded]);
-  if (!ready || !fontsLoaded) return null;
+    if (ready) void SplashScreen.hideAsync().catch(() => {});
+  }, [ready]);
+  if (!ready) return null;
   // React Navigation paints native stack containers with its own theme's background, which
   // defaults to light grey (242,242,242). On iPhone that showed through every nested stack
   // screen, even in dark mode. Transparent lets the app's own backdrop show instead.
@@ -62,7 +60,5 @@ function ReadyNavigator({ fontsLoaded }: { fontsLoaded: boolean }) {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts(bundledFonts);
-  if (fontError) throw fontError;
-  return <LanguageProvider><ThemeProvider><ReadyNavigator fontsLoaded={fontsLoaded} /></ThemeProvider></LanguageProvider>;
+  return <LanguageProvider><ThemeProvider><ReadyNavigator /></ThemeProvider></LanguageProvider>;
 }

@@ -39,93 +39,115 @@ function ratio(foreground: string | RGBA, background: string | RGBA): number {
   return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 }
 
-describe.each(['dark', 'light'] as ColorScheme[])('%s Liftria tokens', mode => {
+describe.each(['dark', 'light'] as ColorScheme[])('%s v2 tokens', mode => {
   const t = createTheme(mode, 'aurora');
   const surface = t.color.bg.surface;
-  const solidPairs = [
-    ['primary text', t.color.text.primary, mode === 'dark' ? 15.41 : 18.15],
-    ['secondary text', t.color.text.secondary, mode === 'dark' ? 10.15 : 7.31],
-    ['tertiary text', t.color.text.tertiary, mode === 'dark' ? 7.62 : 5.63],
-    ['train', t.color.domain.train, mode === 'dark' ? 7.81 : 6.24],
-    ['eat', t.color.domain.eat, mode === 'dark' ? 11.92 : 5.89],
-    ['health', t.color.domain.health, mode === 'dark' ? 10.52 : 6.43],
-    ['hiku', t.color.domain.hiku, mode === 'dark' ? 9.06 : 5.76],
-    ['protein', t.color.macro.protein, mode === 'dark' ? 9.08 : 5.05],
-    ['fat', t.color.macro.fat, mode === 'dark' ? 8.84 : 5.25],
-    ['success', t.color.status.success, mode === 'dark' ? 9.03 : 5.38],
-    ['warning', t.color.status.warning, mode === 'dark' ? 9.49 : 5.19],
-    ['danger', t.color.status.danger, mode === 'dark' ? 6.29 : 5.17],
-    ['solid control border', t.color.border.strong, mode === 'dark' ? 3.33 : 3.54],
+  const textOnSurface = [
+    ['primary text', t.color.text.primary],
+    ['secondary text', t.color.text.secondary],
+    ['tertiary text', t.color.text.tertiary],
+    ['accent', t.color.accent],
+    ['protein', t.color.macro.protein],
+    ['carbs', t.color.macro.carbs],
+    ['fat', t.color.macro.fat],
+    ['success', t.color.status.success],
+    ['warning', t.color.status.warning],
+    ['danger', t.color.status.danger],
   ] as const;
-  test.each(solidPairs)('%s maintains the documented Solid contrast minimum', (_, value, minimum) => {
-    // Published ratios are rounded to hundredths; permit only numeric roundoff.
-    expect(ratio(value, surface)).toBeGreaterThanOrEqual(minimum - 0.035);
+
+  test.each(textOnSurface)('%s meets AA on a card', (_, value) => {
+    expect(ratio(value, surface)).toBeGreaterThanOrEqual(4.5);
   });
 
-  test('chalk primary action, filled domain actions and alternate surfaces', () => {
-    expect(ratio(t.color.action.primary.fg, t.color.action.primary.bg)).toBeGreaterThanOrEqual(16.5);
-    expect(ratio(t.color.on.train, t.color.domain.train)).toBeGreaterThanOrEqual(6.2);
-    expect(ratio(t.color.on.hiku, t.color.domain.hiku)).toBeGreaterThanOrEqual(5.7);
-    expect(ratio(t.color.text.tertiary, t.color.bg.raised)).toBeGreaterThanOrEqual(5.15);
-    expect(ratio(t.color.text.tertiary, t.color.bg.base)).toBeGreaterThanOrEqual(5.15);
+  test('filled button text, page text and the flat orb meet AA', () => {
+    expect(ratio(t.color.on.accent, t.color.accent)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(t.color.text.primary, t.color.bg.base)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(t.color.text.secondary, t.color.bg.base)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(t.color.text.primary, t.color.bg.raised)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(t.color.status.success, t.color.tint.success)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(t.color.status.warning, t.color.tint.warning)).toBeGreaterThanOrEqual(4.5);
   });
 
-  // Four non-overlapping glows are tested at full alpha. Adjacent simultaneous glow
-  // overlap is a separate on-device visual acceptance case (ACCESSIBILITY §1D).
-  const backgrounds = [t.ambient.train, t.ambient.health, t.ambient.hiku, t.ambient.eat]
-    .map(glow => blend(rgba(glow), rgba(t.aurora.base)));
-  test.each(backgrounds.map((bg, index) => [index, bg] as const))(
-    'glass text, status and control outlines over full-strength glow %s',
-    (_, glowingPage) => {
-      const card = blend(rgba(t.glass.card), glowingPage);
-      const sheen = blend(rgba(t.glass.highlight), card);
-      for (const background of [card, sheen]) {
-        for (const value of [
-          t.color.text.primary, t.color.text.secondary, t.color.text.tertiary,
-          ...Object.values(t.color.domain), ...Object.values(t.color.macro),
-          t.color.status.danger,
-        ]) expect(ratio(value, background)).toBeGreaterThanOrEqual(4.5);
-        expect(ratio(t.color.border.control, background)).toBeGreaterThanOrEqual(3);
-      }
-      expect(ratio(t.color.border.control, glowingPage)).toBeGreaterThanOrEqual(3);
-      const hikuChip = blend(rgba(t.color.chip.hiku.bg), card);
-      const warningChip = blend(rgba(t.color.tint.warning), card);
-      expect(ratio(t.color.chip.hiku.fg, hikuChip)).toBeGreaterThanOrEqual(4.5);
-      expect(ratio(t.color.status.warning, warningChip)).toBeGreaterThanOrEqual(4.5);
-    },
-  );
+  test('uses the approved v2 hex values', () => {
+    expect(t.color.bg.base).toBe(mode === 'light' ? '#F4F3F1' : '#0D0E10');
+    expect(t.color.bg.surface).toBe(mode === 'light' ? '#FFFFFF' : '#18191C');
+    expect(t.color.bg.raised).toBe(mode === 'light' ? '#ECEAE6' : '#232529');
+    expect(t.color.border.subtle).toBe(mode === 'light' ? '#E3E1DC' : '#2B2D32');
+    expect(t.color.text.primary).toBe(mode === 'light' ? '#17181A' : '#F2F3F5');
+    expect(t.color.text.secondary).toBe(mode === 'light' ? '#5C6066' : '#A9ADB4');
+    expect(t.color.text.tertiary).toBe(mode === 'light' ? '#6E7279' : '#8D9199');
+    expect(t.color.accent).toBe(mode === 'light' ? '#C2410C' : '#FF8A5C');
+    expect(t.color.on.accent).toBe(mode === 'light' ? '#FFFFFF' : '#1A0D06');
+    expect(t.color.tint.accent).toBe(mode === 'light' ? '#FBE9DF' : '#3A2218');
+    expect(t.color.status.success).toBe(mode === 'light' ? '#177A45' : '#5BD08F');
+    expect(t.color.tint.success).toBe(mode === 'light' ? '#E3F3E9' : '#16301F');
+    expect(t.color.status.danger).toBe(mode === 'light' ? '#B3261E' : '#FF7A7A');
+    expect(t.color.macro).toEqual(mode === 'light'
+      ? { protein: '#2E6BD3', carbs: '#9A6C00', fat: '#B8406F' }
+      : { protein: '#8CBEFF', carbs: '#FFCF5E', fat: '#FF9AC0' });
+  });
 
-  test('empty orb text contrasts against unlit sphere stops over glass', () => {
-    const underlay = blend(rgba(t.glass.card), rgba(t.aurora.base));
-    const sphereStops = [t.orb[1], t.orb[2], t.orb[3]];
-    for (const stop of sphereStops) {
-      const emptyFill = blend([...rgba(stop).slice(0, 3), t.orbEmpty.fillOpacity] as RGBA, underlay);
-      expect(ratio(t.color.text.primary, emptyFill)).toBeGreaterThanOrEqual(4.5);
+  test('old interactive names point at the accent', () => {
+    for (const name of ['train', 'eat', 'health', 'hiku'] as const) {
+      expect(t.color.domain[name]).toBe(t.color.accent);
+      expect(t.color.tint[name]).toBe(t.color.tint.accent);
     }
-  });
-
-  test('orb text is legible at its two text-bearing fill stops', () => {
-    expect(ratio(t.orb.ink, t.orb[1])).toBeGreaterThanOrEqual(mode === 'dark' ? 6.28 : 10.19);
-    expect(ratio(t.orb.ink, t.orb[2])).toBeGreaterThanOrEqual(mode === 'dark' ? 6.28 : 10.19);
+    expect(t.color.action.primary).toEqual({ bg: t.color.accent, fg: t.color.on.accent });
+    expect(t.color.on.train).toBe(t.color.on.accent);
+    expect(t.color.on.hiku).toBe(t.color.on.accent);
+    expect(t.color.text.inverse).toBe(t.color.on.accent);
+    expect(t.effectiveStyle).toBe('solid');
+    expect(t.background).toBe(t.color.bg.base);
+    expect(t.cardFill).toBe(t.color.bg.surface);
+    expect(t.sheetFill).toBe(t.color.bg.surface);
   });
 });
 
-test('all semantic token families and minimum touch sizes are present', () => {
+test('type, spacing and radius use the six sizes and the v2 scale', () => {
   const t = createTheme('dark', 'solid');
-  for (const name of ['color', 'glass', 'ambient', 'rim', 'orb', 'rest', 'type',
-    'space', 'radius', 'motion', 'layout', 'sheet', 'dock']) {
+  expect(t.type.metric.xl).toMatchObject({ size: 44, line: 48, weight: '700' });
+  expect(t.type.largeTitle).toMatchObject({ size: 30, line: 36, weight: '700' });
+  expect(t.type.title).toMatchObject({ size: 20, line: 26, weight: '600' });
+  expect(t.type.body).toMatchObject({ size: 16, line: 22, weight: '400' });
+  expect(t.type.body.strong).toMatchObject({ size: 16, line: 22, weight: '600' });
+  expect(t.type.secondary).toMatchObject({ size: 14, line: 20 });
+  expect(t.type.caption).toMatchObject({ size: 12, line: 16 });
+  expect(t.type.display).toBe(t.type.largeTitle);
+  expect(t.type.head).toBe(t.type.title);
+  expect(t.type.metric.l).toBe(t.type.title);
+  expect(t.type.metric.m).toBe(t.type.title);
+  expect(t.type.small).toBe(t.type.secondary);
+  expect(t.type.label).toBe(t.type.caption);
+  expect(t.type.label).not.toHaveProperty('letterSpacingEm');
+  expect(t.type.label).not.toHaveProperty('uppercase');
+  expect(t.space).toEqual({ 1: 4, 2: 8, 3: 12, 4: 16, 5: 16, 6: 24, 8: 32, 10: 32 });
+  expect(t.radius).toEqual({ sm: 8, md: 12, lg: 16, pill: 999 });
+  expect(t.layout.gutter).toBe(16);
+  expect(t.layout.cardGap).toBe(24);
+  expect(t.motion.quick.duration).toBe(120);
+  expect(t.motion.base.duration).toBe(220);
+});
+
+test('removed effect groups stay gone and touch sizes stay at least 48', () => {
+  const t = createTheme('dark', 'solid');
+  for (const name of ['color', 'type', 'space', 'radius', 'motion', 'layout', 'sheet', 'dock', 'surface']) {
     expect(t).toHaveProperty(name);
   }
-  expect(t.color.border.control).toBe('#929CAA');
+  for (const name of ['glass', 'ambient', 'rim', 'orb', 'aurora', 'visual']) {
+    expect(t).not.toHaveProperty(name);
+  }
+  expect(t.color.border.control).toBe('#8D9199');
   expect(t.size.touch.min).toBe(48);
   expect(t.size.touch.workout).toBe(64);
+  expect(t.size.touch.nav).toBeGreaterThanOrEqual(56);
   expect(t.controlOutline).toBe(t.color.border.strong);
-  expect(createTheme('light', 'aurora').controlOutline).toBe('#5F6978');
+  expect(createTheme('light', 'aurora').effectiveStyle).toBe('solid');
+  expect(createTheme('light', 'aurora').controlOutline).toBe('#5C6066');
 });
 
-test('high contrast and reduce transparency always force Solid without overwriting preference', () => {
+test('a requested aurora style still resolves to solid', () => {
   expect(resolveEffectiveStyle('aurora', true, false)).toBe('solid');
   expect(resolveEffectiveStyle('aurora', false, true)).toBe('solid');
-  expect(resolveEffectiveStyle('aurora', false, false)).toBe('aurora');
+  expect(resolveEffectiveStyle('aurora', false, false)).toBe('solid');
   expect(resolveEffectiveStyle('solid', false, false)).toBe('solid');
 });

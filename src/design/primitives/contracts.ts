@@ -1,8 +1,8 @@
 import type { LiftriaTheme } from '../tokens';
 import { formatNumber, translate, type AppLanguage } from '../../i18n';
 
-export const buttonVariants = ['primary', 'secondary', 'ghost', 'train', 'hiku', 'danger'] as const;
-export type ButtonVariant = typeof buttonVariants[number];
+export const buttonVariants = ['primary', 'tonal', 'neutral', 'plain', 'destructive'] as const;
+export type ButtonVariant = typeof buttonVariants[number] | 'secondary' | 'ghost' | 'train' | 'hiku' | 'danger';
 export const buttonSizes = ['sm', 'md', 'xl'] as const;
 export type ButtonSize = typeof buttonSizes[number];
 export const provenanceKinds = ['measured', 'phone', 'estimate', 'pending', 'stale', 'off', 'hiku'] as const;
@@ -18,27 +18,38 @@ export const capsuleTabs = [
 ] as const;
 export type CapsuleTab = typeof capsuleTabs[number]['key'];
 
+/** Old names stay so existing screens compile. They draw as the v2 variant. */
+export function canonicalButtonVariant(variant: ButtonVariant): typeof buttonVariants[number] {
+  switch (variant) {
+    case 'secondary': return 'neutral';
+    case 'ghost': return 'plain';
+    case 'train':
+    case 'hiku': return 'primary';
+    case 'danger': return 'destructive';
+    default: return variant;
+  }
+}
+
 export function buttonHeight(theme: LiftriaTheme, size: ButtonSize) {
-  return size === 'xl' ? theme.size.touch.workout : theme.size.touch.min;
+  return size === 'sm' ? 36 : theme.size.touch.min;
 }
 
 export function buttonColors(theme: LiftriaTheme, variant: ButtonVariant) {
-  switch (variant) {
-    case 'primary': return { bg: theme.color.action.primary.bg, fg: theme.color.action.primary.fg, border: theme.color.action.primary.bg };
-    case 'secondary': return { bg: theme.color.bg.raised, fg: theme.color.text.primary, border: theme.controlOutline };
-    case 'ghost': return { bg: 'transparent', fg: theme.color.text.primary, border: 'transparent' };
-    case 'train': return { bg: theme.color.domain.train, fg: theme.color.on.train, border: theme.color.domain.train };
-    case 'hiku': return { bg: theme.color.domain.hiku, fg: theme.color.on.hiku, border: theme.color.domain.hiku };
-    case 'danger': return { bg: theme.color.status.danger, fg: theme.color.text.inverse, border: theme.color.status.danger };
+  switch (canonicalButtonVariant(variant)) {
+    case 'primary': return { bg: theme.color.accent, fg: theme.color.on.accent, border: 'transparent' };
+    case 'tonal': return { bg: theme.color.tint.accent, fg: theme.color.accent, border: 'transparent' };
+    case 'neutral': return { bg: theme.color.bg.raised, fg: theme.color.text.primary, border: 'transparent' };
+    case 'plain': return { bg: 'transparent', fg: theme.color.accent, border: 'transparent' };
+    case 'destructive': return { bg: 'transparent', fg: theme.color.status.danger, border: 'transparent' };
   }
 }
 
 export function provenancePresentation(theme: LiftriaTheme, kind: ProvenanceKind) {
   switch (kind) {
-    case 'measured': return { label: 'Measured', glyph: '✓', fg: theme.color.domain.health, bg: theme.color.tint.health, dashed: false };
+    case 'measured': return { label: 'Measured', glyph: '✓', fg: theme.color.text.primary, bg: theme.color.bg.raised, dashed: false };
     case 'phone': return { label: 'Phone', glyph: '▣', fg: theme.color.text.primary, bg: theme.color.bg.raised, dashed: false };
-    case 'estimate': return { label: 'Estimate', glyph: '≈', fg: theme.color.text.secondary, bg: theme.color.bg.raised, dashed: true };
-    case 'pending': return { label: 'Pending', glyph: '…', fg: theme.color.status.warning, bg: theme.color.tint.warning, dashed: true };
+    case 'estimate': return { label: 'Estimate', glyph: '≈', fg: theme.color.text.secondary, bg: theme.color.bg.raised, dashed: false };
+    case 'pending': return { label: 'Pending', glyph: '…', fg: theme.color.status.warning, bg: theme.color.tint.warning, dashed: false };
     case 'stale': return { label: 'Stale', glyph: '◷', fg: theme.color.status.warning, bg: theme.color.tint.warning, dashed: false };
     case 'off': return { label: 'No data', glyph: '−', fg: theme.color.text.secondary, bg: theme.color.bg.raised, dashed: false };
     case 'hiku': return { label: 'Hiku estimate', glyph: '✧', fg: theme.color.chip.hiku.fg, bg: theme.color.chip.hiku.bg, dashed: false };

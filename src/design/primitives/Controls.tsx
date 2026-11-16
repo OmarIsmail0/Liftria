@@ -1,16 +1,13 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  Modal, Platform, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
+  Modal, Platform, Pressable, ScrollView, Switch, Text, TextInput, View, useWindowDimensions, type KeyboardTypeOptions,
 } from 'react-native';
-import Animated, { Easing, interpolateColor, useAnimatedStyle, useSharedValue, withTiming,
-  type SharedValue } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
-import { fontFamilyFor } from '../fonts';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { TrainGradient } from './VisualEffects';
-import { buttonColors, buttonHeight, provenancePresentation, type ButtonSize, type ButtonVariant,
-  type ProvenanceKind } from './contracts';
+import { buttonColors, buttonHeight, provenancePresentation,
+  type ButtonSize, type ButtonVariant, type ProvenanceKind } from './contracts';
 import { Typography } from './Surfaces';
 import { usePressScale, useSpringValue } from './Motion';
 
@@ -19,36 +16,30 @@ export function Button({ label, onPress, variant = 'primary', size = 'md', disab
   fullWidth?: boolean; accessibilityLabel?: string;
 }) {
   const { theme } = useTheme();
-  const { language } = useLanguage();
   const colors = buttonColors(theme, variant);
-  const gradient = variant === 'train' && theme.effectiveStyle === 'aurora';
-  const [box, setBox] = useState({ width: 0, height: 0 });
   const press = usePressScale();
-  // The outer view owns placement and the press scale; the Pressable owns the visible pill.
+  const height = buttonHeight(theme, size);
   return <Animated.View style={[{ alignSelf: fullWidth ? 'stretch' : 'flex-start', flexShrink: 1,
     minWidth: theme.size.touch.min }, press.style]}>
     <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled }} disabled={disabled} onPress={onPress}
       onPressIn={press.onPressIn} onPressOut={press.onPressOut}
-      onLayout={gradient ? e => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height }) : undefined}
+      hitSlop={size === 'sm' ? { top: 6, bottom: 6 } : undefined}
       style={({ pressed }) => ({
-        minHeight: buttonHeight(theme, size),
-        alignItems: 'center', justifyContent: 'center',
-        paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[5],
-        paddingVertical: theme.space[2], borderRadius: theme.radius.pill,
-        borderWidth: variant === 'ghost' || gradient
-          ? 0 : theme.size.border.thin, borderColor: colors.border,
-        backgroundColor: variant === 'ghost' && pressed ? theme.surface.pressed : colors.bg,
-        overflow: 'hidden', opacity: disabled ? 0.45 : pressed ? 0.9 : 1,
+        minHeight: height, alignItems: 'center', justifyContent: 'center',
+        paddingHorizontal: size === 'sm' ? theme.space[3] : theme.space[4],
+        borderRadius: size === 'sm' ? theme.radius.sm : theme.radius.md,
+        backgroundColor: colors.bg === 'transparent' && pressed ? theme.surface.pressed : colors.bg,
+        opacity: disabled ? 0.45 : 1,
       })}>
-      {gradient && <TrainGradient theme={theme} width={box.width} height={box.height} />}
-      <Text allowFontScaling style={{ color: colors.fg, fontSize: size === 'sm' ? theme.type.small.size : theme.type.button.size,
-        fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'), textAlign: 'center', flexShrink: 1 }}>{label}</Text>
+      <Text allowFontScaling style={{
+        color: colors.fg, textAlign: 'center', flexShrink: 1, fontWeight: '600',
+        fontSize: size === 'sm' ? theme.type.secondary.size : theme.type.button.size,
+        lineHeight: size === 'sm' ? theme.type.secondary.line : theme.type.button.line,
+      }}>{label}</Text>
     </Pressable>
   </Animated.View>;
 }
-
-/** Provenance chips are informative, never independent tap targets. */
 
 /** Radio-group segmented control: one accessible, selected option per group. */
 export function SegmentedControl<T extends string>({ label, options, value, onChange }: {
@@ -59,19 +50,11 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
   const { isRTL } = useLanguage();
   const { fontScale } = useWindowDimensions();
   const stack = fontScale >= 1.6 && options.length > 2;
-  const solid = theme.effectiveStyle === 'solid';
   const index = options.findIndex(option => option.value === value);
   const position = useSpringValue(Math.max(0, index));
   const [width, setWidth] = useState(0);
-  const inset = theme.space[1];
-  // onLayout includes the Solid outline; the thumb lives inside it.
-  const edge = solid ? theme.size.border.thin : 0;
-  const segment = width > 0 ? (width - edge * 2 - inset * 2) / options.length : 0;
-  // The pill slides with a transform, not a growing width: width (a layout prop) animated
-  // from the UI thread was not applied on Android, so the pill stayed on the first option.
-  // translateX is physical, so it is mirrored for right-to-left layouts.
-  // The measured segment is also a shared value: when a control first appears on a later
-  // option, nothing else changes after layout, so the style must react to the width itself.
+  const inset = 2;
+  const segment = width > 0 ? (width - inset * 2) / options.length : 0;
   const segmentWidth = useSharedValue(0);
   const direction = isRTL ? -1 : 1;
   const slide = useAnimatedStyle(() => ({
@@ -82,20 +65,15 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
     onLayout={event => {
       const next = event.nativeEvent.layout.width;
       setWidth(next);
-      segmentWidth.set(next > 0 ? (next - edge * 2 - inset * 2) / options.length : 0);
+      segmentWidth.set(next > 0 ? (next - inset * 2) / options.length : 0);
     }}
     style={{
-      flexDirection: stack ? 'column' : 'row', alignItems: 'stretch', padding: inset,
-      borderRadius: stack ? theme.radius.md : theme.radius.pill,
-      backgroundColor: solid ? theme.color.bg.raised : theme.surface.control,
-      // Solid (high contrast) keeps the 3:1 control outline; Aurora uses a filled track.
-      borderWidth: edge, borderColor: theme.controlOutline,
+      flexDirection: stack ? 'column' : 'row', alignItems: 'stretch', padding: inset, minHeight: theme.size.touch.min,
+      borderRadius: theme.radius.sm, backgroundColor: theme.color.bg.raised,
     }}>
-    {/* Mounted before layout (zero width until measured), so the measured width moves it into place. */}
     {!stack && index >= 0 && <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
-      start: inset, width: segment, borderRadius: theme.radius.pill,
-      backgroundColor: theme.color.action.primary.bg, boxShadow: theme.elevation.thumb }, slide]} />}
-    {options.map((option, at) => {
+      start: inset, width: segment, borderRadius: 6, backgroundColor: theme.color.bg.surface }, slide]} />}
+    {options.map(option => {
       const selected = option.value === value;
       return <Pressable key={option.value} accessibilityRole="radio"
         accessibilityLabel={option.label} accessibilityState={{ selected, checked: selected }}
@@ -103,42 +81,26 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
         style={({ pressed }) => ({
           minWidth: theme.size.touch.min, minHeight: theme.size.touch.min - inset * 2,
           flex: 1, alignItems: 'center', justifyContent: 'center',
-          paddingVertical: theme.space[2], paddingHorizontal: theme.space[2],
-          borderRadius: stack ? theme.radius.sm : theme.radius.pill,
-          backgroundColor: !sliding && selected ? theme.color.action.primary.bg : 'transparent',
+          paddingVertical: theme.space[2], paddingHorizontal: theme.space[2], borderRadius: 6,
+          backgroundColor: !sliding && selected ? theme.color.bg.surface : 'transparent',
           opacity: pressed && !selected ? 0.7 : 1,
         })}>
-        <SegmentLabel label={option.label} at={at} position={position} sliding={sliding} selected={selected} />
+        <Text allowFontScaling style={{
+          color: theme.color.text.primary, fontSize: theme.type.secondary.size,
+          lineHeight: theme.type.secondary.line, fontWeight: '600', textAlign: 'center',
+        }}>{option.label}</Text>
       </Pressable>;
     })}
   </View>;
 }
 
-/** The label ink follows the thumb, so text never sits white-on-track mid-slide. */
-function SegmentLabel({ label, at, position, sliding, selected }: {
-  label: string; at: number; position: SharedValue<number>; sliding: boolean; selected: boolean;
-}) {
-  const { theme } = useTheme();
-  const on = theme.color.action.primary.fg, off = theme.color.text.primary;
-  const ink = useAnimatedStyle(() => {
-    if (!sliding) return { color: selected ? on : off };
-    const covered = Math.max(0, 1 - Math.abs(position.get() - at));
-    return { color: interpolateColor(covered, [0, 1], [off, on]) };
-  }, [sliding, selected, on, off, at]);
-  return <Animated.Text allowFontScaling style={[{
-    fontFamily: fontFamilyFor('Figtree', selected ? '700' : '600'),
-    fontSize: theme.type.small.size, textAlign: 'center',
-  }, ink]}>{label}</Animated.Text>;
-}
-
-/** Use radio rows when choices are described, rather than crowding a segmented pill. */
+/** Use radio rows when choices are described, rather than crowding a segmented control. */
 export function OptionRows<T extends string>({ label, options, value, onChange }: {
   label: string;
   options: readonly { value: T; label: string; description: string }[];
   value: T | null; onChange: (next: T) => void;
 }) {
   const { theme } = useTheme();
-  const { language } = useLanguage();
   return <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.space[2] }}>
     <Typography bold>{label}</Typography>
     {options.map(option => {
@@ -149,45 +111,43 @@ export function OptionRows<T extends string>({ label, options, value, onChange }
         style={({ pressed }) => ({
           minHeight: theme.size.touch.min, padding: theme.space[3],
           borderRadius: theme.radius.md, flexDirection: 'row', alignItems: 'center', gap: theme.space[3],
-          borderWidth: theme.size.border.thin,
-          borderColor: checked ? theme.color.domain.train : theme.controlOutline,
-          backgroundColor: checked ? theme.color.tint.train : theme.color.bg.raised,
+          backgroundColor: checked ? theme.color.tint.accent : theme.color.bg.raised,
           opacity: pressed ? 0.8 : 1,
         })}>
         <View importantForAccessibility="no" style={{
           width: theme.space[5], height: theme.space[5], borderRadius: theme.radius.pill,
-          borderWidth: 2, borderColor: checked ? theme.color.domain.train : theme.color.text.secondary,
+          borderWidth: 2, borderColor: checked ? theme.color.accent : theme.color.text.secondary,
           alignItems: 'center', justifyContent: 'center',
         }}>
           {checked && <View style={{ width: theme.space[2], height: theme.space[2],
-            borderRadius: theme.radius.pill, backgroundColor: theme.color.domain.train }} />}
+            borderRadius: theme.radius.pill, backgroundColor: theme.color.accent }} />}
         </View>
         <View style={{ flex: 1, gap: theme.space[1] }}>
-          <Text allowFontScaling style={{ color: theme.color.text.primary,
-            fontSize: theme.type.body.size,
-            fontFamily: fontFamilyFor('Figtree', '600', language === 'ar') }}>{option.label}</Text>
+          <Text allowFontScaling style={{ color: checked ? theme.color.accent : theme.color.text.primary,
+            fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600' }}>{option.label}</Text>
           <Text allowFontScaling style={{ color: theme.color.text.secondary,
-            fontSize: theme.type.small.size,
-            fontFamily: fontFamilyFor('Figtree', '400', language === 'ar') }}>{option.description}</Text>
+            fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line }}>{option.description}</Text>
         </View>
       </Pressable>;
     })}
   </View>;
 }
 
-export function Chip({ kind, label }: { kind: ProvenanceKind; label?: string }) {
+export function Chip({ kind, label, selected = false }: { kind: ProvenanceKind; label?: string; selected?: boolean }) {
   const { theme } = useTheme();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const p = provenancePresentation(theme, kind);
   const text = label ?? t(`chips.${kind}`);
+  const fg = selected ? theme.color.accent : p.fg;
+  const bg = selected ? theme.color.tint.accent : p.bg;
   return <View accessible accessibilityRole="text" accessibilityLabel={text}
-    style={{ alignSelf: 'flex-start', minHeight: theme.space[6],
-      backgroundColor: p.bg, borderColor: p.fg, borderWidth: p.dashed ? theme.size.border.thin : 0,
-      borderStyle: p.dashed ? 'dashed' : 'solid', paddingHorizontal: theme.space[3],
+    style={{ alignSelf: 'flex-start', minHeight: theme.space[8],
+      backgroundColor: bg, paddingHorizontal: theme.space[3],
       paddingVertical: theme.space[1], borderRadius: theme.radius.pill,
       flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-    <Text importantForAccessibility="no" style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree','400') }}>{p.glyph}</Text>
-    <Text allowFontScaling style={{ color: p.fg, fontSize: theme.type.small.size, fontFamily: fontFamilyFor('Figtree', '600', language === 'ar') }}>{text}</Text>
+    <Text importantForAccessibility="no" style={{ color: fg, fontSize: theme.type.secondary.size }}>{p.glyph}</Text>
+    <Text allowFontScaling style={{ color: fg, fontSize: theme.type.secondary.size,
+      lineHeight: theme.type.secondary.line, fontWeight: '600' }}>{text}</Text>
   </View>;
 }
 
@@ -199,29 +159,28 @@ export function Stepper({ label, value, onChange, min = 0, max = 999, step = 1, 
   const { t } = useLanguage();
   const minusDisabled = value - step < min;
   const plusDisabled = value + step > max;
-  const buttonStyle = { minHeight: theme.size.touch.min, minWidth: theme.size.touch.primary,
-    justifyContent: 'center' as const, alignItems: 'center' as const };
-  return <View accessibilityLabel={label} style={{ gap: theme.space[2] }}>
-    <Typography size="small" tone="secondary">{label}</Typography>
-    <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: theme.size.touch.workout,
-      backgroundColor: theme.color.bg.raised, borderColor: theme.controlOutline,
-      borderWidth: theme.size.border.thin, borderRadius: theme.radius.md, alignSelf: 'flex-start' }}>
-      <Pressable style={[buttonStyle, { opacity: minusDisabled ? 0.5 : 1 }]}
-        accessibilityRole="button" accessibilityLabel={t('accessibility.decrease', { label })} accessibilityState={{ disabled: minusDisabled }}
-        disabled={minusDisabled} onPress={() => onChange(Math.max(min, value - step))}>
-        <Typography>−</Typography>
-      </Pressable>
-      <View style={{ paddingHorizontal: theme.space[3], minWidth: theme.size.touch.workout, alignItems: 'center' }}
-        accessible accessibilityLabel={`${label}, ${value} ${unit}`}>
-        <Text allowFontScaling style={{ fontSize: theme.type.metric.m.size, fontFamily: fontFamilyFor('Archivo', '800'),
-          color: theme.color.text.primary, fontVariant: ['tabular-nums'] }}>{value}</Text>
-        {unit ? <Typography tone="secondary" size="small">{unit}</Typography> : null}
+  const stepButton = (sign: '−' | '+', disabled: boolean, name: string, apply: () => void) => (
+    <Pressable accessibilityRole="button" accessibilityLabel={name} accessibilityState={{ disabled }}
+      disabled={disabled} onPress={apply}
+      style={{ width: theme.size.touch.min, height: theme.size.touch.min, alignItems: 'center', justifyContent: 'center',
+        opacity: disabled ? 0.45 : 1 }}>
+      <View style={{ width: 36, height: 36, borderRadius: theme.radius.sm, backgroundColor: theme.color.bg.raised,
+        alignItems: 'center', justifyContent: 'center' }}>
+        <Text allowFontScaling style={{ color: theme.color.text.primary, fontSize: 18, fontWeight: '600' }}>{sign}</Text>
       </View>
-      <Pressable style={[buttonStyle, { opacity: plusDisabled ? 0.5 : 1 }]}
-        accessibilityRole="button" accessibilityLabel={t('accessibility.increase', { label })} accessibilityState={{ disabled: plusDisabled }}
-        disabled={plusDisabled} onPress={() => onChange(Math.min(max, value + step))}>
-        <Typography>+</Typography>
-      </Pressable>
+    </Pressable>
+  );
+  return <View accessibilityLabel={label} style={{ gap: theme.space[2] }}>
+    <Typography size="secondary" tone="secondary">{label}</Typography>
+    <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' }}>
+      {stepButton('−', minusDisabled, t('accessibility.decrease', { label }), () => onChange(Math.max(min, value - step)))}
+      <View style={{ paddingHorizontal: theme.space[3], minWidth: theme.size.touch.min, alignItems: 'center' }}
+        accessible accessibilityLabel={`${label}, ${value} ${unit}`}>
+        <Text allowFontScaling style={{ fontSize: theme.type.title.size, lineHeight: theme.type.title.line,
+          fontWeight: '600', color: theme.color.text.primary, fontVariant: ['tabular-nums'] }}>{value}</Text>
+        {unit ? <Typography tone="secondary" size="caption">{unit}</Typography> : null}
+      </View>
+      {stepButton('+', plusDisabled, t('accessibility.increase', { label }), () => onChange(Math.min(max, value + step)))}
     </View>
   </View>;
 }
@@ -230,36 +189,18 @@ export function Toggle({ label, detail, value, onChange }: {
   label: string; detail?: string; value: boolean; onChange: (next: boolean) => void;
 }) {
   const { theme } = useTheme();
-  const { isRTL } = useLanguage();
-  const progress = useSpringValue(value ? 1 : 0);
-  const thumb = theme.space[5], pad = theme.space[1], travel = theme.size.touch.min - pad * 2 - thumb;
-  const offTrack = theme.color.bg.raised, onTrack = theme.color.domain.hiku;
-  const offEdge = theme.controlOutline, offThumb = theme.color.text.tertiary, onThumb = theme.color.text.inverse;
-  const track = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.get(), [0, 1], [offTrack, onTrack]),
-    borderColor: interpolateColor(progress.get(), [0, 1], [offEdge, onTrack]),
-  }), [offTrack, onTrack, offEdge]);
-  // translateX is physical, so "on" moves toward the end edge: right in English, left in Arabic.
-  const direction = isRTL ? -1 : 1;
-  const knob = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.get(), [0, 1], [offThumb, onThumb]),
-    transform: [{ translateX: direction * progress.get() * travel }],
-  }), [offThumb, onThumb, direction, travel]);
-  return <Pressable accessibilityRole="switch" accessibilityLabel={detail ? `${label}. ${detail}` : label}
-    accessibilityState={{ checked: value }} onPress={() => onChange(!value)}
-    style={{ minHeight: theme.size.touch.min, flexDirection: 'row', gap: theme.space[3],
-      alignItems: 'center', justifyContent: 'space-between' }}>
-    <View style={{ flex: 1, gap: theme.space[1] }}><Typography bold>{label}</Typography>
-      {detail && <Typography size="small" tone="secondary">{detail}</Typography>}
+  const spoken = detail ? `${label}. ${detail}` : label;
+  return <View style={{ minHeight: theme.size.touch.min, flexDirection: 'row', gap: theme.space[3],
+    alignItems: 'center', justifyContent: 'space-between' }}>
+    <View importantForAccessibility="no-hide-descendants" style={{ flex: 1, gap: theme.space[1] }}>
+      <Typography bold>{label}</Typography>
+      {detail ? <Typography size="secondary" tone="secondary">{detail}</Typography> : null}
     </View>
-    <Animated.View importantForAccessibility="no-hide-descendants"
-      style={[{ width: theme.size.touch.min, height: theme.space[8], paddingHorizontal: pad - theme.size.border.thin,
-        borderRadius: theme.radius.pill, flexDirection: 'row', alignItems: 'center',
-        borderWidth: theme.size.border.thin }, track]}>
-      <Animated.View style={[{ width: thumb, height: thumb, borderRadius: theme.radius.pill,
-        boxShadow: theme.elevation.thumb }, knob]} />
-    </Animated.View>
-  </Pressable>;
+    <Switch accessibilityLabel={spoken} accessibilityRole="switch" value={value} onValueChange={onChange}
+      hitSlop={{ top: 10, bottom: 10 }}
+      trackColor={{ false: theme.color.bg.raised, true: theme.color.accent }}
+      thumbColor={theme.color.bg.surface} ios_backgroundColor={theme.color.bg.raised} />
+  </View>;
 }
 
 export function Field({ label, value, onChangeText, placeholder, secure = false, keyboardType, multiline = false, error }: {
@@ -268,16 +209,18 @@ export function Field({ label, value, onChangeText, placeholder, secure = false,
 }) {
   const { theme } = useTheme();
   return <View style={{ gap: theme.space[2] }}>
-    <Typography bold>{label}</Typography>
+    <Typography size="secondary" tone="secondary">{label}</Typography>
     <TextInput accessibilityLabel={label} accessibilityHint={error} value={value} onChangeText={onChangeText}
       placeholder={placeholder} placeholderTextColor={theme.color.text.tertiary} secureTextEntry={secure}
       keyboardType={keyboardType} multiline={multiline} autoCapitalize={secure ? 'none' : 'sentences'}
-      selectionColor={theme.color.domain.hiku}
-      style={{ minHeight: theme.size.touch.min, borderWidth: theme.size.border.thin, borderColor: error ? theme.color.border.strong : theme.controlOutline,
+      selectionColor={theme.color.accent}
+      style={{ minHeight: theme.size.touch.min, borderWidth: error ? theme.size.border.thin : 0,
+        borderColor: error ? theme.color.status.danger : 'transparent',
         backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md,
         paddingHorizontal: theme.space[3], paddingVertical: theme.space[2],
-        fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400'), color: theme.color.text.primary }} />
-    {error && <Typography tone="secondary" size="small">{error}</Typography>}
+        fontSize: theme.type.body.size, lineHeight: theme.type.body.line, color: theme.color.text.primary }} />
+    {error ? <Text allowFontScaling style={{ color: theme.color.status.danger,
+      fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line }}>{error}</Text> : null}
   </View>;
 }
 
@@ -288,18 +231,18 @@ export function Snackbar({ message, onUndo, onDismiss }: {
   const { theme } = useTheme();
   const { t } = useLanguage();
   return <View accessibilityRole="alert" style={{
-    backgroundColor: theme.color.action.primary.bg, borderRadius: theme.radius.pill,
+    backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md,
     minHeight: theme.size.touch.min, paddingStart: theme.space[4], paddingEnd: theme.space[2],
     flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-    <Text allowFontScaling style={{ flex: 1, color: theme.color.action.primary.fg,
-      fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400') }}>{message}</Text>
+    <Text allowFontScaling style={{ flex: 1, color: theme.color.text.primary,
+      fontSize: theme.type.body.size, lineHeight: theme.type.body.line }}>{message}</Text>
     {onUndo && <Pressable accessibilityRole="button" accessibilityLabel={t('common.undo')} onPress={onUndo}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>{t('common.undo')}</Text>
+      <Text allowFontScaling style={{ color: theme.color.accent, fontWeight: '600', fontSize: theme.type.body.size }}>{t('common.undo')}</Text>
     </Pressable>}
     {onDismiss && <Pressable accessibilityRole="button" accessibilityLabel={t('common.dismiss')} onPress={onDismiss}
       style={{ minWidth: theme.size.touch.min, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: theme.color.action.primary.fg, fontFamily: fontFamilyFor('Figtree', '700') }}>×</Text>
+      <Text allowFontScaling style={{ color: theme.color.text.secondary, fontWeight: '600', fontSize: theme.type.title.size }}>×</Text>
     </Pressable>}
   </View>;
 }
@@ -312,7 +255,7 @@ export function Sheet({ visible, title, description, children, onClose, destruct
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const { height } = useWindowDimensions();
-  // Stay mounted through the closing slide; a hidden sheet unmounts once it is off screen.
+  void destructive;
   const [mounted, setMounted] = useState(visible);
   if (visible && !mounted) setMounted(true);
   const progress = useSharedValue(0);
@@ -337,20 +280,18 @@ export function Sheet({ visible, title, description, children, onClose, destruct
           style={{ flex: 1 }} onPress={onClose} />
       </Animated.View>
       <Animated.View accessibilityViewIsModal style={[{
-        borderTopLeftRadius: theme.radius.lg, borderTopRightRadius: theme.radius.lg,
+        borderTopStartRadius: theme.radius.lg, borderTopEndRadius: theme.radius.lg,
         paddingBottom: Math.max(insets.bottom, theme.space[4]),
         paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[3],
-        borderWidth: theme.size.border.thin, borderBottomWidth: 0,
-        borderColor: destructive ? theme.color.status.danger : theme.surface.hairline,
         backgroundColor: theme.sheetFill, maxHeight: theme.layout.sheetMaxHeight, gap: theme.space[4],
         boxShadow: theme.elevation.card,
       }, panel]}>
         <View style={{ alignItems: 'center' }}>
-          <View style={{ width: theme.space[10], height: theme.space[1], borderRadius: theme.radius.pill,
-            backgroundColor: theme.color.border.strong }} />
+          <View style={{ width: theme.space[8], height: theme.space[1], borderRadius: theme.radius.pill,
+            backgroundColor: theme.color.border.subtle }} />
         </View>
         <Typography size="title">{title}</Typography>
-        {description && <Typography tone="secondary">{description}</Typography>}
+        {description ? <Typography tone="secondary">{description}</Typography> : null}
         <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={Platform.OS==='ios'}
           contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
         <Button label={t('common.cancel')} fullWidth onPress={onClose} />

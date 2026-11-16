@@ -56,7 +56,10 @@ export function cssLinearGradient(angleDeg: number, width: number, height: numbe
   return { x1: cx - dx * half, y1: cy - dy * half, x2: cx + dx * half, y2: cy + dy * half };
 }
 
-/** An unfilled first-day glass orb must not show the filled sphere's white spotlight. */
+/** The flat orb has no spotlight. The arguments stay so older callers still type-check. */
 export function shouldShowOrbHighlight(progress: number | null, style: 'aurora' | 'solid', mode: 'dark' | 'light' = 'light'): boolean {
-  return style === 'aurora' && (progress !== null || mode === 'dark');
+  void progress;
+  void style;
+  void mode;
+  return false;
 }

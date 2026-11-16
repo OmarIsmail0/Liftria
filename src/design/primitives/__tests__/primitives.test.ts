@@ -1,17 +1,18 @@
 import { createTheme } from '../../tokens';
 import {
-  buttonColors, buttonHeight, buttonSizes, buttonVariants, capsuleTabs,
+  buttonColors, buttonHeight, buttonSizes, buttonVariants, canonicalButtonVariant, capsuleTabs,
   orbSummary, provenanceKinds, provenancePresentation,
 } from '../contracts';
 import { isPrimitiveStoryId, primitiveStories } from '../stories';
 
 describe.each(['dark', 'light'] as const)('native primitive tokens in %s', scheme => {
   const theme = createTheme(scheme, 'aurora');
-  it('enforces at least 48dp touch height for all sizes, including small buttons', () => {
+  it('keeps a 48dp control and a 36dp small button', () => {
+    expect(buttonHeight(theme, 'sm')).toBe(36);
     for (const size of buttonSizes) {
-      expect(buttonHeight(theme, size)).toBeGreaterThanOrEqual(48);
+      if (size === 'sm') continue;
+      expect(buttonHeight(theme, size)).toBe(48);
     }
-    expect(buttonHeight(theme, 'xl')).toBe(theme.size.touch.workout);
     expect(theme.size.touch.nav).toBeGreaterThanOrEqual(48);
     expect(theme.size.touch.min).toBeGreaterThanOrEqual(48);
   });
@@ -23,7 +24,15 @@ describe.each(['dark', 'light'] as const)('native primitive tokens in %s', schem
       });
       expect(value.fg).not.toBe('transparent');
     }
-    expect(buttonColors(theme, 'danger').bg).toBe(theme.color.status.danger);
+    expect(buttonColors(theme, 'primary').bg).toBe(theme.color.accent);
+    expect(buttonColors(theme, 'primary').fg).toBe(theme.color.on.accent);
+    expect(buttonColors(theme, 'destructive').bg).toBe('transparent');
+    expect(buttonColors(theme, 'destructive').fg).toBe(theme.color.status.danger);
+    expect(buttonColors(theme, 'danger')).toEqual(buttonColors(theme, 'destructive'));
+    expect(canonicalButtonVariant('secondary')).toBe('neutral');
+    expect(canonicalButtonVariant('ghost')).toBe('plain');
+    expect(canonicalButtonVariant('train')).toBe('primary');
+    expect(canonicalButtonVariant('hiku')).toBe('primary');
   });
   it('uses source labels plus icon for every provenance type, never color alone', () => {
     for (const kind of provenanceKinds) {
@@ -32,7 +41,7 @@ describe.each(['dark', 'light'] as const)('native primitive tokens in %s', schem
       expect(style.glyph.length).toBeGreaterThan(0);
       expect(style.fg.length).toBeGreaterThan(0);
     }
-    expect(provenancePresentation(theme, 'estimate').dashed).toBe(true);
+    expect(provenancePresentation(theme, 'estimate').dashed).toBe(false);
     expect(provenancePresentation(theme, 'phone').label).toBe('Phone');
     expect(provenancePresentation(theme, 'hiku').bg).toBe(theme.color.chip.hiku.bg);
   });
@@ -83,7 +92,8 @@ describe('honest Pulse Orb states', () => {
 test('all required primitives have a unique hidden developer story screen', () => {
   const required = [
     'screen', 'header', 'card', 'button', 'chip', 'banner', 'snackbar', 'sheet',
-    'stepper', 'toggle', 'field', 'list-row', 'empty-state', 'skeleton', 'orb', 'capsule-nav',
+    'stepper', 'toggle', 'field', 'list-row', 'list-group', 'stat-block', 'progress-bar',
+    'empty-state', 'skeleton', 'orb', 'capsule-nav',
   ];
   expect(primitiveStories.map(s => s.id)).toEqual(required);
   expect(new Set(primitiveStories.map(s => s.id)).size).toBe(required.length);

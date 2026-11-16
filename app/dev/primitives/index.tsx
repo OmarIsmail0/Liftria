@@ -7,7 +7,7 @@ import { backOrReplace } from '../../../src/navigation/back';
 export default function PrimitiveIndex() {
   return <Screen>
     <Header title="Primitive lab" subtitle="Hidden developer route · native Android previews" onBack={() => backOrReplace(router, '/dev')} />
-    <Typography tone="secondary">Open each story to inspect touch size, TalkBack, dark/light, Aurora/Solid and large text.</Typography>
+    <Typography tone="secondary">Open each story to inspect touch size, TalkBack, dark and light, and large text.</Typography>
     <Card title="Component stories">
       {primitiveStories.map(story => <ListRow key={story.id} title={story.title}
         detail="Open interactive test screen" accessibilityLabel={`Open ${story.title} story`}

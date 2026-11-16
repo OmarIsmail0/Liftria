@@ -4,7 +4,6 @@ import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Text, V
 import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { fontFamilyFor } from '../../src/design/fonts';
 import type { TranslationKey } from '../../src/i18n';
 import { formatEditableNumber } from '../../src/i18n/editableNumber';
 import { Button, Card, Field, Header, Orb, Screen, OptionRows, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
@@ -46,7 +45,6 @@ function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
   label: string; choices: readonly { value: T; label: string }[]; selected: T | null; onChange: (v: T) => void;
 }) {
   const { theme } = useTheme();
-  const { language } = useLanguage();
   return <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.space[2] }}>
     <Typography bold>{label}</Typography>
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
@@ -62,7 +60,7 @@ function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
             borderWidth: theme.size.border.thin, borderColor: theme.controlOutline,
           }}>
           <Text allowFontScaling style={{ color: active ? theme.color.action.primary.fg : theme.color.text.primary,
-            fontSize: theme.type.body.size, fontFamily: fontFamilyFor('Figtree', '400', language === 'ar') }}>{choice.label}</Text>
+            fontSize: theme.type.body.size }}>{choice.label}</Text>
         </Pressable>;
       })}
     </View>

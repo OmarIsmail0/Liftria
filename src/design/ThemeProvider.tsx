@@ -17,10 +17,17 @@ export function resolveMode(
   return systemScheme === 'light' ? 'light' : 'dark';
 }
 
+/**
+ * The visual style is always solid. Stored aurora/solid preferences stay readable
+ * so an older install does not crash, and they no longer change what is drawn.
+ */
 export function resolveEffectiveStyle(
   requested: VisualStyle, highTextContrast: boolean, reduceTransparency: boolean,
 ): VisualStyle {
-  return highTextContrast || reduceTransparency ? 'solid' : requested;
+  void requested;
+  void highTextContrast;
+  void reduceTransparency;
+  return 'solid';
 }
 
 type ThemeContextValue = {

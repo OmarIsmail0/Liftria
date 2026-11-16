@@ -1,160 +1,22 @@
-import { memo } from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
-import Svg, { Circle, Defs, Ellipse, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { StyleSheet, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import type { LiftriaTheme } from '../tokens';
-import type { CardRim } from './contracts';
-import { ambientGlows, cssLinearGradient, ringGeometry, shouldShowOrbHighlight, stopProps } from './VisualGeometry';
+import { ringGeometry } from './VisualGeometry';
 
-export const AmbientBackdrop = memo(function AmbientBackdrop({ theme }: { theme: LiftriaTheme }) {
-  return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
-    style={StyleSheet.absoluteFill} width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-    <Defs>
-      {ambientGlows.map(glow => <RadialGradient key={glow.key} id={'ambient-' + glow.key}
-        cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
-        <Stop offset="0%" {...stopProps(theme.ambient[glow.key], 1)} />
-        <Stop offset={(theme.visual.ambientFade * 100) + '%'} {...stopProps(theme.ambient[glow.key], 0)} />
-        <Stop offset="100%" {...stopProps(theme.ambient[glow.key], 0)} />
-      </RadialGradient>)}
-    </Defs>
-    <Rect width="100" height="100" fill={theme.aurora.base} />
-    {ambientGlows.map(glow => <Ellipse key={glow.key} cx={glow.cx} cy={glow.cy}
-      rx={glow.rx} ry={glow.ry} fill={'url(#ambient-' + glow.key + ')'} />)}
-  </Svg>;
-});
-
-export function cardOuterGlow(theme: LiftriaTheme, _rim: CardRim, flat: boolean): ViewStyle {
-  if (theme.effectiveStyle !== 'aurora' || flat) return {};
-  // One soft, layered shadow for every card. Domain color no longer tints the shadow:
-  // a colored halo per card read as uneven, so the domain lives in the title dot.
-  return { boxShadow: theme.elevation.card };
-}
-
-/** A faint top sheen and one even hairline edge. Measured dimensions keep the rounded stroke inside bounds. */
-export function AuroraCardDecoration({ theme, width, height }: {
-  theme: LiftriaTheme; width: number; height: number;
-}) {
-  if (width <= 0 || height <= 0) return null;
-  const edge = theme.size.border.thin;
-  // The prototype's 165° sheen, resolved against this card's real size.
-  const sheen = cssLinearGradient(165, width, height);
-  return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
-    style={StyleSheet.absoluteFill} width={width} height={height}>
-    <Defs>
-      <LinearGradient id="card-sheen" gradientUnits="userSpaceOnUse" x1={sheen.x1} y1={sheen.y1} x2={sheen.x2} y2={sheen.y2}>
-        <Stop offset="0%" {...stopProps(theme.glass.highlight)} />
-        <Stop offset="45%" {...stopProps(theme.glass.highlight, 0)} />
-        <Stop offset="100%" {...stopProps(theme.glass.highlight, 0)} />
-      </LinearGradient>
-    </Defs>
-    <Rect width={width} height={height} rx={theme.radius.lg} fill="url(#card-sheen)" />
-    <Rect x={edge / 2} y={edge / 2} width={Math.max(0, width - edge)}
-      height={Math.max(0, height - edge)} rx={theme.radius.lg - edge / 2}
-      fill="none" strokeWidth={edge} stroke={theme.surface.hairline} />
-  </Svg>;
-}
-
-/** The sole gradient button; SVG works on SDK 57 / RN 0.86. */
-export function TrainGradient({ theme, width, height }: { theme: LiftriaTheme; width: number; height: number }) {
-  if (width <= 0 || height <= 0) return null;
-  // Percent sizes under an absoluteFill Svg resolve to the wrong box on Android, so the
-  // button's measured size drives the rect and the prototype's 135° CSS angle.
-  const line = cssLinearGradient(135, width, height);
-  return <Svg pointerEvents="none" importantForAccessibility="no-hide-descendants"
-    style={StyleSheet.absoluteFill} width={width} height={height}>
-    <Defs>
-      <LinearGradient id="train-button" gradientUnits="userSpaceOnUse" x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}>
-        <Stop offset="0%" {...stopProps(theme.color.domain.train)} />
-        <Stop offset="100%" {...stopProps(theme.train.gradEnd)} />
-      </LinearGradient>
-    </Defs>
-    {/* No rx: an oversized SVG corner radius turns the rect into an ellipse. The button's own
-        rounded, overflow-hidden container clips the plain rect to the pill shape. */}
-    <Rect width={width} height={height} fill="url(#train-button)" />
-  </Svg>;
-}
-
-/** A radial sphere, highlight and ONE continuous progress arc (no tick segments). */
+/** A flat disc and, when there is a target, one accent arc. No glow and no gradient. */
 export function OrbArtwork({ theme, size, progress }: {
   theme: LiftriaTheme; size: number; progress: number | null;
 }) {
-  const empty = progress === null;
-  const solid = theme.effectiveStyle === 'solid';
-  const showHighlight = shouldShowOrbHighlight(progress, theme.effectiveStyle, theme.mode);
-  const diameter = size - theme.space[10];
-  const half = diameter / 2;
+  const disc = Math.max(0, size - theme.space[8]);
   const center = size / 2;
   const arc = ringGeometry(size, theme.orbSize.ringStroke, progress ?? 0);
-  // The glow is drawn, not a native boxShadow: on Android in RTL, a boxShadow under the
-  // breathing scale transform rendered as a dark square behind the full ring.
-  const glow = !empty && !solid;
-  const glowReach = half + theme.visual.orbGlowOuterBlur;
-  const glowStop = (distance: number) => (Math.min(1, distance / glowReach) * 100) + '%';
   return <View pointerEvents="none" importantForAccessibility="no-hide-descendants"
-    style={{ position: 'absolute', width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
-    {empty && !solid && <Svg pointerEvents="none" width={diameter * 1.3} height={diameter * 1.3}
-      style={{ position: 'absolute', left: (size - diameter * 1.3) / 2, top: (size - diameter * 1.3) / 2 }}>
-      <Defs>
-        <RadialGradient id="empty-orb-halo" cx="50%" cy="50%" rx="50%" ry="50%">
-          <Stop offset="0%" {...stopProps(theme.orb[3], theme.orbEmpty.haloOpacity)} />
-          <Stop offset="76%" {...stopProps(theme.orb[3], theme.orbEmpty.haloOpacity)} />
-          <Stop offset="100%" {...stopProps(theme.orb[3], 0)} />
-        </RadialGradient>
-      </Defs>
-      <Circle cx={diameter * 0.65} cy={diameter * 0.65} r={diameter * 0.65}
-        fill="url(#empty-orb-halo)" />
-    </Svg>}
-    {glow && <Svg pointerEvents="none" width={glowReach * 2} height={glowReach * 2}
-      style={{ position: 'absolute', left: center - glowReach, top: center - glowReach }}>
-      <Defs>
-        <RadialGradient id="orb-glow-inner" cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
-          <Stop offset={glowStop(half * 0.9)} {...stopProps(theme.orb[2], 0.45)} />
-          <Stop offset={glowStop(half + theme.visual.orbGlowInnerBlur * 0.25)} {...stopProps(theme.orb[2], 0.2)} />
-          <Stop offset={glowStop(half + theme.visual.orbGlowInnerBlur)} {...stopProps(theme.orb[2], 0)} />
-          <Stop offset="100%" {...stopProps(theme.orb[2], 0)} />
-        </RadialGradient>
-        <RadialGradient id="orb-glow-outer" cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
-          <Stop offset={glowStop(half * 0.9)} {...stopProps(theme.orb[3], 0.35)} />
-          <Stop offset={glowStop(half + theme.visual.orbGlowOuterBlur * 0.3)} {...stopProps(theme.orb[3], 0.14)} />
-          <Stop offset="100%" {...stopProps(theme.orb[3], 0)} />
-        </RadialGradient>
-      </Defs>
-      <Circle cx={glowReach} cy={glowReach} r={glowReach} fill="url(#orb-glow-outer)" />
-      <Circle cx={glowReach} cy={glowReach} r={glowReach} fill="url(#orb-glow-inner)" />
-    </Svg>}
-    <View style={{ width: diameter, height: diameter, borderRadius: theme.radius.pill }}>
-      <Svg width={diameter} height={diameter}>
-        <Defs>
-          <RadialGradient id="sphere" cx="50%" cy="62%" rx="65%" ry="65%" fx="50%" fy="62%">
-            <Stop offset="0%" {...stopProps(theme.orb[1], empty ? theme.orbEmpty.fillOpacity : 1)} />
-            <Stop offset="46%" {...stopProps(theme.orb[2], empty ? theme.orbEmpty.fillOpacity : 1)} />
-            <Stop offset="100%" {...stopProps(theme.orb[3], empty ? theme.orbEmpty.fillOpacity : 1)} />
-          </RadialGradient>
-          {empty && !solid && <LinearGradient id="empty-orb-rim" gradientUnits="userSpaceOnUse"
-            {...cssLinearGradient(140, diameter, diameter)}>
-            <Stop offset="0%" {...stopProps(theme.glass.highlight, theme.orbEmpty.rimStart)} />
-            <Stop offset="100%" {...stopProps(theme.orb[3], theme.orbEmpty.rimEnd)} />
-          </LinearGradient>}
-          {showHighlight && <RadialGradient id="orb-highlight" cx="34%" cy="28%" rx="50%" ry="50%" fx="34%" fy="28%">
-            <Stop offset="0%" {...stopProps(theme.orb.highlight, theme.visual.orbHighlightOpacity * (empty ? 0.5 : 1))} />
-            <Stop offset={(theme.visual.orbHighlightFade * 100) + '%'}
-              {...stopProps(theme.orb.highlight, 0)} />
-            <Stop offset="100%" {...stopProps(theme.orb.highlight, 0)} />
-          </RadialGradient>}
-        </Defs>
-        <Circle cx={half} cy={half} r={half - (solid ? theme.size.border.thin : 0)}
-          fill={solid ? theme.color.bg.raised : empty ? theme.glass.card : 'url(#sphere)'}
-          stroke={solid ? theme.color.border.strong : 'none'}
-          strokeWidth={solid ? theme.size.border.thin : 0} />
-        {empty && !solid && <Circle cx={half} cy={half} r={half} fill="url(#sphere)" />}
-        {showHighlight && <Circle cx={half} cy={half} r={half} fill="url(#orb-highlight)" />}
-        {empty && !solid && <Circle cx={half} cy={half} r={half - theme.orbEmpty.rimWidth / 2}
-          strokeWidth={theme.orbEmpty.rimWidth} stroke="url(#empty-orb-rim)" fill="none" />}
-      </Svg>
-    </View>
-    {!empty && <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-      <Circle cx={center} cy={center} r={arc.radius} stroke={theme.color.track}
+    style={{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: disc, height: disc, borderRadius: disc / 2, backgroundColor: theme.color.bg.raised }} />
+    {progress !== null && <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+      <Circle cx={center} cy={center} r={arc.radius} stroke={theme.color.border.subtle}
         strokeWidth={theme.orbSize.ringStroke} fill="none" />
-      <Circle cx={center} cy={center} r={arc.radius} stroke={theme.color.domain.eat}
+      <Circle cx={center} cy={center} r={arc.radius} stroke={theme.color.accent}
         strokeWidth={theme.orbSize.ringStroke} fill="none" strokeLinecap="round"
         strokeDasharray={arc.circumference + ' ' + arc.circumference}
         strokeDashoffset={arc.offset} transform={'rotate(-90 ' + center + ' ' + center + ')'} />

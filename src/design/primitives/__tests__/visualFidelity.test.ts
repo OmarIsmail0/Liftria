@@ -1,32 +1,20 @@
 import { createTheme } from '../../tokens';
-import { fontFamilyFor } from '../../fonts';
-import { ambientGlows, cardRimStops, cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps, shouldShowOrbHighlight } from '../VisualGeometry';
+import { cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps, shouldShowOrbHighlight } from '../VisualGeometry';
 
-test('two glows sit behind the top of the screen only, none behind content', () => {
-  expect(ambientGlows).toEqual([
-    { key: 'train', cx: 8, cy: -2, rx: 62, ry: 24 },
-    { key: 'hiku', cx: 96, cy: 6, rx: 56, ry: 22 },
-  ]);
-  for (const glow of ambientGlows) expect(glow.cy + glow.ry).toBeLessThanOrEqual(30);
-  for (const mode of ['dark', 'light'] as const) {
-    const theme = createTheme(mode, 'aurora');
-    expect(theme.visual.ambientFade).toBe(0.7);
-    for (const glow of ambientGlows) expect(theme.ambient[glow.key]).toMatch(/^rgba\(/);
-  }
+test('the system font module loads no bundled face', () => {
+  const { readFileSync } = jest.requireActual('fs') as { readFileSync: (file: string, encoding: 'utf8') => string };
+  const { join } = jest.requireActual('path') as { join: (...parts: string[]) => string };
+  const source = readFileSync(join(process.cwd(), 'src/design/fonts.ts'), 'utf8');
+  expect(source).not.toMatch(/\.ttf|Archivo|Figtree|IBMPlex|fontFamilyFor|bundledFonts/);
 });
 
-test.each(['dark', 'light'] as const)('Aurora rim and orb are themed in %s', mode => {
-  const theme = createTheme(mode, 'aurora');
-  expect(theme.size.border.rim).toBe(1.2);
-  expect(cardRimStops).toEqual([0, 0.3, 0.55, 1]);
-  expect(withOpacity(theme.color.domain.train, theme.rim.glow))
-    .toContain(',' + theme.rim.glow + ')');
-  expect(theme.visual.cardGlowBlur).toBe(34);
-  expect(theme.orbSize.ringStroke).toBe(4);
-  expect(theme.visual.orbGlowInnerBlur).toBe(60);
-  expect(theme.visual.orbGlowOuterBlur).toBe(120);
-  expect(theme.orb.highlight).toBe('#FFFFFF');
-  expect(theme.train.gradEnd).not.toBe(theme.color.domain.train);
+test('a flat theme has no glow tokens', () => {
+  for (const mode of ['dark', 'light'] as const) {
+    const theme = createTheme(mode, 'solid');
+    expect(theme.effectiveStyle).toBe('solid');
+    expect(theme.orbSize.ringStroke).toBe(4);
+    expect(withOpacity(theme.color.accent, 0.55)).toContain(',0.55)');
+  }
 });
 
 test('one SVG arc is a continuous circumference with clamped dash offset', () => {
@@ -41,14 +29,6 @@ test('one SVG arc is a continuous circumference with clamped dash offset', () =>
   expect(ringGeometry(236, 4, 4).offset).toBeCloseTo(0);
 });
 
-test('every typography face has a static family, independent of Android fontWeight', () => {
-  expect(fontFamilyFor('Archivo', '700')).toBe('ArchivoSemiExpanded-Bold');
-  expect(fontFamilyFor('Archivo', '800')).toBe('ArchivoSemiExpanded-ExtraBold');
-  expect(fontFamilyFor('Figtree', '400')).toBe('Figtree-Regular');
-  expect(fontFamilyFor('Figtree', '600')).toBe('Figtree-SemiBold');
-  expect(fontFamilyFor('Figtree', '700')).toBe('Figtree-Bold');
-});
-
 describe('gradient stops keep each token\'s transparency', () => {
   test('rgba tokens split into an opaque color and their own opacity', () => {
     expect(splitColor('rgba(255,255,255,0.10)')).toEqual({ color: 'rgb(255,255,255)', opacity: 0.1 });
@@ -59,27 +39,17 @@ describe('gradient stops keep each token\'s transparency', () => {
   test('a stop multiplies the token alpha by the stop opacity', () => {
     expect(stopProps('rgba(255,94,126,0.45)', 1)).toEqual({ stopColor: 'rgb(255,94,126)', stopOpacity: 0.45 });
     expect(stopProps('rgba(255,94,126,0.45)', 0).stopOpacity).toBe(0);
-    expect(stopProps('#FF8F6B')).toEqual({ stopColor: '#FF8F6B', stopOpacity: 1 });
-  });
-
-  test.each(['dark', 'light'] as const)('%s: glows and the card sheen are never drawn opaque', mode => {
-    const t = createTheme(mode, 'aurora');
-    for (const glow of Object.values(t.ambient)) expect(stopProps(glow).stopOpacity).toBeLessThan(1);
-    expect(stopProps(t.glass.highlight).stopOpacity).toBeLessThan(1);
+    expect(stopProps('#FF8A5C')).toEqual({ stopColor: '#FF8A5C', stopOpacity: 1 });
   });
 });
 
 describe('CSS-angle gradients resolve against the real card size', () => {
   test('140° on a wide card fades from the top-left corner to the bottom-right corner', () => {
     const w = 360, h = 90, g = cssLinearGradient(140, w, h);
-    // Project a point onto the gradient line: 0 at the start, 1 at the end.
     const t = (x: number, y: number) => ((x - g.x1) * (g.x2 - g.x1) + (y - g.y1) * (g.y2 - g.y1)) /
       ((g.x2 - g.x1) ** 2 + (g.y2 - g.y1) ** 2);
-    expect(t(0, 0)).toBeCloseTo(0);   // top-left corner = brightest stop
-    expect(t(w, h)).toBeCloseTo(1);   // bottom-right corner = last stop
-    // The CSS line on a 4:1 card puts the bottom-left corner about a quarter of the way along
-    // (≈0.23), between the full-strength and rim.strength stops; a bounding-box diagonal would put
-    // it at exactly 0.5.
+    expect(t(0, 0)).toBeCloseTo(0);
+    expect(t(w, h)).toBeCloseTo(1);
     expect(t(0, h)).toBeCloseTo(0.23, 2);
   });
   test('180° is a plain top-to-bottom gradient over the full height', () => {
@@ -94,19 +64,12 @@ describe('CSS-angle gradients resolve against the real card size', () => {
   });
 });
 
-test('an empty glass orb has no grey highlight, but a filled Aurora orb keeps it', () => {
+test('a flat orb never draws a highlight', () => {
   expect(shouldShowOrbHighlight(null, 'aurora')).toBe(false);
   expect(shouldShowOrbHighlight(null, 'solid')).toBe(false);
-  expect(shouldShowOrbHighlight(0, 'aurora')).toBe(true);
-  expect(shouldShowOrbHighlight(0.54, 'aurora')).toBe(true);
+  expect(shouldShowOrbHighlight(0, 'aurora')).toBe(false);
+  expect(shouldShowOrbHighlight(0.54, 'aurora')).toBe(false);
   expect(shouldShowOrbHighlight(0.54, 'solid')).toBe(false);
-});
-
-test.each(['dark', 'light'] as const)('TASK-11: empty %s sphere has a themed translucent fill and only dark highlight', mode => {
-  const t = createTheme(mode, 'aurora');
-  expect(t.orbEmpty.fillOpacity).toBe(mode === 'light' ? 0.22 : 0.30);
-  expect(t.orbEmpty.haloOpacity).toBe(mode === 'light' ? 0.18 : 0.28);
-  expect(t.orbEmpty.rimWidth).toBe(1.5);
-  expect(shouldShowOrbHighlight(null, 'aurora', mode)).toBe(mode === 'dark');
-  expect(shouldShowOrbHighlight(null, 'solid', mode)).toBe(false);
+  expect(shouldShowOrbHighlight(null, 'aurora', 'dark')).toBe(false);
+  expect(shouldShowOrbHighlight(null, 'solid', 'light')).toBe(false);
 });
