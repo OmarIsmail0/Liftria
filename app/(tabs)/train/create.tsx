@@ -70,7 +70,7 @@ export default function CreateExercise(){
           <Text allowFontScaling style={{fontSize:theme.type.body.size,lineHeight:theme.type.body.line,fontWeight:'600',
             color:item.id===type?theme.color.accent:theme.color.text.primary}}>{t(item.label)}</Text>
         </Pressable>)}
-        <Pressable accessibilityRole="checkbox" accessibilityState={{checked:unilateral}}
+        <Pressable accessibilityRole="checkbox" accessibilityLabel={t('custom.unilateral')} accessibilityState={{checked:unilateral}}
           onPress={()=>setUnilateral(x=>!x)} style={{minHeight:theme.size.touch.min,justifyContent:'center'}}>
           <Typography>{unilateral?'☑':'□'} {t('custom.unilateral')}</Typography>
         </Pressable>

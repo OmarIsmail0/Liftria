@@ -73,6 +73,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#F3F5F8',
     },
     package: 'com.liftria.app',
+    // Resize the window for the keyboard so inputs on long forms stay visible (this is also the default).
+    softwareKeyboardLayoutMode: 'resize',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
     permissions: [...healthReadPermissions, 'android.permission.INTERNET', 'android.permission.POST_NOTIFICATIONS'],
     allowBackup: false,

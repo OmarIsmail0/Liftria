@@ -12,13 +12,15 @@ export function TabBar({ active, onSelect }: {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
-  return <View accessibilityRole="tablist" style={{
-    flexDirection: 'row', alignItems: 'stretch',
+  return <View style={{
     backgroundColor: theme.color.bg.surface,
     borderTopWidth: theme.size.border.thin, borderTopColor: theme.color.border.subtle,
     paddingTop: theme.space[2], paddingHorizontal: theme.space[1],
     paddingBottom: Math.max(insets.bottom, theme.space[3]),
   }}>
+    <View accessibilityRole="tablist" style={{
+      flexDirection: 'row', alignItems: 'stretch', width: '100%', maxWidth: theme.layout.maxContentWidth, alignSelf: 'center',
+    }}>
     {capsuleTabs.map(tab => {
       const selected = tab.key === active;
       const label = t(`nav.${tab.key}`);
@@ -30,11 +32,12 @@ export function TabBar({ active, onSelect }: {
           gap: theme.space[1], opacity: pressed ? 0.6 : 1,
         })}>
         <TabIcon name={tab.key} color={color} size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
-        <Text allowFontScaling numberOfLines={1} style={{
+        <Text allowFontScaling maxFontSizeMultiplier={1.3} numberOfLines={1} style={{
           color, fontSize: theme.type.caption.size, lineHeight: theme.type.caption.line,
           fontWeight: selected ? '700' : '500', textAlign: 'center',
         }}>{label}</Text>
       </Pressable>;
     })}
+    </View>
   </View>;
 }

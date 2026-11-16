@@ -86,7 +86,7 @@ const shared = {
   // 5 was 20 and 10 was 40; both sit on the nearest v2 step (16 and 32).
   space: { 1: 4, 2: 8, 3: 12, 4: 16, 5: 16, 6: 24, 8: 32, 10: 32 },
   radius: { sm: 8, md: 12, lg: 16, pill: 999 },
-  layout: { gutter: 16, cardGap: 24, sheetMaxHeight: '90%' },
+  layout: { gutter: 16, cardGap: 24, sheetMaxHeight: '90%', maxContentWidth: 640 },
   size: {
     iconStroke: 1.8,
     touch: { min: 48, primary: 56, workout: 64, nav: 56 },

@@ -281,6 +281,7 @@ export function Sheet({ visible, title, description, children, onClose, destruct
       </Animated.View>
       <Animated.View accessibilityViewIsModal style={[{
         borderTopStartRadius: theme.radius.lg, borderTopEndRadius: theme.radius.lg,
+        width: '100%', maxWidth: theme.layout.maxContentWidth, alignSelf: 'center',
         paddingBottom: Math.max(insets.bottom, theme.space[4]),
         paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[3],
         backgroundColor: theme.sheetFill, maxHeight: theme.layout.sheetMaxHeight, gap: theme.space[4],
@@ -290,7 +291,7 @@ export function Sheet({ visible, title, description, children, onClose, destruct
           <View style={{ width: theme.space[8], height: theme.space[1], borderRadius: theme.radius.pill,
             backgroundColor: theme.color.border.subtle }} />
         </View>
-        <Typography size="title">{title}</Typography>
+        <Typography size="title" header>{title}</Typography>
         {description ? <Typography tone="secondary">{description}</Typography> : null}
         <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets={Platform.OS==='ios'}
           contentContainerStyle={{ gap: theme.space[3] }}>{children}</ScrollView>
