@@ -2,8 +2,8 @@ import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import type { TranslationKey } from '../../../src/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
-import { Button, Card, Header, Screen, Typography } from '../../../src/design/primitives';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Button, Card, Field, Header, Screen, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { MUSCLES, type ExerciseType, type Muscle } from '../../../src/services/database/gymTypes';
 import { createCustomExercise, customExerciseSchema } from '../../../src/services/database/exerciseLibrary';
@@ -56,24 +56,19 @@ export default function CreateExercise(){
       contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
       <Header mode="inline" title={t('custom.title')} onBack={()=>router.back()}/>
       <Card title={t('custom.details')}>
-        <Typography size="small">{t('custom.nameRequired')}</Typography>
-        <TextInput value={name} onChangeText={setName} accessibilityLabel={t('custom.name')}
-          placeholder={t('custom.name')} placeholderTextColor={theme.color.text.tertiary}
-          maxLength={90} style={{minHeight:52,paddingHorizontal:theme.space[3],borderColor:theme.controlOutline,
-            borderWidth:1,borderRadius:theme.radius.md,color:theme.color.text.primary,fontSize:theme.type.body.size}}/>
-        <Typography size="small">{t('custom.equipmentOptional')}</Typography>
-        <TextInput value={equipment} onChangeText={setEquipment} accessibilityLabel={t('custom.equipment')}
-          placeholder={t('custom.equipmentExample')} placeholderTextColor={theme.color.text.tertiary}
-          maxLength={60} style={{minHeight:52,paddingHorizontal:theme.space[3],borderColor:theme.controlOutline,
-            borderWidth:1,borderRadius:theme.radius.md,color:theme.color.text.primary,fontSize:theme.type.body.size}}/>
+        <Typography size="secondary" tone="secondary">{t('custom.nameRequired')}</Typography>
+        <Field label={t('custom.name')} value={name} onChangeText={next => setName(next.slice(0, 90))} placeholder={t('custom.name')} />
+        <Typography size="secondary" tone="secondary">{t('custom.equipmentOptional')}</Typography>
+        <Field label={t('custom.equipment')} value={equipment} onChangeText={next => setEquipment(next.slice(0, 60))} placeholder={t('custom.equipmentExample')} />
         <Typography bold>{t('custom.weightType')}</Typography>
         {types.map(item=><Pressable key={item.id} accessibilityRole="radio"
           accessibilityState={{selected:item.id===type,checked:item.id===type}}
           accessibilityLabel={t(item.label)} onPress={()=>setType(item.id)}
           style={{minHeight:theme.size.touch.min,justifyContent:'center',paddingHorizontal:theme.space[3],
-            borderWidth:1,borderColor:item.id===type?theme.color.domain.train:theme.controlOutline,
-            borderRadius:theme.radius.md,backgroundColor:item.id===type?theme.color.tint.train:theme.cardFill}}>
-          <Typography>{t(item.label)}</Typography>
+            borderRadius:theme.radius.md,
+            backgroundColor:item.id===type?theme.color.tint.accent:theme.color.bg.raised}}>
+          <Text allowFontScaling style={{fontSize:theme.type.body.size,lineHeight:theme.type.body.line,fontWeight:'600',
+            color:item.id===type?theme.color.accent:theme.color.text.primary}}>{t(item.label)}</Text>
         </Pressable>)}
         <Pressable accessibilityRole="checkbox" accessibilityState={{checked:unilateral}}
           onPress={()=>setUnilateral(x=>!x)} style={{minHeight:theme.size.touch.min,justifyContent:'center'}}>
@@ -91,10 +86,10 @@ export default function CreateExercise(){
                 accessibilityLabel={t('custom.muscleChoice',{name:t(`muscle.${m}` as TranslationKey),kind:t(kind==='primary'?'muscle.primary':'muscle.secondary')})}
                 accessibilityState={{checked}} onPress={()=>toggle(m,kind)}
                 style={{flex:1,minHeight:theme.size.touch.min,padding:theme.space[2],
-                  justifyContent:'center',borderWidth:1,borderRadius:theme.radius.md,
-                  backgroundColor:checked?theme.color.tint.train:theme.cardFill,
-                  borderColor:checked?theme.color.domain.train:theme.controlOutline}}>
-                <Typography size="small">{checked?'☑':'□'} {t(kind==='primary'?'muscle.primary':'muscle.secondary')}</Typography>
+                  justifyContent:'center',borderRadius:theme.radius.md,
+                  backgroundColor:checked?theme.color.tint.accent:theme.color.bg.raised}}>
+                <Text allowFontScaling style={{fontSize:theme.type.secondary.size,lineHeight:theme.type.secondary.line,fontWeight:'600',
+                  color:checked?theme.color.accent:theme.color.text.primary}}>{checked?'☑':'□'} {t(kind==='primary'?'muscle.primary':'muscle.secondary')}</Text>
               </Pressable>;
             })}
           </View>
@@ -102,7 +97,7 @@ export default function CreateExercise(){
       </Card>
       {error&&<Typography>{error}</Typography>}
       {!valid&&<Typography tone="secondary" size="small">{t('custom.needName')}</Typography>}
-      <Button label={busy?t('custom.saving'):t('custom.save')} fullWidth variant="train"
+      <Button label={busy?t('custom.saving'):t('custom.save')} fullWidth variant="primary"
         disabled={!valid||busy} onPress={()=>void save()}/>
     </ScrollView>
   </Screen>;

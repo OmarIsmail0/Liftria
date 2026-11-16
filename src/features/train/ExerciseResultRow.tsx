@@ -56,17 +56,16 @@ export const ExerciseResultRow = memo(function ExerciseResultRow({
         {!onAdd && <ChevronIcon left={chevronPointsLeft('forward', isRTL)}
           color={theme.color.text.secondary} size={theme.space[4]} strokeWidth={theme.size.iconStroke} />}
       </Pressable>
-      {onAdd && addLabel && marked === undefined ? <Button label={addLabel} size="sm" variant="secondary"
+      {onAdd && addLabel && marked === undefined ? <Button label={addLabel} size="sm" variant="tonal"
         accessibilityLabel={t('exerciseRow.addNamed', { name })} onPress={add} /> : null}
       {onAdd && marked !== undefined ? <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: marked }}
         accessibilityLabel={marked ? t('pick.selected') : (addLabel ?? t('exerciseRow.add'))} onPress={add}
         style={{ width: theme.size.touch.min, height: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{
           width: 26, height: 26, borderRadius: theme.radius.pill, alignItems: 'center', justifyContent: 'center',
-          borderWidth: 2, borderColor: marked ? theme.color.domain.train : theme.surface.hairline,
-          backgroundColor: marked ? theme.color.domain.train : 'transparent',
+          backgroundColor: marked ? theme.color.accent : theme.color.bg.raised,
         }}>
-          {marked ? <Text style={{ color: theme.color.on.train, fontWeight: '600' }}>✓</Text> : null}
+          {marked ? <Text style={{ color: theme.color.on.accent, fontWeight: '600' }}>✓</Text> : null}
         </View>
       </Pressable> : null}
     </View>

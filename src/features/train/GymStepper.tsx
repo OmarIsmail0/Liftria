@@ -6,7 +6,7 @@ import { weightUnitLabel } from '../../i18n';
 import { formatEditableNumber } from '../../i18n/editableNumber';
 import { useLanguage } from '../../i18n/LanguageProvider';
 
-/** 64dp gym stepper: tap, long-press repeat (400/150ms), direct numeric keypad. */
+/** Gym stepper: 48dp touch, 36dp control, long-press repeat (400/150ms), direct numeric keypad. */
 export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}:{
   label:string; value:number; onChange:(value:number)=>void; step?:number; min?:number; max?:number; unit?:string;
 }) {
@@ -28,10 +28,11 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
     accessibilityLabel={t(direction<0?'accessibility.decrease':'accessibility.increase',{label})} onPress={()=>change(direction)}
     onLongPress={()=>{stop();repeat.current=setInterval(()=>change(direction),150);}}
     delayLongPress={400} onPressOut={stop}
-    style={{width:64,minHeight:64,justifyContent:'center',alignItems:'center',
-      borderRadius:theme.radius.pill,borderColor:theme.controlOutline,borderWidth:1,
-      backgroundColor:theme.cardFill}}>
-    <Typography size="head">{direction<0?'−':'+'}</Typography>
+    style={{width:theme.size.touch.min,minHeight:theme.size.touch.min,justifyContent:'center',alignItems:'center'}}>
+    <View style={{width:36,height:36,borderRadius:theme.radius.sm,backgroundColor:theme.color.bg.raised,
+      alignItems:'center',justifyContent:'center'}}>
+    <Typography size="title">{direction<0?'−':'+'}</Typography>
+    </View>
   </Pressable>;
   return <View style={{gap:theme.space[2],flex:1,minWidth:150}}>
     <Typography tone="secondary" size="small">{label}{shownUnit&&label.toLowerCase().includes(shownUnit)?'':' · '+shownUnit}</Typography>

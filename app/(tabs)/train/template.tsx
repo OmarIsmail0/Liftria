@@ -111,7 +111,7 @@ export default function TemplateEditor() {
     setExiting(true);
   };
   return <Screen embedded>
-    <Header title={id?t('template.edit'):t('template.new')} onBack={back}/>
+    <Header mode="inline" title={id?t('template.edit'):t('template.new')} onBack={back}/>
     <Card title={t('template.details')}>
       <Field label={t('template.name')} value={name} onChangeText={setName} placeholder={t('template.nameExample')}/>
       <Field label={t('template.notes')} value={notes} onChangeText={setNotes} multiline/>
@@ -169,18 +169,13 @@ export default function TemplateEditor() {
                   if(Number.isInteger(value)&&value>=1&&value<=100)update(i,{repMin:value,repMax:value});
                 }}
                 style={{flex:1,minHeight:theme.size.touch.min,textAlign:'center',borderRadius:theme.radius.sm,
-                  borderWidth:theme.size.border.thin,borderColor:theme.surface.hairline,
-                  backgroundColor:theme.surface.control,color:theme.color.text.primary,
-                  fontWeight:'600',fontSize:theme.type.body.size}}/>
+                  backgroundColor:theme.color.bg.raised,color:theme.color.text.primary,
+                  fontWeight:'600',fontSize:theme.type.body.size,fontVariant:['tabular-nums']}}/>
             </View>;
           })}
-          <Pressable accessibilityRole="button" accessibilityLabel={t('workout.addSet')}
-            onPress={()=>update(i,{targetSets:Math.min(20,e.targetSets+1)})}
-            style={{minHeight:theme.size.touch.min,borderRadius:theme.radius.md,alignItems:'center',
-              justifyContent:'center',backgroundColor:theme.surface.control}}>
-            <Typography bold>{t('workout.addSet')}</Typography>
-          </Pressable>
-          {e.targetSets>1 && <Button label={t('sessionDetail.removeSet')} variant="ghost"
+          <Button label={t('workout.addSet')} size="sm" variant="neutral" fullWidth
+            onPress={()=>update(i,{targetSets:Math.min(20,e.targetSets+1)})}/>
+          {e.targetSets>1 && <Button label={t('sessionDetail.removeSet')} variant="plain"
             onPress={()=>update(i,{targetSets:e.targetSets-1})}/>}
         </View>;
       })}
@@ -200,39 +195,39 @@ export default function TemplateEditor() {
               <Typography tone="secondary" size="small" lines={1}>{equipmentLabel(language,e.equipment,t('template.bodyweight'))}</Typography>
             </View>
           </Pressable>
-          <Button label={t('exerciseRow.add')} variant="secondary"
+          <Button label={t('exerciseRow.add')} variant="tonal" size="sm"
             accessibilityLabel={t('exerciseRow.addNamed',{name:isolated})} onPress={()=>add(e)}/>
         </View>;
       })}
-      <Button label={t('template.browseMap')} variant="secondary"
+      <Button label={t('template.browseMap')} variant="neutral"
         onPress={()=>router.push('/(tabs)/train/muscles')}/>
     </Card>
     {error&&<Typography>{error}</Typography>}
-    <Button label={busy?t('template.saving'):t('template.save')} variant="train" fullWidth
+    <Button label={busy?t('template.saving'):t('template.save')} variant="primary" fullWidth
       disabled={busy||!name.trim()||exercises.length===0}
       onPress={()=>void save()}/>
-    {id&&<Button label={t('template.delete')} variant="danger" onPress={()=>setDeleteSheet(true)}/>}
+    {id&&<Button label={t('template.delete')} variant="destructive" onPress={()=>setDeleteSheet(true)}/>}
     <Sheet visible={menuAt!==null} title={menuAt!==null?exerciseName(language,exercises[menuAt]?.exerciseId??'',library.find(item=>item.id===exercises[menuAt]?.exerciseId)?.name??''):t('workout.menu')}
       onClose={()=>setMenuAt(null)}>
       {menuAt!==null&&<>
-        {exercises[menuAt]?.supersetGroup?<Button label={t('gymParity.unlink')} variant="secondary" fullWidth
+        {exercises[menuAt]?.supersetGroup?<Button label={t('gymParity.unlink')} variant="neutral" fullWidth
           onPress={()=>{unlink(exercises[menuAt]!.supersetGroup!);setMenuAt(null);}}/>:
           <>
-            <Button label={t('gymParity.linkNext')} variant="secondary" fullWidth
+            <Button label={t('gymParity.linkNext')} variant="neutral" fullWidth
               disabled={menuAt+1>=exercises.length||Boolean(exercises[menuAt+1]?.supersetGroup)}
               onPress={()=>{linkGroup(menuAt,2);setMenuAt(null);}}/>
-            <Button label={t('gymParity.superset')+' × 3'} variant="secondary" fullWidth
+            <Button label={t('gymParity.superset')+' × 3'} variant="neutral" fullWidth
               disabled={menuAt+2>=exercises.length||Boolean(exercises[menuAt+1]?.supersetGroup)||Boolean(exercises[menuAt+2]?.supersetGroup)}
               onPress={()=>{linkGroup(menuAt,3);setMenuAt(null);}}/>
           </>}
-        <Button label={t('template.moveUp')} variant="secondary" fullWidth disabled={menuAt===0}
+        <Button label={t('template.moveUp')} variant="neutral" fullWidth disabled={menuAt===0}
           onPress={()=>{setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[menuAt-1],b=next[menuAt];
             if(a&&b){next[menuAt-1]=b;next[menuAt]=a;}return next;});setMenuAt(null);}}/>
-        <Button label={t('template.moveDown')} variant="secondary" fullWidth disabled={menuAt>=exercises.length-1}
+        <Button label={t('template.moveDown')} variant="neutral" fullWidth disabled={menuAt>=exercises.length-1}
           onPress={()=>{setExercises(old=>{const next=old.map(x=>({...x,supersetGroup:null}));const a=next[menuAt+1],b=next[menuAt];
             if(a&&b){next[menuAt+1]=b;next[menuAt]=a;}return next;});setMenuAt(null);}}/>
-        <Button label={t('workout.restTime')} variant="secondary" fullWidth onPress={()=>{setRestAt(menuAt);setMenuAt(null);}}/>
-        <Button label={t('template.remove')} variant="danger" fullWidth
+        <Button label={t('workout.restTime')} variant="neutral" fullWidth onPress={()=>{setRestAt(menuAt);setMenuAt(null);}}/>
+        <Button label={t('template.remove')} variant="destructive" fullWidth
           onPress={()=>{setExercises(old=>old.filter((_,n)=>n!==menuAt).map(x=>({...x,supersetGroup:null})));setMenuAt(null);}}/>
       </>}
     </Sheet>
@@ -240,19 +235,19 @@ export default function TemplateEditor() {
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
         {[0,60,90,120,150,180,240].map(seconds=><Button key={seconds}
           label={seconds===0?t('workout.restOff'):String(seconds)}
-          variant={(exercises[restAt??-1]?.restSec??rest)===seconds?'train':'secondary'}
+          variant={(exercises[restAt??-1]?.restSec??rest)===seconds?'tonal':'neutral'}
           onPress={()=>{if(restAt!==null)update(restAt,{restSec:seconds});setRestAt(null);}}/>)}
       </View>
     </Sheet>
     <Sheet visible={discardSheet&&!saved} title={t('template.discardTitle')}
       description={t('template.discardDescription')} onClose={cancelDiscard}>
       <Button label={t('template.keepEditing')} fullWidth onPress={cancelDiscard}/>
-      <Button label={t('template.discard')} variant="danger" fullWidth onPress={discard}/>
+      <Button label={t('template.discard')} variant="destructive" fullWidth onPress={discard}/>
     </Sheet>
     <Sheet visible={deleteSheet} destructive title={t('template.deleteTitle')}
       description={t('template.deleteDescription')} onClose={()=>setDeleteSheet(false)}>
       <Button label={t('template.keep')} fullWidth onPress={()=>setDeleteSheet(false)}/>
-      <Button label={t('template.delete')} variant="danger" fullWidth onPress={()=>void remove()}/>
+      <Button label={t('template.delete')} variant="destructive" fullWidth onPress={()=>void remove()}/>
     </Sheet>
   </Screen>;
 }

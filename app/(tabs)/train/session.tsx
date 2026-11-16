@@ -4,7 +4,7 @@ import {formatNumber, joinList, latinDigits, pluralForm, type TranslationKey, we
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
+import { Button, Card, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../src/design/primitives';
 import { getTypedSetting } from '../../../src/services/database/settings';
 import { GymStepper } from '../../../src/features/train/GymStepper';
 import { displayWeight, fromKg, sideLabel, toKg, workoutWeightStep, type WeightUnit } from '../../../src/features/train/workoutUnits';
@@ -71,28 +71,30 @@ export default function SessionDetail(){
  const stats=historyNumbers(data);
  const duration=Math.max(0,Date.parse(data.session.endedAt)-Date.parse(data.session.startedAt));
  return <Screen embedded>
-  <Header title={editing?t('sessionDetail.editing'):data.session.title}
+  <Header mode="inline" title={editing?t('sessionDetail.editing'):data.session.title}
    subtitle={new Date(data.session.startedAt).toLocaleString(language==='ar'?'ar-EG-u-nu-latn':'en-US')}
    onBack={()=>{if(editing){setEditing(false);void refresh();}else router.back();}}
-   right={<Button label={editing?t('sessionDetail.cancel'):t('sessionDetail.edit')} variant="secondary"
+   right={<Button label={editing?t('sessionDetail.cancel'):t('sessionDetail.edit')} variant="plain"
      onPress={()=>{if(editing)void refresh();setEditing(v=>!v);}}/>}/>
-  {editing&&<Card rim="train"><Typography bold>{t('sessionDetail.editUnsaved')}</Typography>
+  {editing&&<Card><Typography bold>{t('sessionDetail.editUnsaved')}</Typography>
    <Field label={t('sessionDetail.workoutName')} value={title} onChangeText={setTitle}/>
    <Field label={t('sessionDetail.notes')} value={notes} onChangeText={setNotes} multiline/>
   </Card>}
-  <Card rim="train" title={t('sessionDetail.statistics')}>
-   <ListRow title={t('sessionDetail.start')} detail={latinDigits(new Date(data.session.startedAt).toLocaleTimeString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}/>
-   <ListRow title={t('sessionDetail.duration')} detail={t((`sessionDetail.minute.${pluralForm(language,Math.round(duration/60000))}`) as TranslationKey,{count:Math.round(duration/60000)})}/>
-   <ListRow title={t('sessionDetail.workingSets')} detail={formatNumber(language,stats.sets)}/>
-   <ListRow title={t('sessionDetail.volume')} detail={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+weightUnitLabel(language,unit)}/>
-   {data.session.importer&&<Typography tone="secondary">{t('sessionDetail.importedFrom',{name:importerLabel(data.session.importer)})}
+  <View style={{gap:8}}>
+   <View style={{flexDirection:'row'}}>
+    <View style={{flex:1}}><StatBlock value={t((`sessionDetail.minute.${pluralForm(language,Math.round(duration/60000))}`) as TranslationKey,{count:Math.round(duration/60000)})} label={t('sessionDetail.duration')}/></View>
+    <View style={{flex:1}}><StatBlock value={formatNumber(language,stats.sets)} label={t('sessionDetail.workingSets')}/></View>
+    <View style={{flex:1}}><StatBlock value={formatNumber(language,Math.round(fromKg(stats.volume,unit)))+' '+weightUnitLabel(language,unit)} label={t('sessionDetail.volume')}/></View>
+   </View>
+   <Typography tone="secondary" size="secondary">{t('sessionDetail.start')+' · '+latinDigits(new Date(data.session.startedAt).toLocaleTimeString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}</Typography>
+   {data.session.importer?<Typography tone="secondary" size="secondary">{t('sessionDetail.importedFrom',{name:importerLabel(data.session.importer)})}
     {data.session.importedAt?t('sessionDetail.importedAt',{date:latinDigits(new Date(data.session.importedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):''}
-   </Typography>}
-  </Card>
-  {data.exercises.map(e=><Card key={e.id} title={exerciseName(language,e.exerciseId,e.name)}>
+   </Typography>:null}
+  </View>
+  {data.exercises.map(e=>editing?<Card key={e.id} title={exerciseName(language,e.exerciseId,e.name)}>
    {e.note&&<Typography tone="secondary" size="small">{t('gymParity.notesHistory',{note:e.note})}</Typography>}
    {e.supersetGroup&&<Typography tone="secondary" size="small">{t('gymParity.superset')}</Typography>}
-   {editing?draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{
+   {draft.filter(s=>s.sessionExerciseId===e.id).map(s=>{
     const i=draft.indexOf(s);
     return <View key={s.id??e.id+':'+i} style={{gap:8,paddingBottom:12}}>
      <Typography tone="secondary" size="small">{historySetTitle(language,s)}{s.side?' '+sideLabel(s.side,language):''}</Typography>
@@ -102,42 +104,49 @@ export default function SessionDetail(){
      <GymStepper label={t('sessionDetail.reps')} value={s.reps} onChange={v=>change(i,{reps:v})}/>
      {(s.rpe!=null||s.rir!=null)&&<Typography tone="secondary" size="small">
        {s.rpe!=null?t('effort.rpeValue',{value:s.rpe}):t('effort.rirValue',{value:s.rir??0})}</Typography>}
-     <Button label={t('sessionDetail.removeSet')} variant="secondary" onPress={()=>setDraft(rows=>rows.filter((_,n)=>n!==i))}/>
+     <Button label={t('sessionDetail.removeSet')} variant="destructive" onPress={()=>setDraft(rows=>rows.filter((_,n)=>n!==i))}/>
     </View>;
-   }):e.sets.map(s=>{
-    const r=records.find(x=>x.exerciseId===e.exerciseId&&x.side===s.side);
-    const pr=s.kind==='working'&&s.reps>0&&!!r&&(
-      (r.heaviestSessionId===id&&r.heaviest!==null&&s.weight===r.heaviest)||
-      (r.lowestAssistanceSessionId===id&&r.lowestAssistance!==null&&s.weight===r.lowestAssistance)||
-      (r.maxRepsSessionId===id&&s.reps===r.maxReps)||
-      (r.bestEstimatedOneRepMaxSessionId===id&&r.bestEstimatedOneRepMax!==null&&
-        estimatedOneRepMax(e.type,s)===r.bestEstimatedOneRepMax));
-    const title=historySetTitle(language,s);
-    const detail=displayWeight(s.weight,e.type,unit,language)+' × '+s.reps+(s.side?' · '+sideLabel(s.side,language):'')+
-     (s.rpe!=null?' · '+t('effort.rpeValue',{value:s.rpe}):'')+(s.rir!=null?' · '+t('effort.rirValue',{value:s.rir}):'');
-    const shown=setMarkFromStored(s.kind,s.mark);
-    return <ListRow key={s.id} title={title} detail={detail}
-      accessibilityLabel={shown==='drop'||shown==='failure'?historySetSpoken(language,s)+'. '+detail:undefined}
-      suffix={pr?<Typography bold size="small" tone="secondary">{t('sessionDetail.record')}</Typography>:undefined}/>;
    })}
-   {editing&&<Button label={t('sessionDetail.addSet')} variant="secondary" onPress={()=>{
+   <Button label={t('sessionDetail.addSet')} variant="neutral" onPress={()=>{
     const used=draft.filter(s=>s.sessionExerciseId===e.id);
     const next=Math.max(-1,...used.filter(s=>s.kind==='working').map(s=>s.position))+1;
     setDraft(old=>[...old,...(e.unilateral?(['L','R'] as const):([null] as const)).map(side=>({
      sessionExerciseId:e.id,position:next,side,weight:0,reps:1,kind:'working' as const,mark:null,
     }))]);
-   }}/>}
-  </Card>)}
+   }}/>
+  </Card>:<View key={e.id} style={{gap:8}}>
+   <SectionHeader title={exerciseName(language,e.exerciseId,e.name)}/>
+   {e.note?<Typography tone="secondary" size="secondary">{t('gymParity.notesHistory',{note:e.note})}</Typography>:null}
+   {e.supersetGroup?<Typography tone="secondary" size="secondary">{t('gymParity.superset')}</Typography>:null}
+   <ListGroup>
+    {e.sets.map(s=>{
+     const r=records.find(x=>x.exerciseId===e.exerciseId&&x.side===s.side);
+     const pr=s.kind==='working'&&s.reps>0&&!!r&&(
+       (r.heaviestSessionId===id&&r.heaviest!==null&&s.weight===r.heaviest)||
+       (r.lowestAssistanceSessionId===id&&r.lowestAssistance!==null&&s.weight===r.lowestAssistance)||
+       (r.maxRepsSessionId===id&&s.reps===r.maxReps)||
+       (r.bestEstimatedOneRepMaxSessionId===id&&r.bestEstimatedOneRepMax!==null&&
+         estimatedOneRepMax(e.type,s)===r.bestEstimatedOneRepMax));
+     const title=historySetTitle(language,s);
+     const detail=displayWeight(s.weight,e.type,unit,language)+' × '+s.reps+(s.side?' · '+sideLabel(s.side,language):'')+
+      (s.rpe!=null?' · '+t('effort.rpeValue',{value:s.rpe}):'')+(s.rir!=null?' · '+t('effort.rirValue',{value:s.rir}):'');
+     const shown=setMarkFromStored(s.kind,s.mark);
+     return <ListRow key={s.id} title={title} detail={detail}
+       accessibilityLabel={shown==='drop'||shown==='failure'?historySetSpoken(language,s)+'. '+detail:undefined}
+       suffix={pr?<Typography bold size="secondary" tone="secondary">{t('sessionDetail.record')}</Typography>:undefined}/>;
+    })}
+   </ListGroup>
+  </View>)}
   {error&&<Typography>{error}</Typography>}
   {editing?<View style={{gap:8}}>
-   <Button label={t('sessionDetail.save')} variant="train" size="xl" fullWidth disabled={busy||!title.trim()} onPress={()=>void save()}/>
-   <Button label={t('sessionDetail.cancel')} variant="secondary" fullWidth onPress={()=>{setEditing(false);void refresh();}}/>
-  </View>:<Button label={t('sessionDetail.delete')} variant="danger" onPress={()=>void deletePrompt()}/>}
+   <Button label={t('sessionDetail.save')} variant="primary" fullWidth disabled={busy||!title.trim()} onPress={()=>void save()}/>
+   <Button label={t('sessionDetail.cancel')} variant="neutral" fullWidth onPress={()=>{setEditing(false);void refresh();}}/>
+  </View>:<Button label={t('sessionDetail.delete')} variant="destructive" onPress={()=>void deletePrompt()}/>}
   <Sheet visible={confirm} destructive title={t('sessionDetail.deleteTitle')}
    description={changed.length?t('sessionDetail.changed',{names:joinList(language,changed)}):t('sessionDetail.deleteDesc')}
    onClose={()=>setConfirm(false)}>
    <Button label={t('sessionDetail.keep')} fullWidth onPress={()=>setConfirm(false)}/>
-   <Button label={t('sessionDetail.delete')} variant="danger" fullWidth disabled={busy} onPress={()=>void remove()}/>
+   <Button label={t('sessionDetail.delete')} variant="destructive" fullWidth disabled={busy} onPress={()=>void remove()}/>
   </Sheet>
  </Screen>;
 }

@@ -6,7 +6,7 @@ import { ScrollView, View } from 'react-native';
 import { BodyMap } from '../../../../src/features/train/BodyMap';
 import { ExerciseFigure } from '../../../../src/features/train/ExerciseFigure';
 import { equipmentLabel } from '../../../../src/i18n/equipment';
-import { Button, Card, Chip, EmptyState, Header, ListRow, Screen, Sheet, Typography } from '../../../../src/design/primitives';
+import { Button, Card, Chip, EmptyState, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../../src/design/primitives';
 import { useTheme } from '../../../../src/design/ThemeProvider';
 import { type Exercise } from '../../../../src/services/database/gymTypes';
 import { ensureExercisePack, getExercise } from '../../../../src/services/database/exerciseLibrary';
@@ -88,7 +88,7 @@ export default function ExerciseDetail(){
   const kgLabel=weightUnitLabel(language,'kg');
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
-      <Header title={exerciseName(language,exercise.id,exercise.name)} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
+      <Header mode="inline" title={exerciseName(language,exercise.id,exercise.name)} subtitle={equipmentLabel(language,exercise.equipment,t('exerciseDetail.equipmentUnknown'))}
         onBack={()=>router.back()}/>
       <Card rim="train">
         <ExerciseFigure exercise={exercise} crop="full" />
@@ -96,36 +96,36 @@ export default function ExerciseDetail(){
         {exercise.type!=='weighted'||exercise.unilateral?
           <Typography tone="secondary">{exercise.type==='dumbbell'?t('exerciseDetail.weightPerHand'):exercise.type==='assisted'?t('exerciseDetail.assistanceWeight'):exercise.type==='bodyweight'?t('exerciseDetail.bodyweight'):''}{exercise.unilateral?t('exerciseDetail.separateSides'):''}</Typography>:null}
       </Card>
-      <Card title={t('exerciseDetail.addCard')}>
-        <Button label={adding?t('exerciseDetail.adding'):t('exerciseDetail.add')} variant="train" disabled={adding}
-          onPress={()=>void add()}/>
-        {message&&<Typography tone="secondary" size="small">{message}</Typography>}
-      </Card>
-      <Card title={t('exerciseDetail.progressTitle')}>
+      <Button label={adding?t('exerciseDetail.adding'):t('exerciseDetail.add')} variant="primary" fullWidth disabled={adding}
+        onPress={()=>void add()}/>
+      {message?<Typography tone="secondary" size="secondary">{message}</Typography>:null}
+      <View style={{gap:theme.space[2]}}>
+        <SectionHeader title={t('exerciseDetail.progressTitle')}/>
         {sessions.length===0?<EmptyState title={t('exerciseDetail.emptyTitle')}
           description={t('exerciseDetail.emptyDesc')}/>:
         <View style={{gap:theme.space[2]}}>
-          <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[4]}}>
-            <View><Typography size="metric-m">{highest===null?'—':highest+' '+kgLabel}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.heaviest')}</Typography></View>
-            <View><Typography size="metric-m">{volume?Math.round(volume)+' '+kgLabel:'—'}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.bestVolume')}</Typography></View>
-            <View><Typography size="metric-m">{est===null?'—':Math.round(est)+' '+kgLabel}</Typography><Typography tone="secondary" size="small">{t('exerciseDetail.estimateRM')}</Typography></View>
+          <View style={{flexDirection:'row'}}>
+            <View style={{flex:1}}><StatBlock value={highest===null?'—':highest+' '+kgLabel} label={t('exerciseDetail.heaviest')}/></View>
+            <View style={{flex:1}}><StatBlock value={volume?Math.round(volume)+' '+kgLabel:'—'} label={t('exerciseDetail.bestVolume')}/></View>
+            <View style={{flex:1}}><StatBlock value={est===null?'—':Math.round(est)+' '+kgLabel} label={t('exerciseDetail.estimateRM')}/></View>
           </View>
           <Chip kind="estimate" label={t('exerciseDetail.estimate')}/>
           <Typography tone="secondary" size="small">{t('exerciseDetail.estimateDesc')}</Typography>
           <Typography tone="secondary">{sessions.length===1?t('exerciseDetail.oneSession'):t((`exerciseDetail.manySessions.${pluralForm(language,sessions.length)}`) as TranslationKey,{count:sessions.length})}</Typography>
         </View>}
-      </Card>
-      <Card title={t('exerciseDetail.recentTitle')}>
+      </View>
+      <View style={{gap:theme.space[2]}}>
+        <SectionHeader title={t('exerciseDetail.recentTitle')}/>
         {sessions.length===0?<Typography tone="secondary">{t('exerciseDetail.noSession')}</Typography>:
-          sessions.slice(0,5).map(s=>{
+          <ListGroup>{sessions.slice(0,5).map(s=>{
             const marked=historySets.filter(set=>set.sessionId===s.id&&(set.mark==='drop'||set.mark==='failure'));
             const line=markedSetLine(language,marked,unit);
             const date=latinDigits(new Date(s.startedAt).toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'));
             const spoken=marked.map(set=>historySetSpoken(language,set)).join(', ');
             return <ListRow key={s.id} title={s.title} detail={line?date+' · '+line:date}
               accessibilityLabel={spoken?s.title+'. '+spoken:undefined}/>;
-          })}
-      </Card>
+          })}</ListGroup>}
+      </View>
       <Card title={t('exerciseDetail.howTo')}>
         {instructionDisplay.untranslated&&<Typography tone="secondary" size="small">
           {t('exerciseDetail.instructionsEnglish')}
@@ -141,12 +141,12 @@ export default function ExerciseDetail(){
     <Sheet visible={choosing} title={t('exerciseDetail.sheetTitle')}
       description={t('exerciseDetail.sheetDesc')}
       onClose={()=>setChoosing(false)}>
-      {templates.map(t=><Button key={t.id} label={t.name} variant="secondary" fullWidth
+      {templates.map(t=><Button key={t.id} label={t.name} variant="neutral" fullWidth
         disabled={adding} onPress={()=>void toTemplate(t)}/>)}
-      <Button label={t('exerciseDetail.newTemplate')} variant="train" fullWidth onPress={()=>{
+      <Button label={t('exerciseDetail.newTemplate')} variant="primary" fullWidth onPress={()=>{
         setChoosing(false);router.push({pathname:'/(tabs)/train/template',params:{exerciseId:id}});
       }}/>
-      <Button label={t('exerciseDetail.cancel')} variant="secondary" fullWidth onPress={()=>setChoosing(false)}/>
+      <Button label={t('exerciseDetail.cancel')} variant="neutral" fullWidth onPress={()=>setChoosing(false)}/>
     </Sheet>
   </Screen>;
 }
