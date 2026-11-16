@@ -1116,7 +1116,7 @@ export const ar: Record<TranslationKey, string> = {
   "import.result.noResult": "لا تتوفر نتيجة للاستيراد. تمارينك الحالية لم تتغير.",
   "notifications.subtitle": "تنبيهات الراحة قيد الاختبار",
   "notifications.restTitle": "تنبيهات مؤقت الراحة",
-  "notifications.pending": "بانتظار اختبار الجهاز",
+  "notifications.pending": "قيد الاختبار",
   "notifications.restNote": "يسألك ليفتريا عن تنبيهات الراحة في أول فترة راحة. قد يؤخّر أندرويد وصول التنبيه على شاشة القفل؛ ويظل المؤقت داخل التطبيق المرجع الأوثق.",
   "notifications.row": "إشعارات مؤقت الراحة",
   "notifications.rowDetail": "الإذن اختياري · فعّله من التمرين الجاري",
