@@ -7,7 +7,7 @@ import {File,Paths} from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../src/design/primitives';
+import { Button, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
@@ -166,47 +166,41 @@ export default function DataAndStorage() {
   return <Screen>
     <Header mode="inline" title={t('dataStorage.title')}
       onBack={()=>backOrReplace(router,'/settings')} />
-    <Card title={t('dataStorage.counts')}>
-      {counts ? <>
-        <ListRow title={t('dataStorage.workouts')} detail={String(counts.workouts)} />
-        <ListRow title={t('dataStorage.meals')} detail={t('dataStorage.testEntries',{count:counts.meals})} />
-        <ListRow title={t('dataStorage.health')} detail={String(counts.healthSamples+counts.healthAggregates)} />
-        <ListRow title={t('dataStorage.targets')} detail={String(counts.targetVersions)} />
-        <ListRow title={t('dataStorage.profiles')} detail={String(counts.profiles)} />
-        <ListRow title={t('dataStorage.database')} detail={formatLocalDatabaseSize(counts.databaseBytes, language)} />
-        {photoUsage&&<ListRow title={t('dataStorage.photos')} detail={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />}
-      </> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
-      <Typography tone="secondary" size="small">{t('dataStorage.countsNote')}</Typography>
-    </Card>
-    <Card title={t('dataStorage.importSection')}>
+    <SectionHeader title={t('dataStorage.counts')} />
+    {counts ? <ListGroup>
+      <ListRow title={t('dataStorage.workouts')} value={String(counts.workouts)} />
+      <ListRow title={t('dataStorage.meals')} value={t('dataStorage.testEntries',{count:counts.meals})} />
+      <ListRow title={t('dataStorage.health')} value={String(counts.healthSamples+counts.healthAggregates)} />
+      <ListRow title={t('dataStorage.targets')} value={String(counts.targetVersions)} />
+      <ListRow title={t('dataStorage.profiles')} value={String(counts.profiles)} />
+      <ListRow title={t('dataStorage.database')} value={formatLocalDatabaseSize(counts.databaseBytes, language)} />
+      {photoUsage&&<ListRow title={t('dataStorage.photos')} value={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />}
+    </ListGroup> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
+    <Typography tone="secondary" size="secondary">{t('dataStorage.countsNote')}</Typography>
+    <SectionHeader title={t('dataStorage.importSection')} />
+    <ListGroup>
       <ListRow title={t('dataStorage.importRow')}
-       detail={t('dataStorage.importDetail')}
-       onPress={()=>router.push('/import')}/>
+        detail={t('dataStorage.importDetail')}
+        onPress={()=>router.push('/import')}/>
       {imported&&<ListRow title={t('dataStorage.undoImport')}
-       detail={t((`dataStorage.undoDetail.${pluralForm(language,imported.count)}`) as TranslationKey,{count:imported.count,source:importerLabel(imported.source)})}
-       onPress={()=>setUndoVisible(true)}/>}
-    </Card>
-    <Card title={t('dataStorage.cacheTitle')}>
-      <Typography tone="secondary">{t('dataStorage.cacheNote')}</Typography>
-      <Button label={busy?t('dataStorage.working'):t('dataStorage.clearHealth')} variant="secondary"
-        disabled={busy} onPress={()=>void clearCache()} />
-      <Button label={t('backup.export')} disabled={busy} variant="secondary"
-       onPress={()=>void exportData('backup')}/>
-      <Button label={t('backup.restore')} disabled={busy} variant="secondary"
-       onPress={()=>void chooseBackup()}/>
-      <Button label={t('backup.workoutsCsv')} disabled={busy} variant="secondary"
-       onPress={()=>void exportData('workouts')}/>
-      <Button label={t('backup.diaryCsv')} disabled={busy} variant="secondary"
-       onPress={()=>void exportData('diary')}/>
-      <Button label={t('backup.measurementsCsv')} disabled={busy} variant="secondary"
-       onPress={()=>void exportData('measurements')}/>
-      <Typography tone="secondary" size="small">{t('dataStorage.backupNote')}</Typography>
-    </Card>
-    <Card title={t('dataStorage.deleteTitle')}>
-      <Typography tone="secondary">{t('dataStorage.deleteNote')}</Typography>
-      <Typography tone="secondary" size="small">{t('dataStorage.deletePrivacy')}</Typography>
-      <Button label={t('dataStorage.deleteTitle')} variant="danger" disabled={busy} onPress={()=>setOpen(true)} />
-    </Card>
+        detail={t((`dataStorage.undoDetail.${pluralForm(language,imported.count)}`) as TranslationKey,{count:imported.count,source:importerLabel(imported.source)})}
+        onPress={()=>setUndoVisible(true)}/>}
+    </ListGroup>
+    <SectionHeader title={t('dataStorage.cacheTitle')} />
+    <Typography tone="secondary" size="secondary">{t('dataStorage.cacheNote')}</Typography>
+    <ListGroup>
+      <ListRow title={busy?t('dataStorage.working'):t('dataStorage.clearHealth')}
+        onPress={()=>void clearCache()} />
+      <ListRow title={t('backup.export')} onPress={()=>void exportData('backup')} />
+      <ListRow title={t('backup.restore')} onPress={()=>void chooseBackup()} />
+      <ListRow title={t('backup.workoutsCsv')} onPress={()=>void exportData('workouts')} />
+      <ListRow title={t('backup.diaryCsv')} onPress={()=>void exportData('diary')} />
+      <ListRow title={t('backup.measurementsCsv')} onPress={()=>void exportData('measurements')} />
+    </ListGroup>
+    <Typography tone="secondary" size="secondary">{t('dataStorage.backupNote')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('dataStorage.deleteNote')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('dataStorage.deletePrivacy')}</Typography>
+    <Button label={t('dataStorage.deleteTitle')} variant="destructive" fullWidth disabled={busy} onPress={()=>setOpen(true)} />
     {message && <View accessibilityRole="alert" style={{paddingVertical:theme.space[2]}}>
       <Typography tone="secondary">ⓘ {message}</Typography>
     </View>}
@@ -214,7 +208,7 @@ export default function DataAndStorage() {
       destructive description={t('dataStorage.undoDescription')}
       onClose={()=>{if(!busy)setUndoVisible(false);}}>
       <Button label={t('dataStorage.keepImport')} fullWidth disabled={busy} onPress={()=>setUndoVisible(false)}/>
-      <Button label={t('dataStorage.removeImport')} variant="danger" fullWidth disabled={busy}
+      <Button label={t('dataStorage.removeImport')} variant="destructive" fullWidth disabled={busy}
         onPress={()=>void removeImport()}/>
     </Sheet>
     <Sheet visible={previewBackup!==null} destructive title={t('backup.confirmTitle')}
@@ -237,7 +231,7 @@ export default function DataAndStorage() {
       </>}
       {!isDemo&&<Field label={t('backup.typeRestore')} placeholder={t('backup.restoreKeyword')}
        value={restoreText} onChangeText={setRestoreText}/>}
-      <Button label={t('backup.replace')} variant="danger"
+      <Button label={t('backup.replace')} variant="destructive"
        disabled={isDemo||busy||restoreText!=='RESTORE'} onPress={()=>void confirmRestore()}/>
     </Sheet>
     <Sheet visible={open} destructive title={t('dataStorage.deleteSheet')}
@@ -247,7 +241,7 @@ export default function DataAndStorage() {
         placeholder="DELETE" />
       <Button label={t('dataStorage.keepData')} fullWidth disabled={busy}
         onPress={()=>{setOpen(false);setConfirmation('')}} />
-      <Button label={busy?t('dataStorage.deleting'):t('dataStorage.deleteEverything')} fullWidth variant="danger"
+      <Button label={busy?t('dataStorage.deleting'):t('dataStorage.deleteEverything')} fullWidth variant="destructive"
         disabled={busy||!canDeleteEverything(confirmation)} onPress={()=>void deleteAll()} />
     </Sheet>
   </Screen>;

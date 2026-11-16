@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, OptionRows, Sheet, Typography } from '../../src/design/primitives';
+import { Button, Field, Header, ListGroup, ListRow, Screen, SectionHeader, SegmentedControl, OptionRows, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
@@ -153,15 +153,14 @@ export default function ProfileAndGoals() {
   return <Screen>
     <Header mode="inline" title={t('profileSettings.title')}
       onBack={() => backOrReplace(router,'/settings')} />
-    <Card title={t('profileSettings.profile')}>
-      <Field label={t('profileSettings.name')} value={form.name} onChangeText={v=>patch('name',v)} />
+    <Field label={t('profileSettings.name')} value={form.name} onChangeText={v=>patch('name',v)} />
       <SegmentedControl label={t('profileSettings.sex')}
         value={form.sexForFormula === 'unspecified' ? null : form.sexForFormula}
         onChange={v=>patch('sexForFormula',v)}
         options={[{value:'male',label:t('profileSettings.male')},
           {value:'female',label:t('profileSettings.female')}] as const} />
-      <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
-      {form.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
+      <Typography tone="secondary" size="secondary">{t('polish.sexExplanation')}</Typography>
+      {form.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="plain"
         onPress={()=>patch('sexForFormula',null)}/>}
       <Field label={t('profileSettings.birthYear')} value={form.birthYear} keyboardType="number-pad"
         onChangeText={v=>patch('birthYear',v)} placeholder={t('profileSettings.yearExample')} />
@@ -173,9 +172,8 @@ export default function ProfileAndGoals() {
         </View>}
       <Field label={unit.weight==='kg'?t('profileSettings.weightKg'):t('profileSettings.weightLb')} value={form.weight}
         keyboardType="decimal-pad" onChangeText={v=>patch('weight',v)} />
-      <Typography tone="secondary" size="small">{t('profileSettings.metricNote')}</Typography>
-    </Card>
-    <Card title={t('profileSettings.activityGoal')}>
+      <Typography tone="secondary" size="secondary">{t('profileSettings.metricNote')}</Typography>
+    <SectionHeader title={t('profileSettings.activityGoal')} />
       <OptionRows label={t('profileSettings.activity')} value={form.activity}
         onChange={v=>patch('activity',v)}
         options={[{value:'sitting',label:t('profileSettings.sitting'),description:t('polish.activitySitting')},
@@ -186,11 +184,12 @@ export default function ProfileAndGoals() {
         options={[{value:'lose',label:t('profileSettings.lose'),description:t('polish.goalLose')},
           {value:'maintain',label:t('profileSettings.maintain'),description:t('polish.goalMaintain')},
           {value:'build',label:t('profileSettings.build'),description:t('polish.goalBuild')}] as const} />
-      <ListRow title={t('profileSettings.currentTarget')} detail={target ? `${t('eatI.kcal',{count:target.kcal})} · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
-        onPress={()=>{setTargetEditor(true);setMessage(null)}} />
-      <Typography tone="secondary" size="small">{t('profileSettings.editNote')}</Typography>
+      <ListGroup>
+        <ListRow title={t('profileSettings.currentTarget')} value={target ? `${t('eatI.kcal',{count:target.kcal})} · ${target.source==='manual'?t('profileSettings.manual'):t('profileSettings.estimate')}` : t('profileSettings.noTarget')}
+          onPress={()=>{setTargetEditor(true);setMessage(null)}} />
+      </ListGroup>
+      <Typography tone="secondary" size="secondary">{t('profileSettings.editNote')}</Typography>
       {target?.source==='manual' && <Typography tone="secondary">{t('profileSettings.manualNote')}</Typography>}
-    </Card>
     {message && <View accessibilityRole="alert"><Typography tone="secondary">ⓘ {message}</Typography></View>}
     <Button label={busy ? t('profileSettings.saving') : t('profileSettings.saveProfile')} fullWidth disabled={!ready||busy} onPress={onSave} />
     <Sheet visible={pending!==null} title={t('profileSettings.updateTitle')}

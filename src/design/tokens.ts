@@ -21,7 +21,7 @@ const button = { size: 16, line: 22, weight: '600' } as const;
 const palette = {
   dark: {
     color: {
-      bg: { base: '#0D0E10', surface: '#18191C', raised: '#232529', glass: '#18191C' },
+      bg: { base: '#0D0E10', surface: '#18191C', raised: '#232529' },
       border: { subtle: '#2B2D32', strong: '#5C6168', control: '#8D9199' },
       text: { primary: '#F2F3F5', secondary: '#A9ADB4', tertiary: '#8D9199', inverse: '#1A0D06' },
       accent: '#FF8A5C',
@@ -45,7 +45,7 @@ const palette = {
   },
   light: {
     color: {
-      bg: { base: '#F4F3F1', surface: '#FFFFFF', raised: '#ECEAE6', glass: '#FFFFFF' },
+      bg: { base: '#F4F3F1', surface: '#FFFFFF', raised: '#ECEAE6' },
       border: { subtle: '#E3E1DC', strong: '#5C6066', control: '#6E7279' },
       text: { primary: '#17181A', secondary: '#5C6066', tertiary: '#6E7279', inverse: '#FFFFFF' },
       accent: '#C2410C',
@@ -105,7 +105,6 @@ const shared = {
     card: '0 8px 24px rgba(0,0,0,0.18)',
     thumb: '0 1px 2px rgba(0,0,0,0.12)',
   },
-  orbSize: { today: 236, compact: 200, diary: 132, ringStroke: 4, segments: 48 },
 } as const;
 
 /** Always solid. The requested style is kept only so stored preferences still type-check. */

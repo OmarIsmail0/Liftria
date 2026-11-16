@@ -1,5 +1,5 @@
 import { createTheme } from '../../tokens';
-import { cssLinearGradient, ringGeometry, withOpacity, splitColor, stopProps, shouldShowOrbHighlight } from '../VisualGeometry';
+import { cssLinearGradient, withOpacity, splitColor, stopProps } from '../VisualGeometry';
 
 test('the system font module loads no bundled face', () => {
   const { readFileSync } = jest.requireActual('fs') as { readFileSync: (file: string, encoding: 'utf8') => string };
@@ -12,21 +12,9 @@ test('a flat theme has no glow tokens', () => {
   for (const mode of ['dark', 'light'] as const) {
     const theme = createTheme(mode, 'solid');
     expect(theme.effectiveStyle).toBe('solid');
-    expect(theme.orbSize.ringStroke).toBe(4);
+    expect(theme).not.toHaveProperty('orbSize');
     expect(withOpacity(theme.color.accent, 0.55)).toContain(',0.55)');
   }
-});
-
-test('one SVG arc is a continuous circumference with clamped dash offset', () => {
-  const start = ringGeometry(236, 4, 0);
-  const half = ringGeometry(236, 4, 0.5);
-  const full = ringGeometry(236, 4, 1);
-  expect(start.radius).toBeGreaterThan(0);
-  expect(start.offset).toBeCloseTo(start.circumference);
-  expect(half.offset).toBeCloseTo(half.circumference / 2);
-  expect(full.offset).toBeCloseTo(0);
-  expect(ringGeometry(236, 4, -2).offset).toBeCloseTo(start.offset);
-  expect(ringGeometry(236, 4, 4).offset).toBeCloseTo(0);
 });
 
 describe('gradient stops keep each token\'s transparency', () => {
@@ -62,14 +50,4 @@ describe('CSS-angle gradients resolve against the real card size', () => {
     expect(g.x1).toBeCloseTo(0); expect(g.x2).toBeCloseTo(200);
     expect(g.y1).toBeCloseTo(50); expect(g.y2).toBeCloseTo(50);
   });
-});
-
-test('a flat orb never draws a highlight', () => {
-  expect(shouldShowOrbHighlight(null, 'aurora')).toBe(false);
-  expect(shouldShowOrbHighlight(null, 'solid')).toBe(false);
-  expect(shouldShowOrbHighlight(0, 'aurora')).toBe(false);
-  expect(shouldShowOrbHighlight(0.54, 'aurora')).toBe(false);
-  expect(shouldShowOrbHighlight(0.54, 'solid')).toBe(false);
-  expect(shouldShowOrbHighlight(null, 'aurora', 'dark')).toBe(false);
-  expect(shouldShowOrbHighlight(null, 'solid', 'light')).toBe(false);
 });

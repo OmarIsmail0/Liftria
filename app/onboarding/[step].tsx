@@ -5,11 +5,12 @@ import * as Network from 'expo-network';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import type { TranslationKey } from '../../src/i18n';
+import { formatNumber } from '../../src/i18n';
 import { formatEditableNumber } from '../../src/i18n/editableNumber';
-import { Button, Card, Field, Header, Orb, Screen, OptionRows, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
+import { Button, Chip, Field, Header, ListGroup, ListRow, Screen, OptionRows, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
-import { isOnboardingStep, nextOnboardingStep, optionalStep, onboardingSteps, previousOnboardingStep, skipOnboardingStep,
+import { isOnboardingStep, nextOnboardingStep, optionalStep, previousOnboardingStep, skipOnboardingStep,
   type OnboardingStep } from '../../src/features/onboarding/flow';
 import { canEstimateTarget, estimateTarget, profileAge, targetSafety } from '../../src/features/onboarding/targetEstimate';
 import { healthConnect, requestHistoryReadPermission } from '../../src/services/health';
@@ -47,23 +48,25 @@ function ChoiceGroup<T extends string>({ label, choices, selected, onChange }: {
   const { theme } = useTheme();
   return <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.space[2] }}>
     <Typography bold>{label}</Typography>
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-      {choices.map(choice => {
+    <ListGroup>
+      {choices.map((choice, index) => {
         const active = selected === choice.value;
         return <Pressable key={choice.value} accessibilityRole="radio" accessibilityLabel={choice.label}
           accessibilityState={{ checked: active, selected: active }} onPress={() => onChange(choice.value)}
           style={{
-            minHeight: theme.size.touch.min, minWidth: theme.size.touch.min,
-            paddingHorizontal: theme.space[3], paddingVertical: theme.space[3], alignItems: 'center',
-            justifyContent: 'center', borderRadius: theme.radius.pill,
-            backgroundColor: active ? theme.color.action.primary.bg : theme.color.bg.raised,
-            borderWidth: theme.size.border.thin, borderColor: theme.controlOutline,
+            minHeight: theme.size.touch.min, paddingHorizontal: theme.space[4], paddingVertical: theme.space[3],
+            justifyContent: 'center',
+            backgroundColor: active ? theme.color.tint.accent : 'transparent',
+            borderBottomWidth: index === choices.length - 1 ? 0 : theme.size.border.thin,
+            borderBottomColor: theme.color.border.subtle,
           }}>
-          <Text allowFontScaling style={{ color: active ? theme.color.action.primary.fg : theme.color.text.primary,
-            fontSize: theme.type.body.size }}>{choice.label}</Text>
+          <Text allowFontScaling style={{
+            color: active ? theme.color.accent : theme.color.text.primary,
+            fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600',
+          }}>{choice.label}</Text>
         </Pressable>;
       })}
-    </View>
+    </ListGroup>
   </View>;
 }
 
@@ -79,20 +82,18 @@ function Frame({ children, step, onBack, onSkip, primary, onPrimary, busy, prima
 }) {
   const { theme } = useTheme();
   const { t } = useLanguage();
-  const caption = step === 'done' ? null : t('onboarding.stepOf8', { number: onboardingSteps.indexOf(step) + 1 });
   return <Screen scroll={false}>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <Header title={t(onboardingTitleKey(step) ?? titles[step])} onBack={onBack} right={onSkip
-        ? <Button label={t('onboarding.skip')} size="sm" variant="ghost" onPress={onSkip} /> : undefined} />
-      {caption && <Typography size="small" tone="secondary">{caption}</Typography>}
+      <Header mode="large" title={t(onboardingTitleKey(step) ?? titles[step])} onBack={onBack} right={onSkip
+        ? <Button label={t('onboarding.skip')} size="sm" variant="plain" onPress={onSkip} /> : undefined} />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{
         paddingVertical: theme.space[4], gap: theme.space[4], flexGrow: 1,
       }}>
-        <Typography tone="secondary">{t(onboardingDescriptionKey(step) ?? descriptions[step])}</Typography>
+        <Typography tone="secondary" size="secondary">{t(onboardingDescriptionKey(step) ?? descriptions[step])}</Typography>
         {children}
       </ScrollView>
-      {footer}
       <View style={{ paddingVertical: theme.space[3], gap: theme.space[2] }}>
+        {footer}
         <Button label={busy ? t('onboarding.saving') : primary} fullWidth disabled={busy || primaryDisabled} onPress={onPrimary} />
       </View>
     </KeyboardAvoidingView>
@@ -313,22 +314,26 @@ export default function OnboardingStepScreen() {
     : step === 'target' ? (estimate ? t('onboarding.useThisEstimate') : t('onboarding.continueWithoutATarget')) : t('onboarding.continue');
 
   const child = step === 'welcome'
-    ? <Card rim="hiku">
-      <Typography size="head">{t('onboarding.aLocalFirstSpaceFor')}</Typography>
-      <Typography tone="secondary">{t('onboarding.todayStartsEmptyYouDecide')}</Typography>
-          <InlineError message={error} />
-    </Card>
+    ? <>
+      <ListGroup>
+        <ListRow title={t('nav.train')} detail={t('onboarding.welcomeTrain')} />
+        <ListRow title={t('nav.eat')} detail={t('onboarding.welcomeEat')} />
+        <ListRow title={t('nav.progress')} detail={t('onboarding.welcomeProgress')} />
+      </ListGroup>
+      <InlineError message={error} />
+    </>
     : step === 'privacy'
-      ? <Card title={t('onboarding.privacyByDesign')}>
-        <Typography>{appleHealthPhone()?t('appleHealth.onboarding.privacy'):
-          t('onboarding.healthConnectReadOnlyWith')}</Typography>
-        <Typography>{t('onboarding.profileGoalsAndHistoryStored')}</Typography>
-        <Typography>{t('onboarding.hikuUsesYourOwnAnthropic')}</Typography>
-        <Typography tone="secondary" size="small">{t('onboarding.noBackendAccountNoAutomatic')}</Typography>
-          <InlineError message={error} />
-      </Card>
+      ? <>
+        <ListGroup>
+          <ListRow title={appleHealthPhone() ? t('appleHealth.onboarding.privacy') : t('onboarding.healthConnectReadOnlyWith')} />
+          <ListRow title={t('onboarding.profileGoalsAndHistoryStored')} />
+          <ListRow title={t('onboarding.hikuUsesYourOwnAnthropic')} />
+          <ListRow title={t('onboarding.noBackendAccountNoAutomatic')} />
+        </ListGroup>
+        <InlineError message={error} />
+      </>
       : step === 'profile'
-        ? <Card title={t('onboarding.yourProfileOptional')}>
+        ? <>
           <Field label={t('onboarding.nameOptional')} value={draft.name} onChangeText={text => patch('name', text)} placeholder={t('onboarding.whatShouldWeCallYou')} error={errors.name} />
           <Field label={t('onboarding.age16100')} value={age} onChangeText={setAge} keyboardType="numeric" placeholder={t('onboarding.years')} error={errors.age} />
           <Field label={t('onboarding.heightCm')} value={draft.heightCm} onChangeText={text => patch('heightCm', text)} keyboardType="decimal-pad" placeholder="120–230" error={errors.heightCm} />
@@ -338,13 +343,13 @@ export default function OnboardingStepScreen() {
             options={[{ value: 'male', label: t('onboarding.male') },
               { value: 'female', label: t('onboarding.female') }] as const}
             onChange={v => patch('sexForFormula', v)} />
-          <Typography tone="secondary" size="small">{t('polish.sexExplanation')}</Typography>
-          {draft.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="ghost"
+          <Typography tone="secondary" size="secondary">{t('polish.sexExplanation')}</Typography>
+          {draft.sexForFormula!==null&&<Button label={t('polish.clearSelection')} variant="plain"
             onPress={()=>patch('sexForFormula',null)}/>}
           <InlineError message={error} />
-        </Card>
+        </>
         : step === 'goal'
-          ? <Card title={t('onboarding.yourPlan')}>
+          ? <>
             <OptionRows label={t('onboarding.activityLevel')} value={draft.activity}
               options={[{ value: 'sitting', label: t('onboarding.mostlySitting'), description: t('polish.activitySitting') },
                 { value: 'some', label: t('onboarding.onMyFeetSome'), description: t('polish.activitySome') },
@@ -355,19 +360,20 @@ export default function OnboardingStepScreen() {
                 { value: 'maintain', label: t('onboarding.maintain'), description: t('polish.goalMaintain') },
                 { value: 'build', label: t('onboarding.build'), description: t('polish.goalBuild') }] as const}
               onChange={v => patch('goal', v)} />
-          <InlineError message={error} />
-          </Card>
+            <InlineError message={error} />
+          </>
           : step === 'target'
-            ? <Card rim="eat" title={t('onboarding.calorieAndMacroEstimate')}>
+            ? <>
               {estimate ? <>
-                <Orb eaten={0} target={estimate.kcal} active={false} />
-                <Typography size="head">{t('onboarding.kcalEstimate', { count: estimate.kcal })}</Typography>
-                <Typography tone="secondary">{t('onboarding.proteinGFatGCarbs', { protein: estimate.proteinG, fat: estimate.fatG, carbs: estimate.carbsG })}</Typography>
-                <Typography tone="secondary" size="small">{t('onboarding.mifflinStJeorAgeHeight', { age: estimate.inputs.age, height: estimate.inputs.heightCm, weight: estimate.inputs.weightKg, activity: estimate.inputs.activityFactor, goal: Math.round((estimate.inputs.goalFactor - 1) * 100) })}</Typography>
-                <Typography tone="secondary" size="small">{t('onboarding.thisEstimateWillBeSaved')}</Typography>
+                <Typography size="metric" numeric>{formatNumber(language, estimate.kcal)}</Typography>
+                <Chip kind="estimate" />
+                <Typography tone="secondary" size="secondary">{t('onboarding.kcalEstimate', { count: estimate.kcal })}</Typography>
+                <Typography tone="secondary" size="secondary">{t('onboarding.proteinGFatGCarbs', { protein: estimate.proteinG, fat: estimate.fatG, carbs: estimate.carbsG })}</Typography>
+                <Typography tone="secondary" size="secondary">{t('onboarding.mifflinStJeorAgeHeight', { age: estimate.inputs.age, height: estimate.inputs.heightCm, weight: estimate.inputs.weightKg, activity: estimate.inputs.activityFactor, goal: Math.round((estimate.inputs.goalFactor - 1) * 100) })}</Typography>
+                <Typography tone="secondary" size="secondary">{t('onboarding.thisEstimateWillBeSaved')}</Typography>
                 {estimate.lessPrecise && <Typography tone="secondary">{t('onboarding.estimateLessPreciseSexFor')}</Typography>}
                 {targetSafety(estimate.kcal, null).warning && <Typography tone="secondary">{t('onboarding.thisIsLowerThanLiftria')}</Typography>}
-                <Button variant="secondary" label={t('onboarding.setMyOwnNumbers')} onPress={() => {
+                <Button variant="tonal" label={t('onboarding.setMyOwnNumbers')} onPress={() => {
                   setDraft(current => ({ ...current,
                     manualKcal: formatEditableNumber(estimate.kcal, 'kcal'),
                     manualProtein: formatEditableNumber(estimate.proteinG, 'grams'),
@@ -375,30 +381,30 @@ export default function OnboardingStepScreen() {
                     manualCarbs: formatEditableNumber(estimate.carbsG, 'grams') })); setEditManual(true);
                 }} />
               </> : <Typography tone="secondary">{t('onboarding.noEstimateWithoutCompleteAge')}</Typography>}
-              {!estimate && <Button variant="secondary" label={t('onboarding.setMyOwnNumbers')} onPress={() => setEditManual(true)} />}
-          <InlineError message={error} />
-            </Card>
+              {!estimate && <Button variant="tonal" label={t('onboarding.setMyOwnNumbers')} onPress={() => setEditManual(true)} />}
+              <InlineError message={error} />
+            </>
             : step === 'health'
               ? appleHealthPhone()
-                ? <Card rim="health" title={t('appleHealth.onboarding.healthCard')}>
+                ? <>
                   <Typography>{t('appleHealth.onboarding.healthBody')}</Typography>
-                  <Button label={t('appleHealth.onboarding.connect')} onPress={() => void requestHealth()} />
+                  <Button variant="tonal" label={t('appleHealth.onboarding.connect')} onPress={() => void requestHealth()} />
                   <Typography tone="secondary">{healthStatus}</Typography>
                   <InlineError message={error} />
-                </Card>
-                : <Card rim="health" title={t('onboarding.connectOnDeviceHealthData')}>
+                </>
+                : <>
                 <Typography>{t('onboarding.readStepsHeartRateMovement')}</Typography>
-                <Typography tone="secondary">{t('onboarding.dataMayStartFromThe')}</Typography>
-                <Button label={t('onboarding.openHealthConnectPermissions')} onPress={() => void requestHealth()} />
+                <Typography tone="secondary" size="secondary">{t('onboarding.dataMayStartFromThe')}</Typography>
+                <Button variant="tonal" label={t('onboarding.openHealthConnectPermissions')} onPress={() => void requestHealth()} />
                 <Typography tone="secondary">{healthStatus}</Typography>
-                {healthMissing.map(note => <Typography key={note} tone="secondary" size="small">ⓘ {note}</Typography>)}
-          <InlineError message={error} />
+                {healthMissing.map(note => <Typography key={note} tone="secondary" size="secondary">ⓘ {note}</Typography>)}
+                <InlineError message={error} />
                 {Platform.OS==='android'&&offerHealthConnectInstall(healthAvailability) &&
-                  <Button variant="ghost" label={t('onboarding.getHealthConnect')} onPress={() =>
+                  <Button variant="plain" label={t('onboarding.getHealthConnect')} onPress={() =>
                     void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
-              </Card>
+              </>
               : step === 'watch'
-                ? <Card title={appleHealthPhone()?t('appleHealth.onboarding.watchCard'):t('onboarding.watchDataGuidance')}>
+                ? <>
                   {listsAndroidWatchApps() && <ChoiceGroup label={t('onboarding.whichAppDoesYourWatch')} selected={draft.selectedWatch}
                     choices={watchOptions.map(v => ({ value: v, label: v === 'Other' ? t('onboarding.other') : v === 'No watch' ? t('onboarding.noWatch') : v }))}
                     onChange={v => patch('selectedWatch', v)} />}
@@ -407,30 +413,30 @@ export default function OnboardingStepScreen() {
                     draft.selectedWatch !== 'No watch' && <>
                     <Typography>{t('onboarding.1OpenAndLetIt', { app: draft.selectedWatch })}</Typography>
                     <Typography>{t('onboarding.2InHealthConnectGrant')}</Typography>
-                    <Typography tone="secondary">{t('onboarding.syncStartsTodaySomeBrands')}</Typography>
+                    <Typography tone="secondary" size="secondary">{t('onboarding.syncStartsTodaySomeBrands')}</Typography>
                   </>}
                   <InlineError message={error} />
-                </Card>
+                </>
                 : step === 'hiku'
-                  ? <Card rim="hiku" title={t('onboarding.yourPrivateApiKey')}>
+                  ? <>
                     <Field label={t('onboarding.anthropicApiKey')} value={keyInput} onChangeText={value => {
                       setKeyInput(value); setKeySaved(false); setKeyTestResult(null);
                     }}
                       secure placeholder="sk-ant-…" />
-                    <Typography tone="secondary" size="small">{t('onboarding.longPressInTheKey')}</Typography>
-                    <Button label={t('onboarding.saveKeyOnThisPhone')} onPress={() => void saveHikuKey()} disabled={keySaved || !keyInput.trim()} />
+                    <Typography tone="secondary" size="secondary">{t('onboarding.longPressInTheKey')}</Typography>
+                    <Button variant="tonal" label={t('onboarding.saveKeyOnThisPhone')} onPress={() => void saveHikuKey()} disabled={keySaved || !keyInput.trim()} />
                     {keySaved && <>
                       <Typography tone="secondary">{t('onboarding.keySavedSecurelyOnlyThe')}</Typography>
-                      <Button label={t('onboarding.testKeyOptional')} variant="secondary" onPress={() => void testSavedKey()} disabled={busy} />
+                      <Button label={t('onboarding.testKeyOptional')} variant="plain" onPress={() => void testSavedKey()} disabled={busy} />
                     </>}
-                    {keyTestResult && <Typography tone="secondary" size="small">{keyTestResult}</Typography>}
-          <InlineError message={error} />
-                  </Card>
-                  : <Card title={t('onboarding.yourOwnPace')}>
+                    {keyTestResult && <Typography tone="secondary" size="secondary">{keyTestResult}</Typography>}
+                    <InlineError message={error} />
+                  </>
+                  : <>
                     <Typography>{t('onboarding.everythingYouEnteredStaysOn')}</Typography>
-                    <Typography tone="secondary">{t('onboarding.noMealsOrWorkoutsWere')}</Typography>
-          <InlineError message={error} />
-                  </Card>;
+                    <Typography tone="secondary" size="secondary">{t('onboarding.noMealsOrWorkoutsWere')}</Typography>
+                    <InlineError message={error} />
+                  </>;
 
   return <Frame step={step} busy={busy}
     primaryDisabled={step === 'profile' && Object.values(errors).some(Boolean)}
@@ -459,7 +465,7 @@ export default function OnboardingStepScreen() {
         return;
       }
       void go(nextOnboardingStep(step));
-    }} footer={optionalStep(step) ? <Button label={t('onboarding.finishLater')} variant="ghost" size="sm"
+    }} footer={optionalStep(step) ? <Button label={t('onboarding.finishLater')} variant="plain" fullWidth
       onPress={() => void finishLater()} /> : undefined}>
     {child}
     <Sheet visible={floorOpen} title={t('onboarding.checkYourCalorieTarget')} description={t('onboarding.thisIsLowerThanLiftria')}

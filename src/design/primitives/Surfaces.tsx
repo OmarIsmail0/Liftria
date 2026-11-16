@@ -89,7 +89,7 @@ export function Header({ title, subtitle, onBack, right, mode }: {
       {back}
       <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
         <Text allowFontScaling numberOfLines={2} style={{
-          color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600',
+          color: theme.color.text.primary, fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600',
         }}>{title}</Text>
         {secondary}
       </View>

@@ -56,7 +56,7 @@ export function provenancePresentation(theme: LiftriaTheme, kind: ProvenanceKind
   }
 }
 
-/** The Orb's big number and its caption, the same layout in every language. */
+/** The calorie summary's big number and its caption, the same layout in every language. */
 export type OrbMetric = { value: string; caption: string };
 
 function orbMetric(language: AppLanguage, value: string, caption: 'orb.caption.eaten' | 'orb.caption.left' | 'orb.caption.over'): OrbMetric {

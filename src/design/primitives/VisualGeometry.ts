@@ -1,13 +1,4 @@
 /** Geometry shared with SVG primitives; these helpers are platform-free and unit-testable. */
-/** Two glows behind the top of the screen only (owner, 2026-11-01: the four full-screen glows
- * read as busy). Content below the header sits on the plain base color. */
-export const ambientGlows = [
-  { key: 'train', cx: 8, cy: -2, rx: 62, ry: 24 },
-  { key: 'hiku', cx: 96, cy: 6, rx: 56, ry: 22 },
-] as const;
-
-export const cardRimStops = [0, 0.3, 0.55, 1] as const;
-
 /**
  * react-native-svg drops the alpha of an rgba() stopColor on Android, so a token like
  * rgba(255,255,255,0.10) would draw as opaque white. Split it into an opaque color and an opacity
@@ -36,12 +27,6 @@ export function withOpacity(hex: string, alpha: number): string {
     ',' + alpha + ')';
 }
 
-export function ringGeometry(size: number, stroke: number, progress: number) {
-  const radius = size / 2 - stroke / 2 - stroke;
-  const circumference = 2 * Math.PI * radius;
-  return { radius, circumference, offset: circumference * (1 - Math.min(1, Math.max(0, progress))) };
-}
-
 /**
  * End points of a CSS `linear-gradient(<angle>deg, …)` over a w×h box, in user-space pixels.
  * CSS measures the angle from "to top", clockwise, and sizes the gradient line so its ends touch
@@ -54,12 +39,4 @@ export function cssLinearGradient(angleDeg: number, width: number, height: numbe
   const half = (Math.abs(width * dx) + Math.abs(height * dy)) / 2;
   const cx = width / 2, cy = height / 2;
   return { x1: cx - dx * half, y1: cy - dy * half, x2: cx + dx * half, y2: cy + dy * half };
-}
-
-/** The flat orb has no spotlight. The arguments stay so older callers still type-check. */
-export function shouldShowOrbHighlight(progress: number | null, style: 'aurora' | 'solid', mode: 'dark' | 'light' = 'light'): boolean {
-  void progress;
-  void style;
-  void mode;
-  return false;
 }

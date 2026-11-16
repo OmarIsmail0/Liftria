@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import * as Network from 'expo-network';
 import { View } from 'react-native';
-import { Button, Card, Chip, Field, Header, ListRow, OptionRows, Screen, Sheet, Toggle, Typography } from '../../src/design/primitives';
+import { useTheme } from '../../src/design/ThemeProvider';
+import { Button, Chip, Field, Header, ListGroup, ListRow, OptionRows, Screen, SectionHeader, Sheet, Toggle, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { deleteKey, getKey, isKeyWellFormed, keyState, saveKey, type KeyState } from '../../src/services/secure-storage';
 import { getTypedSetting, setTypedSetting } from '../../src/services/database/settings';
@@ -15,6 +16,7 @@ type PrivacyFlags = { today: boolean; training: boolean; photos: boolean };
 const initialFlags: PrivacyFlags = { today: false, training: false, photos: false };
 
 export default function HikuKeySettings() {
+  const { theme } = useTheme();
   const { t, language } = useLanguage();
   const [model,setModel]=useState<HikuModelId>(DEFAULT_HIKU_MODEL);
   const [state, setState] = useState<KeyState>({ status: 'missing' });
@@ -126,30 +128,29 @@ export default function HikuKeySettings() {
   return <Screen>
     <Header mode="inline" title={t('hikuSettings.title')}
       onBack={() => backOrReplace(router, '/settings')} />
-    <Card title={t('hikuSettings.apiKey')} rim="none">
+    <SectionHeader title={t('hikuSettings.apiKey')} />
       {state.status === 'ready' && !replacing ? <>
         <Typography>{t('hikuSettings.storedOnPhone')}</Typography>
         <Typography tone="secondary">{state.hint}</Typography>
-        <Button label={testing ? t('hikuSettings.testing') : t('hikuSettings.test')} variant="secondary" onPress={() => void test()}
+        <Button label={testing ? t('hikuSettings.testing') : t('hikuSettings.test')} variant="tonal" onPress={() => void test()}
           disabled={busy} />
         {testWorks && <Chip kind="pending" label={t('hikuSettings.deviceTest')} />}
-        <Button label={t('hikuSettings.replace')} variant="ghost" disabled={busy} onPress={() => setReplacing(true)} />
-        <Button label={t('hikuSettings.delete')} variant="ghost" disabled={busy} onPress={() => setDeletionOpen(true)} />
+        <Button label={t('hikuSettings.replace')} variant="plain" disabled={busy} onPress={() => setReplacing(true)} />
+        <Button label={t('hikuSettings.delete')} variant="destructive" disabled={busy} onPress={() => setDeletionOpen(true)} />
       </> : <>
-        <Typography tone="secondary" size="small">{t('hikuSettings.intro')}</Typography>
+        <Typography tone="secondary" size="secondary">{t('hikuSettings.intro')}</Typography>
         <Field label={replacing ? t('hikuSettings.replacement') : t('hikuSettings.apiKey')}
           value={entry} onChangeText={setEntry} secure placeholder="sk-ant-…" />
         <Button label={busy ? t('hikuSettings.saving') : t('hikuSettings.save')} fullWidth disabled={busy || !entry.trim()}
           onPress={() => void save()} />
-        {replacing && <Button label={t('hikuSettings.keep')} variant="ghost" disabled={busy} onPress={() => {
+        {replacing && <Button label={t('hikuSettings.keep')} variant="plain" disabled={busy} onPress={() => {
           setEntry(''); setReplacing(false);
         }} />}
       </>}
       {state.status === 'malformed' && <Typography tone="secondary">{t('hikuSettings.malformed')}</Typography>}
       {state.status === 'storage-error' && <Typography tone="secondary">{t('hikuSettings.storageUnavailable')}</Typography>}
-      {message && <View accessibilityRole="alert"><Typography tone="secondary" size="small">ⓘ {message}</Typography></View>}
-    </Card>
-    <Card title={t('hikuK.modelSettings')}>
+      {message && <View accessibilityRole="alert"><Typography tone="secondary" size="secondary">ⓘ {message}</Typography></View>}
+    <SectionHeader title={t('hikuK.modelSettings')} />
       <OptionRows label={t('hikuK.modelSettings')} value={model}
        options={HIKU_MODELS.map(row=>({
         value:row.id,label:language==='ar'?row.nameAr:row.nameEn,
@@ -159,41 +160,44 @@ export default function HikuKeySettings() {
          if(result.ok){setModel(next);setTestWorks(false);setMessage(t('hikuK.modelSaved'));}
          else setMessage(t('hikuSettings.preferenceError'));
        });}}/>
-    </Card>
-    <Card title={t('hikuSettings.privacy')}>
-      <Typography tone="secondary" size="small">{t('hikuSettings.privacyIntro')}</Typography>
-      <Toggle label={t('hikuSettings.includeToday')} detail={t('hikuSettings.includeTodayDetail')}
-        value={flags.today} onChange={v => void setPrivacy('today', v)} />
-      <Toggle label={t('hikuSettings.includeTraining')} detail={t('hikuSettings.includeTrainingDetail')}
-        value={flags.training} onChange={v => void setPrivacy('training', v)} />
-      <Toggle label={t('hikuSettings.keepPhotos')} detail={t('hikuSettings.keepPhotosDetail')}
-        value={flags.photos} onChange={v => void setPrivacy('photos', v)} />
-      <Typography tone="secondary" size="small">{photoUsage?
+    <SectionHeader title={t('hikuSettings.privacy')} />
+      <Typography tone="secondary" size="secondary">{t('hikuSettings.privacyIntro')}</Typography>
+      <ListGroup>
+        <View style={{ paddingHorizontal: theme.space[4], paddingVertical: theme.space[2], gap: theme.space[2] }}>
+          <Toggle label={t('hikuSettings.includeToday')} detail={t('hikuSettings.includeTodayDetail')}
+            value={flags.today} onChange={v => void setPrivacy('today', v)} />
+          <Toggle label={t('hikuSettings.includeTraining')} detail={t('hikuSettings.includeTrainingDetail')}
+            value={flags.training} onChange={v => void setPrivacy('training', v)} />
+          <Toggle label={t('hikuSettings.keepPhotos')} detail={t('hikuSettings.keepPhotosDetail')}
+            value={flags.photos} onChange={v => void setPrivacy('photos', v)} />
+        </View>
+      </ListGroup>
+      <Typography tone="secondary" size="secondary">{photoUsage?
         t('hikuSettings.keptPhotoCount',{count:photoUsage.count,
          mb:(photoUsage.bytes/(1024*1024)).toFixed(2)}):
         t('hikuSettings.photosReadError')}</Typography>
-      <Button label={t('hikuSettings.deletePhotos')} variant="secondary"
+      <Button label={t('hikuSettings.deletePhotos')} variant="destructive"
        disabled={busy||!photoUsage?.count} onPress={()=>setPhotoDeleteOpen(true)}/>
-    </Card>
-    <Card title={t('hikuSettings.usage')}>
+    <SectionHeader title={t('hikuSettings.usage')} />
+    <ListGroup>
       <ListRow title={t('hikuSettings.usageRow')} onPress={()=>router.push('/(tabs)/hiku/usage')}/>
-      <Typography tone="secondary" size="small">{t('hikuK.selectedModel',{
+    </ListGroup>
+      <Typography tone="secondary" size="secondary">{t('hikuK.selectedModel',{
         model:language==='ar'?HIKU_MODELS.find(m=>m.id===model)?.nameAr??'':HIKU_MODELS.find(m=>m.id===model)?.nameEn??''
       })}</Typography>
-    </Card>
     <Sheet visible={photoDeleteOpen} destructive title={t('hikuSettings.deletePhotos')}
       description={t('hikuSettings.deletePhotosWarning')}
       onClose={()=>{if(!busy)setPhotoDeleteOpen(false);}}>
       <Button label={t('hikuSettings.keepPhotosCancel')} fullWidth disabled={busy}
        onPress={()=>setPhotoDeleteOpen(false)}/>
-      <Button label={t('hikuSettings.deletePhotosConfirm')} variant="danger" fullWidth disabled={busy}
+      <Button label={t('hikuSettings.deletePhotosConfirm')} variant="destructive" fullWidth disabled={busy}
        onPress={()=>void removeKeptPhotos()}/>
     </Sheet>
     <Sheet visible={deletionOpen} title={t('hikuSettings.deleteTitle')}
       description={t('hikuSettings.deleteDescription')}
       onClose={() => setDeletionOpen(false)}>
       <Button label={t('hikuSettings.keepKey')} fullWidth onPress={() => setDeletionOpen(false)} />
-      <Button label={busy ? t('hikuSettings.deleting') : t('hikuSettings.delete')} variant="danger" fullWidth
+      <Button label={busy ? t('hikuSettings.deleting') : t('hikuSettings.delete')} variant="destructive" fullWidth
         disabled={busy} onPress={() => void deleteSavedKey()} />
     </Sheet>
   </Screen>;

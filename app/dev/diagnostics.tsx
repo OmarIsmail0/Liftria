@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, Share, StatusBar, Text, TextInput, View } from 'react-native';
+import { useTheme } from '../../src/design/ThemeProvider';
 import { router } from 'expo-router';
 import { backOrReplace } from '../../src/navigation/back';
 import * as Application from 'expo-application';
@@ -20,23 +21,30 @@ import { metricTypes, type MetricType, type PermissionState, type HealthValue } 
 import { appendLog, buildDiagnosticReport, logEntry, parseStoredLog } from '../../src/features/diagnostics/report';
 
 type RowStatus = { state: string; count?: number; source?: string; range?: string; device?: string; units?: string };
-const common = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#11151C' },
-  scroll: { paddingHorizontal: 18, paddingTop: 44, paddingBottom: 60 },
-  h1: { color: '#F5F6F8', fontSize: 26, fontWeight: '700', marginBottom: 6 },
-  sub: { color: '#AAB3BE', marginBottom: 20, fontSize: 13 },
-  section: { backgroundColor: '#202732', borderRadius: 13, padding: 14, marginBottom: 14 },
-  h2: { color: '#FFF', fontSize: 17, fontWeight: '700', marginBottom: 9 },
-  body: { color: '#D0D8E2', fontSize: 13, lineHeight: 19, marginBottom: 6 },
-  muted: { color: '#9AA8B9', fontSize: 12, marginBottom: 6 },
-  buttons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 8 },
-  button: { backgroundColor: '#3656B5', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8 },
-  buttonOff: { backgroundColor: '#444B57', opacity: 0.5 },
-  buttonText: { color: '#FFF', fontWeight: '600', fontSize: 13 },
-  field: { borderWidth: 1, borderColor: '#506075', borderRadius: 8, padding: 10, color: '#FFF', marginVertical: 6 },
-  line: { borderBottomColor: '#394554', borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 7 },
-});
+function useDiagStyles() {
+  const { theme } = useTheme();
+  return {
+    page: { flex: 1, backgroundColor: theme.color.bg.base },
+    scroll: { paddingHorizontal: theme.space[4], paddingTop: theme.space[8], paddingBottom: theme.space[10] },
+    h1: { color: theme.color.text.primary, fontSize: theme.type.largeTitle.size, lineHeight: theme.type.largeTitle.line, fontWeight: '700' as const, marginBottom: theme.space[2] },
+    sub: { color: theme.color.text.secondary, marginBottom: theme.space[4], fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line },
+    section: { backgroundColor: theme.color.bg.surface, borderRadius: theme.radius.md, padding: theme.space[4], marginBottom: theme.space[4] },
+    h2: { color: theme.color.text.primary, fontSize: theme.type.title.size, lineHeight: theme.type.title.line, fontWeight: '600' as const, marginBottom: theme.space[2] },
+    body: { color: theme.color.text.primary, fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line, marginBottom: theme.space[2] },
+    muted: { color: theme.color.text.secondary, fontSize: theme.type.caption.size, lineHeight: theme.type.caption.line, marginBottom: theme.space[2] },
+    buttons: { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: theme.space[2], marginVertical: theme.space[2] },
+    button: { backgroundColor: theme.color.accent, paddingHorizontal: theme.space[3], borderRadius: theme.radius.sm, minHeight: theme.size.touch.min, justifyContent: 'center' as const },
+    buttonOff: { backgroundColor: theme.color.bg.raised, opacity: 0.5 },
+    buttonText: { color: theme.color.on.accent, fontWeight: '600' as const, fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line, textAlign: 'center' as const },
+    field: { backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md, padding: theme.space[3], color: theme.color.text.primary, marginVertical: theme.space[2], minHeight: theme.size.touch.min, fontSize: theme.type.body.size },
+    line: { borderBottomColor: theme.color.border.subtle, borderBottomWidth: theme.size.border.thin, paddingVertical: theme.space[2] },
+    accent: theme.color.accent,
+    placeholder: theme.color.text.tertiary,
+    barStyle: theme.mode === 'dark' ? 'light-content' as const : 'dark-content' as const,
+  };
+}
 function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
+  const common = useDiagStyles();
   return (
     <Pressable
       accessibilityRole="button" accessibilityLabel={label}
@@ -46,6 +54,7 @@ function Action({ label, onPress, disabled = false }: { label: string; onPress: 
   );
 }
 function Section({ title, children }: { title: string; children: ReactNode }) {
+  const common = useDiagStyles();
   return <View style={common.section}><Text style={common.h2}>{title}</Text>{children}</View>;
 }
 function desc(value: HealthValue): string {
@@ -69,6 +78,7 @@ function record(store: LogStore, setCount: (n: number) => void, section: string,
 const keySummary = (s: KeyState) => (s.status === 'ready' ? 'ready (masked)' : s.status);
 
 export default function Diagnostics() {
+  const common = useDiagStyles();
   const [dbText, setDbTextRaw] = useState('Not initialized');
   const [layerCounts, setLayerCounts] = useState<DataLayerCounts | null>(null);
   const [key, setKey] = useState('');
@@ -309,7 +319,7 @@ export default function Diagnostics() {
   return (
     <ScrollView style={common.page} contentContainerStyle={common.scroll} keyboardShouldPersistTaps="handled">
       {/* This diagnostics-only page is always dark, even when Android uses a light theme. */}
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={common.barStyle} />
       <Action label="Back to developer tools" onPress={() => backOrReplace(router, '/dev')} />
       <Text style={common.h1}>LIFTRIA / Phase 0</Text>
       <Text style={common.sub}>Local-first feasibility diagnostics · not the final UI</Text>
@@ -342,7 +352,7 @@ export default function Diagnostics() {
         <Text style={common.body}>Stored key: {storedKey.status === 'ready' ? storedKey.hint : storedKey.status}</Text>
         <TextInput
           value={key} onChangeText={setKey} secureTextEntry autoCapitalize="none"
-          autoCorrect={false} autoComplete="off" placeholder="sk-ant-…" placeholderTextColor="#8993A0"
+          autoCorrect={false} autoComplete="off" placeholder="sk-ant-…" placeholderTextColor={common.placeholder}
           style={common.field} accessibilityLabel="Anthropic API key" />
         <View style={common.buttons}>
           <Action label="Save key" onPress={() => { void saveKey(key).then(s => { setStoredKey(s); setKey(''); setAiText(s.status === 'ready' ? 'Key securely saved' : s.status); }); }} disabled={busy} />
@@ -358,7 +368,7 @@ export default function Diagnostics() {
           <Action label="Cancel" disabled={!busy} onPress={() => requestRef.current?.abort()} />
         </View>
         <Text style={common.muted}>{photoName ?? 'No meal photo selected'}</Text>
-        {busy && <ActivityIndicator color="#A7C6FF" />}
+        {busy && <ActivityIndicator color={common.accent} />}
         <Text style={common.body}>{aiText}</Text>
         <Text style={common.muted}>Results are estimates, not nutrition facts. Key is stored in Android Keystore-backed SecureStore.</Text>
       </Section>

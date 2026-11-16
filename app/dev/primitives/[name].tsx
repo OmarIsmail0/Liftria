@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import {
   Banner, Button, Card, Chip, EmptyState, Field, Header, ListGroup, ListRow,
-  Orb, ProgressBar, Screen, SectionHeader, Sheet, Skeleton, Snackbar, StatBlock, Stepper, TabBar, Toggle, Typography,
+  ProgressBar, Screen, SectionHeader, Sheet, Skeleton, Snackbar, StatBlock, Stepper, TabBar, Toggle, Typography,
   type CapsuleTab,
 } from '../../../src/design/primitives';
 import { buttonVariants, provenanceKinds } from '../../../src/design/primitives';
@@ -14,17 +14,13 @@ import { backOrReplace } from '../../../src/navigation/back';
 export default function PrimitiveStory() {
   const { name } = useLocalSearchParams<{ name: string }>();
   const id = Array.isArray(name) ? name[0] : name;
-  const { theme, setMode, preferences, reduceMotion } = useTheme();
+  const { theme, setMode, preferences } = useTheme();
   const [count, setCount] = useState(8);
   const [isOn, setIsOn] = useState(false);
   const [value, setValue] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [message, setMessage] = useState('Meal removed');
   const [selectedTab, setSelectedTab] = useState<CapsuleTab>('today');
-  const [noTarget, setNoTarget] = useState(true);
-  const [hidden, setHidden] = useState(false);
-  const [breathing, setBreathing] = useState(true);
-  const [eaten, setEaten] = useState(1420);
   const label = primitiveStories.find(story => story.id === id)?.title ?? 'Unknown component';
   const alert = (text: string) => setMessage(text);
 
@@ -119,19 +115,6 @@ export default function PrimitiveStory() {
         <Skeleton /><Skeleton height={52} />
         <Typography tone="secondary" size="secondary">No spinner or shimmer for short waits.</Typography>
       </Card>}
-      {id === 'orb' && <>
-        <Typography tone="secondary" size="secondary">Flat orb. No glow. Reduce motion: {reduceMotion ? 'on' : 'off'}.</Typography>
-        <Orb eaten={eaten} target={noTarget ? null : 2650} hidden={hidden} active={breathing}
-          onPress={() => alert('Open today\'s Eat diary')} />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-          <Button size="sm" variant="neutral" label="Add 180" onPress={() => setEaten(v => v + 180)} />
-          <Button size="sm" variant="neutral" label="First day: 0" onPress={() => { setEaten(0); setNoTarget(true); }} />
-          <Button size="sm" variant="neutral" label="Reset sample" onPress={() => { setEaten(1420); setNoTarget(false); }} />
-          <Button size="sm" variant="neutral" label="No target" onPress={() => setNoTarget(v => !v)} />
-          <Button size="sm" variant="neutral" label="Hide numbers" onPress={() => setHidden(v => !v)} />
-          <Button size="sm" variant="neutral" label="Pause" onPress={() => setBreathing(v => !v)} />
-        </View>
-      </>}
       {id === 'tab-bar' && <>
         <TabBar active={selectedTab} onSelect={setSelectedTab} />
         <Typography tone="secondary" size="secondary">Selected tab: {selectedTab}</Typography>

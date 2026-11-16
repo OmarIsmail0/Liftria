@@ -35,7 +35,8 @@ export function DaySwitcher({ label, onPrevious, onNext, nextDisabled }: {
     marginHorizontal: -theme.space[2] }}>
     {button(t('eatI.previous'), false, onPrevious, false)}
     <Text allowFontScaling style={{
-      flex: 1, textAlign: 'center', color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600',
+      flex: 1, textAlign: 'center', color: theme.color.text.primary,
+      fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600',
     }}>{label}</Text>
     {button(t('eatI.next'), nextDisabled, onNext, true)}
   </View>;
