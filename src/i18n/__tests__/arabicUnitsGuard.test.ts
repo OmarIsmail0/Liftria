@@ -175,7 +175,7 @@ describe('Arabic units guard', () => {
     }
   });
 
-  test('the gram abbreviation is جم and milligrams are ملجم', () => {
+  test('gram, milligram and kilogram abbreviations are جم and ملجم and كجم', () => {
     expect(en['eatI.gramUnit']).toBe('g');
     expect(en['eatI.gramsChoice']).toBe('Grams');
     expect(ar['eatI.gramUnit']).toBe('جم');
@@ -183,6 +183,7 @@ describe('Arabic units guard', () => {
     expect(ar['nutrients.sodium']).toBe('الصوديوم (ملجم)');
     const gramViolations: string[] = [];
     const mgViolations: string[] = [];
+    const kgViolations: string[] = [];
     for (const [key, value] of Object.entries(ar)) {
       if (typeof value !== 'string') continue;
       // \b is ASCII-only in JS, so bound the unit with Arabic-letter lookarounds.
@@ -194,6 +195,9 @@ describe('Arabic units guard', () => {
       if (/(?<![\u0600-\u06FF])ملغ(?![\u0600-\u06FF])/.test(value)) {
         mgViolations.push(`${key}: "${value}"`);
       }
+      if (/(?<![\u0600-\u06FF])كغ(?![\u0600-\u06FF])/.test(value)) {
+        kgViolations.push(`${key}: "${value}"`);
+      }
     }
     const problems = [
       gramViolations.length > 0
@@ -201,6 +205,9 @@ describe('Arabic units guard', () => {
         : '',
       mgViolations.length > 0
         ? `Found ${mgViolations.length} Arabic translations using "ملغ" for milligrams instead of "ملجم":\n${mgViolations.join('\n')}`
+        : '',
+      kgViolations.length > 0
+        ? `Found ${kgViolations.length} Arabic translations using "كغ" for kilograms instead of "كجم":\n${kgViolations.join('\n')}`
         : '',
     ].filter(Boolean);
     if (problems.length > 0) throw new Error(problems.join('\n'));
@@ -232,15 +239,11 @@ describe('Arabic units guard', () => {
 });
 
 describe('weightUnitLabel', () => {
-  test('Arabic uses كغ and رطل; English keeps kg and lb', () => {
+  test('Arabic uses كجم and رطل; English keeps kg and lb', () => {
     expect(weightUnitLabel('en', 'kg')).toBe('kg');
     expect(weightUnitLabel('en', 'lb')).toBe('lb');
-    expect(weightUnitLabel('ar', 'kg')).toBe('كغ');
+    expect(weightUnitLabel('ar', 'kg')).toBe('كجم');
     expect(weightUnitLabel('ar', 'lb')).toBe('رطل');
-    const secondKilogram = Object.entries(ar)
-      .filter(([, value]) => typeof value === 'string' && value.includes('كجم'))
-      .map(([key]) => key);
-    expect(secondKilogram).toEqual([]);
   });
 });
 
@@ -249,7 +252,7 @@ describe('Arabic weight-unit words', () => {
     expect(latinWeightUnits('الوزن {weight} kg')).toEqual(['kg']);
     expect(latinWeightUnits('أو lb')).toEqual(['lb']);
     expect(latinWeightUnits('{count}\u00A0kg')).toEqual(['kg']);
-    expect(latinWeightUnits('الوزن {weight}\u00A0كغ')).toEqual([]);
+    expect(latinWeightUnits('الوزن {weight}\u00A0كجم')).toEqual([]);
     expect(latinWeightUnits('ستُقرأ الأوزان بوحدة {unit}.')).toEqual([]);
   });
 

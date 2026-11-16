@@ -77,7 +77,7 @@ test('a logged weight and its unit are one isolated value', () => {
   expect(formatLoggedBodyWeight('en', 80.4, 'kg')).toBe('80.4\u00A0kg');
   const arabic = formatLoggedBodyWeight('ar', 80, 'kg');
   expect(arabic.startsWith('\u2068')).toBe(true);
-  expect(arabic).toContain('80.0\u00A0كغ');
+  expect(arabic).toContain('80.0\u00A0كجم');
   expect(arabic).not.toMatch(/\bkg\b|\blb\b/);
   expect(formatLoggedBodyWeight('ar', 80, 'lb')).toContain('رطل');
   expect(formatLoggedBodyWeight('ar', 80, 'lb')).not.toMatch(/\blb\b/);
