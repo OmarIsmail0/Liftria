@@ -3,7 +3,7 @@ import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { chevronPointsLeft } from '../../../src/i18n/layout';
-import { formatEditableNumber } from '../../../src/i18n/editableNumber';
+import { formatEditableNumber, parseEditableNumber } from '../../../src/i18n/editableNumber';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Linking, Platform, Pressable, ScrollView, Text, TextInput, Vibration, View } from 'react-native';
@@ -243,7 +243,7 @@ export default function ActiveWorkoutScreen() {
       ? supersetAfterSet(view.exercises, index)
       : { nextIndex: null as number | null, startRest: kind !== 'working' };
     const effectiveRest = superset.startRest ? exercise.restSec : 0;
-    const effortNumber = !values.effort.trim() ? null : Number(values.effort);
+    const effortNumber = parseEditableNumber(values.effort);
     let savedId = '';
     await runLogged(async () => {
       const result = await logWorkoutSet({

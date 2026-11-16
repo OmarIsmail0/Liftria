@@ -1,3 +1,4 @@
+import { parseEditableNumber } from '../../i18n/editableNumber';
 import { bidiIsolate, formatNumber, translate, type AppLanguage } from '../../i18n';
 import type { WeightUnit } from '../train/workoutUnits';
 
@@ -110,7 +111,7 @@ export type ParsedField =
 /** A blank field is not a measurement. Zero and anything outside 0–400 cm is invalid, never stored as 0. */
 export function parseMeasurementInput(raw: string, unit: LengthUnit): ParsedField {
   if (raw.trim() === '') return { kind: 'blank' };
-  const parsed = Number(raw.trim().replace(',', '.'));
+  const parsed = parseEditableNumber(raw) ?? Number.NaN;
   if (!Number.isFinite(parsed)) return { kind: 'invalid' };
   const cm = toCm(parsed, unit);
   if (!(cm > 0 && cm < 400)) return { kind: 'invalid' };

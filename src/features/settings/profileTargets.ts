@@ -1,3 +1,4 @@
+import { parseEditableNumber } from '../../i18n/editableNumber';
 import { translate, type AppLanguage } from '../../i18n';
 import { canEstimateTarget, estimateTarget, targetSafety, type FormulaProfile, type TargetEstimate } from '../onboarding/targetEstimate';
 import type { ProfileInput } from '../../services/database/profile';
@@ -23,9 +24,7 @@ export function proposedTargetUpdate(
 }
 
 export function parseOptionalNumber(value: string): number | null {
-  if (value.trim() === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : Number.NaN;
+  return parseEditableNumber(value);
 }
 
 /** All estimate math in Settings uses edited fields, never onboarding's old draft. */

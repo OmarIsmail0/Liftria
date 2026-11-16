@@ -1,3 +1,4 @@
+import { parseEditableNumber } from '../../../src/i18n/editableNumber';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Button, Card, Field, Header, Screen, Sheet, Typography } from '../../../src/design/primitives';
@@ -19,9 +20,9 @@ export default function CustomFood() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [confirm, setConfirm] = useState(false);
-  const values = [kcal, protein, carbs, fat].map(Number);
-  const amount = Number(grams);
-  const valid = name.trim().length > 0 && values.every(Number.isFinite) && values.every(n => n >= 0) &&
+  const values = [kcal, protein, carbs, fat].map(v => parseEditableNumber(v) ?? Number.NaN);
+  const amount = parseEditableNumber(grams) ?? Number.NaN;
+  const valid = name.trim().length > 0 && values.every(Number.isFinite) && values.every(n => n >= 0) && values[0]! <= 900 && values.slice(1).every(n => n <= 100) &&
     [kcal, protein, carbs, fat].every(v => v.trim() !== '') && amount > 0 && amount <= 2000 && Number.isFinite(amount);
   const mismatch = valid && macroMismatch(values[0]!, values[1]!, values[2]!, values[3]!);
   async function save() {

@@ -1,3 +1,4 @@
+import { parseEditableNumber } from '../../i18n/editableNumber';
 import {
   bidiIsolate, formatNumber, pluralForm, translate, type AppLanguage, type TranslationKey,
 } from '../../i18n';
@@ -91,13 +92,13 @@ export function visualColumnOrder<T>(columns: readonly T[], rtl: boolean): T[] {
 }
 
 function parseWeight(text: string): number | null {
-  const value = Number(text.trim().replace(',', '.'));
+  const value = parseEditableNumber(text) ?? Number.NaN;
   if (!Number.isFinite(value) || value < 0 || value > 10000) return null;
   return value;
 }
 
 function parseReps(text: string): number | null {
-  const value = Number(text.trim());
+  const value = parseEditableNumber(text) ?? Number.NaN;
   if (!Number.isInteger(value) || value < 1 || value > 500) return null;
   return value;
 }

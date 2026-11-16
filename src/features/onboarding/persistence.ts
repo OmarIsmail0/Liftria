@@ -1,11 +1,14 @@
+import { parseEditableNumber } from '../../i18n/editableNumber';
 import { addTarget, getCurrentTarget, targetSchema, type TargetInput } from '../../services/database/targets';
 import { saveProfile, profileSchema, type ProfileInput } from '../../services/database/profile';
 import type { OnboardingDraft } from './draft';
 import { canEstimateTarget, estimateTarget, targetSafety } from './targetEstimate';
 
 function optionalNumber(raw: string): number | null {
-  return raw.trim() === '' ? null : Number(raw);
+  return parseEditableNumber(raw);
 }
+/** Typed text as a number; blank or unreadable text is NaN, which every check refuses. */
+const typed = (raw: string): number => parseEditableNumber(raw) ?? Number.NaN;
 
 export function draftProfileInput(draft: OnboardingDraft): ProfileInput {
   return {
@@ -29,8 +32,8 @@ export function draftTargetInput(draft: OnboardingDraft, source: 'estimate' | 'm
   if (source === 'estimate') {
     const formula = {
       sexForFormula: draft.sexForFormula,
-      birthYear: Number(draft.birthYear), heightCm: Number(draft.heightCm),
-      weightKg: Number(draft.weightKg), activity: draft.activity, goal: draft.goal,
+      birthYear: typed(draft.birthYear), heightCm: typed(draft.heightCm),
+      weightKg: typed(draft.weightKg), activity: draft.activity, goal: draft.goal,
     };
     if (!draft.birthYear.trim() || !draft.heightCm.trim() || !draft.weightKg.trim() ||
         !canEstimateTarget(formula)) return null;
@@ -43,7 +46,7 @@ export function draftTargetInput(draft: OnboardingDraft, source: 'estimate' | 'm
   }
   const raw = [draft.manualKcal, draft.manualProtein, draft.manualFat, draft.manualCarbs];
   if (raw.some(v => !v.trim())) return null;
-  const [kcal, proteinG, fatG, carbsG] = raw.map(Number);
+  const [kcal, proteinG, fatG, carbsG] = raw.map(typed);
   if ([kcal, proteinG, fatG, carbsG].some(v => v === undefined || !Number.isFinite(v) || v < 0) ||
       kcal === undefined || targetSafety(kcal, null).blocked) return null;
   return { kcal, proteinG: proteinG!, fatG: fatG!, carbsG: carbsG!, source: 'manual', inputs: null };
