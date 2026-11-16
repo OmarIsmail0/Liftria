@@ -274,7 +274,7 @@ export default function OnboardingStepScreen() {
       const outcome = await testAnthropicKey(key, false);
       setKeyTestResult(outcome === 'works' ? t('onboarding.keyVerifiedWithAnthropic') :
         outcome === 'unauthorized' ? t('onboarding.anthropicDidNotAcceptThis') :
-          outcome === 'unavailable' ? t('onboarding.couldNotReachAnthropicYour') :
+          outcome === 'unreachable' ? t('onboarding.couldNotReachAnthropicYour') :
             t('onboarding.anthropicCouldNotVerifyThe'));
     } catch {
       setKeyTestResult(t('onboarding.couldNotReachAnthropicYour'));
