@@ -64,11 +64,16 @@ export function hikuContent(kind:'text'|'photo',prompt:string,jpegBase64?:string
  * Only the previewed image, note and opted-in summaries are transmitted. */
 export async function requestHikuText(description:string,language:'en'|'ar',
  signal?:AbortSignal,context:HikuContext={}):Promise<HikuResponse>{
- return requestHiku('text',description,language,signal,context);
+ return neverReject(requestHiku('text',description,language,signal,context));
 }
 export async function requestHikuPhoto(jpegBase64:string,note:string,language:'en'|'ar',
  signal?:AbortSignal,context:HikuContext={}):Promise<HikuResponse>{
- return requestHiku('photo',note,language,signal,context,jpegBase64);
+ return neverReject(requestHiku('photo',note,language,signal,context,jpegBase64));
+}
+/** The screens await this and then clear their spinner: an unexpected throw (a native
+ * module, the network state, storage) must become a visible failure, never a hang. */
+async function neverReject(request:Promise<HikuResponse>):Promise<HikuResponse>{
+ try{return await request;}catch{return {ok:false,code:'network-error'};}
 }
 async function requestHiku(kind:'text'|'photo',description:string,language:'en'|'ar',
  signal?:AbortSignal,context:HikuContext={},jpegBase64?:string):Promise<HikuResponse>{

@@ -66,3 +66,13 @@ test('photo cannot send without image and text requests never accidentally conta
  expect(()=>hikuContent('photo','photo notes')).toThrow();
  expect(hikuContent('text','description')).toEqual([{type:'text',text:'description'}]);
 });
+
+test('an unexpected throw inside the request is a visible failure, never a hanging spinner',async()=>{
+ const originalFetch=globalThis.fetch;
+ // A response whose headers object itself throws stands in for any unexpected native error.
+ globalThis.fetch=jest.fn(async()=>({ok:false,status:429,headers:{get:()=>{throw new Error('boom');}}})) as unknown as typeof fetch;
+ try{
+  await expect(requestHikuText('rice','en')).resolves.toEqual({ok:false,code:'network-error'});
+  await expect(requestHikuPhoto('AQIDBA==','','en')).resolves.toEqual({ok:false,code:'network-error'});
+ }finally{globalThis.fetch=originalFetch;}
+});
