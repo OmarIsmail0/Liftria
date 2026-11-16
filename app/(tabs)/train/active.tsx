@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Linking, Platform, Pressable, ScrollView, Text, TextInput, Vibration, View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Field, Screen, Sheet, Snackbar, Typography } from '../../../src/design/primitives';
+import { Button, Card, Field, Screen, Sheet, Snackbar, StatBlock, Typography } from '../../../src/design/primitives';
 import { ChevronIcon } from '../../../src/design/primitives/TabIcon';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
@@ -372,7 +372,7 @@ export default function ActiveWorkoutScreen() {
   if (!view) return <Screen embedded safeBottom>
     <Typography tone="secondary">{error ?? t('active.opening')}</Typography>
   </Screen>;
-  const barPad = phase.phase === 'hidden' ? theme.space[4] : 120;
+  const barPad = phase.phase === 'hidden' ? theme.space[4] : 148;
   return <Screen embedded safeBottom scroll={false}>
     {screenOn && focused && <KeepScreenOn />}
     <View style={{ paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[2], gap: theme.space[2],
@@ -395,26 +395,21 @@ export default function ActiveWorkoutScreen() {
                 color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600',
               }}>{view.title}</Text>
             </Pressable>}
-          <Typography tone="secondary" size="small" lines={2}>
-            {t('workout.elapsed') + ' ' + bidiIsolate(language, elapsedLabel(view.startedAt, now))
-              + '  ' + t('workout.sets') + ' ' + bidiIsolate(language, formatNumber(language, loggedCount))
-              + '  ' + t('workout.volume') + ' ' + volumeText}
-          </Typography>
         </View>
-        <Button label={t('active.finish')} size="sm" variant="train"
+        <Button label={t('active.finish')} size="sm" variant="primary"
           onPress={() => stats?.pending ? setFinishVisible(true) :
             router.push({ pathname: '/(tabs)/train/summary', params: { id: view.id } })} />
       </View>
     </View>
     <ScrollView ref={listRef} keyboardShouldPersistTaps="handled"
       automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
-      contentContainerStyle={{ padding: theme.layout.gutter, gap: theme.space[2], paddingBottom: barPad + insets.bottom }}>
-      {loggedCount === 0 && <View style={{
-        padding: theme.space[3], borderRadius: theme.radius.md, backgroundColor: theme.color.tint.train,
-        borderWidth: theme.size.border.thin, borderStyle: 'dashed', borderColor: theme.color.domain.train,
-      }}>
-        <Typography tone="secondary">{t('workout.hint')}</Typography>
-      </View>}
+      contentContainerStyle={{ padding: theme.layout.gutter, gap: theme.layout.cardGap, paddingBottom: barPad + insets.bottom }}>
+      <View style={{ flexDirection: 'row' }}>
+        <View style={{ flex: 1 }}><StatBlock value={bidiIsolate(language, elapsedLabel(view.startedAt, now))} label={t('workout.elapsed')} /></View>
+        <View style={{ flex: 1 }}><StatBlock value={volumeText} label={t('workout.volume')} /></View>
+        <View style={{ flex: 1 }}><StatBlock value={bidiIsolate(language, formatNumber(language, loggedCount))} label={t('workout.sets')} /></View>
+      </View>
+      {loggedCount === 0 && <Typography tone="secondary">{t('workout.hint')}</Typography>}
       {view.exercises.length === 0 && <View style={{ gap: theme.space[2] }}>
         <Typography size="head">{t('active.noExercises')}</Typography>
         <Typography tone="secondary">{t('active.addHint')}</Typography>
@@ -431,9 +426,10 @@ export default function ActiveWorkoutScreen() {
         const linked = !!exercise.supersetGroup;
         return <View key={exercise.id} onLayout={event => { places.current[exercise.id] = event.nativeEvent.layout.y; }}
           style={{
-            gap: theme.space[2], paddingVertical: theme.space[2],
-            borderStartWidth: linked ? 3 : 0, borderStartColor: theme.color.status.warning, paddingStart: linked ? theme.space[2] : 0,
+            borderStartWidth: linked ? 3 : 0, borderStartColor: theme.color.status.warning,
+            borderRadius: theme.radius.md,
           }}>
+          <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
             <Pressable accessibilityRole="button"
               accessibilityLabel={t('exerciseRow.open', { name: bidiIsolate(language, exerciseName(language, exercise.exerciseId, exercise.name)) })}
@@ -441,7 +437,9 @@ export default function ActiveWorkoutScreen() {
               style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: theme.space[2], minHeight: theme.size.touch.min }}>
               {record ? <ExerciseFigure exercise={record} /> : null}
               <View style={{ flex: 1 }}>
-                <Typography size="head" lines={2}>{exerciseName(language, exercise.exerciseId, exercise.name)}</Typography>
+                <Text allowFontScaling numberOfLines={2} style={{
+                  color: theme.color.accent, fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600',
+                }}>{exerciseName(language, exercise.exerciseId, exercise.name)}</Text>
                 {muscle ? <Typography tone="secondary" size="small">{muscleLabel(language, muscle)}</Typography> : null}
               </View>
             </Pressable>
@@ -455,8 +453,7 @@ export default function ActiveWorkoutScreen() {
             <Pressable accessibilityRole="button" accessibilityLabel={t('workout.restTime')}
               onPress={() => setRestFor(exercise.id)}
               style={{ minHeight: theme.size.touch.min, paddingHorizontal: theme.space[3], borderRadius: theme.radius.pill,
-                alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surface.control,
-                borderWidth: theme.size.border.thin, borderColor: theme.surface.hairline }}>
+                alignItems: 'center', justifyContent: 'center', backgroundColor: theme.color.bg.raised }}>
               <Typography size="small" bold>{t('workout.restChip', {
                 time: bidiIsolate(language, formatClock(exercise.restSec)),
               })}</Typography>
@@ -478,16 +475,16 @@ export default function ActiveWorkoutScreen() {
             onDelete={row => void deleteRow(row)}
             onAdd={() => setExtraRows(current => ({ ...current, [exercise.id]: (current[exercise.id] ?? 0) + 1 }))}
             onReject={reason => setError(t(reason === 'reps' ? 'setError.reps' : 'setError.weight'))} />
-          {index === 0 && !hintSeen && <Typography tone="tertiary" size="small">{t('workout.holdHint')}</Typography>}
-          {index < view.exercises.length - 1 && <View style={{ height: 1, backgroundColor: theme.surface.hairline }} />}
+          {index === 0 && !hintSeen && <Typography tone="secondary" size="secondary">{t('workout.holdHint')}</Typography>}
+          </Card>
         </View>;
       })}
-      <Button label={t('workout.addExercise')} variant="ghost"
+      <Button label={t('workout.addExercise')} variant="plain"
         onPress={() => router.push({ pathname: '/(tabs)/train/pick', params: { id: view.id } })} />
-      <Button label={t('workout.discard')} variant="danger" onPress={() => setDiscardVisible(true)} />
+      <Button label={t('workout.discard')} variant="destructive" onPress={() => setDiscardVisible(true)} />
       {denied && <View style={{ gap: theme.space[1] }}>
         <Typography tone="secondary" size="small">{t('active.alertsOff')}</Typography>
-        <Button label={t('active.enableNotifications')} variant="secondary" onPress={() => void Linking.openSettings()} />
+        <Button label={t('active.enableNotifications')} variant="neutral" onPress={() => void Linking.openSettings()} />
       </View>}
       {error && <Typography>{error}</Typography>}
       <Pressable accessibilityRole="button" accessibilityLabel={t('polish.musclesSoFar')}
@@ -502,42 +499,42 @@ export default function ActiveWorkoutScreen() {
     <Sheet visible={askVisible && !suppressWorkoutNotificationPrompt(auto)} title={t('active.restPermissionTitle')}
       description={t(Platform.OS === 'android' ? 'active.restPermissionDesc' : 'active.restPermissionDescIos')}
       onClose={() => void allow(false)}>
-      <Button label={t('active.restAllow')} variant="train" fullWidth onPress={() => void allow(true)} />
-      <Button label={t('active.restAppOnly')} variant="secondary" fullWidth onPress={() => void allow(false)} />
+      <Button label={t('active.restAllow')} variant="primary" fullWidth onPress={() => void allow(true)} />
+      <Button label={t('active.restAppOnly')} variant="neutral" fullWidth onPress={() => void allow(false)} />
     </Sheet>
     <Sheet visible={menuExercise !== null} title={menuExercise ? exerciseName(language, menuExercise.exerciseId, menuExercise.name) : t('workout.menu')}
       onClose={() => setMenuFor(null)}>
-      <Button label={t('active.replace')} variant="secondary" fullWidth onPress={() => {
+      <Button label={t('active.replace')} variant="neutral" fullWidth onPress={() => {
         const exercise = menuExercise;
         setMenuFor(null);
         if (exercise) router.push({ pathname: '/(tabs)/train/pick', params: { id: view.id, replaceId: exercise.id } });
       }} />
       {menuExercise && !menuExercise.supersetGroup && menuIndex + 1 < view.exercises.length &&
-        <Button label={t('gymParity.linkNext')} variant="secondary" fullWidth onPress={() => {
+        <Button label={t('gymParity.linkNext')} variant="neutral" fullWidth onPress={() => {
           void updateActiveSuperset(view.id, menuIndex, 2).then(() => { void refresh(); setMenuFor(null); });
         }} />}
       {menuExercise && !menuExercise.supersetGroup && menuIndex + 2 < view.exercises.length &&
-        <Button label={t('gymParity.superset') + ' × 3'} variant="secondary" fullWidth onPress={() => {
+        <Button label={t('gymParity.superset') + ' × 3'} variant="neutral" fullWidth onPress={() => {
           void updateActiveSuperset(view.id, menuIndex, 3).then(() => { void refresh(); setMenuFor(null); });
         }} />}
-      {menuExercise?.supersetGroup && <Button label={t('gymParity.unlink')} variant="secondary" fullWidth onPress={() => {
+      {menuExercise?.supersetGroup && <Button label={t('gymParity.unlink')} variant="neutral" fullWidth onPress={() => {
         void updateActiveSuperset(view.id, menuIndex, 0).then(() => { void refresh(); setMenuFor(null); });
       }} />}
-      <Button label={t('active.notes')} variant="secondary" fullWidth onPress={() => {
+      <Button label={t('active.notes')} variant="neutral" fullWidth onPress={() => {
         const exercise = menuExercise; setMenuFor(null); if (exercise) setNoteFor(exercise.id);
       }} />
-      <Button label={t('active.earlier')} variant="secondary" fullWidth disabled={menuIndex <= 0}
+      <Button label={t('active.earlier')} variant="neutral" fullWidth disabled={menuIndex <= 0}
         onPress={() => { if (menuExercise) void reorderActiveExercise(view.id, menuExercise.id, -1).then(() => { void refresh(); setMenuFor(null); }); }} />
-      <Button label={t('active.later')} variant="secondary" fullWidth disabled={menuIndex < 0 || menuIndex >= view.exercises.length - 1}
+      <Button label={t('active.later')} variant="neutral" fullWidth disabled={menuIndex < 0 || menuIndex >= view.exercises.length - 1}
         onPress={() => { if (menuExercise) void reorderActiveExercise(view.id, menuExercise.id, 1).then(() => { void refresh(); setMenuFor(null); }); }} />
-      <Button label={t('workout.restTime')} variant="secondary" fullWidth onPress={() => {
+      <Button label={t('workout.restTime')} variant="neutral" fullWidth onPress={() => {
         const exercise = menuExercise; setMenuFor(null); if (exercise) setRestFor(exercise.id);
       }} />
       {plateExercise === null && menuExercise && <Button
         label={t(isPlateLoadedBarbell(menuExercise.type, muscleLookup[menuExercise.exerciseId]?.equipment) ? 'gymParity.plates' : 'gymParity.warmups')}
-        variant="secondary" fullWidth disabled={menuExercise.type !== 'weighted' && menuExercise.type !== 'dumbbell'}
+        variant="neutral" fullWidth disabled={menuExercise.type !== 'weighted' && menuExercise.type !== 'dumbbell'}
         onPress={() => { const exercise = menuExercise; setMenuFor(null); if (exercise) setPlateFor(exercise.id); }} />}
-      <Button label={t('workout.removeExercise')} variant="danger" fullWidth onPress={() => {
+      <Button label={t('workout.removeExercise')} variant="destructive" fullWidth onPress={() => {
         const exercise = menuExercise; setMenuFor(null); if (exercise) setRemoveFor(exercise.id);
       }} />
     </Sheet>
@@ -547,7 +544,7 @@ export default function ActiveWorkoutScreen() {
           const exercise = view.exercises.find(item => item.id === restFor);
           const selected = exercise?.restSec === seconds;
           const label = seconds === 0 ? t('workout.restOff') : bidiIsolate(language, formatClock(seconds));
-          return <Button key={seconds} label={label} variant={selected ? 'train' : 'secondary'}
+          return <Button key={seconds} label={label} variant={selected ? 'tonal' : 'neutral'}
             onPress={() => {
               if (!restFor) return;
               void updateExerciseRest(restFor, seconds).then(result => {
@@ -562,7 +559,7 @@ export default function ActiveWorkoutScreen() {
     <Sheet visible={noteFor !== null} title={t('active.noteTitle')} onClose={() => setNoteFor(null)}>
       {previousNote && <Typography tone="secondary">{t('gymParity.previousNote', { note: previousNote })}</Typography>}
       <Field label={t('active.notesLabel')} value={exerciseNote} onChangeText={setExerciseNote} multiline />
-      <Button label={t('active.saveNote')} variant="train" fullWidth onPress={() => {
+      <Button label={t('active.saveNote')} variant="primary" fullWidth onPress={() => {
         if (!noteFor) return;
         void saveWorkoutExerciseNote(noteFor, exerciseNote).then(result => {
           if (result.ok) { setNoteFor(null); void refresh(); }
@@ -608,7 +605,7 @@ export default function ActiveWorkoutScreen() {
     <Sheet visible={removeFor !== null} title={t('workout.removeExercise')} description={t('workout.removeConfirm')}
       onClose={() => setRemoveFor(null)}>
       <Button label={t('workout.removeKeep')} fullWidth onPress={() => setRemoveFor(null)} />
-      <Button label={t('workout.removeExercise')} variant="danger" fullWidth onPress={() => {
+      <Button label={t('workout.removeExercise')} variant="destructive" fullWidth onPress={() => {
         if (!removeFor) return;
         void removeActiveExercise(view.id, removeFor).then(() => { setRemoveFor(null); void refresh(); });
       }} />
@@ -617,7 +614,7 @@ export default function ActiveWorkoutScreen() {
       description={t((`train.discardDescription.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })}
       onClose={() => setDiscardVisible(false)}>
       <Button label={t('train.keep')} fullWidth onPress={() => setDiscardVisible(false)} />
-      <Button label={t('workout.discard')} variant="danger" fullWidth onPress={() => {
+      <Button label={t('workout.discard')} variant="destructive" fullWidth onPress={() => {
         void discardInProgressWorkout(view.id).then(() => router.replace('/(tabs)/train'));
       }} />
     </Sheet>
@@ -627,7 +624,7 @@ export default function ActiveWorkoutScreen() {
       description={(stats?.pending ?? 0) > 0 ? t('active.dropPending') : t('active.reviewBeforeSave')}
       onClose={() => setFinishVisible(false)}>
       <Button label={t('active.backToWorkout')} fullWidth onPress={() => setFinishVisible(false)} />
-      <Button label={t('active.reviewSummary')} variant="train" fullWidth onPress={() => {
+      <Button label={t('active.reviewSummary')} variant="primary" fullWidth onPress={() => {
         setFinishVisible(false);
         router.push({ pathname: '/(tabs)/train/summary', params: { id: view.id } });
       }} />

@@ -1,5 +1,5 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { Typography } from '../../design/primitives';
+import { Button, Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
 import { pluralForm, weightUnitLabel, type TranslationKey } from '../../i18n';
 import { useLanguage } from '../../i18n/LanguageProvider';
@@ -14,7 +14,7 @@ import { fromKg, sideLabel, toKg, type WeightUnit } from './workoutUnits';
 export type SetDraft = { weight: string; reps: string; effort: string };
 export type LoggedValues = { weight: number; reps: number; effort: string };
 
-/** Compact SET · PREVIOUS · weight · REPS · ✓ table. Placeholders are not saved. */
+/** Compact set table. Placeholders are not saved. */
 export function SetTable({
   rows, history, weightUnit, effort, drafts, loggedValues, repMax, expectedRows, weightStep,
   busy, onDraft, onLog, onUnlog, onCycle, onDelete, onAdd, onReject,
@@ -58,7 +58,7 @@ export function SetTable({
   return <View style={{ gap: theme.space[1] }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[1] }}>
       {columns.map(column => <View key={column} style={columnBox(column)}>
-        <Typography size="label" tone="tertiary" lines={1}>{headers[column]}</Typography>
+        <Typography size="caption" tone="secondary" lines={1}>{headers[column]}</Typography>
       </View>)}
     </View>
     {rows.map(row => {
@@ -100,7 +100,7 @@ export function SetTable({
       return <View key={row.key} style={{
         flexDirection: 'row', alignItems: 'center', gap: theme.space[1],
         minHeight: theme.size.touch.min, borderRadius: theme.radius.sm,
-        backgroundColor: logged ? theme.color.tint.train : 'transparent',
+        backgroundColor: logged ? theme.color.tint.success : 'transparent',
       }}>
         <Pressable accessibilityRole="button" accessibilityLabel={sentence}
           onPress={() => onCycle(row)} onLongPress={() => onDelete(row)} delayLongPress={SET_HOLD_DELETE_MS}
@@ -109,7 +109,7 @@ export function SetTable({
             alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surface.control }}>
             <Text style={{ color: markColor(row.mark), fontWeight: '600',
               fontSize: theme.type.body.size }}>{glyph}</Text>
-            {side ? <Text style={{ color: theme.color.text.tertiary, fontSize: theme.type.label.size }}>{side}</Text> : null}
+            {side ? <Text style={{ color: theme.color.text.tertiary, fontSize: theme.type.caption.size }}>{side}</Text> : null}
           </View>
         </Pressable>
         <Pressable accessibilityRole="button"
@@ -126,44 +126,40 @@ export function SetTable({
           }}
           onLongPress={() => onDelete(row)} delayLongPress={SET_HOLD_DELETE_MS}
           style={[columnBox('previous'), cellHit]}>
-          <Typography tone="tertiary" size="small" lines={1}>
+          <Typography tone="secondary" size="secondary" lines={1}>
             {previous ? previousCellText(language, previous.weight, previous.reps, weightUnit) : t('workout.noPrevious')}
           </Typography>
         </Pressable>
         {field('weight', weightText, placeholderWeight, 'decimal-pad', t('active.weightUnit', { unit: unitWord }),
-          weight => write({ weight }), () => repsInputs[row.key]?.focus())}
+          weight => write({ weight }), !!logged, () => repsInputs[row.key]?.focus())}
         {field('reps', repsText, placeholderReps, 'number-pad',
           t((`workout.repsSpoken.${pluralForm(language, Number(repsText || placeholderReps) || 0)}`) as TranslationKey, {
             count: repsText || placeholderReps || '0',
-          }), reps => write({ reps }), undefined, node => { repsInputs[row.key] = node; })}
+          }), reps => write({ reps }), !!logged, undefined, node => { repsInputs[row.key] = node; })}
         {effort !== 'off' ? field('effort', effortText, '', 'decimal-pad',
-          t(effort === 'rpe' ? 'gymParity.rpeLabel' : 'gymParity.rirLabel'), next => write({ effort: next })) : null}
+          t(effort === 'rpe' ? 'gymParity.rpeLabel' : 'gymParity.rirLabel'), next => write({ effort: next }), !!logged) : null}
         <Pressable accessibilityRole="button"
           accessibilityLabel={t(logged ? 'workout.unlogCheck' : 'workout.logCheck', { set: setLabel })}
-          accessibilityState={{ disabled: busy }} disabled={busy} onPress={check}
+          accessibilityState={{ disabled: busy, checked: !!logged }} disabled={busy} onPress={check}
           style={[columnBox('check'), cellHit]}>
-          <View style={{ width: 44, height: 34, borderRadius: theme.radius.sm, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: logged ? theme.color.domain.train : theme.surface.control,
-            borderWidth: theme.size.border.thin, borderColor: logged ? theme.color.domain.train : theme.surface.hairline }}>
+          <View style={{ width: 44, height: 40, borderRadius: theme.radius.sm, alignItems: 'center', justifyContent: 'center',
+            backgroundColor: logged ? theme.color.status.success : theme.color.bg.raised }}>
             <Text style={{
-              color: logged ? theme.color.on.train : theme.color.text.tertiary,
+              color: logged ? theme.color.bg.surface : theme.color.text.tertiary,
               fontWeight: '600', fontSize: theme.type.body.size,
             }}>✓</Text>
           </View>
         </Pressable>
       </View>;
     })}
-    <Pressable accessibilityRole="button" accessibilityLabel={t('workout.addSet')} onPress={onAdd}
-      style={{ minHeight: theme.size.touch.min, borderRadius: theme.radius.md, alignItems: 'center',
-        justifyContent: 'center', backgroundColor: theme.surface.control }}>
-      <Typography bold>{t('workout.addSet')}</Typography>
-    </Pressable>
+    <Button label={t('workout.addSet')} accessibilityLabel={t('workout.addSet')} size="sm" variant="neutral"
+      fullWidth onPress={onAdd} />
   </View>;
 
   function field(
     column: 'weight' | 'reps' | 'effort', value: string, placeholder: string,
     keyboard: 'decimal-pad' | 'number-pad', label: string, onChange: (value: string) => void,
-    onSubmit?: () => void, inputRef?: (node: TextInput | null) => void,
+    done: boolean, onSubmit?: () => void, inputRef?: (node: TextInput | null) => void,
   ) {
     return <View style={columnBox(column)}>
       <TextInput ref={inputRef} value={value} placeholder={placeholder} onChangeText={onChange}
@@ -171,8 +167,8 @@ export function SetTable({
         accessibilityLabel={label} placeholderTextColor={theme.color.text.tertiary}
         style={{
           width: '100%', minHeight: theme.size.touch.min, borderRadius: theme.radius.sm, textAlign: 'center',
-          borderWidth: theme.size.border.thin, borderColor: theme.surface.hairline,
-          backgroundColor: theme.surface.control, color: theme.color.text.primary,
+          backgroundColor: done ? theme.color.tint.success : theme.color.bg.raised,
+          color: theme.color.text.primary,
           fontWeight: '600', fontSize: theme.type.body.size,
           fontVariant: ['tabular-nums'],
         }} />
