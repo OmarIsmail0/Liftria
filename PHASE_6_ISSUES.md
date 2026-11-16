@@ -65,7 +65,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
    - Update `src/design/__tests__`, `src/design/primitives/__tests__` and the dev stories under `app/dev/primitives` so every primitive has a story in the new style. Add stories with ids `list-group`, `stat-block` and `progress-bar`.
    - Done when: `npm run check` passes, no file imports a deleted effect, and `grep -rn "letterSpacing\|textTransform" app src` finds nothing outside tests.
 
-2. **PR B: `Phase 6 / Navigation`**
+2. ~~**PR B: `Phase 6 / Navigation`**~~ DONE: PR #114 merged (2026-11-16).
    - Replace `CapsuleNav` with a standard bottom tab bar: surface background, top divider, five tabs (Today, Train, Eat, Progress, Hiku), icon above a 11 to 12 pt label, active tab in accent, inactive in tertiary text, each tab at least 48 dp tall, bottom safe-area padding. Keep the existing tab icons. Labels come from `nav.*` in i18n. In Arabic the order mirrors.
    - `WorkoutMiniBar`: a flat surface bar above the tab bar with a top divider (no orange outline, no pill): workout name, time and sets in secondary, a plain "Resume" action. Keep the rules for where the bar and tab bar hide.
    - Every tab root screen uses `Header` in `large` mode; every pushed screen uses `inline` mode. Remove the repeated "on this phone" subtitles from headers (keep the strings only where Privacy or onboarding use them).
@@ -73,30 +73,30 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
    - Content must not sit under the tab bar or the Android system bar: add bottom padding from safe-area insets.
    - Delete `CapsuleNav`, its story and its tests; add a `tab-bar` story.
 
-3. **PR C: `Phase 6 / Today`**
+3. ~~**PR C: `Phase 6 / Today`**~~ DONE: PR #118 via #121 merged (2026-11-16).
    - Layout from the mockup: large header with the date; a **Calories card** (remaining kcal in metric size with "kcal left", a progress bar, "eaten · target" line, three macro columns with thin bars, a tonal "Log food" button); a **Training** section (next routine name, secondary line, a filled "Start" button; if a workout is running show "Resume"; if there are no routines show "Start empty workout"); a **Today** list group (Water row with the stepper, Steps row and Weight row only when data or a connection exists).
    - Remove the `Orb` from Today and the "Quick actions" card.
    - With no calorie target: show "eaten" as the big number and a tonal "Set a target" button in the card. With nothing logged: show the honest empty text, never 0 as if measured. Over target: say "N kcal over" in words, in the normal text colour.
    - Keep every existing action reachable (settings, log a meal, water add/remove, weekly check-in and any banners that exist today).
 
-4. **PR D: `Phase 6 / Train`**
+4. ~~**PR D: `Phase 6 / Train`**~~ DONE: PR #117 via #121 merged (2026-11-16).
    - **Train home:** large header with a search icon; one filled "Start empty workout" button; "Routines" section header with a plain "New" action and a list group of routines (name, "N exercises · last done …" when known); starter routines appear as plain rows in that list labelled "Starter" until created; a "Library" list group (Exercises, History, Records, Muscles and recovery, Templates and plans); one row for "Import from Hevy, Strong or CSV".
    - **Workout in progress** card: "Resume workout" filled; "Discard workout" becomes a `destructive` text button that asks for confirmation in a sheet.
    - **Active workout:** keep the layout and behaviour exactly (set table, hold to delete, rest bar, supersets, notes, marks, RPE). Restyle only: flat card per exercise, exercise name in accent, inputs on control fill, a ticked set row uses the success tint and a success-filled tick, "Add set" is a neutral small button, "Finish" is a small filled button, stats row uses `StatBlock`. Replace the dashed hint box with one plain secondary line. Rest bar: surface with top divider, time in title size, −15 / +15 neutral, Skip tonal.
    - **History:** remove the visible "Delete" button on each row; delete moves to hold (long-press) and to the workout's detail screen, both with a confirmation sheet. Month summary uses `StatBlock`s.
    - **Library, picker, exercise detail, records, plans, templates, plates, recovery, summary:** move to list groups, the inline header, the new chips and fields. The exercise figures and body map keep their drawings and their colours' meaning (primary muscle in accent).
 
-5. **PR E: `Phase 6 / Eat`**
+5. ~~**PR E: `Phase 6 / Eat`**~~ DONE: PR #119 via #121 merged (2026-11-16).
    - **Day screen:** large header; a date row with previous and next arrow buttons around the date ("Today, Nov 16"); the summary card (same component as Today's); then one section per meal (Breakfast, Lunch, Dinner, Snacks): header with the meal's kcal, a list group of its foods (name, amount, kcal) ending in an accent "+ Add food" row; then the Water row. Quick add moves into the add-food flow or a header icon.
    - Remove the `Orb` from Eat. After this task nothing uses `Orb`: delete it, its story, its tests and its tokens.
    - **Search, portion, quick add, custom food, targets, meal, history:** inline header, fields on control fill, results as list rows with a tonal or icon add action, the meal picker as a segmented control or chips.
    - Fiber, sugar and sodium stay visible where they are today.
 
-6. **PR F: `Phase 6 / Progress`**
+6. ~~**PR F: `Phase 6 / Progress`**~~ DONE: PR #120 via #121 merged (2026-11-16).
    - **Home:** large header; range segmented control (4 weeks, 3 months, 1 year); a weight card (latest value in metric size, the change over the range in secondary text and normal colour, a simple line chart with at most three gridlines and the accent line); then a list group: Strength, Nutrition, Measurements, Photos, Health, each showing its latest value at the end when one exists. With no weight data show the empty state with "Log weight".
    - **Body, strength, nutrition, measurements, photos, health and its detail screens:** the big number first, then the chart, then the explanatory text in secondary size below. Charts: few gridlines, accent line, no glow.
 
-7. **PR G: `Phase 6 / Hiku`**
+7. ~~**PR G: `Phase 6 / Hiku`**~~ DONE: PR #116 via #121 merged (2026-11-16).
    - **Home without an API key:** one card explaining Hiku in two lines with a single filled "Add API key" button. **With a key:** "Describe a meal" filled, "Analyze a meal photo" tonal with the Beta chip, then a list group for Usage and privacy.
    - Describe, review, photo and usage screens: inline header, list groups, estimate chips kept, flat cards.
 
