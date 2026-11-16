@@ -3,7 +3,7 @@ import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Field, Header, ListRow, Screen, SegmentedControl, Typography } from '../../../src/design/primitives';
+import { Button, Card, Field, Header, ListGroup, ListRow, Screen, SectionHeader, SegmentedControl, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { listPlans, listTemplates, savePlan, type Plan, type Template } from '../../../src/services/database/gymRepositories';
 import { DAYS, scheduledTemplate } from '../../../src/features/train/weekPlan';
@@ -56,29 +56,30 @@ export default function PlansScreen() {
   };
   return <Screen embedded>
     <Header mode="inline" title={tr('p4.plans.0')} onBack={()=>router.back()}/>
-    <Card title={tr('p4.plans.2')}>
+    <View style={{gap:theme.space[2]}}>
+      <SectionHeader title={tr('p4.plans.2')} actionLabel={tr('p4.plans.4')}
+        onAction={()=>router.push('/(tabs)/train/template')}/>
       {templates.length===0?<Typography tone="secondary">{tr('p4.plans.10')}</Typography>:
-        templates.map(t=><ListRow key={t.id} title={t.name}
+        <ListGroup>{templates.map(t=><ListRow key={t.id} title={t.name}
           detail={tr(('count.exercises.'+pluralForm(language,t.exercises.length)) as TranslationKey,{count:t.exercises.length})}
           onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:t.id}})}
-          suffix={<Button label={tr('p4.plans.3')} variant="ghost"
-            onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:t.id}})}/>}/>)}
-      <Button label={tr('p4.plans.4')} variant="train" onPress={()=>router.push('/(tabs)/train/template')}/>
-    </Card>
+          suffix={<Button label={tr('p4.plans.3')} variant="plain"
+            onPress={()=>router.push({pathname:'/(tabs)/train/template',params:{id:t.id}})}/>}/>)}</ListGroup>}
+    </View>
     <Card title={tr('p4.plans.5')}>
       <Field label={tr('p4.plans.6')} value={name} onChangeText={setName}/>
       <SegmentedControl label={tr('p4.plans.7')} options={[{value:'weekly',label:tr('p4.plans.16')},{value:'rotation',label:tr('p4.plans.17')}]}
         value={type} onChange={setType}/>
-      {type==='weekly'?DAYS.map(day=><ListRow key={day} title={day}
+      {type==='weekly'?<ListGroup>{DAYS.map(day=><ListRow key={day} title={day}
         detail={templates.find(t=>t.id===weekday[day])?.name??tr('p4.plans.18')}
-        onPress={()=>cycle(day)} suffix={<Typography tone="secondary">{tr('p4.plans.11')}</Typography>}/>):
+        onPress={()=>cycle(day)} suffix={<Typography tone="secondary">{tr('p4.plans.11')}</Typography>}/>)}</ListGroup>:
         <View style={{gap:theme.space[2]}}>
           <Typography tone="secondary" size="small">{tr('p4.plans.12')}</Typography>
-          {templates.map(t=><ListRow key={t.id} title={t.name}
+          <ListGroup>{templates.map(t=><ListRow key={t.id} title={t.name}
             detail={rotation.includes(t.id)?tr('p4.plans.19'):tr('p4.plans.20')}
-            onPress={()=>setRotation(old=>old.includes(t.id)?old.filter(id=>id!==t.id):[...old,t.id])}/>)}
+            onPress={()=>setRotation(old=>old.includes(t.id)?old.filter(id=>id!==t.id):[...old,t.id])}/>)}</ListGroup>
         </View>}
-      <Button label={tr('p4.plans.8')} variant="train" fullWidth disabled={busy||!name.trim()||
+      <Button label={tr('p4.plans.8')} variant="primary" fullWidth disabled={busy||!name.trim()||
         templates.length===0||(type==='rotation'&&rotation.length===0)}
         onPress={()=>void doSave()}/>
       {notice&&<Typography>{notice}</Typography>}

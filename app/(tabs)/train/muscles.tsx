@@ -77,7 +77,7 @@ export default function MuscleBrowser() {
       removeClippedSubviews={Platform.OS === 'android'}
       {...exerciseListWindow}
       ListHeaderComponent={<View style={{ gap: theme.layout.cardGap }}>
-        <Header title={t('train.muscles')} subtitle={t('muscle.browserSubtitle')} onBack={() => router.back()} />
+        <Header mode="inline" title={t('train.muscles')} subtitle={t('muscle.browserSubtitle')} onBack={() => router.back()} />
         <Card rim="train">
           <BodyMap selected={selected} primary={[selected]} onSelect={setSelected} />
         </Card>
@@ -85,7 +85,7 @@ export default function MuscleBrowser() {
           <View style={{ gap: theme.space[3] }}>
             <Typography size="head">{t((`muscle.browserCount.${pluralForm(language, matches.length)}`) as TranslationKey, { name: muscleLabel(language, selected), count: matches.length })}</Typography>
             <Typography tone="secondary" size="small">{t('muscle.browserDescription')}</Typography>
-            {loading && <ActivityIndicator color={theme.color.domain.train} />}
+            {loading && <ActivityIndicator color={theme.color.accent} />}
             {error && <Typography>{t('muscle.browserLoadError')}</Typography>}
             {!loading && !error && rows.length === 0 && <EmptyState title={t('muscle.browserEmpty')}
               description={t('muscle.browserEmptyDescription')} />}

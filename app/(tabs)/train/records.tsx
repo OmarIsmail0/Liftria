@@ -3,7 +3,7 @@ import { latinDigits, weightUnitLabel } from '../../../src/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Button, Chip, EmptyState, Header, ListGroup, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { readRecords } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { ExerciseRecord } from '../../../src/services/database/gymMath';
@@ -32,14 +32,13 @@ export default function Records(){
  },[language]));
  const unitLabel=weightUnitLabel(language,unit);
  return <Screen embedded>
-  <Header title={t('train.records')} subtitle={t('records.subtitle')} onBack={()=>router.back()}/>
-  <Card rim="train" title={t('records.bestSets')}>
-   <Typography tone="secondary">{t('records.explanation')}</Typography>
-   {error&&<Button label={t('common.retry')} onPress={()=>router.replace('/(tabs)/train/records')}/>}
-   {rows.length===0?<View style={{gap:8}}>
-    <Typography tone="secondary">{t('records.empty')}</Typography>
-    <Button label={t('records.start')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
-   </View>:rows.map(({row,name})=><ListRow key={row.exerciseId+':'+row.side}
+  <Header mode="inline" title={t('train.records')} onBack={()=>router.back()}/>
+  <Typography tone="secondary" size="secondary">{t('records.subtitle')}</Typography>
+  <Typography tone="secondary" size="secondary">{t('records.explanation')}</Typography>
+  {error&&<Button label={t('common.retry')} onPress={()=>router.replace('/(tabs)/train/records')}/>}
+  {rows.length===0?<EmptyState title={t('records.empty')} description={t('records.disclaimer')}
+    action={<Button label={t('records.start')} variant="tonal" onPress={()=>router.push('/(tabs)/train/preview')}/>}/>:
+   <ListGroup>{rows.map(({row,name})=><ListRow key={row.exerciseId+':'+row.side}
     title={name+(row.side?' · '+sideLabel(row.side,language):'')}
     detail={(row.lowestAssistance!==null?t('records.leastAssistance')+' ' +Number(fromKg(row.lowestAssistance,unit).toFixed(1))+' '+unitLabel:
       row.heaviest!==null?t('records.heaviest')+' ' +Number(fromKg(row.heaviest,unit).toFixed(1))+' '+unitLabel:t('records.mostReps')+' ' +row.maxReps)+
@@ -48,9 +47,8 @@ export default function Records(){
     suffix={row.bestEstimatedOneRepMax!==null?
       <View style={{alignItems:'flex-end',gap:4}}>
        <Chip kind="estimate" label={t('chips.estimate')}/>
-       <Typography size="small">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unitLabel} {t('records.estimated1rm')}</Typography>
-      </View>:undefined}/>)}
-  </Card>
-  <Typography size="small" tone="secondary">{t('records.disclaimer')}</Typography>
+       <Typography size="secondary">{Math.round(fromKg(row.bestEstimatedOneRepMax,unit))} {unitLabel} {t('records.estimated1rm')}</Typography>
+      </View>:undefined}/>)}</ListGroup>}
+  {rows.length>0?<Typography size="secondary" tone="secondary">{t('records.disclaimer')}</Typography>:null}
  </Screen>;
 }
