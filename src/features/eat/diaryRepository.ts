@@ -1,6 +1,6 @@
 import {dbOperation,type DbResult} from '../../services/database';
 import {newGymId} from '../../services/database/exerciseLibrary';
-import {bundledFoods,searchFoods,snapshot,localDay,MEALS,type Food,type FoodSource,type MealKey,
+import {bundledFoods,bundledFoodById,searchFoods,snapshot,localDay,MEALS,type Food,type FoodSource,type MealKey,
   type Nutrition} from './foodCatalog';
 
 export type DiaryEntry={
@@ -182,7 +182,7 @@ export async function readLocalFoods():Promise<DbResult<Food[]>>{
   });
 }
 export async function foodById(id:string):Promise<DbResult<Food|null>>{
-  const bundled=bundledFoods().find(f=>f.id===id);
+  const bundled=bundledFoodById(id);
   if(bundled)return {ok:true,value:bundled};
   const local=await readLocalFoods();
   return local.ok?{ok:true,value:local.value.find(f=>f.id===id)??null}:local;
@@ -209,8 +209,8 @@ export async function listRecentFoods(meal?:MealKey,limit=20):Promise<DbResult<F
       MAX(CASE WHEN meal=? THEN created_at ELSE '' END) DESC,MAX(created_at) DESC LIMIT ?`,
       [meal??'breakfast',limit]);
     const custom=await readLocalFoods();
-    const all=[...bundledFoods(),...(custom.ok?custom.value:[])];
-    return rows.flatMap(row=>{const food=all.find(f=>f.id===row.food_id);return food?[food]:[];});
+    const local=new Map((custom.ok?custom.value:[]).map(f=>[f.id,f]));
+    return rows.flatMap(row=>{const food=bundledFoodById(row.food_id)??local.get(row.food_id);return food?[food]:[];});
   });
 }
 export async function toggleFavorite(food:Food):Promise<DbResult<boolean>>{
@@ -228,8 +228,8 @@ export async function listFavoriteFoods():Promise<DbResult<Food[]>>{
   return dbOperation(async db=>{
     const rows=await db.getAllAsync<{food_id:string}>('SELECT food_id FROM favorite_foods ORDER BY created_at DESC');
     const custom=await readLocalFoods();
-    const all=[...bundledFoods(),...(custom.ok?custom.value:[])];
-    return rows.flatMap(row=>{const food=all.find(f=>f.id===row.food_id);return food?[food]:[];});
+    const local=new Map((custom.ok?custom.value:[]).map(f=>[f.id,f]));
+    return rows.flatMap(row=>{const food=bundledFoodById(row.food_id)??local.get(row.food_id);return food?[food]:[];});
   });
 }
 export type SavedMeal={id:string;name:string;items:{foodId:string;grams:number}[]};

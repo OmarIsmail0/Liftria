@@ -1,3 +1,4 @@
+import { memo, useRef } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Button, Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
@@ -6,7 +7,7 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { formatEditableNumber } from '../../i18n/editableNumber';
 import {
   SET_HOLD_DELETE_MS, commitSetDraft, previousCellText, previousForWorkingSet,
-  setMarkGlyph, setRowAccessibilityLabel, setTableColumns, type PlannedRow, type SetMark,
+  setMarkGlyph, setRowAccessibilityLabel, setTableColumns, setTablePropsEqual, type PlannedRow, type SetMark,
 } from './setTable';
 import { suggestionForSlot, type PreviousSet } from './workoutData';
 import { fromKg, sideLabel, toKg, type WeightUnit } from './workoutUnits';
@@ -14,11 +15,16 @@ import { fromKg, sideLabel, toKg, type WeightUnit } from './workoutUnits';
 export type SetDraft = { weight: string; reps: string; effort: string };
 export type LoggedValues = { weight: number; reps: number; effort: string };
 
-/** Compact set table. Placeholders are not saved. */
-export function SetTable({
-  rows, history, weightUnit, effort, drafts, loggedValues, repMax, expectedRows, weightStep,
+/**
+ * Compact set table. Placeholders are not saved. Memoised on its own rows, drafts and
+ * logged values, so typing in one exercise does not re-render the others. The callbacks must
+ * be stable: they take the exercise id instead of closing over it.
+ */
+export const SetTable = memo(function SetTable({
+  exerciseId, rows, history, weightUnit, effort, drafts, loggedValues, repMax, expectedRows, weightStep,
   busy, onDraft, onLog, onUnlog, onCycle, onDelete, onAdd, onReject,
 }: {
+  exerciseId: string;
   rows: readonly PlannedRow[];
   history: readonly PreviousSet[];
   weightUnit: WeightUnit;
@@ -30,16 +36,16 @@ export function SetTable({
   weightStep: number;
   busy: boolean;
   onDraft: (key: string, draft: SetDraft) => void;
-  onLog: (row: PlannedRow, values: { weight: number; reps: number; effort: string }) => void;
+  onLog: (exerciseId: string, row: PlannedRow, values: { weight: number; reps: number; effort: string }) => void;
   onUnlog: (row: PlannedRow) => void;
-  onCycle: (row: PlannedRow) => void;
+  onCycle: (exerciseId: string, row: PlannedRow) => void;
   onDelete: (row: PlannedRow) => void;
-  onAdd: () => void;
+  onAdd: (exerciseId: string) => void;
   onReject: (reason: 'weight' | 'reps') => void;
 }) {
   const { theme } = useTheme();
   const { t, language } = useLanguage();
-  const repsInputs: Record<string, TextInput | null> = {};
+  const repsInputs = useRef<Record<string, TextInput | null>>({});
   const columns = setTableColumns({ effort: effort !== 'off', check: true });
   const storedUnit = weightUnit;
   const unitWord = weightUnitLabel(language, storedUnit);
@@ -95,7 +101,7 @@ export function SetTable({
           placeholderReps: suggestion?.reps ?? null,
         });
         if (!committed.ok) { onReject(committed.reason); return; }
-        onLog(row, { weight: committed.weight, reps: committed.reps, effort: effortText });
+        onLog(exerciseId, row, { weight: committed.weight, reps: committed.reps, effort: effortText });
       };
       return <View key={row.key} style={{
         flexDirection: 'row', alignItems: 'center', gap: theme.space[1],
@@ -103,7 +109,7 @@ export function SetTable({
         backgroundColor: logged ? theme.color.tint.success : 'transparent',
       }}>
         <Pressable accessibilityRole="button" accessibilityLabel={sentence}
-          onPress={() => onCycle(row)} onLongPress={() => onDelete(row)} delayLongPress={SET_HOLD_DELETE_MS}
+          onPress={() => onCycle(exerciseId, row)} onLongPress={() => onDelete(row)} delayLongPress={SET_HOLD_DELETE_MS}
           style={[columnBox('set'), cellHit]}>
           <View style={{ minWidth: 34, minHeight: 30, paddingHorizontal: theme.space[1], borderRadius: theme.radius.sm,
             alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surface.control }}>
@@ -131,11 +137,11 @@ export function SetTable({
           </Typography>
         </Pressable>
         {field('weight', weightText, placeholderWeight, 'decimal-pad', t('active.weightUnit', { unit: unitWord }),
-          weight => write({ weight }), !!logged, () => repsInputs[row.key]?.focus())}
+          weight => write({ weight }), !!logged, () => repsInputs.current[row.key]?.focus())}
         {field('reps', repsText, placeholderReps, 'number-pad',
           t((`workout.repsSpoken.${pluralForm(language, Number(repsText || placeholderReps) || 0)}`) as TranslationKey, {
             count: repsText || placeholderReps || '0',
-          }), reps => write({ reps }), !!logged, undefined, node => { repsInputs[row.key] = node; })}
+          }), reps => write({ reps }), !!logged, undefined, node => { repsInputs.current[row.key] = node; })}
         {effort !== 'off' ? field('effort', effortText, '', 'decimal-pad',
           t(effort === 'rpe' ? 'gymParity.rpeLabel' : 'gymParity.rirLabel'), next => write({ effort: next }), !!logged) : null}
         <Pressable accessibilityRole="button"
@@ -153,7 +159,7 @@ export function SetTable({
       </View>;
     })}
     <Button label={t('workout.addSet')} accessibilityLabel={t('workout.addSet')} size="sm" variant="neutral"
-      fullWidth onPress={onAdd} />
+      fullWidth onPress={() => onAdd(exerciseId)} />
   </View>;
 
   function field(
@@ -174,7 +180,7 @@ export function SetTable({
         }} />
     </View>;
   }
-}
+}, setTablePropsEqual);
 
 const cellHit = { minHeight: 48, alignItems: 'center' as const, justifyContent: 'center' as const };
 

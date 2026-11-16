@@ -1,12 +1,13 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { InteractionManager, Pressable, ScrollView, View } from 'react-native';
 import { Button, EmptyState, Field, Header, ListGroup, Screen, SectionHeader, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { formatNumber } from '../../../src/i18n';
+import { EXERCISE_SEARCH_DEBOUNCE_MS, useDeferredQuery } from '../../../src/features/train/exerciseRows';
 import { MealPicker } from '../../../src/features/eat/eatLayout';
-import { foodName, bundledFoods, searchFoods, mealAtTime, localDay, MEALS, type Food, type MealKey } from '../../../src/features/eat/foodCatalog';
+import { foodName, bundledFoods, bundledEgyptFoods, searchFoods, warmFoodSearch, mealAtTime, localDay, MEALS, type Food, type MealKey } from '../../../src/features/eat/foodCatalog';
 import { listFavoriteFoods, listRecentFoods, readLocalFoods, logFood, lastLoggedGrams, toggleFavorite } from '../../../src/features/eat/diaryRepository';
 
 export default function FoodSearch() {
@@ -16,6 +17,7 @@ export default function FoodSearch() {
   const [meal, setMeal] = useState<MealKey>(MEALS.includes(params.meal as MealKey) ? params.meal! : mealAtTime(new Date()));
   const day = params.day ?? localDay(new Date());
   const [query, setQuery] = useState(params.q ?? '');
+  const appliedQuery = useDeferredQuery(query, EXERCISE_SEARCH_DEBOUNCE_MS);
   const [custom, setCustom] = useState<Food[]>([]);
   const [favorites, setFavorites] = useState<Food[]>([]);
   const [recent, setRecent] = useState<Food[]>([]);
@@ -29,11 +31,16 @@ export default function FoodSearch() {
     });
     return () => { mounted = false; };
   }, [meal]));
-  const catalog = useMemo(() => [...bundledFoods(), ...custom], [custom]);
-  const rows = useMemo(() => query.trim() ? searchFoods(catalog, query, 60) :
-    [...favorites, ...recent, ...catalog.filter(f => f.source === 'egypt')].filter(
+  // Parse the 8,000-food pack and build its search keys after the screen has opened, not on the first keystroke.
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => { warmFoodSearch(); });
+    return () => task.cancel();
+  }, []);
+  // The empty-query list only needs the small Egyptian list, so it never waits for the USDA pack.
+  const rows = useMemo(() => appliedQuery.trim() ? searchFoods([...bundledFoods(), ...custom], appliedQuery, 60) :
+    [...favorites, ...recent, ...bundledEgyptFoods()].filter(
       (food, index, array) => array.findIndex(row => row.id === food.id) === index).slice(0, 40),
-  [catalog, query, favorites, recent]);
+  [appliedQuery, custom, favorites, recent]);
   async function quick(food: Food) {
     if (busy) return;
     setBusy(true);
@@ -52,7 +59,7 @@ export default function FoodSearch() {
       <Field label={t('eatI.findFood')} placeholder={t('eatI.searchHint')} value={query} onChangeText={setQuery} />
       <Typography tone="secondary" size="secondary">{t('eatI.offlineSearch')}</Typography>
       <View style={{ gap: theme.space[2] }}>
-        <SectionHeader title={query ? t('eatI.results') : t('eatI.recentAndEgypt')} />
+        <SectionHeader title={appliedQuery ? t('eatI.results') : t('eatI.recentAndEgypt')} />
         {rows.length === 0 ? <EmptyState title={t('eatI.noResults')} description={t('eatI.offlineSearch')} /> :
           <ListGroup>
             {rows.map((food, index) => {

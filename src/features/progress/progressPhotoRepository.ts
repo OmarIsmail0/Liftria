@@ -2,7 +2,7 @@ import { dbOperation, type DbResult } from '../../services/database';
 import { newGymId } from '../../services/database/exerciseLibrary';
 import { cleanNote, measurementDateOk } from './measurements';
 import {
-  PROGRESS_PHOTO_LONG_EDGE, PROGRESS_PHOTO_MAX_BASE64, isPose,
+  PROGRESS_PHOTO_LONG_EDGE, PROGRESS_PHOTO_MAX_BASE64, isPose, latestByPose,
   type Pose, type ProgressPhoto,
 } from './progressPhotos';
 
@@ -54,6 +54,40 @@ function toPhoto(row: Row): ProgressPhoto {
 export async function listProgressPhotos(): Promise<DbResult<ProgressPhoto[]>> {
   return dbOperation(async db =>
     (await db.getAllAsync<Row>(SELECT + ' ORDER BY taken_at DESC,id DESC')).map(toPhoto));
+}
+
+const SUMMARY = "SELECT id,taken_at,pose,'' AS jpeg_base64,width,height,note,source FROM progress_photos";
+
+/**
+ * Every photo's date, pose and note, with no image bytes (`jpegBase64` is ''). Each stored
+ * JPEG is a base64 string of a few hundred KB, so a list that shows no pictures must not read them.
+ */
+export async function listProgressPhotoSummaries(): Promise<DbResult<ProgressPhoto[]>> {
+  return dbOperation(async db =>
+    (await db.getAllAsync<Row>(SUMMARY + ' ORDER BY taken_at DESC,id DESC')).map(toPhoto));
+}
+
+/** Image bytes for the given photos only, keyed by id. */
+export async function progressPhotoImages(ids: readonly string[]): Promise<DbResult<Record<string, string>>> {
+  return dbOperation(async db => {
+    const unique = [...new Set(ids)];
+    if (unique.length === 0) return {};
+    const rows = await db.getAllAsync<{ id: string; jpeg_base64: string }>(
+      'SELECT id,jpeg_base64 FROM progress_photos WHERE source=? AND id IN (' + unique.map(() => '?').join(',') + ')',
+      ['liftria', ...unique]);
+    return Object.fromEntries(rows.map(row => [row.id, row.jpeg_base64]));
+  });
+}
+
+/** Summaries for all photos, with the image loaded only for the newest photo of each pose. */
+export async function listProgressPhotosForCard(): Promise<DbResult<ProgressPhoto[]>> {
+  const summaries = await listProgressPhotoSummaries();
+  if (!summaries.ok) return summaries;
+  const ids = latestByPose(summaries.value).flatMap(item => item.photo ? [item.photo.id] : []);
+  const images = await progressPhotoImages(ids);
+  if (!images.ok) return images;
+  return { ok: true, value: summaries.value.map(photo => images.value[photo.id] !== undefined
+    ? { ...photo, jpegBase64: images.value[photo.id] ?? '' } : photo) };
 }
 
 export async function getProgressPhoto(id: string): Promise<DbResult<ProgressPhoto | null>> {

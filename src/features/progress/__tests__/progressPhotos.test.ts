@@ -1,7 +1,8 @@
 import { deleteLocalDatabase } from '../../../services/database';
 import { resetMemorySqlite } from '../../settings/__tests__/memorySqlite';
 import {
-  addProgressPhoto, listProgressPhotos, progressPhotoUsage, removeProgressPhoto, saveProgressPhotoNote,
+  addProgressPhoto, listProgressPhotos, listProgressPhotoSummaries, listProgressPhotosForCard,
+  progressPhotoImages, progressPhotoUsage, removeProgressPhoto, saveProgressPhotoNote,
   validateProgressPhoto,
 } from '../progressPhotoRepository';
 import {
@@ -160,4 +161,29 @@ test('a blank JPEG, a huge edge and a long note are not saved', async () => {
 test('progress photos are not part of the CSV export', () => {
   const csv = readFileSync(join(process.cwd(), 'src/features/settings/csvExport.ts'), 'utf8');
   expect(csv).not.toContain('progress_photos');
+});
+
+test('lists read no image bytes; the card loads only the newest photo of each pose', async () => {
+  const add = (pose: 'front' | 'side' | 'back', takenAt: string, jpegBase64: string) =>
+    addProgressPhoto({ takenAt, pose, jpegBase64, width: 10, height: 20, note: null });
+  const old = await add('front', '2026-06-01T08:00:00.000Z', 'OLD1');
+  const front = await add('front', '2026-06-02T08:00:00.000Z', 'NEW1');
+  const side = await add('side', '2026-06-01T09:00:00.000Z', 'SIDE');
+  if (!old.ok || !front.ok || !side.ok) throw new Error('seed failed');
+
+  const summaries = await listProgressPhotoSummaries();
+  if (!summaries.ok) throw new Error('summaries failed');
+  expect(summaries.value.map(item => [item.id, item.jpegBase64])).toEqual([
+    [front.value.id, ''], [side.value.id, ''], [old.value.id, ''],
+  ]);
+
+  const card = await listProgressPhotosForCard();
+  if (!card.ok) throw new Error('card failed');
+  expect(card.value.map(item => [item.id, item.jpegBase64])).toEqual([
+    [front.value.id, 'NEW1'], [side.value.id, 'SIDE'], [old.value.id, ''],
+  ]);
+
+  const images = await progressPhotoImages([old.value.id, old.value.id, 'missing']);
+  expect(images).toEqual({ ok: true, value: { [old.value.id]: 'OLD1' } });
+  expect(await progressPhotoImages([])).toEqual({ ok: true, value: {} });
 });
