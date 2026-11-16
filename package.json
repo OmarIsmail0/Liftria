@@ -64,7 +64,11 @@
       "**/__tests__/**/*.test.ts"
     ],
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "<rootDir>/.claude/worktrees/"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/.claude/worktrees/"
     ]
   }
 }
