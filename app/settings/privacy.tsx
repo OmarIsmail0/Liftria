@@ -49,6 +49,9 @@ export default function PrivacyDetails() {
     <Typography>{t('p4.privacy.8')}</Typography>
     <Typography tone="secondary" size="secondary">{t('p4.privacy.9')}</Typography>
     <Typography tone="secondary" size="secondary">{t('p4.privacy.10')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('p4.privacy.17')}</Typography>
+    <SectionHeader title={t('p4.privacy.15')} />
+    <Typography>{t('p4.privacy.16')}</Typography>
     <SectionHeader title={t('p4.privacy.11')} />
     <Typography>{t('p4.privacy.12')}</Typography>
     <Typography>{t('p4.privacy.13')}</Typography>

@@ -1,6 +1,7 @@
 import { bidiIsolate, translate, type AppLanguage } from '../../i18n';
 import { Directory, File, Paths } from 'expo-file-system';
 import { clearLocalHealthCache, deleteLocalDatabase, localStorageCounts } from '../../services/database';
+import * as Notifications from 'expo-notifications';
 import { deleteKey } from '../../services/secure-storage';
 import { clearImportDraft } from '../import/importDraft';
 
@@ -44,13 +45,21 @@ export async function deleteTemporaryFiles(): Promise<boolean> {
 export type DeleteLocalOutcome =
   | {ok:true}
   | {ok:false;stage:'database'|'key'|'files';message:string};
+/** Scheduled rest alerts and the ongoing workout notification carry exercise and workout names.
+ * Best effort and never blocks the deletion: with no notification permission there is nothing to cancel. */
+export async function cancelAllNotifications(): Promise<void> {
+  try { await Notifications.cancelAllScheduledNotificationsAsync(); } catch { /* Nothing scheduled, or no permission. */ }
+  try { await Notifications.dismissAllNotificationsAsync(); } catch { /* Nothing shown. */ }
+}
 export type DeletionOps = {
   removeDatabase: typeof deleteLocalDatabase;
   removeKey: typeof deleteKey;
   removeTemporaryFiles: typeof deleteTemporaryFiles;
+  removeNotifications?: typeof cancelAllNotifications;
 };
 export const deletionOps: DeletionOps = {
   removeDatabase: deleteLocalDatabase, removeKey: deleteKey, removeTemporaryFiles: deleteTemporaryFiles,
+  removeNotifications: cancelAllNotifications,
 };
 /** Only v2 SQLite and SecureStore contain user-managed data in Phase 2. No app-created document files exist. */
 export function deletionIncludesAppFiles(): boolean { return false; }
@@ -74,6 +83,7 @@ export async function deleteEverythingOnPhone(confirmation:string, ops: Deletion
     message:translate(language,'dataStorage.deleteKeyFailed')};
   if (!(await ops.removeTemporaryFiles())) return {ok:false,stage:'files',
     message:translate(language,'dataStorage.deleteFilesFailed')};
+  await ops.removeNotifications?.();
   clearImportDraft();
   return {ok:true};
 }

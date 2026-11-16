@@ -2,6 +2,7 @@ import { canDeleteEverything, deleteEverythingOnPhone, formatLocalDatabaseSize,
   deletionIncludesAppFiles, type DeletionOps } from '../storage';
 import { DB_MIGRATIONS, isMissingDatabaseError } from '../../../services/database';
 import { getImportDraft, setImportDraft } from '../../import/importDraft';
+jest.mock('expo-notifications', () => ({ cancelAllScheduledNotificationsAsync: jest.fn(async () => undefined), dismissAllNotificationsAsync: jest.fn(async () => undefined) }));
 
 test('ST-6 confirmation requires the exact uppercase DELETE', () => {
   expect(canDeleteEverything('DELETE')).toBe(true);
