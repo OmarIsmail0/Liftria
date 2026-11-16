@@ -379,6 +379,12 @@ export default function ActiveWorkoutScreen() {
     <Typography tone="secondary">{error ?? t('active.opening')}</Typography>
   </Screen>;
   const barPad = restVisible ? 148 : theme.space[4];
+
+  // Superset and reorder edits from the exercise menu: say so when the database refuses.
+  const finishMenuEdit = (edit: Promise<{ ok: boolean }>) => {
+    void edit.then(result => { if (!result.ok) setError(t('active.saveError')); }, () => setError(t('active.saveError')))
+      .then(() => { void refresh(); setMenuFor(null); });
+  };
   return <Screen embedded safeBottom scroll={false}>
     {screenOn && focused && <KeepScreenOn />}
     <View style={{ paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[2], gap: theme.space[2],
@@ -515,22 +521,22 @@ export default function ActiveWorkoutScreen() {
       }} />
       {menuExercise && !menuExercise.supersetGroup && menuIndex + 1 < view.exercises.length &&
         <Button label={t('gymParity.linkNext')} variant="neutral" fullWidth onPress={() => {
-          void updateActiveSuperset(view.id, menuIndex, 2).then(() => { void refresh(); setMenuFor(null); });
+          finishMenuEdit(updateActiveSuperset(view.id, menuIndex, 2));
         }} />}
       {menuExercise && !menuExercise.supersetGroup && menuIndex + 2 < view.exercises.length &&
         <Button label={t('gymParity.superset') + ' × 3'} variant="neutral" fullWidth onPress={() => {
-          void updateActiveSuperset(view.id, menuIndex, 3).then(() => { void refresh(); setMenuFor(null); });
+          finishMenuEdit(updateActiveSuperset(view.id, menuIndex, 3));
         }} />}
       {menuExercise?.supersetGroup && <Button label={t('gymParity.unlink')} variant="neutral" fullWidth onPress={() => {
-        void updateActiveSuperset(view.id, menuIndex, 0).then(() => { void refresh(); setMenuFor(null); });
+        finishMenuEdit(updateActiveSuperset(view.id, menuIndex, 0));
       }} />}
       <Button label={t('active.notes')} variant="neutral" fullWidth onPress={() => {
         const exercise = menuExercise; setMenuFor(null); if (exercise) setNoteFor(exercise.id);
       }} />
       <Button label={t('active.earlier')} variant="neutral" fullWidth disabled={menuIndex <= 0}
-        onPress={() => { if (menuExercise) void reorderActiveExercise(view.id, menuExercise.id, -1).then(() => { void refresh(); setMenuFor(null); }); }} />
+        onPress={() => { if (menuExercise) finishMenuEdit(reorderActiveExercise(view.id, menuExercise.id, -1)); }} />
       <Button label={t('active.later')} variant="neutral" fullWidth disabled={menuIndex < 0 || menuIndex >= view.exercises.length - 1}
-        onPress={() => { if (menuExercise) void reorderActiveExercise(view.id, menuExercise.id, 1).then(() => { void refresh(); setMenuFor(null); }); }} />
+        onPress={() => { if (menuExercise) finishMenuEdit(reorderActiveExercise(view.id, menuExercise.id, 1)); }} />
       <Button label={t('workout.restTime')} variant="neutral" fullWidth onPress={() => {
         const exercise = menuExercise; setMenuFor(null); if (exercise) setRestFor(exercise.id);
       }} />
@@ -611,7 +617,9 @@ export default function ActiveWorkoutScreen() {
       <Button label={t('workout.removeKeep')} fullWidth onPress={() => setRemoveFor(null)} />
       <Button label={t('workout.removeExercise')} variant="destructive" fullWidth onPress={() => {
         if (!removeFor) return;
-        void removeActiveExercise(view.id, removeFor).then(() => { setRemoveFor(null); void refresh(); });
+        void removeActiveExercise(view.id, removeFor).then(result => {
+          setRemoveFor(null); if (!result.ok) setError(t('active.saveError')); void refresh();
+        }, () => { setRemoveFor(null); setError(t('active.saveError')); });
       }} />
     </Sheet>
     <Sheet visible={discardVisible} title={t('train.discardTitle')} destructive
