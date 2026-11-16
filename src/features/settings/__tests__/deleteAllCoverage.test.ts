@@ -24,6 +24,12 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(async (key: string, value: string) => { mockSecureItems.set(key, value); }),
   deleteItemAsync: jest.fn(async (key: string) => { mockSecureItems.delete(key); }),
 }));
+const mockScheduled = new Set<string>();
+const mockShown = new Set<string>();
+jest.mock('expo-notifications', () => ({
+  cancelAllScheduledNotificationsAsync: jest.fn(async () => { mockScheduled.clear(); }),
+  dismissAllNotificationsAsync: jest.fn(async () => { mockShown.clear(); }),
+}));
 jest.mock('expo-sqlite', () => jest.requireActual('./memorySqlite').memoryExpoSqlite);
 jest.mock('expo-file-system', () => jest.requireActual('./memoryFileSystem').memoryFileSystem);
 
@@ -82,12 +88,30 @@ beforeEach(async () => {
   resetMemorySqlite();
   resetMemoryFileSystem();
   mockSecureItems.clear();
+  mockScheduled.clear();
+  mockShown.clear();
 });
 
 test('Delete all leaves no row in any table, no kept Hiku photo, no SecureStore item and no file', async () => {
   await fillThePhone();
   expect(await deleteEverythingOnPhone('DELETE')).toEqual({ ok: true });
   expect(await leftAfterDeleteAll()).toEqual([]);
+});
+
+test('Delete all also cancels scheduled rest alerts and dismisses the workout notification', async () => {
+  await fillThePhone();
+  mockScheduled.add('liftria-rest-session-1');
+  mockShown.add('liftria-workout');
+  expect(await deleteEverythingOnPhone('DELETE')).toEqual({ ok: true });
+  expect([...mockScheduled, ...mockShown]).toEqual([]);
+});
+
+test('a notification call that throws (no permission) never blocks Delete all', async () => {
+  await fillThePhone();
+  const notifications = jest.requireMock('expo-notifications') as Record<string, jest.Mock>;
+  notifications.cancelAllScheduledNotificationsAsync!.mockRejectedValueOnce(new Error('no permission'));
+  notifications.dismissAllNotificationsAsync!.mockRejectedValueOnce(new Error('no permission'));
+  expect(await deleteEverythingOnPhone('DELETE')).toEqual({ ok: true });
 });
 
 test('the guard notices a table, the key or a file that Delete all leaves behind', async () => {

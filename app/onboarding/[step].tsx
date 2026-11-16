@@ -19,6 +19,7 @@ import { availabilityMessage, missingHealthPermissions, offerHealthConnectInstal
 import { appleHealthPhone, listsAndroidWatchApps, onboardingDescriptionKey, onboardingTitleKey } from '../../src/features/health/deviceHealth';
 import { getKey, saveKey, isKeyWellFormed } from '../../src/services/secure-storage';
 import { setSetting } from '../../src/services/database';
+import { testAnthropicKey } from '../../src/features/settings/keyTest';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
 
@@ -266,15 +267,13 @@ export default function OnboardingStepScreen() {
         setKeyTestResult(t('onboarding.saveYourKeyOnThis'));
         return;
       }
-      // Explicit user-initiated check only. No local profile, diary or health
-      // information is sent; key is used only in the request's auth header.
-      const response = await fetch('https://api.anthropic.com/v1/models?limit=1', {
-        method: 'GET',
-        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-      });
-      setKeyTestResult(response.ok ? t('onboarding.keyVerifiedWithAnthropic') :
-        response.status === 401 ? t('onboarding.anthropicDidNotAcceptThis') :
-          t('onboarding.anthropicCouldNotVerifyThe'));
+      // Explicit user-initiated check only (20 s timeout). No local profile, diary or health
+      // information is sent; the key goes only in the request's auth header.
+      const outcome = await testAnthropicKey(key, false);
+      setKeyTestResult(outcome === 'works' ? t('onboarding.keyVerifiedWithAnthropic') :
+        outcome === 'unauthorized' ? t('onboarding.anthropicDidNotAcceptThis') :
+          outcome === 'unavailable' ? t('onboarding.couldNotReachAnthropicYour') :
+            t('onboarding.anthropicCouldNotVerifyThe'));
     } catch {
       setKeyTestResult(t('onboarding.couldNotReachAnthropicYour'));
     } finally { setBusy(false); }

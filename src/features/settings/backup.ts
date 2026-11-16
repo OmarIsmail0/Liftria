@@ -58,8 +58,9 @@ export function validateBackupTables(tables:Record<string,unknown>,backupVersion
  }
  return data;
 }
+export const MAX_BACKUP_BYTES=100*1024*1024;
 export function parseBackup(raw:string,manifest:BackupManifest=BACKUP_MANIFEST):BackupData{
- if(raw.length>100*1024*1024)throw new Error('Backup is too large');
+ if(raw.length>MAX_BACKUP_BYTES)throw new Error('Backup is too large');
  const value:unknown=JSON.parse(raw);
  if(!obj(value)||value.format!=='liftria-backup'||value.formatVersion!==1||
    typeof value.schemaVersion!=='number'||typeof value.exportedAt!=='string'||
