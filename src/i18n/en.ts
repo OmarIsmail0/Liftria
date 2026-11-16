@@ -333,6 +333,7 @@ export const en = {
   'eatI.weekAccessible.other': 'Food logged on {count} days in this week.',
   'eatI.caloriesOnlyNoMacros': "Calories-only entries do not include macros.",
   'eatI.gramUnit': "g",
+  'eatI.gramsChoice': "Grams",
   'eatI.iftarTime': "Iftar time (local, HH:MM)",
   'eatI.saveTime': "Save iftar time",
   'trend.nutrition': "Nutrition trends",

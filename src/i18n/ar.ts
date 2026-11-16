@@ -334,6 +334,7 @@ export const ar: Record<TranslationKey, string> = {
   'eatI.weekAccessible.other': 'تم تسجيل الطعام خلال {count} يوم هذا الأسبوع.',
   'eatI.caloriesOnlyNoMacros': "الأصناف المسجلة بسعراتها فقط لا تتضمن قيم المغذيات.",
   'eatI.gramUnit': "غ",
+  'eatI.gramsChoice': "جرام",
   'eatI.iftarTime': "وقت الإفطار المحلي (HH:MM)",
   'eatI.saveTime': "حفظ وقت الإفطار",
   'trend.nutrition': "اتجاهات التغذية",
