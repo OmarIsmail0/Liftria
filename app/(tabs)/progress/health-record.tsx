@@ -3,7 +3,7 @@ import { appleHealthPhone, formatAppleAmount, healthAdapterVisible, healthCopy }
 import { formatNumber, latinDigits, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Card, Chip, Header, ListGroup, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { listCachedHealth } from '../../../src/services/database';
 import { healthConnect } from '../../../src/services/health';
 import { metricTypes, type HealthRecord, type MetricType, type PermissionState } from '../../../src/services/health/types';
@@ -58,7 +58,7 @@ function HealthRecordDetailAndroid() {
   }, [metric,query.recordId,query.origin,query.adapter]);
 
   return <Screen embedded>
-    <Header title={t('healthRecord.title')} subtitle={t(healthCopy('record.readOnly'))}
+    <Header mode="inline" title={t('healthRecord.title')} subtitle={t(healthCopy('record.readOnly'))}
       onBack={() => { if (router.canGoBack()) router.back(); else router.replace({ pathname: '/(tabs)/progress/health-detail', params: { metric } }); }} />
     {loading ? <Typography tone="secondary">{t(healthCopy('record.loading'))}</Typography> :
       !appleHealthPhone() && permission !== 'granted' ? <Card title={t('healthRecord.notAllowed')}>
@@ -67,12 +67,12 @@ function HealthRecordDetailAndroid() {
         <Typography>{t(healthCopy('record.notFound'))}</Typography>
         {appleHealthPhone() && <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>}
       </Card> : <>
-        <Card rim="health" title={t('healthRecord.recorded')}>
-          <Chip kind={record.kind === 'interval' && record.metric === 'steps' &&
-            sourceName(record.dataOrigin) === 'Phone' ? 'phone' : 'pending'}
-            label={sourceName(record.dataOrigin)} />
-          <Chip kind="pending" label={t('healthRecord.unverified')} />
-          <ListRow title={t('healthRecord.value')} detail={measuredValue(record)} />
+        <Typography size="metric">{measuredValue(record)}</Typography>
+        <Chip kind={record.kind === 'interval' && record.metric === 'steps' &&
+          sourceName(record.dataOrigin) === 'Phone' ? 'phone' : 'pending'}
+          label={sourceName(record.dataOrigin)} />
+        <Chip kind="pending" label={t('healthRecord.unverified')} />
+        <ListGroup>
           <ListRow title={t('healthRecord.time')} detail={new Date(recordAt(record)).toLocaleString(dateLocale)} />
           <ListRow title={t('healthRecord.origin')} detail={`${sourceName(record.dataOrigin)} · ${record.dataOrigin}`} />
           <ListRow title={t('healthRecord.device')} detail={record.device?.model
@@ -80,11 +80,9 @@ function HealthRecordDetailAndroid() {
             : t('healthRecord.noDevice')} />
           <ListRow title={t('healthRecord.recordedRead')} detail={t('healthRecord.recordedAt',{time:latinDigits(new Date(recordAt(record)).toLocaleTimeString(dateLocale))})+' · '+(query.readAt?t('healthRecord.checked',{time:latinDigits(new Date(query.readAt).toLocaleTimeString(dateLocale))}):t('healthRecord.noReadTime'))} />
           <ListRow title={t('healthRecord.permission')} detail={appleHealthPhone()?t('appleHealth.record.access'):t('healthRecord.allowed')} />
-        </Card>
-        <Card title={t('healthRecord.aboutFields')}>
-          <Typography tone="secondary">{t(healthCopy('record.originNote'))}</Typography>
-          <Typography tone="secondary">{t(healthCopy('record.noWrite'))}</Typography>
-        </Card>
+        </ListGroup>
+        <Typography tone="secondary" size="secondary">{t(healthCopy('record.originNote'))}</Typography>
+        <Typography tone="secondary" size="secondary">{t(healthCopy('record.noWrite'))}</Typography>
       </>}
   </Screen>;
 }

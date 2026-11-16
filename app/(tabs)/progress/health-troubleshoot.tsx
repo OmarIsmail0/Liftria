@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { RefreshControl, ScrollView  } from 'react-native';
 import { appleHealthPhone } from '../../../src/features/health/deviceHealth';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Button, Chip, Header, ListGroup, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
 
@@ -36,22 +36,21 @@ function HealthTroubleshootAndroid() {
   return <Screen embedded scroll={false}><ScrollView
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh(true)} />}
     contentContainerStyle={{ gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title={t('healthTr.title')} subtitle={t('healthTr.subtitle')}
+    <Header mode="inline" title={t('healthTr.title')} subtitle={t('healthTr.subtitle')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title={refreshing ? t('healthTr.checking') : t('healthTr.verify')} rim="health">
+    <ListGroup>
       {checks.map((item,i) => <ListRow key={i} title={`${i+1}. ${item.name}`}
         accessibilityLabel={`${item.name}. ${item.state}. ${item.detail}`}
         detail={item.detail}
         suffix={<Chip kind={item.good ? 'off' : 'pending'} label={item.state} />} />)}
-      <Typography tone="secondary" size="small">{t('healthTr.unknown')}</Typography>
-    </Card>
-    <Card title={t('healthTr.missingTitle')}>
-      <Typography>{t('healthTr.instructions')}</Typography>
-      <Button label={t('healthTr.how')} variant="secondary"
-        onPress={() => router.push('/(tabs)/progress/health-sync')} />
-      <Button label={t('healthTr.permissions')} variant="ghost"
-        onPress={() => router.push('/(tabs)/progress/health-permissions')} />
-    </Card>
+    </ListGroup>
+    <Typography tone="secondary" size="secondary">{refreshing ? t('healthTr.checking') : t('healthTr.verify')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('healthTr.unknown')}</Typography>
+    <Typography>{t('healthTr.instructions')}</Typography>
+    <Button label={t('healthTr.how')} variant="tonal"
+      onPress={() => router.push('/(tabs)/progress/health-sync')} />
+    <Button label={t('healthTr.permissions')} variant="plain"
+      onPress={() => router.push('/(tabs)/progress/health-permissions')} />
     <Button label={refreshing ? t('healthTr.checking') : t('healthTr.recheck')} disabled={refreshing}
       fullWidth onPress={() => void refresh(true)} />
   </ScrollView></Screen>;
@@ -80,15 +79,16 @@ function HealthTroubleshootIos() {
   return <Screen embedded scroll={false}><ScrollView
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh(true)} />}
     contentContainerStyle={{ gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title={t('appleHealth.tr.title')} subtitle={t('appleHealth.tr.subtitle')}
+    <Header mode="inline" title={t('appleHealth.tr.title')} subtitle={t('appleHealth.tr.subtitle')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title={refreshing ? t('appleHealth.tr.checking') : t('appleHealth.tr.title')} rim="health">
+    <ListGroup>
       {checks.map((item, i) => <ListRow key={item.name} title={`${i + 1}. ${item.name}`}
         accessibilityLabel={`${item.name}. ${item.state}. ${item.detail}`}
         detail={item.detail}
         suffix={<Chip kind={item.good ? 'off' : 'pending'} label={item.state} />} />)}
-    </Card>
-    <Button label={t('appleHealth.tr.permissions')} variant="secondary"
+    </ListGroup>
+    <Typography tone="secondary" size="secondary">{refreshing ? t('appleHealth.tr.checking') : t('appleHealth.tr.title')}</Typography>
+    <Button label={t('appleHealth.tr.permissions')} variant="neutral"
       onPress={() => router.push('/(tabs)/progress/health-permissions')} />
     <Button label={refreshing ? t('appleHealth.tr.checking') : t('appleHealth.tr.recheck')} disabled={refreshing}
       fullWidth onPress={() => void refresh(true)} />
