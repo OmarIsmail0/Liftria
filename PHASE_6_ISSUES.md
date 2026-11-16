@@ -2,6 +2,8 @@
 
 Claude's task list for the build agent. **This file is Claude's.** Don't edit it on PR branches. Put progress in your PR description.
 
+**Status: all eight tasks are merged (2026-11-16). Follow-ups are listed at the end.**
+
 **Goal (owner, 2026-11-16):** make Liftria look clean, calm and familiar, like Apple Fitness, Hevy or MyFitnessPal. The owner approved the direction, the system font and the standard labelled tab bar. Builder: Cursor (Grok), run by Claude. If Cursor fails a task, Claude hands it to a Sonnet agent.
 
 **Read first, every task:**
@@ -100,8 +102,15 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
    - **Home without an API key:** one card explaining Hiku in two lines with a single filled "Add API key" button. **With a key:** "Describe a meal" filled, "Analyze a meal photo" tonal with the Beta chip, then a list group for Usage and privacy.
    - Describe, review, photo and usage screens: inline header, list groups, estimate chips kept, flat cards.
 
-8. **PR H: `Phase 6 / Settings and onboarding`**
+8. ~~**PR H: `Phase 6 / Settings and onboarding`**~~ DONE: PR #122 merged (2026-11-16).
    - **Settings:** grouped list as in the mockup (Appearance, Your plan, Preferences, Data), each row showing its current value at the end; theme and language open a choice sheet or stay as segmented controls inside the group; "Delete all data" is a destructive text button with the existing confirmation.
    - All settings sub-screens: inline header, list groups, platform `Switch`.
    - **Onboarding:** one idea per screen, large title, at most two lines of secondary text, one filled button at the bottom, a plain "Skip" where it exists today. No empty-looking screens: the welcome screen lists the three things Liftria does (Train, Eat, Progress) as plain rows.
    - Final sweep: `grep` for leftover uses of removed tokens, hard-coded colours and font sizes outside `tokens.ts`; fix them.
+
+## Follow-ups (small, after Phase 6)
+
+- Eat → portion: one chip shows only "g"; give it a full label.
+- Arabic gram unit shows "غ"; decide between "غ" and "جم" and use one everywhere.
+- Notifications settings still shows a "Pending S22 device test" chip; replace with final copy once the owner has tested rest alerts on the phone.
+- Speed and tablet layouts were not measured in this pass.
