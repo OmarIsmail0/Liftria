@@ -1,22 +1,20 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, View } from 'react-native';
-import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../design/primitives';
+import { Pressable, Text, View } from 'react-native';
+import { Button, Card, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, Typography } from '../../design/primitives';
 import { SearchIcon } from '../../design/primitives/TabIcon';
 import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { muscleLabel } from '../../i18n/muscles';
-import { exerciseName } from '../../i18n/exerciseNames';
-import { bidiIsolate, formatDate, joinList, pluralForm, type TranslationKey } from '../../i18n';
+import { formatDate, formatNumber, pluralForm, translateWorkoutCount, type TranslationKey } from '../../i18n';
 import { deleteTemplate, listPlans, listSessions, listTemplates, saveTemplate, type Plan, type Session, type Template } from '../../services/database/gymRepositories';
 import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
 import { weekDays, scheduledTemplate, isLocalDate } from './weekPlan';
 import { elapsedLabel } from './restClock';
 import { ensureExercisePack, listExercises } from '../../services/database/exerciseLibrary';
-import { readStrengthObservations } from '../../services/database/historyRepository';
-import { calculateMuscleRecovery, relativeTrainingDay, type MuscleRecovery } from './recoveryMath';
+import { relativeTrainingDay } from './recoveryMath';
 import type { Exercise } from '../../services/database/gymTypes';
+import { PressRow } from './PressRow';
 
 export default function TrainHome() {
   const {theme}=useTheme();
@@ -28,12 +26,25 @@ export default function TrainHome() {
   const [discard,setDiscard]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState(false);
-  const [muscles,setMuscles]=useState<MuscleRecovery[]>([]);
   const [starterBusy,setStarterBusy]=useState(false);
   const [starterMessage,setStarterMessage]=useState<string|null>(null);
   const [library,setLibrary]=useState<Record<string,Exercise>>({});
   const [menuTemplate,setMenuTemplate]=useState<Template|null>(null);
   const [deleteTemplateId,setDeleteTemplateId]=useState<string|null>(null);
+  const refresh=useCallback(async()=>{
+    const [a,ts,ps,ss,pack]=await Promise.all([
+      readInProgressWorkout(),listTemplates(),listPlans(),listSessions(250),
+      ensureExercisePack().then(seeded=>seeded.ok?listExercises():Promise.resolve(null)),
+    ]);
+    if(pack?.ok)setLibrary(Object.fromEntries(pack.value.map(exercise=>[exercise.id,exercise])));
+    setError(!a.ok||!ts.ok||!ps.ok||!ss.ok);
+    if(a.ok)setActive(a.value);
+    if(ts.ok)setTemplates(ts.value);
+    if(ps.ok)setPlans(ps.value);
+    if(ss.ok)setSessions(ss.value);
+    setLoading(false);
+  },[]);
+  useFocusEffect(useCallback(()=>{void refresh();},[refresh]));
   const starter=async(name:'Upper A'|'Lower B')=>{
     if(starterBusy)return;
     setStarterBusy(true);
@@ -51,24 +62,8 @@ export default function TrainHome() {
     }else setStarterMessage(t('train.libraryError'));
     setStarterBusy(false);
   };
-  const refresh=useCallback(async()=>{
-    const [a,ts,ps,ss,ms,pack]=await Promise.all([
-      readInProgressWorkout(),listTemplates(),listPlans(),listSessions(250),readStrengthObservations(),
-      ensureExercisePack().then(seeded=>seeded.ok?listExercises():Promise.resolve(null)),
-    ]);
-    if(pack?.ok)setLibrary(Object.fromEntries(pack.value.map(exercise=>[exercise.id,exercise])));
-    if(ms.ok)setMuscles(calculateMuscleRecovery(ms.value,new Date()));
-    setError(!a.ok||!ts.ok||!ps.ok||!ss.ok);
-    if(a.ok)setActive(a.value);
-    if(ts.ok)setTemplates(ts.value);
-    if(ps.ok)setPlans(ps.value);
-    if(ss.ok)setSessions(ss.value);
-    setLoading(false);
-  },[]);
-  useFocusEffect(useCallback(()=>{void refresh();},[refresh]));
   const today=new Date();
   const plan=plans.find(p=>p.active)??null;
-  const planned=scheduledTemplate(plan,templates,today);
   const logged=sessions.filter(s=>s.state==='finished');
   const resume=()=>{if(active)router.push({pathname:'/(tabs)/train/active',params:{id:active.id}});};
   const deleteActive=async()=>{
@@ -83,13 +78,14 @@ export default function TrainHome() {
     if(session.state!=='finished'||!session.templateId||lastDone.has(session.templateId))continue;
     lastDone.set(session.templateId,session.startedAt);
   }
-  const routineLine=(template:Template)=>{
-    const names=template.exercises.map(exercise=>exerciseName(language,exercise.exerciseId,
-      library[exercise.exerciseId]?.name??exercise.exerciseId));
-    const head=joinList(language,names.slice(0,3));
-    const extra=names.length>3?' '+bidiIsolate(language,t('train.moreExercises',{count:names.length-3})):'';
-    return head+extra;
+  const routineDetail=(template:Template)=>{
+    const exercises=t((`count.exercises.${pluralForm(language,template.exercises.length)}`) as TranslationKey,{count:template.exercises.length});
+    const when=lastDone.get(template.id);
+    if(!when)return exercises;
+    return t('train.routineWhen',{exercises,when:relativeTrainingDay(when,today,language)});
   };
+  const routineTitle=(name:string)=>name==='Upper A'?t('train.starterUpperName'):
+    name==='Lower B'?t('train.starterLowerName'):name;
   const duplicate=async(template:Template)=>{
     const saved=await saveTemplate({name:t('train.copyName',{name:template.name}),
       restSec:template.restSec,notes:template.notes,exercises:template.exercises});
@@ -102,6 +98,14 @@ export default function TrainHome() {
     setDeleteTemplateId(null);
     if(result.ok)await refresh();
   };
+  const starters:('Upper A'|'Lower B')[]=[];
+  if(!templates.some(template=>template.name==='Upper A'))starters.push('Upper A');
+  if(!templates.some(template=>template.name==='Lower B'))starters.push('Lower B');
+  const routineRows=templates.length+starters.length;
+  const exerciseCount=Object.keys(library).length;
+  const openPreview=(templateId?:string)=>router.push(templateId?
+    {pathname:'/(tabs)/train/preview',params:{templateId}}:
+    '/(tabs)/train/preview');
   return <Screen embedded>
     <Header mode="large" title={t('nav.train')} right={
       <Pressable accessibilityRole="button" accessibilityLabel={t('train.search')}
@@ -112,125 +116,109 @@ export default function TrainHome() {
     {loading?<Typography tone="secondary">{t('train.loading')}</Typography>:
       error?<Card><Typography>{t('train.loadError')}</Typography>
         <Button label={t('train.retry')} onPress={()=>void refresh()}/></Card>:
-      active&&<Card rim="train" title={t('train.inProgress')}>
-        <Typography>{active.title} · {elapsedLabel(active.startedAt)} · {t((`train.setsLogged.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })}</Typography>
-        <Button label={t('train.resume')} size="xl" variant="train" fullWidth onPress={resume}/>
-        <Button label={t('train.discard')} variant="danger" onPress={()=>setDiscard(true)}/>
+      active&&<Card>
+        <Typography size="secondary" tone="secondary">{t('train.inProgress')}</Typography>
+        <Typography bold>{active.title}</Typography>
+        <Typography tone="secondary" size="secondary">{elapsedLabel(active.startedAt)} · {t((`train.setsLogged.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })}</Typography>
+        <Button label={t('train.resume')} variant="primary" fullWidth onPress={resume}/>
+        <Button label={t('train.discard')} variant="destructive" fullWidth onPress={()=>setDiscard(true)}/>
       </Card>}
-    <Button label={t('train.startEmpty')} variant="train" fullWidth
-      onPress={()=>router.push('/(tabs)/train/preview')}/>
-    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:theme.space[2]}}>
-      <Typography size="label" tone="tertiary">{t('train.myRoutines')}</Typography>
-      <Button label={'+ '+t('train.newRoutine')} variant="ghost" onPress={()=>router.push('/(tabs)/train/template')}/>
+    <Button label={t('train.startEmpty')} variant="primary" fullWidth onPress={()=>openPreview()}/>
+    <View style={{gap:theme.space[2]}}>
+      <SectionHeader title={t('train.routines')} actionLabel={t('train.newRoutine')}
+        onAction={()=>router.push('/(tabs)/train/template')}/>
+      {!loading && routineRows>0 && <ListGroup>
+        {templates.map((template,index)=>{
+          const last=index===templates.length-1 && starters.length===0;
+          return <PressRow key={template.id} title={routineTitle(template.name)} detail={routineDetail(template)}
+            divider={!last} onPress={()=>openPreview(template.id)}
+            onLongPress={()=>setMenuTemplate(template)} longPressLabel={t('train.routineOptions')}
+            trailing={<Pressable accessibilityRole="button" accessibilityLabel={t('train.routineOptions')}
+              onPress={()=>setMenuTemplate(template)}
+              style={{width:theme.size.touch.min,height:theme.size.touch.min,alignItems:'center',justifyContent:'center'}}>
+              <Text allowFontScaling style={{color:theme.color.text.primary,fontSize:theme.type.title.size,
+                lineHeight:theme.type.title.line}}>{'⋯'}</Text>
+            </Pressable>}/>;
+        })}
+        {starters.map((name,index)=><PressRow key={name} title={routineTitle(name)} detail={t('train.starterLabel')}
+          divider={index!==starters.length-1} onPress={()=>void starter(name)}/>)}
+      </ListGroup>}
+      {starterMessage?<Typography>{starterMessage}</Typography>:null}
     </View>
-    {templates.length===0?<Typography tone="secondary">{t('train.startWithoutPlan')}</Typography>:
-      templates.map(template=>{
-        const when=lastDone.get(template.id);
-        return <Pressable key={template.id} accessibilityRole="button" accessibilityLabel={template.name}
-          onLongPress={()=>setMenuTemplate(template)} delayLongPress={500}
-          style={{minHeight:theme.size.touch.min}}>
-          <Card>
-            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:theme.space[2]}}>
-              <Typography size="head" lines={1}>{template.name}</Typography>
-              <Pressable accessibilityRole="button" accessibilityLabel={t('train.routineOptions')}
-                onPress={()=>setMenuTemplate(template)}
-                style={{width:theme.size.touch.min,height:theme.size.touch.min,alignItems:'center',justifyContent:'center'}}>
-                <Typography size="head">⋯</Typography>
-              </Pressable>
-            </View>
-            <Typography tone="secondary">{routineLine(template)}</Typography>
-            {planned?.id===template.id && <Typography size="small">{t('train.planned',{name:template.name})}</Typography>}
-            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:theme.space[2]}}>
-              <Typography tone="secondary" size="small">
-                {t('train.lastDone',{when:when?relativeTrainingDay(when,today,language):t('train.notDoneYet')})}
-              </Typography>
-              <Button label={t('preview.start')} size="sm" variant="train"
-                onPress={()=>router.push({pathname:'/(tabs)/train/preview',params:{templateId:template.id}})}/>
-            </View>
-          </Card>
-        </Pressable>;
-      })}
-    <Typography size="label" tone="tertiary">{t('train.explore')}</Typography>
-    <Card title={t('train.starterRoutines')}>
-      <Typography tone="secondary" size="small">{t('train.starterHint')}</Typography>
-      <Button label={t('train.starterUpper')} variant="secondary" disabled={starterBusy}
-        fullWidth onPress={()=>void starter('Upper A')}/>
-      <Button label={t('train.starterLower')} variant="secondary" disabled={starterBusy}
-        fullWidth onPress={()=>void starter('Lower B')}/>
-      {starterMessage&&<Typography>{starterMessage}</Typography>}
-    </Card>
-    <ListRow title={t('train.importTitle')} detail={t('train.importDescription')}
-      onPress={()=>router.push('/import')}/>
-    <Card title={t('train.explore')}>
-      <View style={{flexDirection:'row',gap:theme.space[2],flexWrap:'wrap'}}>
-        <Button label={t('train.templatesPlans')} variant="secondary" onPress={()=>router.push('/(tabs)/train/plans')}/>
-        <Button label={t('train.exercises')} variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>
-        <Button label={t('train.muscles')} variant="secondary" onPress={()=>router.push('/(tabs)/train/muscles')}/>
-      </View>
-    </Card>
-    <Card title={t('train.muscles')} rim="train">
-      {muscles.every(m=>m.lastCredit===null)?
-        <Typography tone="secondary">{t('train.noMuscles')}</Typography>:
-        <Typography tone="secondary">{t('train.trainedRecently', { names: joinList(language, muscles.filter(m=>m.band==='higher').sort((a,b)=>b.score-a.score)
-          .slice(0,3).map(m=>muscleLabel(language,m.muscle))) || t('train.recentSessions') })}
-          {muscles.some(m=>m.band==='ready')?' '+t('train.otherReady'):''}</Typography>}
-      <Typography tone="tertiary" size="small">{t('train.recoveryEstimate')}</Typography>
-      <Button label={t('train.openMuscles')} variant="secondary" onPress={()=>router.push('/(tabs)/train/recovery')}/>
-    </Card>
-    <Card title={t('train.week')}>
-      <View style={{flexDirection:'row',justifyContent:'space-between',flexWrap:'wrap',gap:theme.space[1]}}>
+    <View style={{gap:theme.space[2]}}>
+      <SectionHeader title={t('train.librarySection')}/>
+      <ListGroup>
+        <ListRow title={t('train.exercises')}
+          value={!loading && exerciseCount>0 ? formatNumber(language, exerciseCount) : undefined}
+          onPress={()=>router.push('/(tabs)/train/library')}/>
+        <ListRow title={t('train.history')}
+          value={!loading && !error ? translateWorkoutCount(language, logged.length) : undefined}
+          onPress={()=>router.push('/(tabs)/train/history')}/>
+        <ListRow title={t('train.records')} onPress={()=>router.push('/(tabs)/train/records')}/>
+        <ListRow title={t('train.musclesRecovery')} onPress={()=>router.push('/(tabs)/train/recovery')}/>
+        <ListRow title={t('train.templatesPlans')} onPress={()=>router.push('/(tabs)/train/plans')}/>
+        <ListRow title={t('progress.strengthTrends')} onPress={()=>router.push('/(tabs)/progress/strength')}/>
+      </ListGroup>
+    </View>
+    <ListGroup>
+      <ListRow title={t('train.importRow')} detail={t('train.importDescription')}
+        onPress={()=>router.push('/import')}/>
+    </ListGroup>
+    <View style={{gap:theme.space[2]}}>
+      <SectionHeader title={t('train.week')}/>
+      <View style={{flexDirection:'row',gap:theme.space[1]}}>
         {weekDays(today).map(day=>{
           const done=logged.some(s=>isLocalDate(s.startedAt,day.date));
           const next=scheduledTemplate(plan,templates,day.date);
           const label=done?t('train.done'):next?.name??t('train.rest');
           return <View key={day.label} accessible accessibilityLabel={day.label+', '+label+
-            (day.today?', '+t('train.todayA11y'):'')} style={{minWidth:40,minHeight:60,alignItems:'center',
-            justifyContent:'center',padding:theme.space[1],borderRadius:theme.radius.md,
-            borderColor:day.today?theme.color.domain.train:theme.color.border.subtle,
-            borderWidth:day.today?2:1}}>
-            <Typography size="small">{formatDate(language, day.date, { weekday: 'short' })}</Typography>
-            <Typography tone="secondary" size="small">{done?'✓':day.today?t('nav.today'):next?'●':'—'}</Typography>
+            (day.today?', '+t('train.todayA11y'):'')} style={{flex:1,minHeight:theme.size.touch.min,
+            alignItems:'center',justifyContent:'center',gap:theme.space[1]}}>
+            <Text allowFontScaling style={{textAlign:'center',fontWeight:'600',
+              color:day.today?theme.color.accent:theme.color.text.primary,
+              fontSize:theme.type.caption.size,lineHeight:theme.type.caption.line}}>
+              {formatDate(language, day.date, { weekday: 'short' })}
+            </Text>
+            <Text allowFontScaling numberOfLines={1} style={{textAlign:'center',
+              color:theme.color.text.secondary,fontSize:theme.type.caption.size,lineHeight:theme.type.caption.line}}>
+              {done?'✓':day.today?t('nav.today'):next?'●':'—'}
+            </Text>
           </View>;
         })}
       </View>
-      <Typography tone="secondary" size="small">{t('train.weekNote')}</Typography>
-    </Card>
-    <Card title={t('train.historyTitle')}>
-      <View style={{flexDirection:'row',flexWrap:'wrap',gap:theme.space[2]}}>
-        <Button label={t('train.history')} variant="secondary" onPress={()=>router.push('/(tabs)/train/history')}/>
-        <Button label={t('train.records')} variant="secondary" onPress={()=>router.push('/(tabs)/train/records')}/>
-        <Button label={t('progress.strengthTrends')} variant="secondary" onPress={()=>router.push('/(tabs)/progress/strength')}/>
-      </View>
-    </Card>
-    <Card title={t('train.recent')}>
+      <Typography tone="secondary" size="secondary">{t('train.weekNote')}</Typography>
+    </View>
+    <View style={{gap:theme.space[2]}}>
+      <SectionHeader title={t('train.recent')}/>
       {logged.length===0?<Typography tone="secondary">{t('train.noCompleted')}</Typography>:
-        logged.slice(0,4).map(s=><ListRow key={s.id} title={s.title}
-          detail={formatDate(language, new Date(s.startedAt))}
-          onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}/>)}
-    </Card>
-    <Typography tone="tertiary" size="small">{t('train.offline')}</Typography>
-    <Sheet visible={menuTemplate!==null} title={menuTemplate?.name??t('train.routineOptions')}
+        <ListGroup>
+          {logged.slice(0,4).map(s=><ListRow key={s.id} title={s.title}
+            detail={formatDate(language, new Date(s.startedAt))}
+            onPress={()=>router.push({pathname:'/(tabs)/train/session',params:{id:s.id}})}/>)}
+        </ListGroup>}
+    </View>
+    <Sheet visible={menuTemplate!==null} title={menuTemplate?routineTitle(menuTemplate.name):t('train.routineOptions')}
       onClose={()=>setMenuTemplate(null)}>
-      <Button label={t('train.editTemplate')} variant="secondary" fullWidth onPress={()=>{
+      <Button label={t('train.editTemplate')} variant="neutral" fullWidth onPress={()=>{
         const template=menuTemplate; setMenuTemplate(null);
         if(template)router.push({pathname:'/(tabs)/train/template',params:{id:template.id}});
       }}/>
-      <Button label={t('train.duplicate')} variant="secondary" fullWidth
+      <Button label={t('train.duplicate')} variant="neutral" fullWidth
         onPress={()=>{if(menuTemplate)void duplicate(menuTemplate);}}/>
-      <Button label={t('train.deleteRoutine')} variant="danger" fullWidth onPress={()=>{
+      <Button label={t('train.deleteRoutine')} variant="destructive" fullWidth onPress={()=>{
         const template=menuTemplate; setMenuTemplate(null); if(template)setDeleteTemplateId(template.id);
       }}/>
     </Sheet>
     <Sheet visible={deleteTemplateId!==null} title={t('train.deleteRoutineTitle')} destructive
       description={t('train.deleteRoutineDesc')} onClose={()=>setDeleteTemplateId(null)}>
       <Button label={t('train.keep')} fullWidth onPress={()=>setDeleteTemplateId(null)}/>
-      <Button label={t('train.deleteRoutine')} variant="danger" fullWidth onPress={()=>void removeTemplate()}/>
+      <Button label={t('train.deleteRoutine')} variant="destructive" fullWidth onPress={()=>void removeTemplate()}/>
     </Sheet>
     <Sheet visible={discard} title={t('train.discardTitle')} destructive
       description={t((`train.discardDescription.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })
       } onClose={()=>setDiscard(false)}>
       <Button label={t('train.keep')} fullWidth onPress={()=>setDiscard(false)}/>
-      <Button label={t('train.discard')} variant="danger" fullWidth onPress={()=>void deleteActive()}/>
+      <Button label={t('train.discard')} variant="destructive" fullWidth onPress={()=>void deleteActive()}/>
     </Sheet>
   </Screen>;
 }
