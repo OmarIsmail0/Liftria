@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { Card, Header, Screen, SegmentedControl, Typography } from '../../src/design/primitives';
+import { Header, Screen, SectionHeader, SegmentedControl, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import type { ThemeMode } from '../../src/design/tokens';
 
@@ -15,11 +15,10 @@ export default function AppearanceSettings() {
     { value: 'light', label: t('appearance.light') },
   ];
   return <Screen>
-    <Header title={t('appearance.title')} subtitle={t('appearance.subtitle')} onBack={() => backOrReplace(router, '/settings')} />
-    <Card title={t('appearance.theme')}>
-      <Typography tone="secondary" size="secondary">{t('appearance.themeDescription')}</Typography>
-      <SegmentedControl label={t('appearance.theme')} options={modeOptions}
-        value={preferences.mode} onChange={setMode} />
-    </Card>
+    <Header mode="inline" title={t('appearance.title')} onBack={() => backOrReplace(router, '/settings')} />
+    <SectionHeader title={t('appearance.theme')} />
+    <Typography tone="secondary" size="secondary">{t('appearance.themeDescription')}</Typography>
+    <SegmentedControl label={t('appearance.theme')} options={modeOptions}
+      value={preferences.mode} onChange={setMode} />
   </Screen>;
 }

@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { weightUnitLabel } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { Button, Card, Header, Screen, SegmentedControl, Stepper, Toggle, Typography } from '../../src/design/primitives';
+import { Button, Header, ListGroup, Screen, SectionHeader, SegmentedControl, Stepper, Toggle, Typography } from '../../src/design/primitives';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { backOrReplace } from '../../src/navigation/back';
 import { getTypedSetting, setTypedSetting } from '../../src/services/database/settings';
@@ -67,48 +67,53 @@ export default function UnitsAndPreferences() {
     }
   }
 
+  const toggles = (children: ReactNode) => (
+    <ListGroup>
+      <View style={{ paddingHorizontal: theme.space[4], paddingVertical: theme.space[2], gap: theme.space[2] }}>
+        {children}
+      </View>
+    </ListGroup>
+  );
   return <Screen>
     <Header mode="inline" title={t('preferences.title')}
       onBack={() => backOrReplace(router, '/settings')} />
-    <Card title={t('preferences.units')}>
-      <Typography tone="secondary" size="small">{t('preferences.unitsDescription')}</Typography>
-      <SegmentedControl label={t('preferences.weight')} options={[
-        { value:'kg', label:weightUnitLabel(language,'kg') }, { value:'lb', label:weightUnitLabel(language,'lb') }]}
-        value={values.weight} onChange={v => void change('weight', v)} />
-      <SegmentedControl label={t('preferences.height')} options={[{ value:'cm', label:t('units.cm') }, { value:'ftin', label:t('units.ftIn') }]}
-        value={values.height} onChange={v => void change('height', v)} />
-      <Stepper label={t('gymParity.barWeight',{unit:weightUnitLabel(language,values.weight)})}
-        value={values.weight==='kg'?values.barKg:values.barLb}
-        unit={weightUnitLabel(language,values.weight)} step={values.weight==='kg'?2.5:5} min={2.5} max={values.weight==='kg'?100:220}
-        onChange={v=>void change(values.weight==='kg'?'barKg':'barLb',v)}/>
-      <Toggle label={t('preferences.smallPlates')} detail={t('preferences.smallPlatesDetail')}
-        value={values.smallPlates} onChange={v => void change('smallPlates', v)} />
-      <Typography tone="secondary">{t('preferences.energy')}</Typography>
-      <Typography tone="secondary" size="small">{t('preferences.kjFuture')}</Typography>
-    </Card>
-    <Card title={t('water.settings')}>
-      <Stepper label={t('water.glassSize')} value={values.glassMl} unit={t('units.ml')}
-       step={50} min={50} max={1000} onChange={v=>void change('glassMl',v)}/>
-    </Card>
-    <Card title={t('gymParity.trainingSettings')}>
-      <Typography tone="secondary" size="small">{t('gymParity.effortHint')}</Typography>
-      <SegmentedControl label={t('gymParity.effortChoice')} value={values.effort}
-        onChange={v=>void change('effort',v)}
-        options={[{value:'off',label:t('gymParity.off')},
-         {value:'rpe',label:t('effort.rpeShort')},{value:'rir',label:t('effort.rirShort')}]}/>
-    </Card>
-    <Card title={t('preferences.display')}>
+    <SectionHeader title={t('preferences.units')} />
+    <Typography tone="secondary" size="secondary">{t('preferences.unitsDescription')}</Typography>
+    <SegmentedControl label={t('preferences.weight')} options={[
+      { value:'kg', label:weightUnitLabel(language,'kg') }, { value:'lb', label:weightUnitLabel(language,'lb') }]}
+      value={values.weight} onChange={v => void change('weight', v)} />
+    <SegmentedControl label={t('preferences.height')} options={[{ value:'cm', label:t('units.cm') }, { value:'ftin', label:t('units.ftIn') }]}
+      value={values.height} onChange={v => void change('height', v)} />
+    <Stepper label={t('gymParity.barWeight',{unit:weightUnitLabel(language,values.weight)})}
+      value={values.weight==='kg'?values.barKg:values.barLb}
+      unit={weightUnitLabel(language,values.weight)} step={values.weight==='kg'?2.5:5} min={2.5} max={values.weight==='kg'?100:220}
+      onChange={v=>void change(values.weight==='kg'?'barKg':'barLb',v)}/>
+    {toggles(<Toggle label={t('preferences.smallPlates')} detail={t('preferences.smallPlatesDetail')}
+      value={values.smallPlates} onChange={v => void change('smallPlates', v)} />)}
+    <Typography tone="secondary">{t('preferences.energy')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('preferences.kjFuture')}</Typography>
+    <SectionHeader title={t('water.settings')} />
+    <Stepper label={t('water.glassSize')} value={values.glassMl} unit={t('units.ml')}
+      step={50} min={50} max={1000} onChange={v=>void change('glassMl',v)}/>
+    <SectionHeader title={t('gymParity.trainingSettings')} />
+    <Typography tone="secondary" size="secondary">{t('gymParity.effortHint')}</Typography>
+    <SegmentedControl label={t('gymParity.effortChoice')} value={values.effort}
+      onChange={v=>void change('effort',v)}
+      options={[{value:'off',label:t('gymParity.off')},
+        {value:'rpe',label:t('effort.rpeShort')},{value:'rir',label:t('effort.rirShort')}]}/>
+    <SectionHeader title={t('preferences.display')} />
+    {toggles(<>
       <Toggle label={t('preferences.hide')} detail={t('preferences.hideDetail')}
         value={values.hideNumbers} onChange={v => void change('hideNumbers', v)} />
       <Toggle label={t('preferences.keepOn')} detail={t('preferences.keepOnDetail')}
         value={values.keepScreenOn} onChange={v => void change('keepScreenOn', v)} />
       <Toggle label={t('preferences.haptics')} detail={t('preferences.hapticsDetail')}
         value={values.haptics} onChange={v => void change('haptics', v)} />
-    </Card>
+    </>)}
     {!ready && <Typography tone="secondary">{t('preferences.loading')}</Typography>}
     {error && <View accessibilityRole="alert" style={{ paddingVertical: theme.space[2] }}>
       <Typography tone="secondary">ⓘ {error}</Typography>
     </View>}
-    <Button label={t('preferences.back')} variant="ghost" onPress={() => backOrReplace(router, '/settings')} />
+    <Button label={t('preferences.back')} variant="plain" onPress={() => backOrReplace(router, '/settings')} />
   </Screen>;
 }
