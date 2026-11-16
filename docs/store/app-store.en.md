@@ -16,7 +16,7 @@ FOOD, WITHOUT THE GUESSWORK
 Log meals and portions, including Egyptian staples. See calories, macros, fiber, sugar and sodium when those values are available. Missing nutrients remain unknown, not zero. Count glasses of water with a quick tap.
 
 TRAIN WITH A PLAN
-Organize exercises and workout templates. Record sets, reps, loads and rest, and revisit your training history. Get optional warm-up and plate-loading suggestions when you need them.
+Organize exercises and workout routines. Record sets, reps, loads and rest, and revisit your training history. Get optional warm-up and plate-loading suggestions when you need them.
 
 SEE THE BIGGER PICTURE
 Track body weight and view trends over time. With enough logged food days and weigh-ins, Liftria estimates energy expenditure from your history and can suggest a new weekly calorie target—never changing it without your approval. Review supported device health data where the integration is available and you allow access.
