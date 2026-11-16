@@ -108,9 +108,10 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
    - **Onboarding:** one idea per screen, large title, at most two lines of secondary text, one filled button at the bottom, a plain "Skip" where it exists today. No empty-looking screens: the welcome screen lists the three things Liftria does (Train, Eat, Progress) as plain rows.
    - Final sweep: `grep` for leftover uses of removed tokens, hard-coded colours and font sizes outside `tokens.ts`; fix them.
 
-## Follow-ups (small, after Phase 6)
+## Follow-ups
 
-- Eat → portion: one chip shows only "g"; give it a full label.
-- Arabic gram unit shows "غ"; decide between "غ" and "جم" and use one everywhere.
-- Notifications settings still shows a "Pending S22 device test" chip; replace with final copy once the owner has tested rest alerts on the phone.
+Done in PR #125 (2026-11-16): the portion chip reads "Grams" / "جرام"; Arabic units are "جم", "ملجم" and "كجم" everywhere (owner's choice), with a guard test; the notifications chip reads "In testing" / "قيد الاختبار".
+
+Still open:
 - Speed and tablet layouts were not measured in this pass.
+- The owner's real-phone check of the redesign.
