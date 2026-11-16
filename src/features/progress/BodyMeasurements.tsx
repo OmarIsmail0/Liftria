@@ -7,7 +7,7 @@ import {
 } from '../../i18n';
 import { formatEditableNumber } from '../../i18n/editableNumber';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { Button, Card, Field, Header, ListRow, Screen, Sheet, Typography } from '../../design/primitives';
+import { Button, Card, EmptyState, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, Typography } from '../../design/primitives';
 import { localDay } from '../eat/foodCatalog';
 import { getTypedSetting } from '../../services/database/settings';
 import type { WeightUnit } from '../train/workoutUnits';
@@ -88,18 +88,22 @@ export function BodyMeasurements({ weightUnit, hidden }: { weightUnit: WeightUni
     await load();
   }
   return <>
-    <Card rim="health" title={t('measure.title')}>
-      {ready && summaries.length === 0 && !error &&
-        <Typography tone="secondary">{t('measure.empty')}</Typography>}
+    <SectionHeader title={t('measure.title')} actionLabel={summaries.length > 0 ? t('measure.add') : undefined}
+      onAction={summaries.length > 0 ? openAdd : undefined} />
+    {ready && summaries.length === 0 && !error && <Card>
+      <EmptyState title={t('measure.title')} description={t('measure.empty')}
+        action={<Button label={t('measure.add')} variant="tonal" onPress={openAdd} />} />
+    </Card>}
+    {summaries.length > 0 && <ListGroup>
       {summaries.map(item => <ListRow key={item.site} title={t(siteKey(item.site))}
         detail={summaryDetail(t, language, item, unit, hidden)}
+        value={hidden ? t('trend.hidden') : formatMeasurement(item.latest.cm, unit, language)}
         onPress={() => router.push({ pathname: '/(tabs)/progress/measurement/[site]', params: { site: item.site } })} />)}
-      {error && <>
-        <Typography tone="secondary">{t('measure.loadError')}</Typography>
-        <Button label={t('common.retry')} onPress={() => void load()} />
-      </>}
-      <Button label={t('measure.add')} variant="secondary" onPress={openAdd} />
-    </Card>
+    </ListGroup>}
+    {error && <>
+      <Typography tone="secondary">{t('measure.loadError')}</Typography>
+      <Button label={t('common.retry')} variant="neutral" onPress={() => void load()} />
+    </>}
     <Sheet visible={adding} title={t('measure.add')} description={t('measure.formHelp')}
       onClose={() => { if (!busy) setAdding(false); }}>
       {MEASUREMENT_SITES.map(site => <Field key={site}
@@ -120,13 +124,13 @@ export function summaryDetail(
   language: AppLanguage, item: SiteSummary, unit: LengthUnit, hidden: boolean,
 ): string {
   const when = formatWhen(language, item.latest.measuredAt);
-  if (hidden) return t('trend.hidden') + ' · ' + when;
+  if (hidden) return when;
   const change = item.previous
     ? t('measure.sincePrevious', {
       change: formatSignedMeasurement(shownChange(item.latest.cm, item.previous.cm, unit), unit, language),
     })
     : t('measure.firstEntry');
-  return formatMeasurement(item.latest.cm, unit, language) + ' · ' + when + ' · ' + change;
+  return when + ' · ' + change;
 }
 
 export function MeasurementSiteScreen() {
@@ -189,29 +193,37 @@ export function MeasurementSiteScreen() {
     setEditing(null);
     await load();
   }
+  const newest = [...entries].sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))[0];
+  const earlier = [...entries].sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))[1];
   if (!site) return <Screen embedded scroll={false}>
-    <Header title={t('measure.title')} onBack={goBack} />
+    <Header mode="inline" title={t('measure.title')} onBack={goBack} />
     <Typography tone="secondary">{t('measure.unknownSite')}</Typography>
   </Screen>;
   return <Screen embedded scroll={false}>
     <ScrollView keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ gap: theme.layout.cardGap, paddingVertical: theme.space[3] }}>
-      <Header title={t(siteKey(site))} onBack={goBack} />
-      <Card rim="health" title={t('measure.title')}>
-        {ready && entries.length === 0 && !error &&
-          <Typography tone="secondary">{t('measure.historyEmpty')}</Typography>}
-        {entries.length > 0 && <MeasurementGraph points={points} hidden={hidden}
-          accessibilityLabel={chartLabel(t, language, entries.length, hidden)}
-          valueLabel={value => formatShownLength(value, unit, language)} />}
+      <Header mode="inline" title={t(siteKey(site))} onBack={goBack} />
+      {newest && <Typography size="metric">{hidden ? t('trend.hidden') : formatMeasurement(newest.cm, unit, language)}</Typography>}
+      {entries.length > 0 && <MeasurementGraph points={points} hidden={hidden}
+        accessibilityLabel={chartLabel(t, language, entries.length, hidden)}
+        valueLabel={value => formatShownLength(value, unit, language)} />}
+      {newest && earlier && !hidden && <Typography tone="secondary" size="secondary">{t('measure.sincePrevious', {
+        change: formatSignedMeasurement(shownChange(newest.cm, earlier.cm, unit), unit, language),
+      })}</Typography>}
+      {newest && !earlier && <Typography tone="secondary" size="secondary">{t('measure.firstEntry')}</Typography>}
+      <Typography tone="secondary" size="secondary">{t('measure.privacy')}</Typography>
+      {ready && entries.length === 0 && !error &&
+        <Typography tone="secondary">{t('measure.historyEmpty')}</Typography>}
+      {entries.length > 0 && <ListGroup>
         {entries.map(entry => <ListRow key={entry.id}
           title={hidden ? t('trend.hidden') : formatMeasurement(entry.cm, unit, language)}
           detail={formatWhen(language, entry.measuredAt) + (entry.note ? ' · ' + entry.note : '')}
           onPress={() => openEdit(entry)} />)}
-        {error && <>
-          <Typography tone="secondary">{t('measure.loadError')}</Typography>
-          <Button label={t('common.retry')} onPress={() => void load()} />
-        </>}
-      </Card>
+      </ListGroup>}
+      {error && <>
+        <Typography tone="secondary">{t('measure.loadError')}</Typography>
+        <Button label={t('common.retry')} variant="neutral" onPress={() => void load()} />
+      </>}
     </ScrollView>
     <Sheet visible={editing !== null} title={t('measure.edit')} description={t('measure.privacy')}
       onClose={() => { if (!busy) setEditing(null); }}>
@@ -221,7 +233,7 @@ export function MeasurementSiteScreen() {
       <Field label={t('trend.date')} value={day} onChangeText={setDay} placeholder={t('trend.datePlaceholder')} />
       <Field label={t('trend.note')} value={note} onChangeText={setNote} multiline />
       <Button label={t('trend.saveChanges')} disabled={!canSave || busy} fullWidth onPress={() => void save()} />
-      <Button label={t('measure.delete')} variant="danger" disabled={busy} onPress={() => void remove()} />
+      <Button label={t('measure.delete')} variant="destructive" disabled={busy} onPress={() => void remove()} />
     </Sheet>
   </Screen>;
 }
