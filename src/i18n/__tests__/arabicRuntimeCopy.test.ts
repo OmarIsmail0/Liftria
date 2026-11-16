@@ -40,7 +40,7 @@ jest.mock('../../services/database', () => ({
   })),
 }));
 
-/** Words an Arabic reader should never meet. Weight units are كغ and رطل, not kg and lb. */
+/** Words an Arabic reader should never meet. Weight units are كجم and رطل, not kg and lb. */
 const latinWords = (text: string): string[] =>
   text.replace(/\{\w+\}/g, ' ').match(/[A-Za-z]+/g) ?? [];
 const expectArabic = (text: string | null) => {

@@ -82,7 +82,9 @@ export function ChoiceChips({ label, options, value, onChange }: {
         accessibilityState={{ selected, checked: selected }} onPress={() => onChange(option.value)}
         style={({ pressed }) => ({
           minHeight: theme.size.touch.min, paddingHorizontal: theme.space[3], alignItems: 'center', justifyContent: 'center',
-          borderRadius: theme.radius.pill, opacity: pressed ? 0.8 : 1,
+          borderRadius: theme.radius.pill, borderWidth: 2,
+          borderColor: selected ? theme.color.accent : 'transparent',
+          opacity: pressed ? 0.8 : 1,
           backgroundColor: selected ? theme.color.tint.accent : theme.color.bg.raised,
         })}>
         <Text allowFontScaling style={{

@@ -4,7 +4,7 @@ test('units are a display choice: stored metric values never mutate', () => {
   const weightKg = 78.4, heightCm = 180;
   expect(displayWeight(weightKg, 'kg')).toBe('78.4 kg');
   expect(displayWeight(weightKg, 'lb')).toBe('172.8 lb');
-  expect(displayWeight(weightKg, 'kg', 'ar')).toBe('78.4 كغ');
+  expect(displayWeight(weightKg, 'kg', 'ar')).toBe('78.4 كجم');
   expect(displayWeight(weightKg, 'lb', 'ar')).toBe('172.8 رطل');
   expect(displayHeight(heightCm, 'cm')).toBe('180 cm');
   expect(displayHeight(heightCm, 'ftin')).toBe('5′ 11″');

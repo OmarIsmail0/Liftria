@@ -59,7 +59,7 @@ export default function PortionPicker() {
             setPortionKey(portion.labelEn);
             setGrams(formatEditableNumber(portion.grams, 'grams'));
           }} options={[
-            { value: 'g', label: t('eatI.gramUnit') },
+            { value: 'g', label: t('eatI.gramsChoice') },
             ...food.portions.map(item => ({
               value: item.labelEn,
               label: language === 'ar' ? (item.labelAr ?? item.labelEn) : item.labelEn,
