@@ -38,7 +38,7 @@ export default function MuscleBrowser() {
     let mounted = true;
     void (async () => {
       const pack = await ensureExercisePack();
-      const loaded = pack.ok ? await listExercises() : null;
+      const loaded = pack.ok ? await listExercises(false, true) : null;
       if (mounted) {
         if (loaded?.ok) setAll(loaded.value);
         else setError(true);

@@ -70,6 +70,49 @@ export async function readHistoryDetail(id:string):Promise<DbResult<HistoryDetai
       source:session.source,importer:session.importer,importedAt:importDate},exercises};
   });
 }
+/**
+ * Total volume (kg) of the given finished workouts, in two queries instead of several per
+ * workout. It builds the same exercises and sets as readHistoryDetail and uses historyNumbers.
+ */
+export async function readWorkoutsVolume(ids:readonly string[]):Promise<DbResult<number>>{
+  return dbOperation(async db=>{
+    const wanted=[...new Set(ids)].slice(0,500);
+    if(wanted.length===0)return 0;
+    const marks=wanted.map(()=>'?').join(',');
+    const rows=await db.getAllAsync<{
+      id:string;session_id:string;exercise_id:string;name:string;type:ExerciseType;unilateral:number;position:number;
+      primary_muscles:string|null;secondary_muscles:string|null
+    }>("SELECT se.id,se.session_id,se.exercise_id,se.position,e.name,e.type,e.unilateral,e.primary_muscles,e.secondary_muscles "+
+      "FROM session_exercises se JOIN exercises e ON e.id=se.exercise_id JOIN sessions s ON s.id=se.session_id "+
+      "WHERE se.session_id IN ("+marks+") AND s.state='finished' ORDER BY se.session_id,se.position",wanted);
+    const sets=await db.getAllAsync<{
+      id:string;session_exercise_id:string;position:number;kind:HistorySet['kind'];
+      side:HistorySet['side'];mark:string|null;weight:number;reps:number;logged_at:string;rest_deadline:string|null;rpe:number|null;rir:number|null
+    }>("SELECT * FROM sets WHERE session_exercise_id IN (SELECT id FROM session_exercises WHERE session_id IN ("+marks+
+      ")) ORDER BY session_exercise_id,position,side",wanted);
+    const bySessionExercise=new Map<string,HistorySet[]>();
+    for(const s of sets){
+      const list=bySessionExercise.get(s.session_exercise_id)??[];
+      list.push({id:s.id,sessionExerciseId:s.session_exercise_id,position:s.position,
+        kind:s.kind,mark:storedSetMark(s.kind,s.mark),side:s.side,weight:s.weight,reps:s.reps,loggedAt:s.logged_at,
+        restDeadline:s.rest_deadline,rpe:s.rpe??null,rir:s.rir??null});
+      bySessionExercise.set(s.session_exercise_id,list);
+    }
+    const perSession=new Map<string,HistoryExercise[]>();
+    for(const e of rows){
+      const list=perSession.get(e.session_id)??[];
+      list.push({id:e.id,exerciseId:e.exercise_id,name:e.name,type:e.type,unilateral:e.unilateral===1,
+        position:e.position,primary:parseMuscles(e.primary_muscles),secondary:parseMuscles(e.secondary_muscles),
+        sets:bySessionExercise.get(e.id)??[]});
+      perSession.set(e.session_id,list);
+    }
+    let volume=0;
+    for(const exercises of perSession.values()){
+      volume+=historyNumbers({session:{} as HistorySession,exercises}).volume;
+    }
+    return volume;
+  });
+}
 export function historyNumbers(detail:HistoryDetail):{sets:number;volume:number}{
   let sets=0,volume=0;
   for(const e of detail.exercises){
@@ -196,22 +239,30 @@ export type StrengthObservation={sessionId:string;exerciseId:string;name:string;
   endedAt:string;weight:number;reps:number;kind:'working'|'warm-up';side:'L'|'R'|null;
   position:number;sessionExerciseId:string;unilateral:boolean;
   primary:Muscle[];secondary:Muscle[];loggedAt:string};
+type StrengthRow={
+  session_id:string;exercise_id:string;name:string;type:ExerciseType;ended_at:string;
+  weight:number;reps:number;kind:'working'|'warm-up';side:'L'|'R'|null;position:number;
+  session_exercise_id:string;unilateral:number;primary_muscles:string|null;
+  secondary_muscles:string|null;logged_at:string
+};
+const STRENGTH_SELECT="SELECT s.id AS session_id,se.exercise_id,e.name,e.type,s.ended_at, "+
+  "st.weight,st.reps,st.kind,st.side,st.position,st.session_exercise_id,e.unilateral, "+
+  "e.primary_muscles,e.secondary_muscles,st.logged_at "+
+  "FROM sets st JOIN session_exercises se ON se.id=st.session_exercise_id "+
+  "JOIN exercises e ON e.id=se.exercise_id JOIN sessions s ON s.id=se.session_id "+
+  "WHERE s.state='finished' AND st.kind='working' AND st.reps>0";
+const toStrength=(s:StrengthRow):StrengthObservation=>({
+  sessionId:s.session_id,exerciseId:s.exercise_id,name:s.name,type:s.type,
+  endedAt:s.ended_at,weight:s.weight,reps:s.reps,kind:s.kind,side:s.side,
+  position:s.position,sessionExerciseId:s.session_exercise_id,unilateral:s.unilateral===1,
+  primary:parseMuscles(s.primary_muscles),secondary:parseMuscles(s.secondary_muscles),
+  loggedAt:s.logged_at,
+});
 export async function readStrengthObservations():Promise<DbResult<StrengthObservation[]>>{
-  return dbOperation(async db=>(await db.getAllAsync<{
-    session_id:string;exercise_id:string;name:string;type:ExerciseType;ended_at:string;
-    weight:number;reps:number;kind:'working'|'warm-up';side:'L'|'R'|null;position:number;
-    session_exercise_id:string;unilateral:number;primary_muscles:string|null;
-    secondary_muscles:string|null;logged_at:string
-  }>("SELECT s.id AS session_id,se.exercise_id,e.name,e.type,s.ended_at, "+
-    "st.weight,st.reps,st.kind,st.side,st.position,st.session_exercise_id,e.unilateral, "+
-    "e.primary_muscles,e.secondary_muscles,st.logged_at "+
-    "FROM sets st JOIN session_exercises se ON se.id=st.session_exercise_id "+
-    "JOIN exercises e ON e.id=se.exercise_id JOIN sessions s ON s.id=se.session_id "+
-    "WHERE s.state='finished' AND st.kind='working' AND st.reps>0")).map(s=>({
-      sessionId:s.session_id,exerciseId:s.exercise_id,name:s.name,type:s.type,
-      endedAt:s.ended_at,weight:s.weight,reps:s.reps,kind:s.kind,side:s.side,
-      position:s.position,sessionExerciseId:s.session_exercise_id,unilateral:s.unilateral===1,
-      primary:parseMuscles(s.primary_muscles),secondary:parseMuscles(s.secondary_muscles),
-      loggedAt:s.logged_at,
-    })));
+  return dbOperation(async db=>(await db.getAllAsync<StrengthRow>(STRENGTH_SELECT)).map(toStrength));
+}
+/** The Progress tab only shows the newest loaded set, so it reads one row, not the whole history. */
+export async function readLatestStrengthObservation():Promise<DbResult<StrengthObservation[]>>{
+  return dbOperation(async db=>(await db.getAllAsync<StrengthRow>(
+    STRENGTH_SELECT+" AND st.weight>0 ORDER BY st.logged_at DESC LIMIT 1")).map(toStrength));
 }

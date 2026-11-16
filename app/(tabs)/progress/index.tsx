@@ -13,13 +13,13 @@ import { listAllMeasurements } from '../../../src/features/progress/measurementR
 import {
   formatMeasurement, lengthUnitForWeight, summarizeMeasurements, type BodyMeasurement,
 } from '../../../src/features/progress/measurements';
-import { progressPhotoUsage } from '../../../src/features/progress/progressPhotoRepository';
+import { progressPhotoCount } from '../../../src/features/progress/progressPhotoRepository';
 import { WeightGraph } from '../../../src/features/progress/TrendCharts';
 import {
   nutritionTrend, rangeDays, weightTrend, type RangeKey, type WeightPoint,
 } from '../../../src/features/progress/trendMath';
 import { cachedHealthWeights, listLocalWeights, type LocalWeight } from '../../../src/features/progress/weightRepository';
-import { readStrengthObservations, type StrengthObservation } from '../../../src/services/database/historyRepository';
+import { readLatestStrengthObservation, type StrengthObservation } from '../../../src/services/database/historyRepository';
 import { getTypedSetting } from '../../../src/services/database/settings';
 import { fromKg, type WeightUnit } from '../../../src/features/train/workoutUnits';
 
@@ -41,8 +41,8 @@ export default function ProgressTab() {
     const [food, logged, cached, hide, unit, tapes, photos, strength] = await Promise.all([
       readDiaryRange(dayOffset(today, -days), dayOffset(today, -1)),
       listLocalWeights(), cachedHealthWeights(), getTypedSetting('hideNumbers'),
-      getTypedSetting('units.weight'), listAllMeasurements(), progressPhotoUsage(),
-      readStrengthObservations(),
+      getTypedSetting('units.weight'), listAllMeasurements(), progressPhotoCount(),
+      readLatestStrengthObservation(),
     ]);
     if (food.ok) setEntries(food.value); else setError(true);
     if (logged.ok) setLocal(logged.value); else setError(true);
@@ -50,7 +50,7 @@ export default function ProgressTab() {
     if (hide.ok) setHidden(hide.value);
     if (unit.ok) setWeightUnit(unit.value);
     if (tapes.ok) setMeasurements(tapes.value); else setError(true);
-    if (photos.ok) setPhotoCount(photos.value.count); else setError(true);
+    if (photos.ok) setPhotoCount(photos.value); else setError(true);
     if (strength.ok) setSets(strength.value); else setError(true);
   }, [range, today]);
   useFocusEffect(useCallback(() => { void load(); }, [load]));

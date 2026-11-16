@@ -143,3 +143,9 @@ export async function progressPhotoUsage(): Promise<DbResult<ProgressPhotoUsage>
     return { count: row?.count ?? 0, bytes: row?.bytes ?? 0 };
   });
 }
+
+/** Count only. `progressPhotoUsage` sums the length of every stored image, which reads them all. */
+export async function progressPhotoCount(): Promise<DbResult<number>> {
+  return dbOperation(async db =>
+    (await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM progress_photos'))?.count ?? 0);
+}

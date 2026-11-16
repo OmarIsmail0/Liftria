@@ -81,6 +81,8 @@ function PhotoVisual({ frame, blurred, label, height }: {
     source={{ uri: 'data:image/jpeg;base64,' + frame.image.base64 }}
     blurRadius={blurred ? PROGRESS_PHOTO_BLUR : 0}
     resizeMode="cover"
+    // Android decodes a 1080 px photo at the size it is drawn, not at full size, for the small thumbnails.
+    resizeMethod="resize"
     style={{ width: '100%', height, borderRadius: theme.radius.md }}
   />;
 }
