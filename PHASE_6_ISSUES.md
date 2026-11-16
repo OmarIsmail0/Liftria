@@ -50,7 +50,7 @@ Claude's task list for the build agent. **This file is Claude's.** Don't edit it
 
 ## Order
 
-1. **PR A: `Phase 6 / Tokens and primitives`**
+1. ~~**PR A: `Phase 6 / Tokens and primitives`**~~ DONE: PR #112 merged (2026-11-16).
    - `src/design/tokens.ts`: replace the palette, type, spacing and radius with the v2 values above. Keep token paths that screens already use (`theme.color.bg.base`, `theme.color.text.primary`, `theme.space[4]` and so on) so screens keep compiling; map old names to the nearest v2 value (for example `domain.train`, `domain.eat`, `domain.health` and `domain.hiku` all become the accent for interactive use; `action.primary` becomes accent on on-accent). List the mapping in the PR description.
    - Remove the aurora style: `effectiveStyle` is always `solid`. Delete `AmbientBackdrop`, `AuroraCardDecoration`, `TrainGradient`, `cardOuterGlow` and their uses; delete the glass, rim, ambient and orb token groups once nothing reads them. If Settings → Appearance has a visual-style choice, remove that control (keep stored preferences readable so old installs don't crash).
    - `src/design/fonts.ts`: stop loading Archivo, Figtree and IBM Plex Sans Arabic; `Typography` sets no `fontFamily`. Delete the font files and the font-loading step if nothing else needs it. Keep the app from flashing or crashing at startup.
