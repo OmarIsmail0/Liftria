@@ -13,7 +13,10 @@ before any app code changes.**
 
 ## v2 rules in short
 - Colours: neutral page and surface, one orange accent for actions, green/red for status,
-  three macro colours for data only. Values are in the `.lv` block of `mockup.html`.
+  three macro colours for data only. `src/design/tokens.ts` is the source of truth for
+  every value. The `.lv` block of `mockup.html` is the original design and is not updated;
+  some values were later adjusted for contrast: light accent `#B83B09`, light tertiary text
+  `#666A71`, light carbs `#8F6500`, dark strong border `#6A6F76`.
 - Type: system font, six sizes (44 metric, 30 large title, 20 title, 16 body, 14 secondary,
   12 caption). No uppercase labels, no letter-spacing.
 - Spacing 4/8/12/16/24/32, screen edge 16. Corners 8/12/16. Flat surfaces, no shadows on cards.

@@ -13,7 +13,7 @@ import { backOrReplace } from '../../src/navigation/back';
 import { DB_SCHEMA_VERSION } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
-import {MAX_BACKUP_CHARS,exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {MAX_BACKUP_CHARS,backupExceedsRestoreLimit,exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
 import {progressPhotoUsage,type ProgressPhotoUsage} from '../../src/features/progress/progressPhotoRepository';
 import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv,measurementsCsv} from '../../src/features/settings/csvExport';
@@ -83,9 +83,10 @@ export default function DataAndStorage() {
        kind==='workouts'?await workoutCsv():kind==='diary'?await diaryCsv():await measurementsCsv();
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
-      await shareFile(exportFileName(kind),
-       typeof result.value==='string'?result.value:JSON.stringify(result.value),extension==='json'?'json':'csv');
-      setMessage(t('backup.ready'));
+      const content=typeof result.value==='string'?result.value:JSON.stringify(result.value);
+      await shareFile(exportFileName(kind),content,extension==='json'?'json':'csv');
+      // The file is still saved, but warn when restore would refuse it for size.
+      setMessage(kind==='backup'&&backupExceedsRestoreLimit(content)?t('backup.tooLargeToRestore'):t('backup.ready'));
     }catch{setMessage(t('backup.shareFailed'));}
     finally{setBusy(false);}
   }

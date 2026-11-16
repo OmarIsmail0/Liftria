@@ -71,19 +71,20 @@ export function formatLocalDatabaseSize(bytes: number, language: AppLanguage = '
     : `${megabytes} ${translate(language, 'units.mb')}`;
 }
 
-/** Database first, Android Keystore key second, temporary files last. Never claim success after partial failure. */
+/** Database first, then notifications (best effort), Android Keystore key, temporary files last. Never claim success after partial failure. */
 export async function deleteEverythingOnPhone(confirmation:string, ops: DeletionOps = deletionOps,
   language: AppLanguage = 'en'): Promise<DeleteLocalOutcome> {
   if (!canDeleteEverything(confirmation)) return {ok:false,stage:'database',message:translate(language,'dataStorage.typeDelete')};
   const database = await ops.removeDatabase();
   if (!database.ok) return {ok:false,stage:'database',
     message:translate(language,'dataStorage.deleteDatabaseFailed')};
+  // Reminders must not outlive the data, even when a later step fails.
+  try { await ops.removeNotifications?.(); } catch { /* Best effort. */ }
   const key = await ops.removeKey();
   if (key.status !== 'missing') return {ok:false,stage:'key',
     message:translate(language,'dataStorage.deleteKeyFailed')};
   if (!(await ops.removeTemporaryFiles())) return {ok:false,stage:'files',
     message:translate(language,'dataStorage.deleteFilesFailed')};
-  await ops.removeNotifications?.();
   clearImportDraft();
   return {ok:true};
 }

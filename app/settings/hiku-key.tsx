@@ -74,6 +74,7 @@ export default function HikuKeySettings() {
       setMessage(outcome === 'works' ? t('hikuSettings.testWorks') :
         outcome === 'unauthorized' ? t('hikuSettings.testUnauthorized') :
         outcome === 'offline' ? t('hikuSettings.testOffline') :
+        outcome === 'unreachable' ? t('hikuSettings.testUnreachable') :
         outcome === 'model-unavailable' ? t('hikuK.modelUnavailable') : t('hikuSettings.testUnavailable'));
     } catch { setMessage(t('hikuSettings.testError')); }
     finally { setBusy(false); setTesting(false); }

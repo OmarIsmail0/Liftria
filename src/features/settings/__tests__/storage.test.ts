@@ -56,3 +56,15 @@ test('Delete all reports leftover temporary files instead of claiming success, a
  expect(await deleteEverythingOnPhone('DELETE',ops)).toEqual({ok:true});
  expect(removeTemporaryFiles).toHaveBeenCalledTimes(2);
 });
+test('Delete all cancels notifications even when removing the key or temporary files fails',async()=>{
+ const removeNotifications=jest.fn(async()=>undefined);
+ const base={removeDatabase:jest.fn(async()=>({ok:true as const,value:undefined})),removeNotifications};
+ const keyFails:DeletionOps={...base,removeKey:jest.fn(async()=>({status:'storage-error' as const})),
+  removeTemporaryFiles:jest.fn(async()=>true)};
+ expect(await deleteEverythingOnPhone('DELETE',keyFails)).toMatchObject({ok:false,stage:'key'});
+ expect(removeNotifications).toHaveBeenCalledTimes(1);
+ const filesFail:DeletionOps={...base,removeKey:jest.fn(async()=>({status:'missing' as const})),
+  removeTemporaryFiles:jest.fn(async()=>false)};
+ expect(await deleteEverythingOnPhone('DELETE',filesFail)).toMatchObject({ok:false,stage:'files'});
+ expect(removeNotifications).toHaveBeenCalledTimes(2);
+});

@@ -45,8 +45,11 @@ export default function IncomingImport(){
      url:sharedUrl,language,payloads:await sharedPieces(),
      readText:async uri=>{
       const file=new File(uri);
-      // Refuse a huge file before reading it into memory.
-      if(file.size>MAX_CSV_BYTES)throw new Error('too large');
+      // Refuse a huge file before reading it into memory. A content:// URI may not report a
+      // size (it can throw, or give 0/null); then the check after reading still applies.
+      let size:unknown;
+      try{size=file.size;}catch{size=undefined;}
+      if(typeof size==='number'&&size>MAX_CSV_BYTES)throw new Error('too large');
       return file.text();
      },
     });

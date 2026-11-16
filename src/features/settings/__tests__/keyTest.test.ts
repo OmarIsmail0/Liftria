@@ -19,7 +19,13 @@ test('ST-4 rejected and unreachable API test remain distinguishable', async () =
   expect(await testAnthropicKey('synthetic-test-key', false,
     async () => ({ status:401, ok:false }))).toBe('unauthorized');
   expect(await testAnthropicKey('synthetic-test-key', false,
-    async () => { throw new Error('offline'); })).toBe('unavailable');
+    async () => { throw new Error('offline'); })).toBe('unreachable');
+  for (const status of [403, 429, 500]) {
+    expect(await testAnthropicKey('synthetic-test-key', false,
+      async () => ({ status, ok:false }))).toBe('unavailable');
+  }
+  expect(keyTestMessage('unreachable')).toContain('Could not reach Anthropic');
+  expect(keyTestMessage('unavailable')).toContain('Could not verify');
 });
 
 test('selected-model access check distinguishes 403/404 without switching models',async()=>{
@@ -37,6 +43,6 @@ test('a hung key check is aborted after the timeout instead of waiting forever',
   }));
   const pending=testAnthropicKey('synthetic',false,request);
   await jest.advanceTimersByTimeAsync(KEY_TEST_TIMEOUT_MS+1);
-  expect(await pending).toBe('unavailable');
+  expect(await pending).toBe('unreachable');
  }finally{jest.useRealTimers();}
 });

@@ -287,6 +287,7 @@ export function importFailureText(error:ImportParseError,language:AppLanguage):s
 /** A file that could not be opened, as distinct from a CSV the parser rejected. */
 export function readFailureMessage(reason:unknown,language:AppLanguage):string{
  const raw=reason instanceof Error?reason.message:typeof reason==='string'?reason:'';
+ if(/too large/i.test(raw))return translate(language,'im1.tooLarge');
  if(/security|permission|not allowed|eacces|denied/i.test(raw))return translate(language,'im1.readDenied');
  if(/not found|enoent|no such|inputstream|was null/i.test(raw))return translate(language,'im1.readMissing');
  return translate(language,'im1.readFailed');

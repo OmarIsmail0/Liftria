@@ -1,6 +1,6 @@
 import { translate, type AppLanguage } from '../../i18n';
 /** Explicit user-initiated API key test; does not transmit profile/diary/health records. */
-export type KeyTestOutcome = 'works' | 'unauthorized' | 'offline' | 'unavailable' | 'model-unavailable';
+export type KeyTestOutcome = 'works' | 'unauthorized' | 'offline' | 'unreachable' | 'unavailable' | 'model-unavailable';
 export const KEY_TEST_TIMEOUT_MS = 20_000;
 export async function testAnthropicKey(
   key: string, offline: boolean,
@@ -22,7 +22,8 @@ export async function testAnthropicKey(
     return response.ok ? 'works' : response.status === 401 ? 'unauthorized' :
       model&&(response.status===403||response.status===404)?'model-unavailable':'unavailable';
   } catch {
-    return 'unavailable';
+    // A thrown error or the timeout: the request never got an answer.
+    return 'unreachable';
   } finally {
     clearTimeout(timer);
   }
@@ -32,5 +33,6 @@ export function keyTestMessage(outcome: KeyTestOutcome, language: AppLanguage = 
   if (outcome === 'model-unavailable') return translate(language, 'hikuK.modelUnavailable');
   if (outcome === 'unauthorized') return translate(language, 'hikuSettings.testUnauthorized');
   if (outcome === 'offline') return translate(language, 'hikuSettings.testOffline');
+  if (outcome === 'unreachable') return translate(language, 'hikuSettings.testUnreachable');
   return translate(language, 'hikuSettings.testUnavailable');
 }
