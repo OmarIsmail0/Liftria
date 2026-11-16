@@ -2,11 +2,11 @@ import { Tabs, usePathname } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
-import { CapsuleNav } from '../../src/design/primitives';
+import { TabBar } from '../../src/design/primitives';
 import { activeCapsuleTab } from '../../src/navigation/routes';
 import WorkoutMiniBar from '../../src/features/train/WorkoutMiniBar';
 
-/** A single full-height backdrop covers scenes AND the space below the capsule. */
+/** Scenes sit above the tab bar. The bar hides on the full-screen workout and Hiku flows. */
 export default function TabsLayout() {
   const { theme } = useTheme();
   const { t } = useLanguage();
@@ -20,7 +20,7 @@ export default function TabsLayout() {
       if (pathname.includes('/train/active') || pathname.includes('/train/preview') ||
         pathname.includes('/train/summary') || pathname.includes('/hiku/describe') ||
         pathname.includes('/hiku/review') || pathname.includes('/hiku/photo')) return null;
-      return <View><WorkoutMiniBar/><CapsuleNav active={active} onSelect={tab => {
+      return <View><WorkoutMiniBar/><TabBar active={active} onSelect={tab => {
         const route = state.routes.find(item => item.name === tab);
         if (!route) return;
         const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });

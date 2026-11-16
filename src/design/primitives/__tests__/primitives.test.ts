@@ -93,7 +93,7 @@ test('all required primitives have a unique hidden developer story screen', () =
   const required = [
     'screen', 'header', 'card', 'button', 'chip', 'banner', 'snackbar', 'sheet',
     'stepper', 'toggle', 'field', 'list-row', 'list-group', 'stat-block', 'progress-bar',
-    'empty-state', 'skeleton', 'orb', 'capsule-nav',
+    'empty-state', 'skeleton', 'orb', 'tab-bar',
   ];
   expect(primitiveStories.map(s => s.id)).toEqual(required);
   expect(new Set(primitiveStories.map(s => s.id)).size).toBe(required.length);

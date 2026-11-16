@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
-import Reanimated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { OrbArtwork } from './VisualEffects';
 import { TabIcon } from './TabIcon';
 import { capsuleTabs, orbSummary, type CapsuleTab } from './contracts';
-import { usePressScale, useSpringValue } from './Motion';
 
 export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   eaten: number; target: number | null; hidden?: boolean; active?: boolean; onPress?: () => void;
@@ -56,69 +54,35 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
   </Pressable>;
 }
 
-/** Flat stand-in for the capsule. A later task replaces it with a labelled tab bar. */
-export function CapsuleNav({ active, onSelect }: {
+/** Standard labelled bar. A row mirrors in Arabic. The safe-area inset stays below the labels. */
+export function TabBar({ active, onSelect }: {
   active: CapsuleTab; onSelect: (tab: CapsuleTab) => void;
 }) {
   const { theme } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
-  const index = Math.max(0, capsuleTabs.findIndex(tab => tab.key === active));
-  const position = useSpringValue(index);
-  const [width, setWidth] = useState(0);
-  const inset = theme.space[1];
-  const border = theme.size.border.thin;
-  const segment = width > 0 ? (width - border * 2 - inset * 2) / capsuleTabs.length : 0;
-  const segmentWidth = useSharedValue(0);
-  const direction = isRTL ? -1 : 1;
-  const slide = useAnimatedStyle(() => ({
-    transform: [{ translateX: direction * position.get() * segmentWidth.get() }],
-  }), [direction]);
-  return <View style={{
-    paddingHorizontal: theme.space[4], paddingTop: theme.space[2],
-    paddingBottom: Math.max(insets.bottom, theme.space[4]),
-    backgroundColor: 'transparent',
+  return <View accessibilityRole="tablist" style={{
+    flexDirection: 'row', alignItems: 'stretch',
+    backgroundColor: theme.color.bg.surface,
+    borderTopWidth: theme.size.border.thin, borderTopColor: theme.color.border.subtle,
+    paddingTop: 6, paddingHorizontal: theme.space[1],
+    paddingBottom: Math.max(insets.bottom, 10),
   }}>
-    <View accessibilityRole="tablist" onLayout={event => {
-      const next = event.nativeEvent.layout.width;
-      setWidth(next);
-      segmentWidth.set(next > 0 ? (next - border * 2 - inset * 2) / capsuleTabs.length : 0);
-    }} style={{
-      flexDirection: 'row', alignItems: 'center',
-      minHeight: theme.size.touch.nav, borderRadius: theme.radius.md,
-      padding: inset, borderWidth: border, borderColor: theme.color.border.subtle,
-      backgroundColor: theme.color.bg.surface,
-    }}>
-      <Reanimated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
-        start: inset, width: segment, borderRadius: theme.radius.sm,
-        backgroundColor: theme.color.accent }, slide]} />
-      {capsuleTabs.map((tab, at) => <CapsuleTabButton key={tab.key} tab={tab.key} selected={tab.key === active}
-        at={at} position={position} sliding={segment > 0}
-        label={t(`nav.${tab.key}`)} onPress={() => onSelect(tab.key)} />)}
-    </View>
+    {capsuleTabs.map(tab => {
+      const selected = tab.key === active;
+      const label = t(`nav.${tab.key}`);
+      const color = selected ? theme.color.accent : theme.color.text.tertiary;
+      return <Pressable key={tab.key} onPress={() => onSelect(tab.key)}
+        accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }}
+        style={({ pressed }) => ({
+          flex: 1, minHeight: theme.size.touch.min, alignItems: 'center', justifyContent: 'center',
+          gap: 2, opacity: pressed ? 0.6 : 1,
+        })}>
+        <TabIcon name={tab.key} color={color} size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
+        <Text allowFontScaling numberOfLines={1} style={{
+          color, fontSize: 12, lineHeight: 16, fontWeight: selected ? '700' : '500', textAlign: 'center',
+        }}>{label}</Text>
+      </Pressable>;
+    })}
   </View>;
-}
-
-function CapsuleTabButton({ tab, selected, at, position, sliding, label, onPress }: {
-  tab: CapsuleTab; selected: boolean; at: number; position: SharedValue<number>; sliding: boolean;
-  label: string; onPress: () => void;
-}) {
-  const { theme } = useTheme();
-  const press = usePressScale();
-  const lit = useAnimatedStyle(() => ({
-    opacity: sliding ? Math.max(0, 1 - Math.abs(position.get() - at)) : selected ? 1 : 0,
-  }), [sliding, selected, at]);
-  const unlit = useAnimatedStyle(() => ({
-    opacity: sliding ? Math.min(1, Math.abs(position.get() - at)) : selected ? 0 : 1,
-  }), [sliding, selected, at]);
-  const icon = (color: string) => <TabIcon name={tab} color={color} size={theme.space[6]} strokeWidth={theme.size.iconStroke} />;
-  return <Pressable onPress={onPress} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
-    accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected }}
-    style={{ flex: 1, minWidth: theme.size.touch.min, minHeight: theme.size.touch.nav,
-      alignItems: 'center', justifyContent: 'center' }}>
-    <Reanimated.View style={press.style}>
-      <Reanimated.View style={unlit}>{icon(theme.color.text.tertiary)}</Reanimated.View>
-      <Reanimated.View style={[{ position: 'absolute', top: 0, start: 0 }, lit]}>{icon(theme.color.on.accent)}</Reanimated.View>
-    </Reanimated.View>
-  </Pressable>;
 }

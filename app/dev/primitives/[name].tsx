@@ -3,8 +3,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import {
-  Banner, Button, CapsuleNav, Card, Chip, EmptyState, Field, Header, ListGroup, ListRow,
-  Orb, ProgressBar, Screen, SectionHeader, Sheet, Skeleton, Snackbar, StatBlock, Stepper, Toggle, Typography,
+  Banner, Button, Card, Chip, EmptyState, Field, Header, ListGroup, ListRow,
+  Orb, ProgressBar, Screen, SectionHeader, Sheet, Skeleton, Snackbar, StatBlock, Stepper, TabBar, Toggle, Typography,
   type CapsuleTab,
 } from '../../../src/design/primitives';
 import { buttonVariants, provenanceKinds } from '../../../src/design/primitives';
@@ -25,7 +25,6 @@ export default function PrimitiveStory() {
   const [hidden, setHidden] = useState(false);
   const [breathing, setBreathing] = useState(true);
   const [eaten, setEaten] = useState(1420);
-  const [range, setRange] = useState<'4w' | '3m' | '1y'>('4w');
   const label = primitiveStories.find(story => story.id === id)?.title ?? 'Unknown component';
   const alert = (text: string) => setMessage(text);
 
@@ -40,7 +39,7 @@ export default function PrimitiveStory() {
         <Typography>Page background, content scrolls, and native safe-area insets apply.</Typography>
       </Card>}
       {id === 'header' && <>
-        <Header title="Today" subtitle="Monday, Nov 16" right={<Button label="Gear" size="sm" variant="plain" onPress={() => alert('Gear')} />} />
+        <Header mode="large" title="Today" subtitle="Monday, Nov 16" right={<Button label="Gear" size="sm" variant="plain" onPress={() => alert('Gear')} />} />
         <Header mode="inline" title="Workout" onBack={() => alert('Back')} right={<Button label="Done" size="sm" variant="plain" onPress={() => alert('Done')} />} />
       </>}
       {id === 'card' && <>
@@ -133,14 +132,10 @@ export default function PrimitiveStory() {
           <Button size="sm" variant="neutral" label="Pause" onPress={() => setBreathing(v => !v)} />
         </View>
       </>}
-      {id === 'capsule-nav' && <Card title="Capsule">
-        <CapsuleNav active={selectedTab} onSelect={setSelectedTab} />
+      {id === 'tab-bar' && <>
+        <TabBar active={selectedTab} onSelect={setSelectedTab} />
         <Typography tone="secondary" size="secondary">Selected tab: {selectedTab}</Typography>
-        <View style={{ gap: theme.space[2] }}>
-          <Typography size="secondary" tone="secondary">Range control, shown here so the track is easy to find.</Typography>
-          <Button label={range} variant="plain" onPress={() => setRange(range === '4w' ? '3m' : range === '3m' ? '1y' : '4w')} />
-        </View>
-      </Card>}
+      </>}
       {message !== 'Meal removed' && <Snackbar message={message} onDismiss={() => setMessage('Meal removed')} />}
     </>}
   </Screen>;

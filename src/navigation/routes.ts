@@ -14,7 +14,7 @@ export const tabRootRoutes = {
   hiku: '/(tabs)/hiku',
 } as const satisfies Record<CapsuleTab, string>;
 
-/** Routes outside the (tabs) navigator never render a bottom capsule. */
+/** Routes outside the (tabs) navigator never render a bottom tab bar. */
 export const pushedRoutes = {
   settings: '/settings',
   diagnostics: '/dev/diagnostics',
