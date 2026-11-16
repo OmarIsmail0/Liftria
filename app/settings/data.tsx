@@ -1,4 +1,3 @@
-import {devRoutesEnabled} from '../../src/navigation/devRoutes';
 import { useCallback, useEffect, useState } from 'react';
 import {formatDate, pluralForm, type TranslationKey} from '../../src/i18n';
 import { router,useLocalSearchParams } from 'expo-router';
