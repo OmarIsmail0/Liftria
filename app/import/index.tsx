@@ -64,9 +64,6 @@ export default function ImportStart(){
    <Typography>{t('im1.privacyDesc')}</Typography>
    <Typography tone="secondary" size="small">{t('im1.privacyDetail')}</Typography>
   </Card>
-  <Card title={t('im1.unavailable')}>
-   <Typography tone="secondary">{t('im1.unavailableDesc')}</Typography>
-  </Card>
   <View style={{gap:12}}>
    {error&&<Typography>{error}</Typography>}
    <Typography tone="secondary" size="small">{t('im1.shareHint')}</Typography>
