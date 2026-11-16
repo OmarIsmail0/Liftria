@@ -17,7 +17,6 @@ export const primitiveStories = [
   { id: 'progress-bar', title: 'ProgressBar' },
   { id: 'empty-state', title: 'EmptyState' },
   { id: 'skeleton', title: 'Skeleton' },
-  { id: 'orb', title: 'Orb' },
   { id: 'tab-bar', title: 'Tab bar' },
 ] as const;
 export type PrimitiveStoryId = typeof primitiveStories[number]['id'];

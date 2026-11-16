@@ -387,12 +387,12 @@ export default function ActiveWorkoutScreen() {
         <View style={{ flex: 1, minWidth: 0 }}>
           {renaming ? <TextInput value={titleDraft} onChangeText={setTitleDraft} onBlur={() => void saveTitle()}
             autoFocus accessibilityLabel={t('workout.rename')}
-            style={{ color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600', minHeight: theme.size.touch.min }} /> :
+            style={{ color: theme.color.text.primary, fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600', minHeight: theme.size.touch.min }} /> :
             <Pressable accessibilityRole="button" accessibilityLabel={t('workout.rename')}
               onPress={() => { setTitleDraft(view.title); setRenaming(true); }}
               style={{ minHeight: theme.size.touch.min, justifyContent: 'center' }}>
               <Text allowFontScaling numberOfLines={1} style={{
-                color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600',
+                color: theme.color.text.primary, fontSize: theme.type.body.size, lineHeight: theme.type.body.line, fontWeight: '600',
               }}>{view.title}</Text>
             </Pressable>}
         </View>

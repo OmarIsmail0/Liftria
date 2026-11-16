@@ -17,7 +17,7 @@ function StepButton({ sign, label, disabled, onPress }: {
       opacity: disabled ? 0.45 : 1 }}>
     <View style={{ width: 36, height: 36, borderRadius: theme.radius.sm, backgroundColor: theme.color.bg.raised,
       alignItems: 'center', justifyContent: 'center' }}>
-      <Text allowFontScaling style={{ color: theme.color.text.primary, fontSize: 18, fontWeight: '600' }}>{sign}</Text>
+      <Text allowFontScaling style={{ color: theme.color.text.primary, fontSize: theme.type.title.size, fontWeight: '600' }}>{sign}</Text>
     </View>
   </Pressable>;
 }
