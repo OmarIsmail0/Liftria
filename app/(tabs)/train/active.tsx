@@ -614,8 +614,15 @@ export default function ActiveWorkoutScreen() {
       description={t((`train.discardDescription.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })}
       onClose={() => setDiscardVisible(false)}>
       <Button label={t('train.keep')} fullWidth onPress={() => setDiscardVisible(false)} />
-      <Button label={t('workout.discard')} variant="destructive" fullWidth onPress={() => {
-        void discardInProgressWorkout(view.id).then(() => router.replace('/(tabs)/train'));
+      <Button label={t('workout.discard')} variant="destructive" fullWidth disabled={busy} onPress={() => {
+        if (busy) return;
+        setBusy(true);
+        // Leave only once the workout is really gone; a failed discard keeps it and says so.
+        void discardInProgressWorkout(view.id).then(result => {
+          setBusy(false);
+          if (result.ok && result.value) { setDiscardVisible(false); router.replace('/(tabs)/train'); }
+          else { setDiscardVisible(false); setError(t('summary.discardError')); }
+        });
       }} />
     </Sheet>
     <Sheet visible={finishVisible} title={(stats?.pending ?? 0) > 0

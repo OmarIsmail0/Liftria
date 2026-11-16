@@ -59,6 +59,7 @@ export const en = {
   'backup.failed': 'Could not prepare the export.',
   'backup.shareFailed': 'Could not open the export. Your data was not changed.',
   'backup.invalid': 'This file is not a compatible Liftria backup.',
+  'backup.tooLarge': 'This file is too large to restore. Nothing was changed.',
   'backup.confirmTitle': 'Replace local data?',
   'backup.confirmDetail': 'Everything on this phone will be replaced by the backup. Check its contents before confirming. This cannot be undone.',
   'backup.preview.zero': 'Schema v{schema} · {count} records · exported {date}',

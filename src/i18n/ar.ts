@@ -60,6 +60,7 @@ export const ar: Record<TranslationKey, string> = {
   'backup.failed': 'تعذّر تجهيز الملف للتصدير.',
   'backup.shareFailed': 'تعذّر فتح ملف التصدير. لم تتغير بياناتك.',
   'backup.invalid': 'هذا الملف ليس نسخة احتياطية متوافقة مع ليفتريا.',
+  'backup.tooLarge': 'هذا الملف أكبر من أن تتم استعادته. لم يتغير أي شيء.',
   'backup.confirmTitle': 'استبدال بيانات الهاتف؟',
   'backup.confirmDetail': 'ستُستبدل جميع البيانات على هذا الهاتف بمحتويات النسخة. راجع ما فيها قبل التأكيد. لا يمكن التراجع.',
   'backup.preview.zero': 'إصدار قاعدة البيانات {schema} · {count} سجلات · تصدير {date}',

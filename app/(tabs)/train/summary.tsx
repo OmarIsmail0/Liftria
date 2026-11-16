@@ -47,8 +47,11 @@ export default function WorkoutSummaryScreen() {
   const save=async()=>{
     if(!workout||busy)return;setBusy(true);
     const result=await completeWorkout(workout.id,notes.trim()||null);
-    if(result.ok&&result.value)router.replace('/(tabs)/train');
-    else {setError(t('summary.saveError'));setBusy(false);}
+    if(result.ok&&result.value){router.replace('/(tabs)/train');return;}
+    // Already finished (a second tap, or another screen): it is saved, so do not report a failure.
+    const current=result.ok?await readWorkout(workout.id):null;
+    if(current?.ok&&current.value?.state==='finished'){router.replace('/(tabs)/train');return;}
+    setError(t('summary.saveError'));setBusy(false);
   };
   const discardNow=async()=>{
     if(!workout||busy)return;setBusy(true);
