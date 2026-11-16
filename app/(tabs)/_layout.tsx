@@ -1,10 +1,19 @@
-import { Tabs, usePathname } from 'expo-router';
+import { Tabs, router, usePathname, type ErrorBoundaryProps } from 'expo-router';
 import { View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { TabBar } from '../../src/design/primitives';
 import { activeCapsuleTab } from '../../src/navigation/routes';
 import WorkoutMiniBar from '../../src/features/train/WorkoutMiniBar';
+import { RecoveryScreen } from '../../src/features/startup/RecoveryScreen';
+
+/** A crashed screen inside the tabs shows a localized recovery screen with Try again.
+ * Saved data lives in SQLite, so an in-progress workout resumes from the mini bar. */
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  return <RecoveryScreen kind="crash" onRetry={retry} onHome={() => {
+    void retry().then(() => router.replace('/(tabs)/today'));
+  }} />;
+}
 
 /** Scenes sit above the tab bar. The bar hides on the full-screen workout and Hiku flows. */
 export default function TabsLayout() {

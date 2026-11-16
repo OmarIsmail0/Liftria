@@ -38,3 +38,17 @@ test('finish and finish later permit Today, but a corrupt progress value cannot 
   expect(await markOnboardingComplete()).toBe(true);
   expect(setTypedSetting).toHaveBeenCalledWith('onboarding.completedAt', expect.any(String));
 });
+
+test('an unreadable database throws instead of sending an existing user to onboarding', async () => {
+  jest.mocked(getTypedSetting).mockResolvedValue({ ok: false, error: { code: 'db-error', message: 'x' } } as any);
+  jest.mocked(getSetting).mockResolvedValue({ ok: true, value: null });
+  await expect(onboardingDestination()).rejects.toThrow();
+  jest.mocked(getTypedSetting).mockImplementation(async (key: any) =>
+    ({ ok: true, value: key === 'onboarding.step' ? 0 : null }) as any);
+  jest.mocked(getSetting).mockResolvedValue({ ok: false, error: { code: 'db-error', message: 'x' } } as any);
+  await expect(onboardingDestination()).rejects.toThrow();
+  // A deferred or completed setup still opens Today even if the other read failed.
+  jest.mocked(getSetting).mockResolvedValue({ ok: true, value: 'true' });
+  jest.mocked(getTypedSetting).mockResolvedValue({ ok: false, error: { code: 'db-error', message: 'x' } } as any);
+  expect(await onboardingDestination()).toBe('/(tabs)/today');
+});
