@@ -9,7 +9,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
-import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
+import { DB_SCHEMA_VERSION } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
 import {exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
@@ -34,7 +34,6 @@ export default function DataAndStorage() {
   const isDemo=demoBackup==='1';
   const { theme, resetLocalPreferences } = useTheme();
   const { language,resetLanguage, t } = useLanguage();
-  const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
   const [photoUsage,setPhotoUsage]=useState<ProgressPhotoUsage|null>(null);
   const [imported,setImported]=useState<ImportBatch|null>(null);
   const [undoVisible,setUndoVisible]=useState(false);
@@ -54,8 +53,6 @@ export default function DataAndStorage() {
    else{setPendingRestore(null);setRestoreText('');}
   };
   const load=useCallback(async()=>{
-    const result=await localStorageCounts();
-    if(result.ok)setCounts(result.value);
     const photos=await progressPhotoUsage();
     if(photos.ok)setPhotoUsage(photos.value);
     const batch=await lastImportBatch();
@@ -166,17 +163,12 @@ export default function DataAndStorage() {
   return <Screen>
     <Header mode="inline" title={t('dataStorage.title')}
       onBack={()=>backOrReplace(router,'/settings')} />
-    <SectionHeader title={t('dataStorage.counts')} />
-    {counts ? <ListGroup>
-      <ListRow title={t('dataStorage.workouts')} value={String(counts.workouts)} />
-      <ListRow title={t('dataStorage.meals')} value={t('dataStorage.testEntries',{count:counts.meals})} />
-      <ListRow title={t('dataStorage.health')} value={String(counts.healthSamples+counts.healthAggregates)} />
-      <ListRow title={t('dataStorage.targets')} value={String(counts.targetVersions)} />
-      <ListRow title={t('dataStorage.profiles')} value={String(counts.profiles)} />
-      <ListRow title={t('dataStorage.database')} value={formatLocalDatabaseSize(counts.databaseBytes, language)} />
-      {photoUsage&&<ListRow title={t('dataStorage.photos')} value={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />}
-    </ListGroup> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
-    <Typography tone="secondary" size="secondary">{t('dataStorage.countsNote')}</Typography>
+    {photoUsage&&photoUsage.count>0&&<>
+      <SectionHeader title={t('dataStorage.storageTitle')} />
+      <ListGroup>
+        <ListRow title={t('dataStorage.photos')} value={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />
+      </ListGroup>
+    </>}
     <SectionHeader title={t('dataStorage.importSection')} />
     <ListGroup>
       <ListRow title={t('dataStorage.importRow')}
@@ -191,6 +183,9 @@ export default function DataAndStorage() {
     <ListGroup>
       <ListRow title={busy?t('dataStorage.working'):t('dataStorage.clearHealth')}
         onPress={()=>void clearCache()} />
+    </ListGroup>
+    <SectionHeader title={t('settings.home.backup')} />
+    <ListGroup>
       <ListRow title={t('backup.export')} onPress={()=>void exportData('backup')} />
       <ListRow title={t('backup.restore')} onPress={()=>void chooseBackup()} />
       <ListRow title={t('backup.workoutsCsv')} onPress={()=>void exportData('workouts')} />
