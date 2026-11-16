@@ -3,7 +3,7 @@ import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Chip, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../src/design/primitives';
+import { Button, Field, Header, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../src/design/primitives';
 import { completeWorkout, discardInProgressWorkout, readWorkout, workoutNumbers,
   type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { elapsedLabel } from '../../../src/features/train/restClock';
@@ -82,15 +82,6 @@ export default function WorkoutSummaryScreen() {
       {newRecords>0?<Typography bold>{t((`summary.records.${pluralForm(language,newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
         <Typography tone="secondary">{t('summary.noRecords')}</Typography>}
       <Typography tone="secondary" size="secondary">{t('summary.recordNote')}</Typography>
-    </View>
-    <View style={{gap:8}}>
-      <SectionHeader title={t('summary.wearables')}/>
-      <ListGroup>
-        <ListRow title={t('summary.heart')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
-          detail={t('summary.noWatch')}/>
-        <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
-          detail={t('summary.noCalories')}/>
-      </ListGroup>
     </View>
     <Field label={t('summary.notesOptional')} value={notes} onChangeText={setNotes} multiline/>
     {error&&<Typography>{error}</Typography>}

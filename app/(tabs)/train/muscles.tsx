@@ -95,9 +95,6 @@ export default function MuscleBrowser() {
       renderItem={renderItem}
       ListFooterComponent={<View>
         <View style={edges.bottom} />
-        <View style={{ marginTop: theme.layout.cardGap }}>
-          <Typography tone="tertiary" size="small">{t('muscle.browserData', { count: MUSCLES.length })}</Typography>
-        </View>
       </View>}
     />
   </Screen>;

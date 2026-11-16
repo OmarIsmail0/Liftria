@@ -81,4 +81,9 @@ export function pluralForm(language: AppLanguage, count: number): PluralForm {
 export function translateWorkoutCount(language: AppLanguage, count: number): string {
   return translate(language, (`count.workouts.${pluralForm(language, count)}`) as TranslationKey, { count });
 }
+/** "3 glasses · 750 ml": the glass count needs its own plural forms in Arabic. */
+export function translateWaterTotal(language: AppLanguage, glasses: number, ml: number): string {
+  const count = translate(language, (`water.glasses.${pluralForm(language, glasses)}`) as TranslationKey, { count: glasses });
+  return translate(language, 'water.total', { glasses: count, ml });
+}
 export type { TranslationKey } from './en';

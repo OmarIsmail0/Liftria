@@ -9,12 +9,11 @@ import { backOrReplace } from '../../src/navigation/back';
 import { devRoutesEnabled } from '../../src/navigation/devRoutes';
 import { advanceVersionTap, initialVersionTapState } from '../../src/navigation/versionTap';
 import releaseVersion from '../../src/config/releaseVersion.json';
-import { localStorageCounts } from '../../src/services/database';
 import { getProfile } from '../../src/services/database/profile';
 import { getCurrentTarget } from '../../src/services/database/targets';
 import { getTypedSetting } from '../../src/services/database/settings';
 import { keyState } from '../../src/services/secure-storage';
-import { formatLocalDatabaseSize, canDeleteEverything, deleteEverythingOnPhone } from '../../src/features/settings/storage';
+import { canDeleteEverything, deleteEverythingOnPhone } from '../../src/features/settings/storage';
 import type { WeightUnit } from '../../src/features/settings/units';
 import { healthCopy } from '../../src/features/health/deviceHealth';
 
@@ -27,7 +26,6 @@ export default function SettingsHome() {
   const [themeOpen, setThemeOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const taps = useRef(initialVersionTapState);
-  const [databaseSize, setDatabaseSize] = useState<string | null>(null);
   const [profileName, setProfileName] = useState<string | null>(null);
   const [targetKcal, setTargetKcal] = useState<number | null>(null);
   const [weightUnit, setWeightUnit] = useState<WeightUnit | null>(null);
@@ -39,10 +37,9 @@ export default function SettingsHome() {
   useEffect(() => {
     let alive = true;
     void Promise.all([
-      localStorageCounts(), getProfile(), getCurrentTarget(), getTypedSetting('units.weight'), keyState(),
-    ]).then(([storage, profile, target, weight, key]) => {
+      getProfile(), getCurrentTarget(), getTypedSetting('units.weight'), keyState(),
+    ]).then(([profile, target, weight, key]) => {
       if (!alive) return;
-      if (storage.ok) setDatabaseSize(formatLocalDatabaseSize(storage.value.databaseBytes, language));
       const name = profile.ok ? profile.value?.name?.trim() : '';
       setProfileName(name ? name : null);
       setTargetKcal(target.ok && target.value ? target.value.kcal : null);
@@ -50,7 +47,7 @@ export default function SettingsHome() {
       setKeyHint(key.status === 'ready' ? key.hint : null);
     });
     return () => { alive = false; };
-  }, [language]);
+  }, []);
   async function changeLanguage(next: LanguagePreference) {
     const ok = await setLanguage(next);
     setLanguageError(!ok);
@@ -113,7 +110,7 @@ export default function SettingsHome() {
         onPress={() => router.push('/(tabs)/progress/health')} />
     </>)}
     {section(t('settings.home.dataGroup'), <>
-      <ListRow title={t('settings.home.backup')} value={databaseSize ?? undefined}
+      <ListRow title={t('settings.home.backup')}
         onPress={() => router.push('/settings/data')} />
       <ListRow title={t('settings.home.import')} onPress={() => router.push('/import')} />
       <ListRow title={t('p4.privacy.0')} onPress={() => router.push('/settings/privacy')} />
@@ -135,7 +132,7 @@ export default function SettingsHome() {
       <Typography tone="secondary" size="secondary">{t('settings.home.version', { version: releaseVersion.name })}</Typography>
     </Pressable>
     <View style={{ alignItems: 'center' }}>
-      <Typography tone="secondary" size="secondary">{t('settings.home.storage', { size: databaseSize ?? t('settings.home.calculating') })}</Typography>
+      <Typography tone="secondary" size="secondary">{t('settings.home.storage')}</Typography>
     </View>
     <Sheet visible={themeOpen} title={t('appearance.theme')} onClose={() => setThemeOpen(false)}>
       <SegmentedControl label={t('appearance.theme')} value={preferences.mode}
