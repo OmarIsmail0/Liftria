@@ -2,9 +2,9 @@ import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { appleHealthPhone } from '../../../src/features/health/deviceHealth';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { ScrollView, View  } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { Button, Card, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Button, Header, ListGroup, ListRow, Screen, SectionHeader, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { getSetting } from '../../../src/services/database';
 
@@ -29,9 +29,10 @@ function HealthSyncGuideAndroid() {
   }, []);
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title={t('healthSync.title')} subtitle={app||t('healthSync.watchApp')}
+    <Header mode="inline" title={t('healthSync.title')} subtitle={app||t('healthSync.watchApp')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title={t('healthSync.checklist')} rim="health">
+    <SectionHeader title={t('healthSync.checklist')} />
+    <ListGroup>
       {[
         ['1',t('healthSync.step1',{app:app||t('healthSync.watchApp')}),t('healthSync.step1Detail')],
         ['2',t('healthSync.step2'),t('healthSync.step2Detail')],
@@ -39,18 +40,14 @@ function HealthSyncGuideAndroid() {
         ['4',t('healthSync.step4'),t('healthSync.step4Detail')],
         ['5',t('healthSync.step5'),t('healthSync.step5Detail')],
       ].map(([n,title,detail]) => <ListRow key={n} title={n+'. '+title} detail={detail} />)}
-      <Typography tone="secondary" size="small">{t('healthSync.versions')}</Typography>
-    </Card>
-    <Card title={t('healthSync.historyTitle')}>
-      <Typography>{t('healthSync.history')}</Typography>
-      <Typography tone="secondary">{t('healthSync.noRecord')}</Typography>
-    </Card>
-    <View style={{ gap: theme.space[2] }}>
-      <Button label={t('healthSync.permissions')} variant="secondary" fullWidth
-        onPress={() => router.push('/(tabs)/progress/health-permissions')} />
-      <Button label={t('healthSync.recheck')} fullWidth
-        onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
-    </View>
+    </ListGroup>
+    <Typography tone="secondary" size="secondary">{t('healthSync.versions')}</Typography>
+    <Typography>{t('healthSync.history')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('healthSync.noRecord')}</Typography>
+    <Button label={t('healthSync.recheck')} fullWidth
+      onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
+    <Button label={t('healthSync.permissions')} variant="neutral" fullWidth
+      onPress={() => router.push('/(tabs)/progress/health-permissions')} />
   </ScrollView></Screen>;
 }
 
@@ -59,18 +56,14 @@ function HealthSyncGuideIos() {
   const { theme } = useTheme();
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title={t('appleHealth.sync.title')} subtitle={t('appleHealth.sync.subtitle')}
+    <Header mode="inline" title={t('appleHealth.sync.title')} subtitle={t('appleHealth.sync.subtitle')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title={t('appleHealth.overview.watchTitle')} rim="health">
-      <Typography>{t('appleHealth.sync.body')}</Typography>
-      <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>
-    </Card>
-    <View style={{ gap: theme.space[2] }}>
-      <Button label={t('appleHealth.sync.permissions')} variant="secondary" fullWidth
-        onPress={() => router.push('/(tabs)/progress/health-permissions')} />
-      <Button label={t('appleHealth.sync.recheck')} fullWidth
-        onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
-    </View>
+    <Typography>{t('appleHealth.sync.body')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('appleHealth.changeAccess')}</Typography>
+    <Button label={t('appleHealth.sync.recheck')} fullWidth
+      onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
+    <Button label={t('appleHealth.sync.permissions')} variant="neutral" fullWidth
+      onPress={() => router.push('/(tabs)/progress/health-permissions')} />
   </ScrollView></Screen>;
 }
 

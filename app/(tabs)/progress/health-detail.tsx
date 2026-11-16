@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { RefreshControl, ScrollView, View  } from 'react-native';
+import { RefreshControl, ScrollView } from 'react-native';
 import { appleHealthPhone, formatAppleAmount, healthCopy } from '../../../src/features/health/deviceHealth';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Button, Card, Chip, Header, ListGroup, ListRow, Screen, SectionHeader, SegmentedControl, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, readDailyEnergy } from '../../../src/services/health';
 import { metricTypes, type HealthValue, type HealthRecord, type MetricType } from '../../../src/services/health/types';
@@ -166,62 +166,63 @@ function HealthMetricDetailAndroid() {
     paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
       setWeek(null); setWeekRecords([]); setWeekRefresh(v => v+1); void refresh(true);
-    }} colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}>
-    <Header title={label[metric]?t(label[metric]):metric} subtitle={t(healthCopy('metric.readOnly'))}
+    }} colors={[theme.color.accent]} tintColor={theme.color.accent} />}>
+    <Header mode="inline" title={label[metric]?t(label[metric]):metric} subtitle={t(healthCopy('metric.readOnly'))}
       onBack={() => backOrReplace(router, '/(tabs)/progress')} />
-    <Card rim="health" title={t('healthMetric.measurement')}>
-      <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
-        <Button label={t("healthMetric.day")} size="sm" variant={window === 'day' ? 'primary' : 'secondary'}
-          onPress={() => { setWeek(null); setWindow('day'); }} />
-        <Button label={t("healthMetric.week")} size="sm" variant={window === 'week' ? 'primary' : 'secondary'}
-          onPress={() => { setWeek(null); setWeekRecords([]); setWeekRefresh(v => v+1); setWindow('week'); }} />
-      </View>
+    <SegmentedControl label={t('healthMetric.measurement')} value={window}
+      onChange={next => {
+        setWeek(null);
+        if (next === 'week') { setWeekRecords([]); setWeekRefresh(v => v + 1); }
+        setWindow(next);
+      }}
+      options={[{ value: 'day', label: t('healthMetric.day') }, { value: 'week', label: t('healthMetric.week') }]} />
+    <Card>
       {energy && !appleHealthPhone() ? <>
         <Typography>{energyStatus()}</Typography>
-        <Typography tone="secondary">{t('healthMetric.energyWarning')}</Typography>
-        {permitted && estimate && <Button label={showEstimate?t('healthMetric.hideEstimate'):t('healthMetric.showEstimate')} variant="ghost"
+        <Typography tone="secondary" size="secondary">{t('healthMetric.energyWarning')}</Typography>
+        {permitted && estimate && <Button label={showEstimate?t('healthMetric.hideEstimate'):t('healthMetric.showEstimate')} variant="plain"
           onPress={() => setShowEstimate(v => !v)} />}
         {permitted && showEstimate && estimate && <>
           <Chip kind="estimate" label={t('healthMetric.estimate')} />
-          <Typography>{t('healthMetric.energyValue',{count:formatNumber(language,estimate.kcal),type:estimate.type==='total energy'?t('healthMetric.totalEnergy'):estimate.type})}</Typography>
-          <Typography tone="secondary">{t('healthMetric.estimateNote')}</Typography>
+          <Typography size="metric">{t('healthMetric.energyValue',{count:formatNumber(language,estimate.kcal),type:estimate.type==='total energy'?t('healthMetric.totalEnergy'):estimate.type})}</Typography>
+          <Typography tone="secondary" size="secondary">{t('healthMetric.estimateNote')}</Typography>
         </>}
       </> : window === 'week' && week === null && available && permitted ? <Typography tone="secondary">{t('healthMetric.weekLoading')}</Typography>
         : result?.state === 'value' ? <>
           {metric === 'steps' && result.total !== null && (!appleHealthPhone() || result.total > 0) &&
-            <Typography size="metric-l">{appleHealthPhone()
+            <Typography size="metric">{appleHealthPhone()
               ? formatAppleAmount(language, result.total, 'steps')
               : t('healthMetric.stepsTotal',{count:result.total})}</Typography>}
           {metric !== 'steps' && result.total !== null && (!appleHealthPhone() || result.total > 0) &&
-            <Typography size="metric-l">{appleHealthPhone()
+            <Typography size="metric">{appleHealthPhone()
               ? formatAppleAmount(language, result.total, sourceRows[0]?.unit ?? '')
               : <>{formatNumber(language,result.total)} {sourceRows[0]?.unit}</>}</Typography>}
           {result.total === null && <Typography>{t('healthMetric.separate')}</Typography>}
-          {result.unverified && <Chip kind="pending" label={t('healthMetric.unverified')} />}
-          {result.note ? <Typography tone="secondary">{displayNote(result.note)}</Typography> : null}
-        </>         : <Typography tone="secondary">{result?.note?displayNote(result.note):t(healthCopy('metric.checking'))}</Typography>}
-      {appleHealthPhone() && result?.state === 'no-data' &&
-        <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>}
+        </> : <Typography tone="secondary">{result?.note?displayNote(result.note):t(healthCopy('metric.checking'))}</Typography>}
       {result?.state === 'value' && metric === 'steps' && !(appleHealthPhone() && stepSeries.length === 0) &&
         <StepsChart series={stepSeries} period={window} />}
       {result?.state === 'value' && metric === 'heart-rate' &&
         <HeartRateChart samples={hrSamples} />}
-      {permitted && result?.state === 'value' && <Typography tone="secondary" size="small">
+      {result?.state === 'value' && result.unverified && <Chip kind="pending" label={t('healthMetric.unverified')} />}
+      {result?.state === 'value' && result.note ? <Typography tone="secondary" size="secondary">{displayNote(result.note)}</Typography> : null}
+      {appleHealthPhone() && result?.state === 'no-data' &&
+        <Typography tone="secondary" size="secondary">{t('appleHealth.changeAccess')}</Typography>}
+      {permitted && result?.state === 'value' && <Typography tone="secondary" size="secondary">
         {t(healthCopy('metric.sourceExplain'))}
       </Typography>}
     </Card>
-    <Card title={t('healthMetric.sources')} rim="health">
-      {sourceRows.length && permitted ? sourceRows.map(source =>
-        <ListRow key={source.origin} title={originLabel(source.label)}
-          detail={source.origin+' · '+(source.stale?t('healthMetric.stale',{time:age(source.latestAt)}):t('healthMetric.latest',{time:age(source.latestAt)}))}
-          suffix={<Typography>{appleHealthPhone()
-            ? formatAppleAmount(language, source.value, source.unit)
-            : <>{formatNumber(language,source.value)} {source.unit}</>}</Typography>} />)
-        : <Typography tone="secondary">{t('healthMetric.noSource')}</Typography>}
-      <Typography size="small" tone="secondary">{t('healthMetric.originNote')}</Typography>
-    </Card>
-    <Card title={t('healthMetric.what')}>
-      <Typography tone="secondary">{metric === 'steps'
+    <SectionHeader title={t('healthMetric.sources')} />
+    {sourceRows.length && permitted ? <ListGroup>{sourceRows.map(source =>
+      <ListRow key={source.origin} title={originLabel(source.label)}
+        detail={source.origin+' · '+(source.stale?t('healthMetric.stale',{time:age(source.latestAt)}):t('healthMetric.latest',{time:age(source.latestAt)}))}
+        value={appleHealthPhone()
+          ? formatAppleAmount(language, source.value, source.unit)
+          : formatNumber(language,source.value)+' '+source.unit} />)}</ListGroup>
+      : <Typography tone="secondary">{t('healthMetric.noSource')}</Typography>}
+    <Typography size="secondary" tone="secondary">{t('healthMetric.originNote')}</Typography>
+    <Card>
+      <Typography size="title">{t('healthMetric.what')}</Typography>
+      <Typography tone="secondary" size="secondary">{metric === 'steps'
         ? t(healthCopy('metric.stepsNote'))
         : metric === 'heart-rate'
           ? t(healthCopy('metric.heartNote'))
@@ -232,16 +233,15 @@ function HealthMetricDetailAndroid() {
               : energy ? t(healthCopy('metric.energyNote'))
                 : t(healthCopy('metric.otherNote'))}</Typography>
     </Card>
-    <Card title={t('healthMetric.recent')}>
-      {records.length ? records.map(r =>
+    <SectionHeader title={t('healthMetric.recent')} />
+    {records.length ? <ListGroup>{records.map(r =>
         <ListRow key={r.adapter + ':' + r.dataOrigin + ':' + r.recordId}
           title={describe(r)}
           detail={t('healthMetric.recordLine',{source:originLabel(sourceName(r.dataOrigin)),time:new Date(recordTime(r)).toLocaleString(locale)})}
           onPress={() => router.push({ pathname: '/(tabs)/progress/health-record',
             params: { metric, recordId: r.recordId, origin: r.dataOrigin,
-              adapter: r.adapter, readAt: snapshot.readAt ?? '' } })} />)
+              adapter: r.adapter, readAt: snapshot.readAt ?? '' } })} />)}</ListGroup>
         : <Typography tone="secondary">{t(healthCopy('metric.noRecords'))}</Typography>}
-    </Card>
   </ScrollView></Screen>;
 }
 

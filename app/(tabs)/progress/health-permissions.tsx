@@ -1,10 +1,11 @@
+import { formatNumber } from '../../../src/i18n';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { Linking, ScrollView  } from 'react-native';
 import { appleHealthPhone, healthCopy, offerProviderInstall, readAccessIsReported, requestsHistoryRead } from '../../../src/features/health/deviceHealth';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { Banner, Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Banner, Button, Card, Chip, Header, ListGroup, ListRow, Screen, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { healthConnect, requestHistoryReadPermission } from '../../../src/services/health';
 import { metricTypes, type MetricType } from '../../../src/services/health/types';
@@ -12,7 +13,7 @@ import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health
 import { canInstallHealthConnect } from '../../../src/features/health/presentation';
 
 function HealthPermissionsAndroid() {
-  const {t}=useLanguage();
+  const {t,language}=useLanguage();
   const names: Partial<Record<MetricType,string>> = {
     steps:t('healthPerm.steps'), 'heart-rate':t('healthPerm.heart'),
     'exercise-session':t('healthPerm.sessions'),'sleep-session':t('healthPerm.sleep'),
@@ -62,20 +63,23 @@ function HealthPermissionsAndroid() {
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{
     gap: theme.layout.cardGap, paddingVertical: theme.space[4] }}>
-    <Header title={t('healthPerm.loadingTitle')} subtitle={t(healthCopy('perm.subtitle'))}
+    <Header mode="inline" title={t('healthPerm.loadingTitle')}
       onBack={() => backOrReplace(router, '/(tabs)/progress/health')} />
-    <Card title={t(healthCopy('perm.status'))} rim="health">
+    {available && readAccessIsReported() && <>
+      <Typography size="metric">{formatNumber(language, count)}</Typography>
+      <Typography tone="secondary" size="secondary">{t('healthPerm.allowedCount',{count,total:overviewMetrics.length})}</Typography>
+    </>}
+    <Card>
+      <Typography size="title">{t(healthCopy('perm.status'))}</Typography>
       <Typography>{availabilityText(snapshot.availability)}</Typography>
-      <Typography tone="secondary">{available
-        ? (readAccessIsReported()
-          ? t('healthPerm.allowedCount',{count,total:overviewMetrics.length})
-          : t('appleHealth.overview.accessUnknown'))
-        : t('healthPerm.hidden')}</Typography>
-      {available && readAccessIsReported() && count === 0 && <Typography tone="secondary">{t('healthPerm.works')}</Typography>}
-      <Typography tone="secondary">{t(healthCopy('perm.readOnly'))}</Typography>
-      {!readAccessIsReported() && <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>}
+      {!(available && readAccessIsReported()) && <Typography tone="secondary" size="secondary">{available
+        ? t('appleHealth.overview.accessUnknown')
+        : t('healthPerm.hidden')}</Typography>}
+      {available && readAccessIsReported() && count === 0 && <Typography tone="secondary" size="secondary">{t('healthPerm.works')}</Typography>}
+      <Typography tone="secondary" size="secondary">{t(healthCopy('perm.readOnly'))}</Typography>
+      {!readAccessIsReported() && <Typography tone="secondary" size="secondary">{t('appleHealth.changeAccess')}</Typography>}
     </Card>
-    <Card title={t('healthPerm.list')}>
+    <ListGroup>
       {overviewMetrics.map(type => {
         const state = snapshot.permissions[type] ?? 'unknown';
         const value = !readAccessIsReported()
@@ -89,7 +93,7 @@ function HealthPermissionsAndroid() {
           suffix={<Chip kind="off" label={value} />}
           onPress={available ? () => void openPermissions() : undefined} />;
       })}
-    </Card>
+    </ListGroup>
     {available ? <Button label={working ? t(healthCopy('perm.opening')) : t(healthCopy('perm.request'))}
       disabled={working || refreshing} fullWidth onPress={() => void openPermissions()} />
       : offerProviderInstall() && canInstallHealthConnect(snapshot.availability) ?

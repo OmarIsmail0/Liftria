@@ -51,21 +51,17 @@ export function NutritionGraph({trend,target,hidden=false}:{
   accessibilityLabel={hidden?t('trend.hidden'):t((`trend.chartNutritionA11y.${pluralForm(language,trend.loggedDays)}`) as TranslationKey,{count:trend.loggedDays})}
   onLayout={event=>{const next=event.nativeEvent.layout.width;if(next>0)setWidth(next);}}
   style={{height}}>
-  <Svg width={width} height={height}>
-   <Line x1={pad.left} x2={pad.left} y1={pad.top} y2={height-pad.bottom}
-    stroke={theme.color.border.subtle} strokeWidth={1}/>
-   <Line x1={pad.left} x2={width-pad.right} y1={height-pad.bottom} y2={height-pad.bottom}
-    stroke={theme.color.border.subtle} strokeWidth={1}/>
+   <Svg width={width} height={height}>
    {yTicks.map(value=><Line key={'ny'+value} x1={pad.left} x2={width-pad.right} y1={y(value)} y2={y(value)}
-    stroke={theme.color.border.subtle} strokeDasharray="2 3" strokeWidth={0.8}/>)}
+    stroke={theme.color.border.subtle} strokeWidth={1}/>)}
    {target!==null&&<Line x1={pad.left} x2={width-pad.right} y1={y(target)} y2={y(target)}
     stroke={theme.color.border.strong} strokeDasharray="5 4" strokeWidth={1.5}/>}
    {trend.days.map((d,i)=>{
      if(!d.logged)return <Rect key={d.day} x={x(i)-3} y={height-pad.bottom-10} width={6} height={10}
-       stroke={theme.color.domain.eat} fill="transparent" strokeWidth={1} strokeDasharray="2 2"/>;
+       stroke={theme.color.border.strong} fill="transparent" strokeWidth={1}/>;
      const prev=trend.days[i-1];
      return <ViewPlaceholder key={d.day} i={i} x={x(i)} y={y(d.kcal??0)} prev={
-       prev?.logged?{x:x(i-1),y:y(prev.kcal??0)}:null} stroke={theme.color.domain.eat}/>;
+       prev?.logged?{x:x(i-1),y:y(prev.kcal??0)}:null} stroke={theme.color.accent}/>;
    })}
   </Svg>
   <ChartAxisLabels labels={[
@@ -106,14 +102,16 @@ export function ProteinPips({days,hidden}:{
      goal==='unknown'?t('trend.proteinUnknown'):t('trend.proteinUnlogged');
    return <View key={day.day} accessibilityLabel={day.day+': '+name}
     style={{width:22,height:22,borderRadius:theme.radius.sm,
-      borderWidth:1,borderColor:theme.color.domain.eat,
+      borderWidth:1,borderColor:theme.color.accent,
       borderStyle:goal==='unlogged'||goal==='unknown'?'dashed':'solid',
-      backgroundColor:goal==='met'?theme.color.domain.eat:'transparent'}}/>;
+      backgroundColor:goal==='met'?theme.color.accent:'transparent'}}/>;
   })}
  </View>;
 }
-export function WeightGraph({trend,hidden,unit}:{
+export function WeightGraph({trend,hidden,unit,simple=false}:{
  trend:WeightTrend;hidden:boolean;unit:WeightUnit;
+ /** Home summary: the trend line and its last point. Detail keeps each entry. */
+ simple?:boolean;
 }){
  const {theme}=useTheme();
  const {t,language}=useLanguage();const [width,setWidth]=useState(320);
@@ -133,21 +131,24 @@ export function WeightGraph({trend,hidden,unit}:{
   accessibilityLabel={hidden?t('trend.hidden'):t((`trend.chartWeightA11y.${pluralForm(language,days.length)}`) as TranslationKey,{count:days.length})}
   style={{height}}>
    <Svg width={width} height={height}>
-    <Line x1={pad.left} x2={pad.left} y1={pad.top} y2={height-pad.bottom}
-     stroke={theme.color.border.subtle} strokeWidth={1}/>
-    <Line x1={pad.left} x2={width-pad.right} y1={height-pad.bottom} y2={height-pad.bottom}
-     stroke={theme.color.border.subtle} strokeWidth={1}/>
     {yTicks.map(value=><Line key={'wy'+value} x1={pad.left} x2={width-pad.right} y1={y(value)} y2={y(value)}
-     stroke={theme.color.border.subtle} strokeDasharray="2 3" strokeWidth={0.8}/>)}
-    {days.map((day,i)=><ViewPlaceholder key={'t'+day.day} i={i}
-      x={x(day.day)} y={y(day.trend)}
-      prev={i>0&&days[i-1]?{x:x(days[i-1]!.day),y:y(days[i-1]!.trend)}:null}
-      stroke={theme.color.domain.health}/>)}
-    {days.flatMap(day=>day.entries.map(entry=>entry.source!=='liftria'?
-      <Path key={entry.id} d={'M '+x(day.day)+' '+(y(entry.kg)-5)+' l 5 5 l -5 5 l -5 -5 Z'}
-       fill={theme.color.bg.raised} stroke={theme.color.domain.health} strokeWidth={1.5}/>:
-      <Circle key={entry.id} cx={x(day.day)} cy={y(entry.kg)} r={4}
-       fill={theme.color.bg.raised} stroke={theme.color.domain.health} strokeWidth={1.5}/>))}
+     stroke={theme.color.border.subtle} strokeWidth={1}/>)}
+    {simple?<>
+     {days.length>1&&<Path d={days.map((day,i)=>(i===0?'M':'L')+x(day.day)+' '+y(day.trend)).join(' ')}
+      fill="none" stroke={theme.color.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>}
+     {days.length>0&&<Circle cx={x(days[days.length-1]!.day)} cy={y(days[days.length-1]!.trend)} r={4.5}
+      fill={theme.color.accent}/>}
+    </>:<>
+     {days.map((day,i)=><ViewPlaceholder key={'t'+day.day} i={i}
+       x={x(day.day)} y={y(day.trend)}
+       prev={i>0&&days[i-1]?{x:x(days[i-1]!.day),y:y(days[i-1]!.trend)}:null}
+       stroke={theme.color.accent}/>)}
+     {days.flatMap(day=>day.entries.map(entry=>entry.source!=='liftria'?
+       <Path key={entry.id} d={'M '+x(day.day)+' '+(y(entry.kg)-5)+' l 5 5 l -5 5 l -5 -5 Z'}
+        fill={theme.color.bg.raised} stroke={theme.color.accent} strokeWidth={1.5}/>:
+       <Circle key={entry.id} cx={x(day.day)} cy={y(entry.kg)} r={4}
+        fill={theme.color.bg.raised} stroke={theme.color.accent} strokeWidth={1.5}/>))}
+    </>}
    </Svg>
    <ChartAxisLabels labels={[
     ...(!hidden?yTicks.map(value=>({
@@ -202,16 +203,12 @@ export function MeasurementGraph({points,hidden,valueLabel,accessibilityLabel}:{
  return <View onLayout={event=>{const next=event.nativeEvent.layout.width;if(next>0)setWidth(next);}}
   accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={{height}}>
   <Svg width={width} height={height}>
-   <Line x1={pad.left} x2={pad.left} y1={pad.top} y2={height-pad.bottom}
-    stroke={theme.color.border.subtle} strokeWidth={1}/>
-   <Line x1={pad.left} x2={width-pad.right} y1={height-pad.bottom} y2={height-pad.bottom}
-    stroke={theme.color.border.subtle} strokeWidth={1}/>
    {yTicks.map(value=><Line key={'my'+value} x1={pad.left} x2={width-pad.right} y1={y(value)} y2={y(value)}
-    stroke={theme.color.border.subtle} strokeDasharray="2 3" strokeWidth={0.8}/>)}
+    stroke={theme.color.border.subtle} strokeWidth={1}/>)}
    {ordered.map((point,index)=>{
     const prev=ordered[index-1];
     return <ViewPlaceholder key={point.at+':'+index} i={index} x={x(point.at)} y={y(point.value)}
-     prev={prev?{x:x(prev.at),y:y(prev.value)}:null} stroke={theme.color.domain.health}/>;
+     prev={prev?{x:x(prev.at),y:y(prev.value)}:null} stroke={theme.color.accent}/>;
    })}
   </Svg>
   <ChartAxisLabels labels={[

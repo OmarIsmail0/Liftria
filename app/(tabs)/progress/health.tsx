@@ -2,7 +2,7 @@ import { Linking, RefreshControl, ScrollView, View  } from 'react-native';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { Button, Card, Chip, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Button, Card, Chip, Header, ListGroup, ListRow, Screen, SectionHeader, Typography } from '../../../src/design/primitives';
 import { backOrReplace } from '../../../src/navigation/back';
 import { type MetricType } from '../../../src/services/health/types';
 import { overviewMetrics, useHealthSnapshot } from '../../../src/features/health/useHealthSnapshot';
@@ -69,29 +69,11 @@ function HealthOverviewAndroid() {
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{ paddingVertical: theme.space[4], gap: theme.layout.cardGap }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh(true)}
-        colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}>
-      <Header title={t('healthOverview.health')} subtitle={t(healthCopy('overview.readOnly'))}
+        colors={[theme.color.accent]} tintColor={theme.color.accent} />}>
+      <Header mode="inline" title={t('healthOverview.health')}
         onBack={() => backOrReplace(router, '/(tabs)/progress')} />
-      <Card rim="health" title={available ? t(healthCopy('overview.connected')) : t(healthCopy('overview.connect'))}>
-        <Typography tone="secondary">{t(healthCopy('overview.privacy'))}</Typography>
-        <Typography>{availability()}</Typography>
-        <Typography>{available
-          ? (readAccessIsReported()
-            ? t('healthOverview.allowed',{allowed,total:overviewMetrics.length})
-            : t('appleHealth.overview.accessUnknown'))
-          : t('healthOverview.hidden')}</Typography>
-        <Typography tone="secondary" size="small">{firstSeen
-          ? t('healthOverview.fromDate',{date:latinDigits(new Date(firstSeen).toLocaleDateString(locale))})
-          : t('healthOverview.noCached')}</Typography>
-        <Button label={available ? t('healthOverview.review') : t(healthCopy('overview.permissions'))} variant="secondary"
-          onPress={() => router.push('/(tabs)/progress/health-permissions')} />
-        {!available && offerProviderInstall() && canInstallHealthConnect(snapshot.availability) &&
-          <Button label={t("healthOverview.get")} onPress={() =>
-            void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
-        {!available && <Typography tone="secondary">{t(healthCopy('overview.worksWithout'))}</Typography>}
-        {snapshot.readAt && <Typography tone="secondary" size="small">{t('healthOverview.lastChecked',{time:latinDigits(new Date(snapshot.readAt).toLocaleTimeString(locale))})}</Typography>}
-      </Card>
-      <Card title={t("healthOverview.measurements")} rim="health">
+      <SectionHeader title={t('healthOverview.measurements')} />
+      <ListGroup>
         {overviewMetrics.map(metric => {
           const result = snapshot.readings[metric];
           if (metric === 'active-calories' && !appleHealthPhone()) {
@@ -114,8 +96,8 @@ function HealthOverviewAndroid() {
               ? formatAppleAmount(language, result.total, first?.unit ?? '')
               : `${formatNumber(language,Math.round(result.total))} ${first?.unit ?? ''}`) : null;
           return <ListRow key={metric} title={names[metric]?t(names[metric]):metric} detail={detail}
+            value={amount ?? undefined}
             suffix={result?.state === 'value' ? <View style={{ alignItems:'flex-end',gap:theme.space[1] }}>
-              {amount && <Typography>{amount}</Typography>}
               {result.sources.map(source => <View key={source.origin}
                 style={{ alignItems:'flex-end', gap:theme.space[1] }}>
                 <Chip kind={metric === 'steps' && source.label === 'Phone' ? 'phone' : 'pending'}
@@ -127,18 +109,40 @@ function HealthOverviewAndroid() {
                 state === 'not-available'?t('healthOverview.unavailable'):state === 'error'?t('healthOverview.readError'):t('healthOverview.pending')} />}
             onPress={() => router.push({ pathname: '/(tabs)/progress/health-detail', params: { metric } })} />;
         })}
-        {appleHealthPhone() && anyEmpty &&
-          <Typography tone="secondary">{t('appleHealth.changeAccess')}</Typography>}
+      </ListGroup>
+      {appleHealthPhone() && anyEmpty &&
+        <Typography tone="secondary" size="secondary">{t('appleHealth.changeAccess')}</Typography>}
+      <Card>
+        <Typography size="title">{available ? t(healthCopy('overview.connected')) : t(healthCopy('overview.connect'))}</Typography>
+        <Typography tone="secondary" size="secondary">{t(healthCopy('overview.readOnly'))}</Typography>
+        <Typography>{availability()}</Typography>
+        <Typography tone="secondary" size="secondary">{t(healthCopy('overview.privacy'))}</Typography>
+        <Typography tone="secondary" size="secondary">{available
+          ? (readAccessIsReported()
+            ? t('healthOverview.allowed',{allowed,total:overviewMetrics.length})
+            : t('appleHealth.overview.accessUnknown'))
+          : t('healthOverview.hidden')}</Typography>
+        <Typography tone="secondary" size="secondary">{firstSeen
+          ? t('healthOverview.fromDate',{date:latinDigits(new Date(firstSeen).toLocaleDateString(locale))})
+          : t('healthOverview.noCached')}</Typography>
+        <Button label={available ? t('healthOverview.review') : t(healthCopy('overview.permissions'))} variant="tonal"
+          onPress={() => router.push('/(tabs)/progress/health-permissions')} />
+        {!available && offerProviderInstall() && canInstallHealthConnect(snapshot.availability) &&
+          <Button label={t('healthOverview.get')} onPress={() =>
+            void Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')} />}
+        {!available && <Typography tone="secondary" size="secondary">{t(healthCopy('overview.worksWithout'))}</Typography>}
+        {snapshot.readAt && <Typography tone="secondary" size="secondary">{t('healthOverview.lastChecked',{time:latinDigits(new Date(snapshot.readAt).toLocaleTimeString(locale))})}</Typography>}
       </Card>
-      <Card title={t(healthCopy('overview.watchTitle'))}>
-        <Typography tone="secondary">{t(healthCopy('overview.watchExplain'))}</Typography>
+      <SectionHeader title={t(healthCopy('overview.watchTitle'))} />
+      <ListGroup>
         <ListRow title={t(healthCopy('overview.sync'))} detail={t(healthCopy('overview.syncDetail'))}
           onPress={() => router.push('/(tabs)/progress/health-sync')} />
         <ListRow title={t(healthCopy('overview.troubleshoot'))} detail={t(healthCopy('overview.troubleshootDetail'))}
           onPress={() => router.push('/(tabs)/progress/health-troubleshoot')} />
-      </Card>
+      </ListGroup>
+      <Typography size="secondary" tone="secondary">{t(healthCopy('overview.watchExplain'))}</Typography>
       <View style={{ alignItems: 'center' }}>
-        <Typography size="small" tone="secondary">{t(healthCopy('overview.footer'))}</Typography>
+        <Typography size="secondary" tone="secondary">{t(healthCopy('overview.footer'))}</Typography>
       </View>
     </ScrollView>
   </Screen>;

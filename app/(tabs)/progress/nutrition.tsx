@@ -3,7 +3,7 @@ import {useCallback,useState} from 'react';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
-import {Button,Card,Chip,Field,Header,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
+import {Button,Card,Chip,EmptyState,Field,Header,ListGroup,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {dayOffset,localDay} from '../../../src/features/eat/foodCatalog';
 import {readDiaryRange,summarizeEntries,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
 import {getCurrentTarget,type Target} from '../../../src/services/database/targets';
@@ -85,71 +85,79 @@ export default function NutritionTrends(){
   else setError(true);
  }
  return <Screen embedded>
-  <Header title={t('trend.nutrition')} onBack={()=>router.back()}/>
-  {demoAdaptive&&<Typography tone="secondary" size="small">{t('adaptive.demoWarning')}</Typography>}
-  <Card rim="eat" title={t('adaptive.burnTitle')}>
+  <Header mode="inline" title={t('trend.nutrition')} onBack={()=>router.back()}/>
+  {demoAdaptive&&<Typography tone="secondary" size="secondary">{t('adaptive.demoWarning')}</Typography>}
+  <SegmentedControl label={t('trend.range')} value={range} onChange={setRange}
+   options={[{value:'4w',label:t('polish.range4w')},{value:'3m',label:t('polish.range3m')},{value:'1y',label:t('polish.range1y')}]}/>
+  {error&&<Button label={t('common.retry')} variant="neutral" onPress={()=>void load()}/>}
+  {summary.loggedDays===0?<EmptyState title={t('trend.calorieChart')} description={t('trend.nutritionEmpty')}
+   action={<Button label={t('today.logMeal')} variant="tonal" onPress={()=>router.push('/(tabs)/eat')}/>}/>:<Card>
+    <Typography size="metric">{hidden?t('trend.hidden'):t('eatI.kcal',{count:amount(summary.avgKcal)})}</Typography>
+    <NutritionGraph trend={summary} target={target?.kcal??null} hidden={hidden}/>
+    <Typography tone="secondary" size="secondary">{t('trend.avgCalories',{
+      count:amount(summary.avgKcal),days:summary.loggedDays,total:days})}</Typography>
+    <Typography tone="secondary" size="secondary">{t('trend.diarySource')}</Typography>
+    <Typography tone="secondary" size="secondary">{t('trend.gapsNote')}</Typography>
+   </Card>}
+  <Card>
+   <Typography size="title">{t('adaptive.burnTitle')}</Typography>
    {shownBurn===null?<Typography tone="secondary">{t('adaptive.loading')}</Typography>:
     shownBurn.ready?<>
      <Chip kind="estimate"/>
-     <Typography size="head">{hidden?t('trend.hidden'):t('adaptive.burnValue',{count:amount(shownBurn.estimatedBurn)})}</Typography>
-     <Typography tone="secondary" size="small">{adaptiveBurnMethodCopy(t,language,
+     <Typography size="metric">{hidden?t('trend.hidden'):t('adaptive.burnValue',{count:amount(shownBurn.estimatedBurn)})}</Typography>
+     <Typography tone="secondary" size="secondary">{adaptiveBurnMethodCopy(t,language,
       shownBurn.loggedDays,shownBurn.weighIns,Math.round(shownBurn.elapsedDays))}</Typography>
     </>:<Typography tone="secondary">{adaptiveNeedDataCopy(t,language,shownBurn.needLogged,
      shownBurn.needWeighIns,shownBurn.needHistory)}</Typography>}
-   <Typography tone="secondary" size="small">{t('adaptive.sourceNote')}</Typography>
+   <Typography tone="secondary" size="secondary">{t('adaptive.sourceNote')}</Typography>
    {shownBurn?.ready&&!hidden&&shownCheckin&&<>
     <Typography bold>{t('adaptive.weeklyTitle')}</Typography>
     {shownCheckin.status==='pending'?<>
       <Typography>{t('adaptive.proposal',{count:amount(shownCheckin.proposedKcal)})}</Typography>
-      <Typography tone="secondary" size="small">{t('adaptive.currentTarget',{count:target?.kcal??'—'})}</Typography>
-      <Button label={t('adaptive.review')} variant="secondary" disabled={busy}
+      <Typography tone="secondary" size="secondary">{t('adaptive.currentTarget',{count:target?.kcal??'—'})}</Typography>
+      <Button label={t('adaptive.review')} variant="tonal" disabled={busy}
        onPress={()=>setReviewVisible(true)}/>
     </>:<Typography tone="secondary">{t('adaptive.recorded',{status:t('adaptive.status.'+shownCheckin.status as 'adaptive.status.accepted'|'adaptive.status.edited'|'adaptive.status.dismissed')})}</Typography>}
    </>}
-   {shownBurn?.ready&&hidden&&<Button label={t('eatI.showNumbers')} variant="ghost"
+   {shownBurn?.ready&&hidden&&<Button label={t('eatI.showNumbers')} variant="plain"
     onPress={()=>router.push('/settings/preferences')}/>}
    {shownBurn?.ready&&!shownCheckin&&<Typography tone="secondary">{goalMissing?t('adaptive.needGoal'):t('adaptive.needTarget')}</Typography>}
   </Card>
-  <SegmentedControl label={t('trend.range')} value={range} onChange={setRange}
-   options={[{value:'4w',label:t('polish.range4w')},{value:'3m',label:t('polish.range3m')},{value:'1y',label:t('polish.range1y')}]}/>
-  {error&&<Button label={t('common.retry')} onPress={()=>void load()}/>}
-  {summary.loggedDays===0?<Card rim="eat" title={t('trend.calorieChart')}>
-   <Typography tone="secondary">{t('trend.nutritionEmpty')}</Typography>
-   <Button label={t('today.logMeal')} variant="secondary" onPress={()=>router.push('/(tabs)/eat')}/>
-  </Card>:<>
-   <Card rim="eat" title={t('trend.calorieChart')}>
-    <Typography size="head">{hidden?t('trend.hidden'):t('trend.avgCalories',{
-      count:amount(summary.avgKcal),days:summary.loggedDays,total:days})}</Typography>
-    <Typography tone="secondary" size="small">{t('trend.diarySource')}</Typography>
-    <NutritionGraph trend={summary} target={target?.kcal??null} hidden={hidden}/>
-    <Typography tone="secondary" size="small">{t('trend.gapsNote')}</Typography>
-   </Card>
-   <Card rim="eat" title={t('nutrients.trend')}>
-    <Typography tone="secondary" size="small">{t('nutrients.gaps')}</Typography>
+  {summary.loggedDays>0&&<>
+   <Card>
+    <Typography size="title">{t('nutrients.trend')}</Typography>
     {(['fiber','sugar','sodium'] as const).map(key=><ListRow key={key}
       title={t('nutrients.'+key as 'nutrients.fiber'|'nutrients.sugar'|'nutrients.sodium')}
       detail={hidden?t('trend.hidden'):t('nutrients.average',{value:micros[key].value===null?'—':
         formatNumber(language,Math.round(micros[key].value*10)/10),
         days:nutrientsReportedDaysCopy(t,language,micros[key].days)})}/>)}
+    <Typography tone="secondary" size="secondary">{t('nutrients.gaps')}</Typography>
    </Card>
-   <Card rim="eat" title={t('trend.proteinGoal')}>
-    <Typography tone="secondary">{target?.proteinG===undefined?t('trend.noProteinGoal'):
-      hidden?t('trend.hidden'):t('trend.proteinCount',{count:summary.proteinMetDays,total:summary.completeMacroDays})}</Typography>
+   <Card>
+    <Typography size="title">{t('trend.proteinGoal')}</Typography>
+    {target?.proteinG!==undefined&&summary.completeMacroDays>0&&!hidden&&
+     <Typography size="metric">{amount(summary.proteinMetDays)}</Typography>}
     <ProteinPips days={summary.days.slice(-28)} hidden={hidden}/>
-    <Typography tone="secondary" size="small">{t('trend.pipsHint')}</Typography>
+    <Typography tone="secondary" size="secondary">{target?.proteinG===undefined?t('trend.noProteinGoal'):
+      hidden?t('trend.hidden'):t('trend.proteinCount',{count:summary.proteinMetDays,total:summary.completeMacroDays})}</Typography>
+    <Typography tone="secondary" size="secondary">{t('trend.pipsHint')}</Typography>
    </Card>
-   <Card rim="eat" title={t('trend.macroSplit')}>
-    <Typography tone="secondary" size="small">{t('trend.diarySource')}</Typography>
+   <Card>
+    <Typography size="title">{t('trend.macroSplit')}</Typography>
     {summary.completeMacroDays===0?<Typography>{t('trend.noMacroData')}</Typography>:
-     <Typography>{hidden?t('trend.hidden'):t('trend.macroValues',{
+     <Typography size="title">{hidden?t('trend.hidden'):t('trend.macroValues',{
        p:amount(summary.avgProtein),c:amount(summary.avgCarbs),f:amount(summary.avgFat),
        count:summary.completeMacroDays})}</Typography>}
+    <Typography tone="secondary" size="secondary">{t('trend.diarySource')}</Typography>
    </Card>
-   <Card title={t('trend.daysTitle')}>
-    {summary.days.filter(d=>d.logged).map(d=><ListRow key={d.day} title={bidiIsolate(language,d.day)}
-     detail={hidden?t('trend.hidden'):t('eatI.kcal',{count:amount(d.kcal)})}
-     onPress={()=>router.push({pathname:'/(tabs)/eat',params:{day:d.day}})}/>)}
-    <Typography tone="secondary" size="small">{t('trend.gapsNote')}</Typography>
+   <Card>
+    <Typography size="title">{t('trend.daysTitle')}</Typography>
+    <ListGroup>
+     {summary.days.filter(d=>d.logged).map(d=><ListRow key={d.day} title={bidiIsolate(language,d.day)}
+      value={hidden?t('trend.hidden'):t('eatI.kcal',{count:amount(d.kcal)})}
+      onPress={()=>router.push({pathname:'/(tabs)/eat',params:{day:d.day}})}/>)}
+    </ListGroup>
+    <Typography tone="secondary" size="secondary">{t('trend.gapsNote')}</Typography>
    </Card>
   </>}
   <Sheet visible={reviewVisible&&shownCheckin?.status==='pending'} title={t('adaptive.weeklyTitle')}
@@ -158,12 +166,12 @@ export default function NutritionTrends(){
     <Typography tone="secondary">{t('adaptive.currentTarget',{count:target?.kcal??'—'})}</Typography>
     <Button label={t('adaptive.accept')} fullWidth disabled={busy}
      onPress={()=>void answer('accept')}/>
-    <Button label={t('adaptive.edit')} variant="secondary" fullWidth disabled={busy}
+    <Button label={t('adaptive.edit')} variant="neutral" fullWidth disabled={busy}
      onPress={()=>{
       setProposedInput(formatEditableNumber(shownCheckin?.proposedKcal,'kcal'));
       setReviewVisible(false);setEditing(true);
      }}/>
-    <Button label={t('adaptive.dismiss')} variant="ghost" fullWidth disabled={busy}
+    <Button label={t('adaptive.dismiss')} variant="plain" fullWidth disabled={busy}
      onPress={()=>void answer('dismiss')}/>
   </Sheet>
   <Sheet visible={editing} title={t('adaptive.editTitle')} onClose={()=>setEditing(false)}
@@ -181,7 +189,7 @@ export default function NutritionTrends(){
      const safe=Math.max(1200,Math.ceil((checkin?.estimatedBurn??0)*.75/50)*50);
      setProposedInput(formatEditableNumber(safe,'kcal'));setPendingAnswer(null);setEditing(true);
     }}/>
-    <Button label={t('eatI.keepTarget')} variant="secondary" fullWidth
+    <Button label={t('eatI.keepTarget')} variant="neutral" fullWidth
      disabled={!guidance||busy} onPress={()=>{
        if(pendingAnswer)void answer(pendingAnswer.action,
         pendingAnswer.action==='edit'?pendingAnswer.kcal:null,true);
