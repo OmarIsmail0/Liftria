@@ -1,6 +1,7 @@
 import {router} from 'expo-router';
 import {useState} from 'react';
-import {Button,Card,Chip,Field,Header,ListRow,Screen,Sheet,Typography} from '../../../src/design/primitives';
+import {View} from 'react-native';
+import {Button,Card,Chip,EmptyState,Field,Header,ListGroup,ListRow,Screen,SectionHeader,SegmentedControl,Sheet,StatBlock,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
@@ -58,10 +59,6 @@ export default function ReviewEstimate(){
  const fmt=(n:number)=>formatNumber(language,Math.round(n));
  const gramsValue=(n:number)=>bidiIsolate(language,t('hikuK.valueGrams',{count:fmt(n)}));
  const kcalValue=(n:number)=>bidiIsolate(language,t('hikuK.valueKcal',{count:fmt(n)}));
- const totalKcal=bidiIsolate(language,t('hikuK.totalKcalValue',{count:fmt(sum.kcal)}));
- const totalProtein=bidiIsolate(language,t('hikuK.totalProteinValue',{count:fmt(sum.protein)}));
- const totalCarbs=bidiIsolate(language,t('hikuK.totalCarbsValue',{count:fmt(sum.carbs)}));
- const totalFat=bidiIsolate(language,t('hikuK.totalFatValue',{count:fmt(sum.fat)}));
  const statusLabel=(item:HikuReviewedItem)=>{
   if(draft?.kind!=='photo')return t(item.confidence==='sure'?'hikuK.sure':'hikuK.check');
   if(reviewed.has(item.original))return t('hikuPhoto.checked');
@@ -69,56 +66,68 @@ export default function ReviewEstimate(){
  };
  const photoReady=draft?.kind!=='photo'||photoReviewReady(items,reviewed);
  return <Screen embedded safeBottom>
-  <Header title={t('hikuK.review')} onBack={()=>router.back()}/>
-  {!draft?<Card title={t('hikuK.noDraft')}>
-   <Button label={t('hikuK.describe')} onPress={()=>router.push('/(tabs)/hiku/describe')}/>
+  <Header mode="inline" title={t('hikuK.review')} onBack={()=>router.back()}/>
+  {!draft?<Card>
+   <EmptyState title={t('hikuK.noDraft')} description={t('hikuK.noDraftDetail')}
+    action={<Button label={t('hikuK.describe')} fullWidth
+     onPress={()=>router.push('/(tabs)/hiku/describe')}/>}/>
   </Card>:<>
-   <Card rim="hiku" title={draft.meal.meal_name}>
-    <Chip kind="estimate"/>
+   <Card title={draft.meal.meal_name}>
+    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
+     <Chip kind="estimate"/>
+     {draft.kind==='photo'&&<Chip kind="pending" label={t('hikuPhoto.beta')}/>}
+    </View>
     {draft.demo&&draft.kind==='photo'&&<>
      <Typography tone="secondary">{t('hikuPhoto.sampleNotice')}</Typography>
      <DemoPhotoIllustration/>
     </>}
-    {draft.kind==='photo'&&<>
-     <Chip kind="pending" label={t('hikuPhoto.beta')}/>
-     <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>
-    </>}
+    {draft.kind==='photo'&&<Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>}
     {draft.demo&&<Typography tone="secondary">{t('hikuK.demoWarning')}</Typography>}
     <Typography tone="secondary">{t('hikuK.checkItems')}</Typography>
-    {draft.kind==='photo'&&<Typography tone="secondary" size="small">
+    {draft.kind==='photo'&&<Typography tone="secondary" size="secondary">
      {t('hikuPhoto.reviewProgress',{checked:items.filter(i=>reviewed.has(i.original)).length,
       total:items.length})}
     </Typography>}
-    <Typography>{t('hikuK.total',{kcal:totalKcal,protein:totalProtein,
-      carbs:totalCarbs,fat:totalFat})}</Typography>
-    <Typography tone="secondary" size="small">{t('hikuK.originalReview')}</Typography>
+    <View style={{flexDirection:'row',gap:8}}>
+     <View style={{flex:1}}><StatBlock value={fmt(sum.kcal)} label={t('hikuK.statKcal')}/></View>
+     <View style={{flex:1}}><StatBlock value={fmt(sum.protein)} label={t('hikuK.statProtein')}/></View>
+     <View style={{flex:1}}><StatBlock value={fmt(sum.carbs)} label={t('hikuK.statCarbs')}/></View>
+     <View style={{flex:1}}><StatBlock value={fmt(sum.fat)} label={t('hikuK.statFat')}/></View>
+    </View>
+    <Typography tone="secondary" size="secondary">{t('hikuK.originalReview')}</Typography>
    </Card>
-   <Card title={t('hikuK.foodItems')}>
-    {items.map((item,index)=><ListRow key={index} onPress={()=>edit(index)}
-      title={language==='ar'?item.name_ar:item.name_en}
-      detail={t('hikuK.itemDetail',{grams:gramsValue(item.grams),kcal:kcalValue(item.kcal)})}
-      suffix={<Typography tone="secondary" size="small">{statusLabel(item)}</Typography>}/>)}
-   </Card>
-   <Card title={t('hikuK.mealChoice')}>
-    {MEALS.map(key=><Button key={key} label={t(('eatI.'+key) as 'eatI.dinner')}
-     variant={meal===key?'primary':'secondary'} onPress={()=>setMeal(key)}/>)}
-   </Card>
+   <View style={{gap:8}}>
+    <SectionHeader title={t('hikuK.foodItems')}/>
+    <ListGroup>
+     {items.map((item,index)=><ListRow key={index} onPress={()=>edit(index)}
+       title={language==='ar'?item.name_ar:item.name_en}
+       detail={t('hikuK.itemStatus',{grams:gramsValue(item.grams),kcal:kcalValue(item.kcal),
+        status:statusLabel(item)})}/>)}
+    </ListGroup>
+   </View>
+   <View style={{gap:8}}>
+    <SectionHeader title={t('hikuK.mealChoice')}/>
+    <SegmentedControl label={t('hikuK.mealChoice')} value={meal} onChange={setMeal}
+     options={MEALS.map(key=>({value:key,label:t(('eatI.'+key) as 'eatI.dinner')}))}/>
+   </View>
    {error&&<Typography>{t('hikuK.saveError')}</Typography>}
-   <Button label={t('hikuK.saveTo',{meal:t(('eatI.'+meal) as 'eatI.dinner')})}
-    onPress={()=>void save()} disabled={busy||Boolean(draft.demo)||items.length===0||!photoReady} fullWidth/>
-   <Button label={t('hikuK.discard')} variant="ghost" onPress={discard}/>
+   <View style={{gap:8}}>
+    <Button label={t('hikuK.saveTo',{meal:t(('eatI.'+meal) as 'eatI.dinner')})}
+     onPress={()=>void save()} disabled={busy||Boolean(draft.demo)||items.length===0||!photoReady} fullWidth/>
+    <Button label={t('hikuK.discard')} variant="destructive" fullWidth onPress={discard}/>
+   </View>
    <Sheet visible={selected!==null} title={t('hikuK.editGrams')} onClose={()=>setSelected(null)}>
     <Field label={t('eatI.gramsLabel')} value={edited} onChangeText={setEdited}
       keyboardType="decimal-pad"/>
     <Button label={t('hikuK.apply')} disabled={!Number.isFinite(Number(edited))||
      Number(edited)<=0||Number(edited)>2000} fullWidth onPress={apply}/>
-    <Button label={t('hikuK.remove')} variant="danger" onPress={()=>{
+    <Button label={t('hikuK.remove')} variant="destructive" fullWidth onPress={()=>{
       setItems(prev=>prev.filter((_,index)=>index!==selected));setChanged(true);setSelected(null);}}/>
    </Sheet>
    <Sheet visible={discardConfirm} title={t('hikuK.discardTitle')}
     description={t('hikuK.discardWarning')} onClose={()=>setDiscardConfirm(false)}>
-    <Button label={t('hikuK.keepEditing')} onPress={()=>setDiscardConfirm(false)}/>
-    <Button label={t('hikuK.discard')} variant="danger" onPress={()=>{
+    <Button label={t('hikuK.keepEditing')} fullWidth onPress={()=>setDiscardConfirm(false)}/>
+    <Button label={t('hikuK.discard')} variant="destructive" fullWidth onPress={()=>{
       clearHikuDraft();setDiscardConfirm(false);router.replace('/(tabs)/hiku');}}/>
    </Sheet>
   </>}
