@@ -52,7 +52,9 @@ export function Screen({ children, scroll = true, padded = true, embedded = fals
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !(safeBottom && Platform.OS==='ios') ? 0 : insets.bottom };
+  // `embedded` skips the bottom inset because the tab bar already pads for the system bar.
+  // `safeBottom` puts that inset back when the tab bar is hidden, on Android and iPhone.
+  const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !safeBottom ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
   return <View style={[layout, { backgroundColor: theme.background }]}>
     {scroll
