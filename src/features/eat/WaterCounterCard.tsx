@@ -2,13 +2,14 @@ import {useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {View} from 'react-native';
 import {Button,Card,Typography} from '../../design/primitives';
+import {translateWaterTotal} from '../../i18n';
 import {useLanguage} from '../../i18n/LanguageProvider';
 import {getTypedSetting} from '../../services/database/settings';
 import {localDay} from './foodCatalog';
 import {adjustWater,readWater,type WaterLog} from './waterRepository';
 
 export function WaterCounterCard({day=localDay(new Date()),demoGlasses}:{day?:string;demoGlasses?:number}){
- const {t}=useLanguage();
+ const {t,language}=useLanguage();
  const [log,setLog]=useState<WaterLog|null>(null),[glassMl,setGlassMl]=useState(250);
  const [busy,setBusy]=useState(false),[error,setError]=useState(false);
  useFocusEffect(useCallback(()=>{
@@ -29,9 +30,8 @@ export function WaterCounterCard({day=localDay(new Date()),demoGlasses}:{day?:st
  }
  return <Card rim="eat" title={t('water.title')}>
   <Typography>{demoGlasses!==undefined?
-   t('water.total',{glasses:demoGlasses,ml:demoGlasses*glassMl}):
-   log===null?t('water.unlogged'):t('water.total',{
-    glasses:log.glasses,ml:log.glasses*log.glassMl})}</Typography>
+   translateWaterTotal(language,demoGlasses,demoGlasses*glassMl):
+   log===null?t('water.unlogged'):translateWaterTotal(language,log.glasses,log.glasses*log.glassMl)}</Typography>
   {demoGlasses!==undefined&&<Typography tone="secondary" size="small">{t('water.demoNote')}</Typography>}
   <Typography tone="secondary" size="small">{t('water.size',{ml:glassMl})}</Typography>
   <View style={{flexDirection:'row',gap:12}}>
