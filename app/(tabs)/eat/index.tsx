@@ -63,7 +63,7 @@ export default function EatHome(){
   }
   return <Screen embedded scroll={false}>
     <ScrollView contentContainerStyle={{gap:theme.layout.cardGap,paddingVertical:theme.space[3]}}>
-      <Header title={t('nav.eat')} right={<Button label={t('eatI.quick')} variant="secondary"
+      <Header mode="large" title={t('nav.eat')} right={<Button label={t('eatI.quick')} variant="secondary"
         onPress={()=>router.push({pathname:'/(tabs)/eat/quick',params:{day,meal:mealAtTime(new Date(),ramadan,iftarTime)}})}/>}/>
       <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
         <Button label={t('eatI.previous')} variant="ghost" onPress={()=>setDay(dayOffset(day,-1))}/>

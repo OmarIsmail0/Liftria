@@ -32,7 +32,7 @@ export default function Importing(){
  },[t,language]);
  return <Screen>
   <Stack.Screen options={{gestureEnabled:false}} />
-  <Header title={t('im3.title')}/>
+  <Header mode="inline" title={t('im3.title')}/>
   <Card rim="train" title={t('im3.importing')}>
    <Typography>{t('im3.prepared',{count,total})}</Typography>
    <View accessibilityRole="progressbar"

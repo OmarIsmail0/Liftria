@@ -1,4 +1,4 @@
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import type { CapsuleTab } from './contracts';
 
 /** The five original 24dp outline glyphs from docs/phase1/prototype/liftria.html (ICON). */
@@ -21,7 +21,22 @@ export function TabIcon({ name, color, size, strokeWidth }: {
   </Svg>;
 }
 
-// A gear with the same outline treatment as the five capsule icons.
+/** Magnifying glass, same 24dp outline treatment as the tab icons. */
+export function SearchIcon({ color, size, strokeWidth }: {
+  color: string; size: number; strokeWidth: number;
+}) {
+  return <Svg width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke={color} strokeWidth={strokeWidth}
+    strokeLinecap="round" strokeLinejoin="round"
+    pointerEvents="none" importantForAccessibility="no-hide-descendants">
+    <Circle cx={11} cy={11} r={6} fill="none" stroke={color} strokeWidth={strokeWidth}
+      strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M16 16l4 4" fill="none" stroke={color} strokeWidth={strokeWidth}
+      strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>;
+}
+
+// A gear with the same outline treatment as the five tab icons.
 export function SettingsIcon({ color, size, strokeWidth }: {
   color: string; size: number; strokeWidth: number;
 }) {

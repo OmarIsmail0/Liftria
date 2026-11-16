@@ -159,7 +159,7 @@ function HealthMetricDetailAndroid() {
     ? heartRateSamples(sourceRecords, rangeStart, today) : [];
 
   if (!snapshot.loaded) return <Screen embedded>
-    <Header title={label[metric]?t(label[metric]):metric} subtitle={t('healthMetric.loading')} />
+    <Header mode="inline" title={label[metric]?t(label[metric]):metric} subtitle={t('healthMetric.loading')} />
     <Typography tone="secondary">{t(healthCopy('metric.checkingPermission'))}</Typography>
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{

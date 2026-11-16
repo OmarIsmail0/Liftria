@@ -55,7 +55,7 @@ export default function PlansScreen() {
     setBusy(false);
   };
   return <Screen embedded>
-    <Header title={tr('p4.plans.0')} subtitle={tr('p4.plans.1')} onBack={()=>router.back()}/>
+    <Header mode="inline" title={tr('p4.plans.0')} onBack={()=>router.back()}/>
     <Card title={tr('p4.plans.2')}>
       {templates.length===0?<Typography tone="secondary">{tr('p4.plans.10')}</Typography>:
         templates.map(t=><ListRow key={t.id} title={t.name}

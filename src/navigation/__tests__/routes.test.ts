@@ -9,7 +9,7 @@ test('five tab roots match IA ordering; Settings is not a sixth tab', () => {
   for (const route of capsuleTabs) expect(activeCapsuleTab(route.key)).toBe(route.key);
 });
 
-test('subroutes inside Progress retain Progress while pushed stacks have no capsule', () => {
+test('subroutes inside Progress retain Progress while pushed stacks have no tab bar', () => {
   expect(activeCapsuleTab('progress')).toBe('progress');
   expect(activeCapsuleTab(undefined)).toBe('today');
   expect(Object.values(pushedRoutes).every(path => !path.includes('(tabs)'))).toBe(true);

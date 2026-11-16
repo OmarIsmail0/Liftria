@@ -6,7 +6,7 @@ import { chevronPointsLeft } from '../../../src/i18n/layout';
 import { formatEditableNumber } from '../../../src/i18n/editableNumber';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, AppState, Linking, Platform, Pressable, ScrollView, TextInput, Vibration, View } from 'react-native';
+import { AccessibilityInfo, AppState, Linking, Platform, Pressable, ScrollView, Text, TextInput, Vibration, View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Field, Screen, Sheet, Snackbar, Typography } from '../../../src/design/primitives';
@@ -382,16 +382,18 @@ export default function ActiveWorkoutScreen() {
           onPress={() => router.replace('/(tabs)/train')}
           style={{ width: theme.size.touch.min, height: theme.size.touch.min, alignItems: 'center', justifyContent: 'center' }}>
           <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
-            size={theme.space[5]} strokeWidth={2.2} />
+            size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
         </Pressable>
         <View style={{ flex: 1, minWidth: 0 }}>
           {renaming ? <TextInput value={titleDraft} onChangeText={setTitleDraft} onBlur={() => void saveTitle()}
             autoFocus accessibilityLabel={t('workout.rename')}
-            style={{ color: theme.color.text.primary, fontSize: theme.type.head.size, minHeight: theme.size.touch.min }} /> :
+            style={{ color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600', minHeight: theme.size.touch.min }} /> :
             <Pressable accessibilityRole="button" accessibilityLabel={t('workout.rename')}
               onPress={() => { setTitleDraft(view.title); setRenaming(true); }}
               style={{ minHeight: theme.size.touch.min, justifyContent: 'center' }}>
-              <Typography size="head" lines={1}>{view.title}</Typography>
+              <Text allowFontScaling numberOfLines={1} style={{
+                color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600',
+              }}>{view.title}</Text>
             </Pressable>}
           <Typography tone="secondary" size="small" lines={2}>
             {t('workout.elapsed') + ' ' + bidiIsolate(language, elapsedLabel(view.startedAt, now))

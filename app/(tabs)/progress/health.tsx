@@ -61,7 +61,7 @@ function HealthOverviewAndroid() {
     t('healthOverview.noMeasure');
   const anyEmpty = overviewMetrics.some(metric => snapshot.readings[metric]?.state === 'no-data');
   if (!snapshot.loaded) return <Screen embedded>
-    <Header title={t('healthOverview.health')} subtitle={t(healthCopy('overview.checking'))} />
+    <Header mode="inline" title={t('healthOverview.health')} subtitle={t(healthCopy('overview.checking'))} />
     <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
       <Typography tone="secondary">{t(healthCopy('overview.loading'))}</Typography>
     </View>

@@ -18,7 +18,7 @@ export const primitiveStories = [
   { id: 'empty-state', title: 'EmptyState' },
   { id: 'skeleton', title: 'Skeleton' },
   { id: 'orb', title: 'Orb' },
-  { id: 'capsule-nav', title: 'CapsuleNav' },
+  { id: 'tab-bar', title: 'Tab bar' },
 ] as const;
 export type PrimitiveStoryId = typeof primitiveStories[number]['id'];
 export function isPrimitiveStoryId(value: string): value is PrimitiveStoryId {

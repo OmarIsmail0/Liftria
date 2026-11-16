@@ -57,7 +57,7 @@ function HealthPermissionsAndroid() {
   }
 
   if (!snapshot.loaded) return <Screen embedded>
-    <Header title={t('healthPerm.loadingTitle')} subtitle={t(healthCopy('perm.loading'))} />
+    <Header mode="inline" title={t('healthPerm.loadingTitle')} subtitle={t(healthCopy('perm.loading'))} />
     <Typography tone="secondary">{t(healthCopy('perm.loadingDetails'))}</Typography>
   </Screen>;
   return <Screen embedded scroll={false}><ScrollView contentContainerStyle={{

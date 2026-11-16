@@ -151,7 +151,7 @@ export default function ProfileAndGoals() {
     else void persist(input,null);
   }
   return <Screen>
-    <Header title={t('profileSettings.title')} subtitle={t('profileSettings.subtitle')}
+    <Header mode="inline" title={t('profileSettings.title')}
       onBack={() => backOrReplace(router,'/settings')} />
     <Card title={t('profileSettings.profile')}>
       <Field label={t('profileSettings.name')} value={form.name} onChangeText={v=>patch('name',v)} />
