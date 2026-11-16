@@ -37,6 +37,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Files and the share sheet can open a CSV in Liftria. Rank is Alternate so we
     // don't become the default app for every text file.
     infoPlist: {
+      // Only the system's own HTTPS is used (no custom cryptography), so App Store Connect
+      // needs no export-compliance answer on every upload.
+      ITSAppUsesNonExemptEncryption: false,
       LSSupportsOpeningDocumentsInPlace: true,
       CFBundleDocumentTypes: [
         {

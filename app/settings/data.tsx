@@ -1,3 +1,4 @@
+import {devRoutesEnabled} from '../../src/navigation/devRoutes';
 import { useCallback, useEffect, useState } from 'react';
 import {formatDate, pluralForm, type TranslationKey} from '../../src/i18n';
 import { router,useLocalSearchParams } from 'expo-router';
@@ -31,7 +32,8 @@ const DEMO_BACKUP:BackupData={
 };
 export default function DataAndStorage() {
   const {demoBackup}=useLocalSearchParams<{demoBackup?:string}>();
-  const isDemo=demoBackup==='1';
+  // The sample preview is a screenshot helper: a store build ignores ?demoBackup=1.
+  const isDemo=demoBackup==='1'&&devRoutesEnabled();
   const { theme, resetLocalPreferences } = useTheme();
   const { language,resetLanguage, t } = useLanguage();
   const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
