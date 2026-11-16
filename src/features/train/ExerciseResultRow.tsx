@@ -1,6 +1,5 @@
 import { memo, useCallback } from 'react';
 import { Pressable, Text, View, type ViewStyle } from 'react-native';
-import { fontFamilyFor } from '../../design/fonts';
 import { Button, Typography } from '../../design/primitives';
 import { ChevronIcon } from '../../design/primitives/TabIcon';
 import { useTheme } from '../../design/ThemeProvider';
@@ -67,8 +66,7 @@ export const ExerciseResultRow = memo(function ExerciseResultRow({
           borderWidth: 2, borderColor: marked ? theme.color.domain.train : theme.surface.hairline,
           backgroundColor: marked ? theme.color.domain.train : 'transparent',
         }}>
-          {marked ? <Text style={{ color: theme.color.on.train,
-            fontFamily: fontFamilyFor('Figtree', '700', language === 'ar') }}>✓</Text> : null}
+          {marked ? <Text style={{ color: theme.color.on.train, fontWeight: '600' }}>✓</Text> : null}
         </View>
       </Pressable> : null}
     </View>

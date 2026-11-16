@@ -1,45 +1,52 @@
-import { Children, cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
+import { Children, cloneElement, createContext, isValidElement, useContext, type ReactElement, type ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
-import { fontFamilyFor } from '../fonts';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { chevronPointsLeft } from '../../i18n/layout';
 import { ChevronIcon } from './TabIcon';
-import { AmbientBackdrop, AuroraCardDecoration, cardOuterGlow } from './VisualEffects';
 import type { CardRim } from './contracts';
 import { useEnterAnimation, usePressScale } from './Motion';
 
-export type TypographySize = 'display' | 'title' | 'head' | 'metric-xl' | 'metric-l' |
-  'metric-m' | 'body' | 'small' | 'label' | 'button';
+export type TypographySize = 'metric' | 'largeTitle' | 'title' | 'body' | 'secondary' | 'caption'
+  | 'display' | 'head' | 'metric-xl' | 'metric-l' | 'metric-m' | 'small' | 'label' | 'button';
 
-export function Typography({ children, tone = 'primary', size = 'body', bold = false, lines }: {
+const ROLE = {
+  metric: 'metric', largeTitle: 'largeTitle', title: 'title', body: 'body', secondary: 'secondary', caption: 'caption',
+  display: 'largeTitle', head: 'title', 'metric-xl': 'metric', 'metric-l': 'title', 'metric-m': 'title',
+  small: 'secondary', label: 'caption', button: 'button',
+} as const;
+
+type Role = typeof ROLE[TypographySize];
+
+export function Typography({ children, tone = 'primary', size = 'body', bold = false, numeric = false, lines }: {
   children: ReactNode; tone?: 'primary' | 'secondary' | 'tertiary'; size?: TypographySize; bold?: boolean;
+  /** Fixed-width digits for values. Metric sizes already use them. */
+  numeric?: boolean;
   /** Cap the line count; the last line ends with an ellipsis. */
   lines?: number;
 }) {
   const { theme } = useTheme();
-  const { language } = useLanguage();
-  const face = size === 'display' ? theme.type.display : size === 'title' ? theme.type.title :
-    size === 'head' ? theme.type.head : size === 'metric-xl' ? theme.type.metric.xl :
-    size === 'metric-l' ? theme.type.metric.l : size === 'metric-m' ? theme.type.metric.m :
-    size === 'small' ? theme.type.small : size === 'label' ? theme.type.label :
-    size === 'button' ? theme.type.button : bold ? theme.type.body.strong : theme.type.body;
-  const metric = size === 'metric-xl' || size === 'metric-l' || size === 'metric-m';
-  const arabic = language === 'ar';
+  const role: Role = ROLE[size];
+  const spec = role === 'metric' ? theme.type.metric.xl
+    : role === 'largeTitle' ? theme.type.largeTitle
+    : role === 'title' ? theme.type.title
+    : role === 'secondary' ? theme.type.secondary
+    : role === 'caption' ? theme.type.caption
+    : role === 'button' ? theme.type.button
+    : bold ? theme.type.body.strong : theme.type.body;
+  const weight = bold && spec.weight === '400' ? '600' : spec.weight;
+  const tabular = numeric || role === 'metric';
   return <Text allowFontScaling numberOfLines={lines} ellipsizeMode="tail"
     textBreakStrategy="balanced" lineBreakStrategyIOS="standard" style={{
-    fontFamily: fontFamilyFor(face.face, face.weight, arabic), fontSize: face.size, lineHeight: face.line,
-    fontVariant: metric ? ['tabular-nums'] : undefined,
-    // Letter spacing breaks Arabic letter joining.
-    letterSpacing: size === 'label' && !arabic ? theme.type.label.letterSpacingEm * theme.type.label.size : undefined,
-    textTransform: size === 'label' ? 'uppercase' : undefined,
+    fontSize: spec.size, lineHeight: spec.line, fontWeight: weight,
+    fontVariant: tabular ? ['tabular-nums'] : undefined,
     color: theme.color.text[tone], flexShrink: 1, textAlign: 'auto',
   }}>{children}</Text>;
 }
 
-/** Fixed ambient background; no expensive live blur or animated glows. */
+/** Page background. Each screen paints it, so a push never shows the screen underneath. */
 export function Screen({ children, scroll = true, padded = true, embedded = false, safeBottom = false }: {
   children: ReactNode; scroll?: boolean; padded?: boolean; embedded?: boolean; safeBottom?: boolean;
 }) {
@@ -47,88 +54,83 @@ export function Screen({ children, scroll = true, padded = true, embedded = fals
   const insets = useSafeAreaInsets();
   const layout: ViewStyle = { flex: 1, paddingTop: insets.top, paddingBottom: embedded && !(safeBottom && Platform.OS==='ios') ? 0 : insets.bottom };
   const padding = padded ? theme.layout.gutter : 0;
-  // The native stack card is opaque, so a transparent screen would hide the shared
-  // aurora and a fade would show the previous screen through it. Each screen paints
-  // the same static backdrop itself. `embedded` only skips the bottom inset.
   return <View style={[layout, { backgroundColor: theme.background }]}>
-    {theme.effectiveStyle === 'aurora' && <AmbientBackdrop theme={theme} />}
     {scroll
       ? <ScrollView automaticallyAdjustKeyboardInsets={Platform.OS==='ios'} contentContainerStyle={{ paddingHorizontal: padding, paddingVertical: theme.space[4], gap: theme.layout.cardGap }} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       : <View style={{ flex: 1, paddingHorizontal: padding }}>{children}</View>}
   </View>;
 }
 
-export function Header({ title, subtitle, onBack, right }: {
+export function Header({ title, subtitle, onBack, right, mode }: {
   title: string; subtitle?: string; onBack?: () => void; right?: ReactNode;
+  /** Large titles for tab screens. Inline titles for pushed screens. Defaults from whether there is a back control. */
+  mode?: 'large' | 'inline';
 }) {
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
   const press = usePressScale();
-  const solid = theme.effectiveStyle === 'solid';
-  // A 40dp filled disc inside the 48dp touch target. Solid (high contrast) keeps a 3:1 outline.
-  const back = onBack && <Pressable onPress={onBack} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
+  const resolved = mode ?? (onBack ? 'inline' : 'large');
+  const back = onBack ? <Pressable onPress={onBack} onPressIn={press.onPressIn} onPressOut={press.onPressOut}
     accessibilityRole="button" accessibilityLabel={t('common.back')}
     style={{ width: theme.size.touch.min, height: theme.size.touch.min, justifyContent: 'center', alignItems: 'center',
-      marginStart: -theme.space[1] }}>
-    {({ pressed }) => <Animated.View style={[{ width: theme.space[10], height: theme.space[10],
-      borderRadius: theme.radius.pill, justifyContent: 'center', alignItems: 'center',
-      backgroundColor: theme.mode === 'light' && !solid
-        ? (pressed ? theme.color.bg.raised : theme.glass.card)
-        : (pressed ? theme.surface.hairline : theme.surface.control),
-      borderWidth: theme.size.border.thin,
-      borderColor: solid ? theme.controlOutline : theme.surface.hairline,
-      boxShadow: theme.mode === 'light' && !solid ? theme.elevation.thumb : undefined }, press.style]}>
+      marginStart: -theme.space[2] }}>
+    {({ pressed }) => <Animated.View style={[{ opacity: pressed ? 0.6 : 1 }, press.style]}>
       <ChevronIcon left={chevronPointsLeft('back', isRTL)} color={theme.color.text.primary}
-        size={theme.space[5]} strokeWidth={2.2} />
+        size={theme.space[6]} strokeWidth={theme.size.iconStroke} />
     </Animated.View>}
-  </Pressable>;
-  // At most two lines with an ellipsis, at full size.
-  const titles = <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
-    <Typography size="title" lines={2}>{title}</Typography>
-    {subtitle && <Typography tone="secondary" size="small" lines={2}>{subtitle}</Typography>}
+  </Pressable> : null;
+  const secondary = subtitle
+    ? <Typography tone="secondary" size="secondary" lines={2}>{subtitle}</Typography>
+    : null;
+  if (resolved === 'inline') {
+    return <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2], minHeight: theme.size.touch.min }}>
+      {back}
+      <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
+        <Text allowFontScaling numberOfLines={2} style={{
+          color: theme.color.text.primary, fontSize: 17, lineHeight: 22, fontWeight: '600',
+        }}>{title}</Text>
+        {secondary}
+      </View>
+      {right}
+    </View>;
+  }
+  return <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: theme.space[3], minHeight: theme.size.touch.min }}>
+    {back}
+    <View style={{ flex: 1, minWidth: 0, gap: theme.space[1] }}>
+      <Typography size="largeTitle" lines={2}>{title}</Typography>
+      {secondary}
+    </View>
+    {right}
   </View>;
-  const row = { flexDirection: 'row', alignItems: 'center', gap: theme.space[3], minHeight: theme.size.touch.primary } as const;
-  // Back and actions together leave the title too narrow ("Supers/et"), so the title gets
-  // its own full-width line under them.
-  if (back && right) return <View style={{ gap: theme.space[2] }}>
-    <View style={row}>{back}<View style={{ flex: 1 }} />{right}</View>
-    <View style={{ flexDirection: 'row' }}>{titles}</View>
-  </View>;
-  return <View style={row}>{back}{titles}{right}</View>;
 }
 
-export function Card({ children, rim = 'none', title, flat = false }: {
+const ListInset = createContext(false);
+
+export function Card({ children, title, rim = 'none', flat = false }: {
   children: ReactNode; rim?: CardRim; title?: string; flat?: boolean;
 }) {
   const { theme } = useTheme();
-  const aurora = theme.effectiveStyle === 'aurora';
-  const [frame, setFrame] = useState({ width: 0, height: 0 });
   const entering = useEnterAnimation();
-  const border = rim === 'none' ? theme.color.border.subtle : theme.color.domain[rim];
-  return <Animated.View entering={entering} style={{ borderRadius: theme.radius.lg, ...cardOuterGlow(theme, rim, flat) }}>
-    <View onLayout={event => {
-      const { width, height } = event.nativeEvent.layout;
-      setFrame(previous => previous.width === width && previous.height === height
-        ? previous : { width, height });
-    }} style={{
-      backgroundColor: theme.cardFill, borderRadius: theme.radius.lg,
-      borderWidth: aurora ? 0 : theme.size.border.thin,
-      borderColor: border, overflow: 'hidden',
-      padding: theme.space[4], gap: theme.space[3],
-      ...(!aurora && !flat ? { elevation: theme.size.border.thin } : {}),
-    }}>
-      {aurora && <AuroraCardDecoration theme={theme} width={frame.width} height={frame.height} />}
-      {title && <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-        {rim !== 'none' && <View style={{ width: theme.space[2], height: theme.space[2],
-          borderRadius: theme.radius.pill, backgroundColor: border }} />}
-        <Typography size="head">{title}</Typography>
-      </View>}
-      {withoutTrailingDivider(children)}
-    </View>
+  void rim;
+  void flat;
+  return <Animated.View entering={entering} style={{
+    backgroundColor: theme.cardFill, borderRadius: theme.radius.md, overflow: 'hidden',
+    padding: theme.space[4], gap: theme.space[3],
+  }}>
+    {title ? <Typography size="title">{title}</Typography> : null}
+    {withoutTrailingDivider(children)}
   </Animated.View>;
 }
 
-/** Dividers belong between rows; the card's own edge closes the last one. */
+/** A surface that clips a stack of rows. Rows inside it inset themselves. */
+export function ListGroup({ children }: { children: ReactNode }) {
+  const { theme } = useTheme();
+  return <View style={{ backgroundColor: theme.color.bg.surface, borderRadius: theme.radius.md, overflow: 'hidden' }}>
+    <ListInset.Provider value={true}>{withoutTrailingDivider(children)}</ListInset.Provider>
+  </View>;
+}
+
+/** Dividers belong between rows; the container's own edge closes the last one. */
 function withoutTrailingDivider(children: ReactNode): ReactNode {
   const items = Children.toArray(children);
   const lastIndex = items.length - 1;
@@ -138,40 +140,81 @@ function withoutTrailingDivider(children: ReactNode): ReactNode {
   return items;
 }
 
+export function SectionHeader({ title, actionLabel, onAction }: {
+  title: string; actionLabel?: string; onAction?: () => void;
+}) {
+  const { theme } = useTheme();
+  return <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    minHeight: theme.space[8], paddingHorizontal: theme.space[1], gap: theme.space[3] }}>
+    <Text allowFontScaling style={{ flexShrink: 1, color: theme.color.text.secondary,
+      fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line, fontWeight: '600' }}>{title}</Text>
+    {actionLabel && onAction ? <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} onPress={onAction}
+      style={{ minHeight: theme.size.touch.min, justifyContent: 'center', paddingHorizontal: theme.space[1] }}>
+      <Text allowFontScaling style={{ color: theme.color.accent, fontSize: theme.type.secondary.size,
+        lineHeight: theme.type.secondary.line, fontWeight: '600' }}>{actionLabel}</Text>
+    </Pressable> : null}
+  </View>;
+}
+
+export function StatBlock({ value, label }: { value: string; label: string }) {
+  const { theme } = useTheme();
+  return <View style={{ alignItems: 'center', gap: theme.space[1] }}>
+    <Text allowFontScaling style={{ color: theme.color.text.primary, fontSize: theme.type.title.size,
+      lineHeight: theme.type.title.line, fontWeight: theme.type.title.weight, fontVariant: ['tabular-nums'],
+      textAlign: 'center' }}>{value}</Text>
+    <Typography size="caption" tone="secondary">{label}</Typography>
+  </View>;
+}
+
+/** An 8 dp track. `progress` is a fraction from 0 to 1. */
+export function ProgressBar({ progress, label }: { progress: number; label?: string }) {
+  const { theme } = useTheme();
+  const amount = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
+  return <View accessibilityRole="progressbar" accessibilityLabel={label}
+    accessibilityValue={{ min: 0, max: 100, now: Math.round(amount * 100) }}
+    style={{ height: 8, borderRadius: 4, backgroundColor: theme.color.bg.raised, overflow: 'hidden' }}>
+    <View style={{ width: `${amount * 100}%`, height: 8, borderRadius: 4, backgroundColor: theme.color.accent }} />
+  </View>;
+}
+
 export function Banner({ title, message, variant = 'info' }: {
   title: string; message: string; variant?: 'offline'|'info'|'warning';
 }) {
   const { theme } = useTheme();
-  const tone = variant === 'warning' ? theme.color.status.warning : variant === 'offline' ? theme.color.text.tertiary : theme.color.domain.health;
+  const tone = variant === 'warning' ? theme.color.status.warning
+    : variant === 'offline' ? theme.color.text.tertiary : theme.color.accent;
   return <View accessibilityRole="alert" style={{
-    minHeight: theme.size.touch.min, backgroundColor: theme.cardFill, borderColor: tone,
-    borderWidth: theme.size.border.thin, borderRadius: theme.radius.md, padding: theme.space[3],
-    flexDirection: 'row', gap: theme.space[3], alignItems: 'flex-start',
+    minHeight: theme.size.touch.min, backgroundColor: theme.color.bg.raised, borderRadius: theme.radius.md,
+    padding: theme.space[3], flexDirection: 'row', gap: theme.space[3], alignItems: 'flex-start',
   }}>
-    <Text importantForAccessibility="no" style={{ color: tone, fontSize: theme.type.head.size, fontFamily: fontFamilyFor('Figtree', '700') }}>{variant === 'offline' ? '○' : variant === 'warning' ? '!' : 'i'}</Text>
+    <Text importantForAccessibility="no" style={{ color: tone, fontSize: theme.type.body.size, fontWeight: '600' }}>{variant === 'offline' ? '○' : variant === 'warning' ? '!' : 'i'}</Text>
     <View style={{ flex: 1, gap: theme.space[1] }}>
-      <Typography bold>{title}</Typography><Typography size="small" tone="secondary">{message}</Typography>
+      <Typography bold>{title}</Typography><Typography size="secondary" tone="secondary">{message}</Typography>
     </View>
   </View>;
 }
 
-export function ListRow({ title, detail, onPress, suffix, leading, accessibilityLabel, divider = true }: {
-  title: string; detail?: string; onPress?: () => void; suffix?: ReactNode; leading?: ReactNode; accessibilityLabel?: string;
-  divider?: boolean;
+export function ListRow({ title, detail, value, onPress, suffix, leading, accessibilityLabel, divider = true }: {
+  title: string; detail?: string; value?: string; onPress?: () => void; suffix?: ReactNode; leading?: ReactNode;
+  accessibilityLabel?: string; divider?: boolean;
 }) {
   const { theme } = useTheme();
   const { isRTL } = useLanguage();
+  const inset = useContext(ListInset);
+  const spoken = [title, detail, value].filter(Boolean).join('. ');
   return <Pressable onPress={onPress} disabled={!onPress} accessible={Boolean(onPress)}
-    accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? (detail ? `${title}. ${detail}` : title)}
-    style={({ pressed }) => ({ minHeight: theme.size.touch.workout, flexDirection: 'row', alignItems: 'center',
-      gap: theme.space[3], borderBottomWidth: divider ? 1 : 0, borderColor: theme.surface.hairline, paddingVertical: theme.space[2],
+    accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel ?? spoken}
+    style={({ pressed }) => ({ minHeight: 52, flexDirection: 'row', alignItems: 'center',
+      gap: theme.space[3], borderBottomWidth: divider ? 1 : 0, borderColor: theme.color.border.subtle,
+      paddingVertical: theme.space[2], paddingHorizontal: inset ? theme.space[4] : 0,
       backgroundColor: pressed ? theme.surface.pressed : 'transparent' })}>
     {leading}
     <View style={{ flex: 1, gap: theme.space[1] }}>
-      <Typography bold>{title}</Typography>{detail && <Typography tone="secondary" size="small">{detail}</Typography>}
+      <Typography bold>{title}</Typography>{detail ? <Typography tone="secondary" size="secondary">{detail}</Typography> : null}
     </View>
+    {value ? <Typography tone="secondary" size="secondary">{value}</Typography> : null}
     {suffix ?? (onPress ? <ChevronIcon left={chevronPointsLeft('forward', isRTL)}
-      color={theme.color.text.secondary} size={theme.space[4]} strokeWidth={theme.size.iconStroke} /> : null)}
+      color={theme.color.text.tertiary} size={theme.space[4]} strokeWidth={theme.size.iconStroke} /> : null)}
   </Pressable>;
 }
 
@@ -179,9 +222,9 @@ export function EmptyState({ title, description, action }: {
   title: string; description: string; action?: ReactNode;
 }) {
   const { theme } = useTheme();
-  return <View style={{ alignItems: 'center', gap: theme.space[3], paddingVertical: theme.space[6] }}>
-    <Typography size="head">{title}</Typography>
-    <Typography tone="secondary">{description}</Typography>
+  return <View style={{ alignItems: 'center', gap: theme.space[2], paddingVertical: theme.space[4] }}>
+    <Typography size="title">{title}</Typography>
+    <Typography tone="secondary" size="secondary">{description}</Typography>
     {action}
   </View>;
 }
@@ -191,6 +234,6 @@ export function Skeleton({ height, width = '100%' }: { height?: number; width?: 
   const { t } = useLanguage();
   return <View accessibilityLabel={t('common.loading')} accessibilityRole="progressbar" style={{
     width, height: height ?? theme.size.touch.min, backgroundColor: theme.color.bg.raised,
-    borderColor: theme.color.border.subtle, borderWidth: theme.size.border.thin, borderRadius: theme.radius.md,
+    borderRadius: theme.radius.md,
   }} />;
 }

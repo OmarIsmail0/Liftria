@@ -1,6 +1,5 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Typography } from '../../design/primitives';
-import { fontFamilyFor } from '../../design/fonts';
 import { useTheme } from '../../design/ThemeProvider';
 import { pluralForm, weightUnitLabel, type TranslationKey } from '../../i18n';
 import { useLanguage } from '../../i18n/LanguageProvider';
@@ -108,7 +107,7 @@ export function SetTable({
           style={[columnBox('set'), cellHit]}>
           <View style={{ minWidth: 34, minHeight: 30, paddingHorizontal: theme.space[1], borderRadius: theme.radius.sm,
             alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surface.control }}>
-            <Text style={{ color: markColor(row.mark), fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'),
+            <Text style={{ color: markColor(row.mark), fontWeight: '600',
               fontSize: theme.type.body.size }}>{glyph}</Text>
             {side ? <Text style={{ color: theme.color.text.tertiary, fontSize: theme.type.label.size }}>{side}</Text> : null}
           </View>
@@ -148,7 +147,7 @@ export function SetTable({
             borderWidth: theme.size.border.thin, borderColor: logged ? theme.color.domain.train : theme.surface.hairline }}>
             <Text style={{
               color: logged ? theme.color.on.train : theme.color.text.tertiary,
-              fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'), fontSize: theme.type.body.size,
+              fontWeight: '600', fontSize: theme.type.body.size,
             }}>✓</Text>
           </View>
         </Pressable>
@@ -174,7 +173,7 @@ export function SetTable({
           width: '100%', minHeight: theme.size.touch.min, borderRadius: theme.radius.sm, textAlign: 'center',
           borderWidth: theme.size.border.thin, borderColor: theme.surface.hairline,
           backgroundColor: theme.surface.control, color: theme.color.text.primary,
-          fontFamily: fontFamilyFor('Figtree', '700', language === 'ar'), fontSize: theme.type.body.size,
+          fontWeight: '600', fontSize: theme.type.body.size,
           fontVariant: ['tabular-nums'],
         }} />
     </View>;

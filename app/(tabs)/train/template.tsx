@@ -12,7 +12,6 @@ import { deleteTemplate, listTemplates, saveTemplate, type TemplateExerciseInput
 import type { Exercise } from '../../../src/services/database/gymTypes';
 import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
 import { muscleLabel } from '../../../src/i18n/muscles';
-import { fontFamilyFor } from '../../../src/design/fonts';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 
 export default function TemplateEditor() {
@@ -172,7 +171,7 @@ export default function TemplateEditor() {
                 style={{flex:1,minHeight:theme.size.touch.min,textAlign:'center',borderRadius:theme.radius.sm,
                   borderWidth:theme.size.border.thin,borderColor:theme.surface.hairline,
                   backgroundColor:theme.surface.control,color:theme.color.text.primary,
-                  fontFamily:fontFamilyFor('Figtree','700',language==='ar'),fontSize:theme.type.body.size}}/>
+                  fontWeight:'600',fontSize:theme.type.body.size}}/>
             </View>;
           })}
           <Pressable accessibilityRole="button" accessibilityLabel={t('workout.addSet')}

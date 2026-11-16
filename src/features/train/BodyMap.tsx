@@ -4,7 +4,6 @@ import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { muscleLabel } from '../../i18n/muscles';
 import { joinList, translate, type AppLanguage } from '../../i18n';
-import { fontFamilyFor } from '../../design/fonts';
 import { MUSCLES, type Muscle } from '../../services/database/gymTypes';
 import { BODY_REGIONS, BUNDLED_REGIONS, DRAWN_REGIONS, mapBodyRegions, preferredBodySide,
   type BodyIntensity, type MuscleShade } from './bodyRegions';
@@ -74,8 +73,8 @@ export function BodyMap({ primary=[], secondary=[], mini=false, icon=false, onSe
       </View>)}
     </View>
     {!mini && <View style={{ width:'100%', flexDirection:'row', justifyContent:'space-around' }}>
-      <Text style={{ color:textColor, fontFamily:fontFamilyFor('Figtree','400',language==='ar') }}>{t('muscle.front')}</Text>
-      <Text style={{ color:textColor, fontFamily:fontFamilyFor('Figtree','400',language==='ar') }}>{t('muscle.back')}</Text>
+      <Text style={{ color:textColor }}>{t('muscle.front')}</Text>
+      <Text style={{ color:textColor }}>{t('muscle.back')}</Text>
     </View>}
     {!mini && !shading && <View style={{ gap:theme.space[2], alignSelf:'stretch' }}>
       <View style={{ flexDirection:'row', flexWrap:'wrap', gap:theme.space[3], alignItems:'center' }}>

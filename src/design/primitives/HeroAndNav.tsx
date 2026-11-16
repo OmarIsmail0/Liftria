@@ -3,7 +3,6 @@ import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import Reanimated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../ThemeProvider';
-import { fontFamilyFor } from '../fonts';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { OrbArtwork } from './VisualEffects';
 import { TabIcon } from './TabIcon';
@@ -32,8 +31,7 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
 
   const size = theme.orbSize.today;
   const metric = summary.metric;
-  const arabic = language === 'ar';
-  const ink = (summary.progress === null || theme.effectiveStyle === 'solid') ? theme.color.text.primary : theme.orb.ink;
+  const ink = theme.color.text.primary;
   return <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'}
     accessibilityLabel={summary.accessibilityLabel}
     style={{ alignSelf: 'center', minHeight: size, minWidth: size,
@@ -45,44 +43,32 @@ export function Orb({ eaten, target, hidden = false, active = true, onPress }: {
       <View style={{ alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.space[3] }}>
         {metric ? <>
           <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={1}
-            style={{ color: ink, fontFamily: fontFamilyFor(theme.type.metric.xl.face, theme.type.metric.xl.weight),
-              fontSize: theme.type.metric.xl.size, lineHeight: theme.type.metric.xl.line,
-              fontVariant: ['tabular-nums'], textAlign: 'center' }}>{metric.value}</Text>
+            style={{ color: ink, fontSize: theme.type.metric.xl.size, lineHeight: theme.type.metric.xl.line,
+              fontWeight: theme.type.metric.xl.weight, fontVariant: ['tabular-nums'], textAlign: 'center' }}>{metric.value}</Text>
           <Text allowFontScaling numberOfLines={1} style={{
-            color: ink, fontFamily: fontFamilyFor(theme.type.label.face, theme.type.label.weight, arabic),
-            fontSize: theme.type.label.size, lineHeight: theme.type.label.line,
-            // Letter spacing breaks Arabic letter joining; English keeps the tracked caps label.
-            letterSpacing: arabic ? 0 : theme.type.label.letterSpacingEm * theme.type.label.size,
-            textAlign: 'center' }}>{arabic ? metric.caption : metric.caption.toUpperCase()}</Text>
+            color: theme.color.text.secondary, fontSize: theme.type.secondary.size, lineHeight: theme.type.secondary.line,
+            textAlign: 'center' }}>{metric.caption}</Text>
         </> : <Text allowFontScaling adjustsFontSizeToFit minimumFontScale={0.65} numberOfLines={2}
-          style={{ color: ink, fontFamily: fontFamilyFor(theme.type.head.face, theme.type.head.weight, arabic),
-            fontSize: theme.type.head.size, lineHeight: theme.type.head.line,
-            textAlign: 'center' }}>{summary.label}</Text>}
+          style={{ color: ink, fontSize: theme.type.title.size, lineHeight: theme.type.title.line,
+            fontWeight: theme.type.title.weight, textAlign: 'center' }}>{summary.label}</Text>}
       </View>
     </Animated.View>
   </Pressable>;
 }
 
-/** One capsule shared by the five route roots; safe-area inset stays below its touch targets. */
+/** Flat stand-in for the capsule. A later task replaces it with a labelled tab bar. */
 export function CapsuleNav({ active, onSelect }: {
   active: CapsuleTab; onSelect: (tab: CapsuleTab) => void;
 }) {
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
   const insets = useSafeAreaInsets();
-  const glass = theme.effectiveStyle === 'aurora';
   const index = Math.max(0, capsuleTabs.findIndex(tab => tab.key === active));
   const position = useSpringValue(index);
   const [width, setWidth] = useState(0);
   const inset = theme.space[1];
   const border = theme.size.border.thin;
-  // onLayout includes the border; the pill lives inside it.
   const segment = width > 0 ? (width - border * 2 - inset * 2) / capsuleTabs.length : 0;
-  // The pill slides with a transform, not a growing width: width (a layout prop) animated
-  // from the UI thread was not applied on Android, so the pill stayed on the first option.
-  // translateX is physical, so it is mirrored for right-to-left layouts.
-  // The measured segment is also a shared value: when the bar first appears on a later tab
-  // (a deep link into Hiku), nothing else changes after layout, so the style must react to it.
   const segmentWidth = useSharedValue(0);
   const direction = isRTL ? -1 : 1;
   const slide = useAnimatedStyle(() => ({
@@ -99,17 +85,13 @@ export function CapsuleNav({ active, onSelect }: {
       segmentWidth.set(next > 0 ? (next - border * 2 - inset * 2) / capsuleTabs.length : 0);
     }} style={{
       flexDirection: 'row', alignItems: 'center',
-      minHeight: theme.size.touch.nav, borderRadius: theme.radius.pill,
-      padding: inset, borderWidth: border,
-      borderColor: glass ? theme.surface.hairline : theme.color.border.strong,
-      backgroundColor: glass ? theme.glass.card : theme.color.bg.glass,
-      boxShadow: glass ? theme.elevation.card : undefined,
+      minHeight: theme.size.touch.nav, borderRadius: theme.radius.md,
+      padding: inset, borderWidth: border, borderColor: theme.color.border.subtle,
+      backgroundColor: theme.color.bg.surface,
     }}>
-      {/* Mounted from the first frame (zero width until measured): a pill that mounts after
-          layout keeps the style computed before the width existed and sits on the first tab. */}
       <Reanimated.View pointerEvents="none" style={[{ position: 'absolute', top: inset, bottom: inset,
-        start: inset, width: segment, borderRadius: theme.radius.pill,
-        backgroundColor: theme.color.action.primary.bg }, slide]} />
+        start: inset, width: segment, borderRadius: theme.radius.sm,
+        backgroundColor: theme.color.accent }, slide]} />
       {capsuleTabs.map((tab, at) => <CapsuleTabButton key={tab.key} tab={tab.key} selected={tab.key === active}
         at={at} position={position} sliding={segment > 0}
         label={t(`nav.${tab.key}`)} onPress={() => onSelect(tab.key)} />)}
@@ -123,7 +105,6 @@ function CapsuleTabButton({ tab, selected, at, position, sliding, label, onPress
 }) {
   const { theme } = useTheme();
   const press = usePressScale();
-  // Two inks cross-fade as the pill passes under the icon, so it never flashes white on the bar.
   const lit = useAnimatedStyle(() => ({
     opacity: sliding ? Math.max(0, 1 - Math.abs(position.get() - at)) : selected ? 1 : 0,
   }), [sliding, selected, at]);
@@ -136,8 +117,8 @@ function CapsuleTabButton({ tab, selected, at, position, sliding, label, onPress
     style={{ flex: 1, minWidth: theme.size.touch.min, minHeight: theme.size.touch.nav,
       alignItems: 'center', justifyContent: 'center' }}>
     <Reanimated.View style={press.style}>
-      <Reanimated.View style={unlit}>{icon(theme.color.text.secondary)}</Reanimated.View>
-      <Reanimated.View style={[{ position: 'absolute', top: 0, start: 0 }, lit]}>{icon(theme.color.action.primary.fg)}</Reanimated.View>
+      <Reanimated.View style={unlit}>{icon(theme.color.text.tertiary)}</Reanimated.View>
+      <Reanimated.View style={[{ position: 'absolute', top: 0, start: 0 }, lit]}>{icon(theme.color.on.accent)}</Reanimated.View>
     </Reanimated.View>
   </Pressable>;
 }

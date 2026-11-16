@@ -33,10 +33,10 @@ describe('TASK-2: initial appearance is resolved before the app is shown', () =>
     expect(resolveEffectiveStyle('aurora', result.highTextContrast, result.reduceTransparency)).toBe('solid');
   });
 
-  test('high contrast disabled starts directly in Aurora', async () => {
+  test('high contrast disabled stays Solid', async () => {
     const result = await resolveStartupAccessibility(checks(async () => false), 1500);
     expect(result).toMatchObject({ highTextContrast: false, source: 'resolved' });
-    expect(resolveEffectiveStyle('aurora', result.highTextContrast, result.reduceTransparency)).toBe('aurora');
+    expect(resolveEffectiveStyle('aurora', result.highTextContrast, result.reduceTransparency)).toBe('solid');
   });
 
   test('accessibility read rejection fails closed to Solid', async () => {
