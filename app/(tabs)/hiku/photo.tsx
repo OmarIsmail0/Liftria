@@ -3,7 +3,8 @@ import {useCallback,useRef,useState} from 'react';
 import {Image,View} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {File,Paths} from 'expo-file-system';
-import {Button,Card,Chip,Field,Header,Screen,Toggle,Typography} from '../../../src/design/primitives';
+import {Button,Card,Chip,Field,Header,ListGroup,Screen,SectionHeader,Toggle,Typography} from '../../../src/design/primitives';
+import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {DEFAULT_HIKU_MODEL,hikuModel,type HikuModelId} from '../../../src/features/hiku/models';
@@ -15,6 +16,7 @@ import {sanitizeHikuPhoto,type CleanHikuPhoto} from '../../../src/features/hiku/
 
 export default function HikuPhoto(){
  const {t,language}=useLanguage();
+ const {theme}=useTheme();
  const [photo,setPhoto]=useState<CleanHikuPhoto|null>(null);
  const photoRef=useRef<CleanHikuPhoto|null>(null);
  const [note,setNote]=useState(''),[busy,setBusy]=useState(false);
@@ -95,39 +97,46 @@ export default function HikuPhoto(){
  }
  function cancel(){controller.current?.abort();setBusy(false);setError('cancelled');}
  return <Screen embedded safeBottom>
-  <Header title={t('hikuPhoto.title')} onBack={()=>router.back()}/>
-  <Card rim="hiku" title={t('hikuPhoto.addMealPhoto')}>
+  <Header mode="inline" title={t('hikuPhoto.title')} onBack={()=>router.back()}/>
+  <Card title={t('hikuPhoto.addMealPhoto')}>
    <Chip kind="pending" label={t('hikuPhoto.beta')}/>
    <Typography tone="secondary">{t('hikuPhoto.warning')}</Typography>
-   <View style={{gap:12}}>
-    <Button label={t('hikuPhoto.take')} variant="secondary" disabled={busy||loading}
-     onPress={()=>void pick(true)}/>
-    <Button label={t('hikuPhoto.gallery')} variant="secondary" disabled={busy||loading}
-     onPress={()=>void pick(false)}/>
-   </View>
+   <Button label={t('hikuPhoto.take')} variant="neutral" fullWidth disabled={busy||loading}
+    onPress={()=>void pick(true)}/>
+   <Button label={t('hikuPhoto.gallery')} variant="neutral" fullWidth disabled={busy||loading}
+    onPress={()=>void pick(false)}/>
    {denied&&<Typography tone="secondary">{t('hikuPhoto.denied')}</Typography>}
    {loading&&<Typography tone="secondary">{t('hikuPhoto.processing')}</Typography>}
    {photo&&<>
     <Typography bold>{t('hikuPhoto.exactImage')}</Typography>
     <Image source={{uri:photo.uri}} accessibilityLabel={t('hikuPhoto.exactImage')}
-     resizeMode="contain" style={{width:'100%',height:240}}/>
-    <Typography tone="secondary" size="small">{t('hikuPhoto.dimensions',{
+     resizeMode="contain" style={{width:'100%',height:240,borderRadius:theme.radius.md}}/>
+    <Typography tone="secondary" size="secondary">{t('hikuPhoto.dimensions',{
       width:photo.width,height:photo.height})}</Typography>
    </>}
    <Field label={t('hikuPhoto.note')} value={note} multiline onChangeText={setNote}
     placeholder={t('hikuPhoto.noteHint')}/>
-   <Typography tone="secondary" size="small">{t('hikuPhoto.privacy')}</Typography>
-   <Typography tone="secondary" size="small">{t('hikuK.selectedModel',{model:
+   <Typography tone="secondary" size="secondary">{t('hikuPhoto.privacy')}</Typography>
+   <Typography tone="secondary" size="secondary">{t('hikuK.selectedModel',{model:
     language==='ar'?hikuModel(model).nameAr:hikuModel(model).nameEn})}</Typography>
   </Card>
-  <Card title={t('hikuK.sentPanel')}>
-   <Toggle label={t('hikuSettings.includeToday')} value={shareToday} onChange={setShareToday}/>
-   <Toggle label={t('hikuSettings.includeTraining')} value={shareTraining} onChange={setShareTraining}/>
+  <View style={{gap:8}}>
+   <SectionHeader title={t('hikuK.sentPanel')}/>
+   <ListGroup>
+    <View style={{paddingHorizontal:theme.space[4],borderBottomWidth:theme.size.border.thin,borderColor:theme.color.border.subtle}}>
+     <Toggle label={t('hikuSettings.includeToday')} value={shareToday} onChange={setShareToday}/>
+    </View>
+    <View style={{paddingHorizontal:theme.space[4]}}>
+     <Toggle label={t('hikuSettings.includeTraining')} value={shareTraining} onChange={setShareTraining}/>
+    </View>
+   </ListGroup>
+  </View>
+  <Card>
    {!contextLoaded&&<Typography tone="secondary">{t('common.loading')}</Typography>}
    {contextLoaded&&!available&&<Typography tone="secondary">{t('hikuK.contextUnavailable')}</Typography>}
-   <Typography tone="secondary" size="small">{t('hikuK.exactText')}</Typography>
+   <Typography tone="secondary" size="secondary">{t('hikuK.exactText')}</Typography>
    <Typography>{prompt}</Typography>
-   <Typography tone="secondary" size="small">{t('hikuK.contextPrivacy')}</Typography>
+   <Typography tone="secondary" size="secondary">{t('hikuK.contextPrivacy')}</Typography>
   </Card>
   {error&&<Card title={t('hikuK.errorTitle')}>
    <Typography tone="secondary">{error==='image-error'?t('hikuPhoto.imageError'):
@@ -135,7 +144,7 @@ export default function HikuPhoto(){
   </Card>}
   {busy?<Card title={t('hikuK.analyzing')}>
    <Typography tone="secondary">{t('hikuK.timeoutHint')}</Typography>
-   <Button label={t('hikuK.cancel')} onPress={cancel} variant="secondary"/>
+   <Button label={t('hikuK.cancel')} onPress={cancel} variant="neutral" fullWidth/>
   </Card>:<Button label={t('hikuK.send')} fullWidth onPress={()=>void send()}
    disabled={!photo||loading||!contextLoaded||!available||note.length>2500}/>}
  </Screen>;

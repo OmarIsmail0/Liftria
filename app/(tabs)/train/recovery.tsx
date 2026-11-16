@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { useTheme } from '../../../src/design/ThemeProvider';
-import { Button, Card, Chip, Header, ListRow, Screen, SegmentedControl, Typography } from '../../../src/design/primitives';
+import { Button, Card, Chip, EmptyState, Header, ListGroup, ListRow, Screen, SectionHeader, SegmentedControl, Typography } from '../../../src/design/primitives';
 import { readStrengthObservations } from '../../../src/services/database/historyRepository';
 import { calculateMuscleRecovery, volumeBand,
   type MuscleRecovery } from '../../../src/features/train/recoveryMath';
@@ -68,10 +68,10 @@ export default function Recovery(){
  const renderRow=(row:MuscleRecovery)=><ListRow key={row.muscle}
   title={t(`muscle.${row.muscle}` as TranslationKey)} detail={detail(row)}
   onPress={()=>browse(row.muscle)} suffix={mode==='untrained'&&row.untrained?
-   <Button label={t('recovery.find')} variant="secondary" onPress={()=>browse(row.muscle)}/>:undefined}/>;
+   <Button label={t('recovery.find')} variant="tonal" size="sm" onPress={()=>browse(row.muscle)}/>:undefined}/>;
  const description=mode==='recent'?t('recovery.recentDesc'):mode==='volume'?t('recovery.volumeDesc'):t('recovery.untrainedDesc');
  return <Screen embedded>
-  <Header title={t('recovery.title')} subtitle={mode==='recent'?t('recovery.recentSubtitle'):
+  <Header mode="inline" title={t('recovery.title')} subtitle={mode==='recent'?t('recovery.recentSubtitle'):
    mode==='volume'?t('recovery.volumeSubtitle'):t('recovery.untrainedSubtitle')}
    onBack={()=>router.back()}/>
    <SegmentedControl label={t('recovery.view')} value={mode} onChange={setMode}
@@ -83,18 +83,17 @@ export default function Recovery(){
    <BodyMap shading={shades} primary={high} secondary={some} onSelect={browse}/>
    <Typography tone="secondary" size="small">{description}</Typography>
   </Card>
-  <Card title={t('recovery.all')}>
+  <View style={{gap:theme.space[2]}}>
+   <SectionHeader title={t('recovery.all')}/>
    {error&& <Button label={t('recovery.retry')} onPress={()=>void refresh()}/>}
-   {empty?<View style={{gap:theme.space[2]}}>
-    <Typography tone="secondary">{t('recovery.empty')}</Typography>
-     <Button label={t('recovery.start')} variant="train" onPress={()=>router.push('/(tabs)/train/preview')}/>
-   </View>:mode==='untrained'?<>
+   {empty?<EmptyState title={t('recovery.empty')} description={t('recovery.explainer')}
+     action={<Button label={t('recovery.start')} variant="tonal" onPress={()=>router.push('/(tabs)/train/preview')}/>}/>:mode==='untrained'?<>
     <Typography bold>{t('recovery.untrainedCount',{count:untrainedRows.length})}</Typography>
-    {untrainedRows.map(renderRow)}
+    {untrainedRows.length>0?<ListGroup>{untrainedRows.map(renderRow)}</ListGroup>:null}
     <Typography bold>{t('recovery.trainedCount',{count:recentlyDirect.length})}</Typography>
-    {recentlyDirect.map(renderRow)}
-   </>:sorted.map(renderRow)}
-  </Card>
+    {recentlyDirect.length>0?<ListGroup>{recentlyDirect.map(renderRow)}</ListGroup>:null}
+   </>: <ListGroup>{sorted.map(renderRow)}</ListGroup>}
+  </View>
   <Typography tone="tertiary" size="small">{t('recovery.footnote')}</Typography>
  </Screen>;
 }

@@ -2,7 +2,8 @@ import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Button, Card, Chip, Field, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
+import { View } from 'react-native';
+import { Button, Chip, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../src/design/primitives';
 import { completeWorkout, discardInProgressWorkout, readWorkout, workoutNumbers,
   type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { elapsedLabel } from '../../../src/features/train/restClock';
@@ -56,7 +57,7 @@ export default function WorkoutSummaryScreen() {
     else{setError(t('summary.discardError'));setBusy(false);}
   };
   if(!workout)return <Screen embedded safeBottom>
-    <Header title={t('summary.finish')} onBack={()=>router.back()}/>
+    <Header mode="inline" title={t('summary.finish')} onBack={()=>router.back()}/>
     <Typography>{t('summary.loading')}</Typography>
   </Screen>;
   const stats=workoutNumbers(workout);
@@ -65,40 +66,45 @@ export default function WorkoutSummaryScreen() {
   const comparison=change===null||Math.abs(change)<1?t('summary.same'):
     (change>0?'+':'')+t('summary.comparison',{pct:formatNumber(language,Math.round(change))});
   return <Screen embedded safeBottom>
-    <Header title={t('summary.title')} subtitle={workout.title} onBack={()=>router.back()}/>
-    <Card rim="train" title={t('summary.complete')}>
-      <ListRow title={t('summary.duration')} detail={elapsedLabel(workout.startedAt)}/>
-      <ListRow title={t('summary.workingSets')} detail={formatNumber(language,stats.sets)}/>
-      <ListRow title={t('summary.volume')} detail={t('summary.volumeValue',{amount:formatNumber(language,Math.round(stats.volume))})}/>
+    <Header mode="inline" title={t('summary.title')} subtitle={workout.title} onBack={()=>router.back()}/>
+    <View style={{gap:8}}>
+      <View style={{flexDirection:'row'}}>
+        <View style={{flex:1}}><StatBlock value={elapsedLabel(workout.startedAt)} label={t('summary.duration')}/></View>
+        <View style={{flex:1}}><StatBlock value={formatNumber(language,stats.sets)} label={t('summary.workingSets')}/></View>
+        <View style={{flex:1}}><StatBlock value={formatNumber(language,Math.round(stats.volume))} label={t('summary.volume')}/></View>
+      </View>
+      <Typography tone="secondary">{t('summary.volumeValue',{amount:formatNumber(language,Math.round(stats.volume))})}</Typography>
       <Typography tone="secondary">{t('summary.trainingVolume',{comparison})}</Typography>
       <Typography tone="secondary">{stats.pending?t((`summary.pending.${pluralForm(language,stats.pending)}`) as TranslationKey,{count:stats.pending}):t('summary.allLogged')}</Typography>
-    </Card>
-    <Card title={t('summary.records')}>
+    </View>
+    <View style={{gap:8}}>
+      <SectionHeader title={t('summary.records')}/>
       {newRecords>0?<Typography bold>{t((`summary.records.${pluralForm(language,newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
         <Typography tone="secondary">{t('summary.noRecords')}</Typography>}
-      <Typography tone="secondary" size="small">{t('summary.recordNote')}</Typography>
-    </Card>
-    <Card title={t('summary.wearables')}>
-      <ListRow title={t('summary.heart')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
-        detail={t('summary.noWatch')}/>
-      <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label={t("chips.pending")}/>}
-        detail={t('summary.noCalories')}/>
-    </Card>
-    <Card title={t('summary.notes')}>
-      <Field label={t('summary.notesOptional')} value={notes} onChangeText={setNotes} multiline/>
-    </Card>
+      <Typography tone="secondary" size="secondary">{t('summary.recordNote')}</Typography>
+    </View>
+    <View style={{gap:8}}>
+      <SectionHeader title={t('summary.wearables')}/>
+      <ListGroup>
+        <ListRow title={t('summary.heart')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
+          detail={t('summary.noWatch')}/>
+        <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
+          detail={t('summary.noCalories')}/>
+      </ListGroup>
+    </View>
+    <Field label={t('summary.notesOptional')} value={notes} onChangeText={setNotes} multiline/>
     {error&&<Typography>{error}</Typography>}
-    <Button label={busy?t('summary.saving'):t('summary.save')} size="xl" variant="train"
+    <Button label={busy?t('summary.saving'):t('summary.save')} variant="primary"
       fullWidth disabled={busy} onPress={()=>void save()}/>
-    <Button label={t('summary.back')} variant="secondary" fullWidth
+    <Button label={t('summary.back')} variant="neutral" fullWidth
       disabled={busy} onPress={()=>router.back()}/>
-    <Button label={t('summary.discard')} variant="danger" disabled={busy}
+    <Button label={t('summary.discard')} variant="destructive" disabled={busy}
       onPress={()=>setDiscard(true)}/>
     <Sheet visible={discard} destructive title={t('summary.discardTitle')}
       description={t((`summary.discardDescription.${pluralForm(language,stats.sets)}`) as TranslationKey,{count:stats.sets})}
       onClose={()=>setDiscard(false)}>
       <Button label={t('summary.keep')} fullWidth onPress={()=>setDiscard(false)}/>
-      <Button label={t('summary.discard')} variant="danger" fullWidth disabled={busy}
+      <Button label={t('summary.discard')} variant="destructive" fullWidth disabled={busy}
         onPress={()=>void discardNow()}/>
     </Sheet>
   </Screen>;

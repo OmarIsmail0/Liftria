@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { BodyMap } from '../../../src/features/train/BodyMap';
 import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
 import { startManualWorkout, readInProgressWorkout, completeWorkout, type ActiveWorkout } from '../../../src/features/train/workoutData';
-import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../../src/design/primitives';
+import { Button, Card, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, Typography } from '../../../src/design/primitives';
 import { listTemplates, exerciseSessions, type Template } from '../../../src/services/database/gymRepositories';
 import { getExercise } from '../../../src/services/database/exerciseLibrary';
 import type { Exercise, Muscle } from '../../../src/services/database/gymTypes';
@@ -68,37 +68,38 @@ export default function WorkoutPreview() {
   };
   const muscles=[...new Set((template?.exercises??[]).flatMap(e=>lookup[e.exerciseId]?.primaryMuscles??[]))] as Muscle[];
   return <Screen embedded safeBottom>
-    <Header title={template?.name??t('preview.emptyWorkout')} subtitle={t('preview.subtitle')} onBack={()=>router.back()}/>
+    <Header mode="inline" title={template?.name??t('preview.emptyWorkout')} subtitle={t('preview.subtitle')} onBack={()=>router.back()}/>
     <Card rim="train">
       {muscles.length>0&&<BodyMap primary={muscles}/>}
       <Typography tone="secondary">{template?t((`preview.details.${pluralForm(language,template.restSec)}`) as TranslationKey,{exercises:t(('count.exercises.'+pluralForm(language,template.exercises.length)) as TranslationKey,
         {count:template.exercises.length}),count:template.restSec}):
         t('preview.noneYet')}</Typography>
     </Card>
-    <Card title={t('preview.upNext')}>
-      {template?template.exercises.map((e,i)=><ListRow key={i}
+    <View style={{gap:8}}>
+      <SectionHeader title={t('preview.upNext')}/>
+      {template?<ListGroup>{template.exercises.map((e,i)=><ListRow key={i}
         leading={lookup[e.exerciseId]?<ExerciseFigure exercise={lookup[e.exerciseId]!} />:undefined}
         title={lookup[e.exerciseId]?exerciseName(language,e.exerciseId,lookup[e.exerciseId]!.name):t('preview.exercise')}
         onPress={()=>router.push({pathname:'/(tabs)/train/exercise/[id]',params:{id:e.exerciseId}})}
         detail={t('preview.sets',{
           sets:t((`preview.sets.count.${pluralForm(language,e.targetSets)}`) as TranslationKey,{count:e.targetSets}),
           reps:t((`preview.sets.reps.${pluralForm(language,e.repMax)}`) as TranslationKey,{min:e.repMin,max:e.repMax})})+
-          (last[e.exerciseId]?t('preview.last',{date:latinDigits(new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):t('preview.noLast'))}/>):
+          (last[e.exerciseId]?t('preview.last',{date:latinDigits(new Date(last[e.exerciseId] ?? '').toLocaleDateString(language==='ar'?'ar-EG-u-nu-latn':'en-US'))}):t('preview.noLast'))}/>)}</ListGroup>:
         <Typography tone="secondary">{t('preview.startEmptyHint')}</Typography>}
-    </Card>
+    </View>
     {error&&<Typography>{error}</Typography>}
     <View style={{gap:8}}>
-      <Button label={busy?t('preview.starting'):t('preview.start')} size="xl" variant="train"
+      <Button label={busy?t('preview.starting'):t('preview.start')} variant="primary"
         fullWidth disabled={busy} onPress={()=>void begin()}/>
       <Typography tone="secondary" size="small">{t('preview.notLogged')}</Typography>
     </View>
     <Sheet visible={existing!==null} title={t('preview.alreadyActive')}
       description={t('preview.conflict',{current:existing?.title??t('preview.workout'),next:template?.name??t('preview.emptyWorkout')})}
       onClose={()=>setExisting(null)}>
-      <Button label={t('preview.resume',{name:existing?.title??t('preview.workout')})} variant="train" fullWidth
+      <Button label={t('preview.resume',{name:existing?.title??t('preview.workout')})} variant="primary" fullWidth
         onPress={()=>{if(existing)router.replace({pathname:'/(tabs)/train/active',params:{id:existing.id}});}}/>
-      <Button label={t('preview.keep')} variant="secondary" fullWidth onPress={()=>setExisting(null)}/>
-      <Button label={t('preview.replace',{name:template?.name??t('preview.emptyWorkout')})} variant="danger" fullWidth
+      <Button label={t('preview.keep')} variant="neutral" fullWidth onPress={()=>setExisting(null)}/>
+      <Button label={t('preview.replace',{name:template?.name??t('preview.emptyWorkout')})} variant="destructive" fullWidth
         disabled={busy} onPress={()=>void replaceExisting()}/>
     </Sheet>
   </Screen>;

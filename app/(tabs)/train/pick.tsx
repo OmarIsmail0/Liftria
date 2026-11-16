@@ -9,6 +9,7 @@ import { useCallback, useRef, useMemo, useState } from 'react';
 import { FlatList, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Field, Header, Screen, Typography } from '../../../src/design/primitives';
+import { FilterChip } from '../../../src/features/train/FilterChip';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
 import { appendExerciseToActiveSession, recentExerciseIds } from '../../../src/services/database/gymRepositories';
@@ -161,14 +162,8 @@ export default function AddWorkoutExercise() {
   const addButtonHeight = theme.size.touch.min;
   const miniBarHeight = theme.size.touch.workout;
   const listBottomPad = replaceId ? theme.space[4] : addButtonHeight + miniBarHeight + insets.bottom;
-  const chip = (key: string, label: string, on: boolean, press: () => void) => <Pressable key={key}
-    accessibilityRole="button" accessibilityState={{ selected: on }} onPress={press}
-    style={{ minHeight: theme.size.touch.min, paddingHorizontal: theme.space[3], borderRadius: theme.radius.pill,
-      alignItems: 'center', justifyContent: 'center', borderWidth: theme.size.border.thin,
-      borderColor: on ? theme.color.domain.train : theme.surface.hairline,
-      backgroundColor: on ? theme.color.tint.train : theme.surface.control }}>
-    <Typography size="small" bold>{label}</Typography>
-  </Pressable>;
+  const chip = (key: string, label: string, on: boolean, press: () => void) =>
+    <FilterChip key={key} label={label} selected={on} onPress={press} />;
   return <Screen embedded scroll={false}>
     <View style={{ flex: 1 }}>
       <FlatList
@@ -182,19 +177,19 @@ export default function AddWorkoutExercise() {
         removeClippedSubviews={Platform.OS === 'android'}
         {...exerciseListWindow}
         ListHeaderComponent={<View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
-          <Header title={replaceId ? t('pick.replace') : t('pick.add')} onBack={() => router.back()} />
+          <Header mode="inline" title={replaceId ? t('pick.replace') : t('pick.add')} onBack={() => router.back()} />
           <View style={[edges.top, rows.length > 0 ? { paddingBottom: theme.space[3] } : null]}>
             <View style={{ gap: theme.space[3] }}>
               <Field label={t('pick.search')} value={query} onChangeText={setQuery} />
-              <Typography size="label" tone="tertiary">{t('pick.muscleFilter')}</Typography>
+              <Typography size="secondary" tone="secondary">{t('pick.muscleFilter')}</Typography>
               <ChipRow>
                 {MUSCLE_FILTERS.map(value => chip(value, t(MUSCLE_KEY[value]), muscle === value, () => setMuscle(value)))}
               </ChipRow>
-              <Typography size="label" tone="tertiary">{t('pick.equipmentFilter')}</Typography>
+              <Typography size="secondary" tone="secondary">{t('pick.equipmentFilter')}</Typography>
               <ChipRow>
                 {EQUIPMENT_FILTERS.map(value => chip(value, t(EQUIPMENT_KEY[value]), equipment === value, () => setEquipment(value)))}
               </ChipRow>
-              {recent.length > 0 && rows.length > 0 && <Typography size="label" tone="tertiary">{t('pick.recentFirst')}</Typography>}
+              {recent.length > 0 && rows.length > 0 && <Typography size="secondary" tone="secondary">{t('pick.recentFirst')}</Typography>}
               {rows.length === 0 && <Typography tone="secondary">
                 {muscle === 'all' && equipment === 'any' ? t('pick.noMatch') : t('pick.noFilterMatch')}
               </Typography>}
@@ -210,11 +205,10 @@ export default function AddWorkoutExercise() {
       {!replaceId && <View style={{ position: 'absolute', start: theme.layout.gutter, end: theme.layout.gutter, bottom: 0 }}>
         {count === 0 ? <Pressable accessibilityRole="button" accessibilityState={{ disabled: true }} disabled
           accessibilityLabel={addLabel}
-          style={{ minHeight: addButtonHeight, borderRadius: theme.radius.pill, alignItems: 'center',
-            justifyContent: 'center', opacity: 1, backgroundColor: theme.color.bg.raised, // opaque: the list scrolls underneath
-            borderWidth: theme.size.border.thin, borderColor: theme.surface.hairline }}>
+          style={{ minHeight: addButtonHeight, borderRadius: theme.radius.md, alignItems: 'center',
+            justifyContent: 'center', opacity: 1, backgroundColor: theme.color.bg.raised }}>
           <Typography tone="tertiary" bold>{addLabel}</Typography>
-        </Pressable> : <Button label={addLabel} variant="train" fullWidth disabled={busy}
+        </Pressable> : <Button label={addLabel} variant="primary" fullWidth disabled={busy}
           onPress={() => void commit()} />}
       </View>}
     </View>

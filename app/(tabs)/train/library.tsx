@@ -4,7 +4,7 @@ import { joinList, type TranslationKey } from '../../../src/i18n';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, SectionList, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, SectionList, View } from 'react-native';
 import { ExerciseResultRow } from '../../../src/features/train/ExerciseResultRow';
 import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
 import { librarySections } from '../../../src/features/train/exerciseSections';
@@ -13,7 +13,8 @@ import {
   exerciseThumbnailKey, frameAt, sectionListLayouts, useDeferredQuery,
 } from '../../../src/features/train/exerciseRows';
 import { resultCardEdges } from '../../../src/features/train/resultCardEdges';
-import { Button, Card, EmptyState, Header, ListRow, Screen, Typography } from '../../../src/design/primitives';
+import { Button, Card, EmptyState, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Typography } from '../../../src/design/primitives';
+import { FilterChip } from '../../../src/features/train/FilterChip';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { MUSCLE_GROUPS, type Exercise } from '../../../src/services/database/gymTypes';
 import { ensureExercisePack, listExercises, searchExercises } from '../../../src/services/database/exerciseLibrary';
@@ -128,34 +129,27 @@ export default function ExerciseLibrary() {
       {...exerciseListWindow}
       ListHeaderComponent={<View style={{ gap: theme.space[3] }}>
         <Header mode="inline" title={t('library.title')} onBack={() => router.back()}
-          right={<Button label={t('library.new')} variant="secondary" onPress={() => router.push('/(tabs)/train/create')} />} />
-        <TextInput value={query} onChangeText={setQuery} accessibilityLabel={t('library.searchLabel')}
-          placeholder={t('library.searchHint')} placeholderTextColor={theme.color.text.tertiary}
-          style={{ color: theme.color.text.primary, backgroundColor: theme.cardFill, borderColor: theme.controlOutline,
-            borderWidth: 1, borderRadius: theme.radius.pill, minHeight: 52, paddingHorizontal: theme.space[4],
-            fontSize: theme.type.body.size }} />
+          right={<Button label={t('library.new')} variant="plain" onPress={() => router.push('/(tabs)/train/create')} />} />
+        <Field label={t('library.searchLabel')} value={query} onChangeText={setQuery} placeholder={t('library.searchHint')} />
         <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ gap: theme.space[2], paddingVertical: theme.space[1] }}>
-          <Button label={t('library.muscles')} variant="secondary" onPress={() => router.push('/(tabs)/train/muscles')} />
-          {groups.map(name => <Pressable key={name} accessibilityRole="button"
-            accessibilityLabel={t('library.filter', { name: groupLabel(name) })} accessibilityState={{ selected: group === name }}
-            onPress={() => setGroup(name)} style={{ minHeight: theme.size.touch.min,
-              paddingHorizontal: theme.space[4], borderRadius: theme.radius.pill,
-              borderWidth: 1, borderColor: group === name ? theme.color.domain.train : theme.controlOutline,
-              justifyContent: 'center', backgroundColor: group === name ? theme.color.tint.train : theme.cardFill }}>
-            <Typography size="small" bold={group === name}>{groupLabel(name)}</Typography>
-          </Pressable>)}
+          contentContainerStyle={{ gap: theme.space[2], paddingVertical: theme.space[1], alignItems: 'center' }}>
+          <Button label={t('library.muscles')} variant="neutral" onPress={() => router.push('/(tabs)/train/muscles')} />
+          {groups.map(name => <FilterChip key={name} label={groupLabel(name)} selected={group === name}
+            accessibilityLabel={t('library.filter', { name: groupLabel(name) })} onPress={() => setGroup(name)} />)}
         </ScrollView>
-        {loading && <ActivityIndicator color={theme.color.domain.train} />}
+        {loading && <ActivityIndicator color={theme.color.accent} />}
         {error && <Card><Typography>{error}</Typography><Button label={t('common.back')} onPress={() => router.back()} /></Card>}
         {showList && browsing && group === 'All' && recentRows.length > 0 &&
-          <Card title={t('library.recent')}>{recentRows.map(row => <ListRow key={row.exercise.id} title={row.title}
-            detail={row.detail} leading={<ExerciseFigure exercise={row.exercise} />}
-            onPress={() => openExercise(row.exercise.id)} />)}</Card>}
+          <View style={{ gap: theme.space[2] }}>
+            <SectionHeader title={t('library.recent')} />
+            <ListGroup>{recentRows.map(row => <ListRow key={row.exercise.id} title={row.title}
+              detail={row.detail} leading={<ExerciseFigure exercise={row.exercise} />}
+              onPress={() => openExercise(row.exercise.id)} />)}</ListGroup>
+          </View>}
         {showList && !showResults && <EmptyState title={appliedQuery.trim() ? t('library.noMatch', { query: appliedQuery }) : t('library.noGroup')}
           description={t('library.emptyHint')}
-          action={<Button label={t('library.createNamed', { name: query.trim() || t('library.exercise') })}
+          action={<Button variant="tonal" label={t('library.createNamed', { name: query.trim() || t('library.exercise') })}
             onPress={() => router.push({ pathname: '/(tabs)/train/create', params: { name: query.trim() } })} />} />}
         {showResults && <View style={[edges.top, { paddingBottom: theme.space[3] }]}>
           <Typography size="head">{cardTitle}</Typography>
