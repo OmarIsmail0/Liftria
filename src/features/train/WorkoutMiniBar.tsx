@@ -1,13 +1,13 @@
 import { router, usePathname } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useTheme } from '../../design/ThemeProvider';
 import { Typography } from '../../design/primitives';
 import { readInProgressWorkout, workoutNumbers, type ActiveWorkout } from './workoutData';
 import { elapsedLabel } from './restClock';
 import { useLanguage } from '../../i18n/LanguageProvider';
 
-/** Visible above the capsule on every main tab; never saves or starts a workout. */
+/** Flat bar above the tab bar on every main tab; never saves or starts a workout. */
 export default function WorkoutMiniBar() {
   const {theme}=useTheme();
   const {t}=useLanguage();
@@ -28,15 +28,16 @@ export default function WorkoutMiniBar() {
   const stats=workoutNumbers(workout);
   return <Pressable accessibilityRole="button" accessibilityLabel={t('miniBar.resumeA11y',{title:workout.title,count:stats.sets})} onPress={()=>router.push({
       pathname:'/(tabs)/train/active',params:{id:workout.id},
-    })} style={{minHeight:64,marginHorizontal:theme.layout.gutter,marginBottom:theme.space[2],
-    borderWidth:1.5,borderColor:theme.color.domain.train,
-    backgroundColor:theme.color.bg.raised,borderRadius:theme.radius.pill,paddingHorizontal:theme.space[4],
+    })} style={{minHeight:theme.size.touch.min,backgroundColor:theme.color.bg.surface,
+    borderTopWidth:theme.size.border.thin,borderTopColor:theme.color.border.subtle,
+    paddingHorizontal:theme.space[4],paddingVertical:theme.space[2],
     flexDirection:'row',gap:theme.space[3],alignItems:'center'}}>
-    <View style={{flex:1}}>
-      <Typography bold>{workout.title}</Typography>
-      <Typography tone="secondary" size="small">{elapsedLabel(workout.startedAt,now)} · {t('miniBar.progress',{
+    <View style={{flex:1,gap:theme.space[1]}}>
+      <Typography tone="secondary" size="secondary" lines={1}>{workout.title}</Typography>
+      <Typography tone="secondary" size="secondary" lines={1}>{elapsedLabel(workout.startedAt,now)} · {t('miniBar.progress',{
         done:stats.sets,total:workout.exercises.reduce((n,e)=>n+e.targetSets,0)})}</Typography>
     </View>
-    <Typography bold>{t('miniBar.resume')}</Typography>
+    <Text allowFontScaling style={{color:theme.color.accent,fontSize:theme.type.secondary.size,
+      lineHeight:theme.type.secondary.line,fontWeight:'600'}}>{t('miniBar.resume')}</Text>
   </Pressable>;
 }
