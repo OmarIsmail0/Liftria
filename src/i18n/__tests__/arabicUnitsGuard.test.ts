@@ -1,5 +1,5 @@
 import { ar } from '../ar';
-import type { TranslationKey } from '../en';
+import { en, type TranslationKey } from '../en';
 import { weightUnitLabel } from '../index';
 
 type Dirent = { name: string; isDirectory: () => boolean; isFile: () => boolean };
@@ -175,27 +175,40 @@ describe('Arabic units guard', () => {
     }
   });
 
-  test('the gram unit is غ everywhere, never جم', () => {
-    expect(ar['eatI.gramUnit']).toBe('غ');
-    const violations: string[] = [];
+  test('the gram abbreviation is جم and milligrams are ملجم', () => {
+    expect(en['eatI.gramUnit']).toBe('g');
+    expect(en['eatI.gramsChoice']).toBe('Grams');
+    expect(ar['eatI.gramUnit']).toBe('جم');
+    expect(ar['eatI.gramsChoice']).toBe('جرام');
+    expect(ar['nutrients.sodium']).toBe('الصوديوم (ملجم)');
+    const gramViolations: string[] = [];
+    const mgViolations: string[] = [];
     for (const [key, value] of Object.entries(ar)) {
       if (typeof value !== 'string') continue;
-      // \b is ASCII-only in JS, so bound the word with Arabic-letter lookarounds:
-      // جم inside a word (المجموعات, حجم) is ordinary Arabic, not a unit.
-      if (/(?<![\u0600-\u06FF])جم(?![\u0600-\u06FF])/.test(value)) {
-        violations.push(`${key}: "${value}"`);
+      // \b is ASCII-only in JS, so bound the unit with Arabic-letter lookarounds.
+      // غ inside a word (فراغ، غير، غنوج) is ordinary Arabic, not a gram.
+      // جم inside a word (المجموعات، حجم) is ordinary Arabic, not a gram.
+      if (/(?<![\u0600-\u06FF])غ(?![\u0600-\u06FF])/.test(value)) {
+        gramViolations.push(`${key}: "${value}"`);
+      }
+      if (/(?<![\u0600-\u06FF])ملغ(?![\u0600-\u06FF])/.test(value)) {
+        mgViolations.push(`${key}: "${value}"`);
       }
     }
-    if (violations.length > 0) {
-      throw new Error(
-        `Found ${violations.length} Arabic translations using "جم" for grams instead of "غ":\n${violations.join('\n')}`
-      );
-    }
+    const problems = [
+      gramViolations.length > 0
+        ? `Found ${gramViolations.length} Arabic translations using "غ" for grams instead of "جم":\n${gramViolations.join('\n')}`
+        : '',
+      mgViolations.length > 0
+        ? `Found ${mgViolations.length} Arabic translations using "ملغ" for milligrams instead of "ملجم":\n${mgViolations.join('\n')}`
+        : '',
+    ].filter(Boolean);
+    if (problems.length > 0) throw new Error(problems.join('\n'));
   });
 
   test('placeholders followed by Arabic units use non-breaking space (U+00A0)', () => {
     const violations: string[] = [];
-    const arabicUnits = ['سعرة', 'غ', 'ملغ', 'مل'];
+    const arabicUnits = ['سعرة', 'جم', 'ملجم', 'مل'];
     
     for (const [key, value] of Object.entries(ar)) {
       if (typeof value !== 'string') continue;
@@ -224,6 +237,10 @@ describe('weightUnitLabel', () => {
     expect(weightUnitLabel('en', 'lb')).toBe('lb');
     expect(weightUnitLabel('ar', 'kg')).toBe('كغ');
     expect(weightUnitLabel('ar', 'lb')).toBe('رطل');
+    const secondKilogram = Object.entries(ar)
+      .filter(([, value]) => typeof value === 'string' && value.includes('كجم'))
+      .map(([key]) => key);
+    expect(secondKilogram).toEqual([]);
   });
 });
 

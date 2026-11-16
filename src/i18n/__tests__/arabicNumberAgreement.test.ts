@@ -5,7 +5,7 @@ import { pluralForm, translate, type TranslationKey } from '..';
  * Arabic count nouns change with the number. A placeholder sitting in front of one
  * fixed noun (`{count} يوم`) is wrong for most counts, so that shape is only allowed
  * on a plural-form key (`.zero` … `.other`) chosen with pluralForm().
- * Unit labels (غ، مل، كغ، سم، %، سعرة) are not count nouns.
+ * Unit labels (جم، ملجم، كغ، سم، %، سعرة) are not count nouns.
  */
 
 const COUNT_NOUNS = [
@@ -86,7 +86,7 @@ describe('Arabic number agreement', () => {
       'count.days.few': '{count} أيام',
       'count.days.many': '{count} يومًا',
       'energy.left': 'متبقٍ {remaining}\u00A0سعرة',
-      'grams': '{count}\u00A0غ',
+      'grams': '{count}\u00A0جم',
       'daily': 'الهدف {count} سعرة يوميًا',
     })).toEqual([]);
     expect(missingTanweenViolations({
