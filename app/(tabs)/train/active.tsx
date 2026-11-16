@@ -3,7 +3,7 @@ import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { exerciseName } from '../../../src/i18n/exerciseNames';
 import { muscleLabel } from '../../../src/i18n/muscles';
 import { chevronPointsLeft } from '../../../src/i18n/layout';
-import { formatEditableNumber } from '../../../src/i18n/editableNumber';
+import { formatEditableNumber, parseEditableNumber } from '../../../src/i18n/editableNumber';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Linking, Platform, Pressable, ScrollView, Text, TextInput, Vibration, View } from 'react-native';
@@ -213,7 +213,7 @@ export default function ActiveWorkoutScreen() {
       ? supersetAfterSet(view.exercises, index)
       : { nextIndex: null as number | null, startRest: kind !== 'working' };
     const effectiveRest = superset.startRest ? exercise.restSec : 0;
-    const effortNumber = !values.effort.trim() ? null : Number(values.effort);
+    const effortNumber = parseEditableNumber(values.effort);
     let savedId = '';
     await runLogged(async () => {
       const result = await logWorkoutSet({
@@ -618,8 +618,15 @@ export default function ActiveWorkoutScreen() {
       description={t((`train.discardDescription.${pluralForm(language, stats?.sets ?? 0)}`) as TranslationKey, { count: stats?.sets ?? 0 })}
       onClose={() => setDiscardVisible(false)}>
       <Button label={t('train.keep')} fullWidth onPress={() => setDiscardVisible(false)} />
-      <Button label={t('workout.discard')} variant="destructive" fullWidth onPress={() => {
-        void discardInProgressWorkout(view.id).then(() => router.replace('/(tabs)/train'));
+      <Button label={t('workout.discard')} variant="destructive" fullWidth disabled={busy} onPress={() => {
+        if (busy) return;
+        setBusy(true);
+        // Leave only once the workout is really gone; a failed discard keeps it and says so.
+        void discardInProgressWorkout(view.id).then(result => {
+          setBusy(false);
+          if (result.ok && result.value) { setDiscardVisible(false); router.replace('/(tabs)/train'); }
+          else { setDiscardVisible(false); setError(t('summary.discardError')); }
+        });
       }} />
     </Sheet>
     <Sheet visible={finishVisible} title={(stats?.pending ?? 0) > 0

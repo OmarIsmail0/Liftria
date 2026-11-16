@@ -6,7 +6,7 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import type { TranslationKey } from '../../src/i18n';
 import { formatNumber } from '../../src/i18n';
-import { formatEditableNumber } from '../../src/i18n/editableNumber';
+import { formatEditableNumber, parseEditableNumber } from '../../src/i18n/editableNumber';
 import { Button, Chip, Field, Header, ListGroup, ListRow, Screen, OptionRows, SegmentedControl, Sheet, Typography } from '../../src/design/primitives';
 import { emptyDraft, readDraft, writeDraft, writeStep, markOnboardingComplete, markOnboardingDeferred,
   type OnboardingDraft } from '../../src/features/onboarding/draft';
@@ -22,6 +22,8 @@ import { setSetting } from '../../src/services/database';
 import { testAnthropicKey } from '../../src/features/settings/keyTest';
 import { persistProfile, persistTarget } from '../../src/features/onboarding/persistence';
 import { profileFieldErrors } from '../../src/features/onboarding/profileValidation';
+/** Typed text as a number; blank or unreadable text is NaN, which every check refuses. */
+const typed = (raw: string): number => parseEditableNumber(raw) ?? Number.NaN;
 
 /** i18n-stored-ids: persisted selection ids; the choices below map them through t() before display. */
 const watchOptions = ['Samsung Health', 'Fitbit', 'Garmin Connect', 'Pixel Watch (Fitbit)', 'Other', 'No watch'] as const;
@@ -127,7 +129,7 @@ export default function OnboardingStepScreen() {
     void readDraft().then(d => {
       if (!mounted) return;
       setDraft(d);
-      setAge(d.birthYear ? formatEditableNumber(profileAge(Number(d.birthYear)), 'count') : '');
+      setAge(d.birthYear ? formatEditableNumber(profileAge(typed(d.birthYear)), 'count') : '');
       setLoaded(true);
     }).catch(() => { if (mounted) { setLoaded(true); setError(t('onboarding.localSettingsCouldNotBe')); } });
     if(Platform.OS==='android'||appleHealthPhone())void healthConnect.getAvailability().then(availability => {
@@ -146,9 +148,9 @@ export default function OnboardingStepScreen() {
 
   const profile = useMemo(() => ({
     sexForFormula: draft.sexForFormula,
-    birthYear: Number(draft.birthYear),
-    heightCm: Number(draft.heightCm),
-    weightKg: Number(draft.weightKg),
+    birthYear: typed(draft.birthYear),
+    heightCm: typed(draft.heightCm),
+    weightKg: typed(draft.weightKg),
     activity: draft.activity,
     goal: draft.goal,
   }), [draft]);
@@ -179,7 +181,7 @@ export default function OnboardingStepScreen() {
   const back = step !== 'welcome' ? () => void go(previousOnboardingStep(step)) : undefined;
 
   async function continueProfile() {
-    const ageNumber = Number(age);
+    const ageNumber = typed(age);
     if (Object.values(errors).some(Boolean)) return;
     const nextDraft = { ...draft, birthYear: age.trim() ? String(new Date().getFullYear() - ageNumber) : '' };
     setDraft(nextDraft);
@@ -479,11 +481,11 @@ export default function OnboardingStepScreen() {
       <Field label={t('onboarding.fatG')} value={draft.manualFat} keyboardType="numeric" onChangeText={s => patch('manualFat', s)} />
       <Field label={t('onboarding.carbsG')} value={draft.manualCarbs} keyboardType="numeric" onChangeText={s => patch('manualCarbs', s)} />
       <Button label={t('onboarding.saveMyTarget')} fullWidth onPress={() => {
-        const amount = Number(draft.manualKcal);
+        const amount = typed(draft.manualKcal);
         const safety = targetSafety(amount, estimate?.kcal ?? null);
         const macros = [draft.manualProtein, draft.manualFat, draft.manualCarbs];
         if (safety.blocked) { setError(t('onboarding.aTargetBelow1000')); setEditManual(false); return; }
-        if (macros.some(value => !value.trim() || !Number.isFinite(Number(value)) || Number(value) < 0)) {
+        if (macros.some(value => !value.trim() || !Number.isFinite(typed(value)) || typed(value) < 0)) {
           setError(t('onboarding.enterNonNegativeProteinFat')); setEditManual(false); return;
         }
         setEditManual(false);

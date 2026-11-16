@@ -4,7 +4,7 @@ import {View} from 'react-native';
 import {Button,Card,Chip,EmptyState,Field,Header,ListGroup,ListRow,Screen,SectionHeader,SegmentedControl,Sheet,StatBlock,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
-import {formatEditableNumber} from '../../../src/i18n/editableNumber';
+import {formatEditableNumber,parseEditableNumber} from '../../../src/i18n/editableNumber';
 import {MEALS,localDay,type MealKey} from '../../../src/features/eat/foodCatalog';
 import {getHikuDraft,clearHikuDraft,photoReviewReady} from '../../../src/features/hiku/draft';
 import type {HikuReviewedItem,HikuItem} from '../../../src/features/hiku/mealSchema';
@@ -27,7 +27,7 @@ export default function ReviewEstimate(){
   setEdited(formatEditableNumber(items[index]?.grams,'grams'));}
  function apply(){
   if(selected===null)return;
-  const item=items[selected],grams=Number(edited);
+  const item=items[selected],grams=parseEditableNumber(edited)??Number.NaN;
   if(!item||!Number.isFinite(grams)||grams<=0||grams>2000)return;
   let updated:HikuReviewedItem;
   if(item.foodId){
@@ -120,7 +120,7 @@ export default function ReviewEstimate(){
     <Field label={t('eatI.gramsLabel')} value={edited} onChangeText={setEdited}
       keyboardType="decimal-pad"/>
     <Button label={t('hikuK.apply')} disabled={!Number.isFinite(Number(edited))||
-     Number(edited)<=0||Number(edited)>2000} fullWidth onPress={apply}/>
+     !((parseEditableNumber(edited)??0)>0&&(parseEditableNumber(edited)??0)<=2000)} fullWidth onPress={apply}/>
     <Button label={t('hikuK.remove')} variant="destructive" fullWidth onPress={()=>{
       setItems(prev=>prev.filter((_,index)=>index!==selected));setChanged(true);setSelected(null);}}/>
    </Sheet>

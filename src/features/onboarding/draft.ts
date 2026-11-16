@@ -67,5 +67,8 @@ export async function onboardingDestination(): Promise<
   ]);
   if (completed.ok && completed.value !== null ||
       deferred.ok && deferred.value === 'true') return '/(tabs)/today';
+  // An unreadable database is not a fresh install: an existing user must see the
+  // recovery screen, never onboarding that could overwrite their profile.
+  if (!completed.ok || !deferred.ok) throw new Error('Onboarding state unavailable');
   return { pathname: '/onboarding/[step]', params: { step: await readSavedStep() } };
 }

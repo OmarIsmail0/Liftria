@@ -13,7 +13,7 @@ import { backOrReplace } from '../../src/navigation/back';
 import { DB_SCHEMA_VERSION } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
-import {exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,MAX_BACKUP_BYTES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {MAX_BACKUP_CHARS,exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
 import {progressPhotoUsage,type ProgressPhotoUsage} from '../../src/features/progress/progressPhotoRepository';
 import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv,measurementsCsv} from '../../src/features/settings/csvExport';
@@ -98,8 +98,8 @@ export default function DataAndStorage() {
       if(!asset)throw new Error('Missing picked document');
       const file=new File(asset.uri);
       try{
-        // Refuse a huge file before reading it into memory (parseBackup repeats the check on the text).
-        if((asset.size??file.size??0)>MAX_BACKUP_BYTES)throw new Error('Backup is too large');
+        // Refuse a huge file before reading it, so it cannot exhaust memory.
+        if((asset.size??file.size??0)>MAX_BACKUP_CHARS){setMessage(t('backup.tooLarge'));return;}
         const parsed=parseBackup(await file.text());
         setPendingRestore(parsed);setRestoreText('');
       }finally{

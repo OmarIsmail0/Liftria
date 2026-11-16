@@ -58,9 +58,11 @@ export function validateBackupTables(tables:Record<string,unknown>,backupVersion
  }
  return data;
 }
-export const MAX_BACKUP_BYTES=100*1024*1024;
+/** Largest backup restore reads. The picker's byte size is checked first, so a huge
+ * file is refused before it is loaded into memory. */
+export const MAX_BACKUP_CHARS=100*1024*1024;
 export function parseBackup(raw:string,manifest:BackupManifest=BACKUP_MANIFEST):BackupData{
- if(raw.length>MAX_BACKUP_BYTES)throw new Error('Backup is too large');
+ if(raw.length>MAX_BACKUP_CHARS)throw new Error('Backup is too large');
  const value:unknown=JSON.parse(raw);
  if(!obj(value)||value.format!=='liftria-backup'||value.formatVersion!==1||
    typeof value.schemaVersion!=='number'||typeof value.exportedAt!=='string'||

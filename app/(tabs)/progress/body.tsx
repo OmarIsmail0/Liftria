@@ -3,7 +3,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {ScrollView,View} from 'react-native';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate, formatNumber, pluralForm, type TranslationKey, weightUnitLabel} from '../../../src/i18n';
-import {formatEditableNumber} from '../../../src/i18n/editableNumber';
+import {formatEditableNumber,parseEditableNumber} from '../../../src/i18n/editableNumber';
 import {useTheme} from '../../../src/design/ThemeProvider';
 import {Button,Card,Chip,Field,Header,ListGroup,ListRow,Screen,SectionHeader,SegmentedControl,
  Sheet,Snackbar,Stepper,Typography} from '../../../src/design/primitives';
@@ -49,7 +49,7 @@ export default function BodyTrends(){
   .sort((a,b)=>b.at.localeCompare(a.at)).slice(0,30);
  const counts=sourceCounts(result.points.flatMap(p=>p.entries));
  const demoCount=local.filter(p=>p.note?.startsWith('Demo fixture')).length;
- const inputValue=Number(entered),weightKg=toKg(inputValue,weightUnit);
+ const inputValue=parseEditableNumber(entered)??NaN,weightKg=toKg(inputValue,weightUnit);
  const step=weightUnit==='lb'?0.2:0.1;
  const validDate=/^\d{4}-\d{2}-\d{2}$/.test(day);
  const date=validDate?new Date(Number(day.slice(0,4)),Number(day.slice(5,7))-1,Number(day.slice(8)),12):null;

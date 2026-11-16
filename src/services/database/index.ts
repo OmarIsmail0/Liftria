@@ -267,13 +267,19 @@ export const DB_MIGRATIONS = [
   ` },
 ] as const;
 
+/** The phone holds data from a newer Liftria (for example after installing an older APK).
+ * Nothing is migrated or written: the user must update the app, never lose that data. */
+export class DatabaseNewerThanAppError extends Error {
+  constructor() { super('Database schema is newer than app'); this.name = 'DatabaseNewerThanAppError'; }
+}
+
 /** Each missing schema version is applied transactionally; existing installs retain all prior data. */
 export async function migrateDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA foreign_keys = ON;');
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
   const version = row?.user_version ?? 0;
   if (!Number.isSafeInteger(version) || version < 0 || version > DB_SCHEMA_VERSION) {
-    throw new Error('Database schema is newer than app');
+    throw new DatabaseNewerThanAppError();
   }
   for (const migration of DB_MIGRATIONS) {
     if (migration.version <= version) continue;
@@ -294,6 +300,18 @@ export async function initializeDatabase(): Promise<SQLite.SQLiteDatabase> {
     })().catch((err: unknown) => { dbPromise = null; throw err; });
   }
   return dbPromise;
+}
+
+export type StartupDatabaseCheck = { ok: true } | { ok: false; reason: 'newer' | 'failed' };
+/** Opens and migrates the database once at launch, so a failure is shown on a recovery
+ * screen instead of sending an existing user into onboarding. Never throws. */
+export async function checkDatabaseAtStartup(): Promise<StartupDatabaseCheck> {
+  try {
+    await initializeDatabase();
+    return { ok: true };
+  } catch (error: unknown) {
+    return { ok: false, reason: error instanceof DatabaseNewerThanAppError ? 'newer' : 'failed' };
+  }
 }
 
 export async function dbOperation<T>(fn: (db: SQLite.SQLiteDatabase) => Promise<T>): Promise<DbResult<T>> {

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider, router, type Theme } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider, router, type ErrorBoundaryProps,
+  type Theme } from 'expo-router';
 import { StatusBar } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { LanguageProvider, useLanguage } from '../src/i18n/LanguageProvider';
@@ -9,6 +10,7 @@ import { handleNotificationOpen, subscribeRestNotificationResponse } from '../sr
 import { useWorkoutNotificationSync } from '../src/features/train/workoutNotification';
 import { readWorkout } from '../src/features/train/workoutData';
 import * as Notifications from 'expo-notifications';
+import { RecoveryScreen } from '../src/features/startup/RecoveryScreen';
 
 // Initial accessibility and saved theme resolve behind the native splash.
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -57,6 +59,13 @@ function ReadyNavigator() {
       <Stack.Screen name="dev" />
     </OpaqueStack>
   </NavigationThemeProvider>;
+}
+
+/** A render error anywhere above the tabs replaces the app with a localized recovery
+ * screen, never a white screen. It renders without the providers, which may have thrown. */
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  useEffect(() => { void SplashScreen.hideAsync().catch(() => {}); }, []);
+  return <RecoveryScreen kind="crash" onRetry={retry} />;
 }
 
 export default function RootLayout() {

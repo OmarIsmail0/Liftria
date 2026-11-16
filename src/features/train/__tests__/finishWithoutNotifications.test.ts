@@ -72,3 +72,16 @@ test('discarding also ignores a denied notification permission', async () => {
   const open = await readInProgressWorkout();
   expect(open.ok && open.value).toBeNull();
 });
+
+test('a double tap on Finish, or Discard after Finish, saves one workout and loses nothing', async () => {
+  const [first, second] = await Promise.all([completeWorkout('empty-demo', 'note'), completeWorkout('empty-demo', 'other')]);
+  expect([first.ok && first.value, second.ok && second.value].sort()).toEqual([false, true]);
+  const removed = await discardInProgressWorkout('empty-demo');
+  expect(removed.ok && removed.value).toBe(false);
+  const closed = await readWorkout('empty-demo');
+  expect(closed.ok && closed.value?.state).toBe('finished');
+  expect(closed.ok && closed.value?.notes).toBe('note');
+  const count = await dbOperation(async db =>
+    (await db.getFirstAsync<{ n: number }>("SELECT COUNT(*) AS n FROM sessions WHERE id='empty-demo'"))?.n);
+  expect(count).toEqual({ ok: true, value: 1 });
+});

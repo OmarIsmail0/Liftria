@@ -18,3 +18,23 @@ export function formatEditableNumber(value: number | null | undefined, kind: Edi
   if (value === null || value === undefined || !Number.isFinite(value)) return '';
   return String(Number(value.toFixed(decimalsFor[kind])));
 }
+
+/**
+ * The number a person typed into a numeric field, or `null` when the field is blank.
+ *
+ * Arabic phones often type Arabic-Indic (٠–٩) or Persian (۰–۹) digits and the Arabic
+ * decimal separator (٫); some keyboards type a comma. Each is accepted, so the same
+ * value reads the same in either language. Anything else is `NaN`, never 0: signs,
+ * exponents ("1e3"), hex, words, spaces inside the number or more than one separator.
+ * Range checks stay with each field.
+ */
+export function parseEditableNumber(text: string): number | null {
+  const trimmed = text.trim();
+  if (trimmed === '') return null;
+  const western = trimmed
+    .replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x06F0))
+    .replace(/[٫,]/g, '.');
+  if (!/^(\d+\.?\d*|\.\d+)$/.test(western)) return Number.NaN;
+  return Number(western);
+}

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { I18nManager } from 'react-native';
 import { getLocales } from 'expo-localization';
 import { getTypedSetting, setTypedSetting } from '../services/database/settings';
+import { STARTUP_TIMEOUT_MS, withTimeout } from '../features/startup/withTimeout';
 import { resolveLanguage, translate, type AppLanguage, type LanguagePreference, type TranslationKey,
   type TranslationParams } from './index';
 
@@ -35,7 +36,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     let mounted = true;
-    void getTypedSetting('language').then(saved => {
+    // A database that never answers must not hold the splash forever.
+    const unavailable = { ok: false, error: { code: 'db-error', message: 'Timed out.' } } as const;
+    void withTimeout(getTypedSetting('language'), STARTUP_TIMEOUT_MS, unavailable).then(saved => {
       if (!mounted) return;
       const initial = saved.ok ? saved.value : 'system';
       const detected = systemLanguage();
@@ -67,6 +70,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     },
   }), [preference, language]);
   return <Context.Provider value={value}>{ready ? children : null}</Context.Provider>;
+}
+/** For screens that may render outside the provider, such as the root error screen. */
+export function useOptionalLanguage(): LanguageContextValue | null {
+  return useContext(Context);
 }
 export function useLanguage(): LanguageContextValue {
   const context = useContext(Context);

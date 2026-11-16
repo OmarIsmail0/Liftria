@@ -2,7 +2,7 @@ import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
 import {Button,Card,Chip,Field,Header,Screen,SectionHeader,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
-import {formatEditableNumber} from '../../../src/i18n/editableNumber';
+import {formatEditableNumber,parseEditableNumber} from '../../../src/i18n/editableNumber';
 import {getCurrentTarget,addTarget,type Target} from '../../../src/services/database/targets';
 import {getProfile,type Profile} from '../../../src/services/database/profile';
 import {getTypedSetting,setTypedSetting} from '../../../src/services/database/settings';
@@ -41,7 +41,7 @@ export default function EatTargets(){
   });
   return()=>{live=false;};
  },[]));
- const numeric=[kcal,protein,carbs,fat].map(Number);
+ const numeric=[kcal,protein,carbs,fat].map(v=>parseEditableNumber(v)??Number.NaN);
  const valid=numeric.every(Number.isFinite)&&numeric.every(n=>n>=0)&&
    [kcal,protein,carbs,fat].every(s=>s.trim().length>0)&&numeric[0]!>=1000;
  const estimated=profile?estimateEditedProfile(profile):null;
