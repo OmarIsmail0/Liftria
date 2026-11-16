@@ -1,6 +1,8 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useRef,useState} from 'react';
-import {Button,Card,Chip,Field,Header,Screen,Toggle,Typography} from '../../../src/design/primitives';
+import {View} from 'react-native';
+import {Button,Card,Chip,Field,Header,ListGroup,Screen,SectionHeader,Toggle,Typography} from '../../../src/design/primitives';
+import {useTheme} from '../../../src/design/ThemeProvider';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {getTypedSetting} from '../../../src/services/database/settings';
 import {DEFAULT_HIKU_MODEL,classifyHikuCostUsd,estimateHikuCostUsd,formatHikuUsd,hikuModel,type HikuModelId} from '../../../src/features/hiku/models';
@@ -10,6 +12,7 @@ import {readAvailableHikuContext,contextForSend} from '../../../src/features/hik
 import {resolveHikuItem} from '../../../src/features/hiku/mealSchema';
 export default function DescribeMeal(){
  const {t,language}=useLanguage();
+ const {theme}=useTheme();
  const [description,setDescription]=useState(getHikuDescription());
  const [shareToday,setShareToday]=useState(false),[shareTraining,setShareTraining]=useState(false);
  const [available,setAvailable]=useState<{today:string;training:string}|null>(null);
@@ -49,23 +52,32 @@ export default function DescribeMeal(){
  }
  function cancel(){controller.current?.abort();setBusy(false);setError('cancelled');}
  return <Screen embedded safeBottom>
-  <Header title={t('hikuK.beforeSend')} onBack={()=>router.back()}/>
-  <Card rim="hiku">
+  <Header mode="inline" title={t('hikuK.beforeSend')} onBack={()=>router.back()}/>
+  <Card>
    <Field label={t('hikuK.description')} value={description} multiline
     onChangeText={v=>{setDescription(v);rememberHikuDescription(v);}} placeholder={t('hikuK.example')}/>
    <Typography tone="secondary">{t('hikuK.privacyNote')}</Typography>
-   <Typography tone="secondary" size="small">{t('hikuK.selectedModel',{model:
+   <Typography tone="secondary" size="secondary">{t('hikuK.selectedModel',{model:
     language==='ar'?hikuModel(model).nameAr:hikuModel(model).nameEn})}</Typography>
   </Card>
-  <Card title={t('hikuK.sentPanel')}>
-   <Toggle label={t('hikuSettings.includeToday')} value={shareToday} onChange={setShareToday}/>
-   <Toggle label={t('hikuSettings.includeTraining')} value={shareTraining} onChange={setShareTraining}/>
+  <View style={{gap:8}}>
+   <SectionHeader title={t('hikuK.sentPanel')}/>
+   <ListGroup>
+    <View style={{paddingHorizontal:theme.space[4],borderBottomWidth:theme.size.border.thin,borderColor:theme.color.border.subtle}}>
+     <Toggle label={t('hikuSettings.includeToday')} value={shareToday} onChange={setShareToday}/>
+    </View>
+    <View style={{paddingHorizontal:theme.space[4]}}>
+     <Toggle label={t('hikuSettings.includeTraining')} value={shareTraining} onChange={setShareTraining}/>
+    </View>
+   </ListGroup>
+  </View>
+  <Card>
    {!contextLoaded&&<Typography tone="secondary">{t('common.loading')}</Typography>}
    {contextLoaded&&!available&&<Typography tone="secondary">{t('hikuK.contextUnavailable')}</Typography>}
-   <Typography tone="secondary" size="small">{t('hikuK.exactText')}</Typography>
+   <Typography tone="secondary" size="secondary">{t('hikuK.exactText')}</Typography>
    <Typography>{prompt}</Typography>
    {!shareToday&&!shareTraining&&<Typography tone="secondary">{t('hikuK.noExtraContext')}</Typography>}
-   <Typography tone="secondary" size="small">{t('hikuK.contextPrivacy')}</Typography>
+   <Typography tone="secondary" size="secondary">{t('hikuK.contextPrivacy')}</Typography>
   </Card>
   <Card title={t('hikuK.costTitle')}>
    <Chip kind="estimate"/>
@@ -73,16 +85,16 @@ export default function DescribeMeal(){
     t('hikuK.estimatedCost',{cost:approximateBand==='less-than-cent'
      ?t('hikuK.costLessThanCent'):formatHikuUsd(approximate??0)})}</Typography>
   </Card>
-  {busy&&<Card rim="hiku" title={t('hikuK.analyzing')}>
+  {busy&&<Card title={t('hikuK.analyzing')}>
    <Typography tone="secondary">{t('hikuK.timeoutHint')}</Typography>
-   <Button label={t('hikuK.cancel')} onPress={cancel} variant="secondary" fullWidth/>
+   <Button label={t('hikuK.cancel')} onPress={cancel} variant="neutral" fullWidth/>
   </Card>}
   {error&&<Card title={t('hikuK.errorTitle')}>
    <Typography tone="secondary">{t('hikuK.error_'+error.replaceAll('-','_') as 'hikuK.error_offline')}</Typography>
-   <Typography tone="secondary" size="small">{t('hikuK.inputKept')}</Typography>
-   {error==='model-unavailable'&&<Button label={t('hikuK.selectModel')} variant="secondary"
+   <Typography tone="secondary" size="secondary">{t('hikuK.inputKept')}</Typography>
+   {error==='model-unavailable'&&<Button label={t('hikuK.selectModel')} variant="tonal" fullWidth
     onPress={()=>router.push('/settings/hiku-key')}/>}
-   {error==='key-missing'&&<Button label={t('hikuK.apiKey')}
+   {error==='key-missing'&&<Button label={t('hikuK.apiKey')} fullWidth
     onPress={()=>router.push('/settings/hiku-key')}/>}
   </Card>}
   {!busy&&<Button label={t('hikuK.send')} disabled={!contextLoaded||!available||description.trim().length===0||description.length>2500}

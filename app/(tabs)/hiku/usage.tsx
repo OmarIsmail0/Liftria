@@ -1,7 +1,7 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
-import {Linking} from 'react-native';
-import {Button,Card,Chip,Header,ListRow,Screen,Typography} from '../../../src/design/primitives';
+import {Linking,View} from 'react-native';
+import {Card,Chip,Header,ListGroup,ListRow,Screen,SectionHeader,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {pluralForm,type TranslationKey,languages} from '../../../src/i18n';
 import {listHikuUsage,type RequestUsage} from '../../../src/features/hiku/requestRepository';
@@ -29,27 +29,35 @@ export default function HikuUsage(){
   return status;
  };
  return <Screen embedded>
-  <Header title={t('hikuK.usageTitle')} onBack={()=>router.back()}/>
-  <Card rim="hiku" title={t('hikuK.monthUsage')}>
-   <Chip kind="estimate"/>
-   <Typography>{monthCost===null?t('hikuK.monthCostUnknown',{requests:requestCount}):
-    t('hikuK.monthCost',{cost:monthCost,requests:requestCount})}</Typography>
-   {current.some(r=>r.costUsd===null)&&<Typography tone="secondary">{t('hikuK.costUnknown')}</Typography>}
-   <Typography tone="secondary" size="small">{t('hikuK.priceNote',{date:HIKU_PRICE_VERSION})}</Typography>
-   <ListRow title={t('hikuK.priceSourceLink')} onPress={()=>{void Linking.openURL(HIKU_PRICE_SOURCE);}}/>
-  </Card>
-  <Card title={t('hikuK.requests')}>
-   {rows.length===0&&<Typography tone="secondary">{t('hikuK.noRequests')}</Typography>}
-   {rows.map(row=>{
-    const rowCost=formatRowCost(row.costUsd);
-    const modelName=hikuModelName(row.model,language);
-    const statusText=translateStatus(row.status);
-    return <ListRow key={row.id} title={modelName}
-     detail={row.createdAt.slice(0,16)+' · '+statusText+(rowCost?' · '+rowCost:'')}/>;
-   })}
-   {error&&<Typography>{t('eatI.error')}</Typography>}
-  </Card>
+  <Header mode="inline" title={t('hikuK.usageTitle')} onBack={()=>router.back()}/>
+  <View style={{gap:12}}>
+   <Card title={t('hikuK.monthUsage')}>
+    <Chip kind="estimate"/>
+    <Typography>{monthCost===null?t('hikuK.monthCostUnknown',{requests:requestCount}):
+     t('hikuK.monthCost',{cost:monthCost,requests:requestCount})}</Typography>
+    {current.some(r=>r.costUsd===null)&&<Typography tone="secondary">{t('hikuK.costUnknown')}</Typography>}
+    <Typography tone="secondary" size="secondary">{t('hikuK.priceNote',{date:HIKU_PRICE_VERSION})}</Typography>
+   </Card>
+   <ListGroup>
+    <ListRow title={t('hikuK.priceSourceLink')} onPress={()=>{void Linking.openURL(HIKU_PRICE_SOURCE);}}/>
+   </ListGroup>
+  </View>
+  <View style={{gap:8}}>
+   <SectionHeader title={t('hikuK.requests')}/>
+   {rows.length===0?<Typography tone="secondary">{t('hikuK.noRequests')}</Typography>:<ListGroup>
+    {rows.map(row=>{
+     const rowCost=formatRowCost(row.costUsd);
+     const modelName=hikuModelName(row.model,language);
+     const statusText=translateStatus(row.status);
+     return <ListRow key={row.id} title={modelName}
+      detail={row.createdAt.slice(0,16)+' · '+statusText+(rowCost?' · '+rowCost:'')}/>;
+    })}
+   </ListGroup>}
+  </View>
+  {error&&<Typography>{t('eatI.error')}</Typography>}
   <Typography tone="secondary">{t('hikuK.usagePrivacy')}</Typography>
-  <Button label={t('hikuK.apiKey')} variant="secondary" onPress={()=>router.push('/settings/hiku-key')}/>
+  <ListGroup>
+   <ListRow title={t('hikuK.apiKey')} onPress={()=>router.push('/settings/hiku-key')}/>
+  </ListGroup>
  </Screen>;
 }
