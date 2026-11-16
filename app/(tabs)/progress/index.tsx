@@ -29,7 +29,7 @@ export default function ProgressTab(){
  const format=(v:number,digits=0)=>bidiIsolate(language,formatNumber(language,v,
   {maximumFractionDigits:digits,minimumFractionDigits:digits}));
  return <Screen embedded>
-  <Header title={t('nav.progress')}/>
+  <Header mode="large" title={t('nav.progress')}/>
   {error&&<Typography tone="secondary">{t('eatI.error')}</Typography>}
   <Card rim="train" title={t('progress.strength')}>
    <Typography tone="secondary">{t('progress.strengthDescription')}</Typography>

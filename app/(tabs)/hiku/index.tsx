@@ -21,7 +21,7 @@ export default function HikuHome(){
  },[]));
  const current=hikuModel(model);
  return <Screen embedded>
-  <Header title={t('nav.hiku')}/>
+  <Header mode="large" title={t('nav.hiku')}/>
   <Card rim="hiku" title={t('hikuK.title')}>
    <Typography tone="secondary">{t('hikuK.intro')}</Typography>
    <Typography tone="secondary" size="small">{language==='ar'?current.nameAr:current.nameEn}</Typography>

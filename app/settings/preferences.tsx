@@ -68,7 +68,7 @@ export default function UnitsAndPreferences() {
   }
 
   return <Screen>
-    <Header title={t('preferences.title')} subtitle={t('preferences.subtitle')}
+    <Header mode="inline" title={t('preferences.title')}
       onBack={() => backOrReplace(router, '/settings')} />
     <Card title={t('preferences.units')}>
       <Typography tone="secondary" size="small">{t('preferences.unitsDescription')}</Typography>

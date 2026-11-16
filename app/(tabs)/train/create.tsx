@@ -54,7 +54,7 @@ export default function CreateExercise(){
   return <Screen embedded scroll={false}>
     <ScrollView keyboardShouldPersistTaps="handled"
       contentContainerStyle={{paddingVertical:theme.space[3],gap:theme.layout.cardGap}}>
-      <Header title={t('custom.title')} subtitle={t('custom.subtitle')} onBack={()=>router.back()}/>
+      <Header mode="inline" title={t('custom.title')} onBack={()=>router.back()}/>
       <Card title={t('custom.details')}>
         <Typography size="small">{t('custom.nameRequired')}</Typography>
         <TextInput value={name} onChangeText={setName} accessibilityLabel={t('custom.name')}

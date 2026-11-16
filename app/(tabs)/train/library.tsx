@@ -127,7 +127,7 @@ export default function ExerciseLibrary() {
       removeClippedSubviews={Platform.OS === 'android'}
       {...exerciseListWindow}
       ListHeaderComponent={<View style={{ gap: theme.space[3] }}>
-        <Header title={t('library.title')} subtitle={t('library.subtitle')} onBack={() => router.back()}
+        <Header mode="inline" title={t('library.title')} onBack={() => router.back()}
           right={<Button label={t('library.new')} variant="secondary" onPress={() => router.push('/(tabs)/train/create')} />} />
         <TextInput value={query} onChangeText={setQuery} accessibilityLabel={t('library.searchLabel')}
           placeholder={t('library.searchHint')} placeholderTextColor={theme.color.text.tertiary}

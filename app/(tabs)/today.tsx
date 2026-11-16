@@ -120,7 +120,7 @@ export default function TodayTab() {
     snapshot.permissions['active-calories']??'unknown',snapshot.availability==='available'));
 
   if (localLoading || !snapshot.loaded) return <Screen embedded>
-    <Header title={t('nav.today')} subtitle={t('today.loading')} />
+    <Header mode="large" title={t('nav.today')} subtitle={t('today.loading')} />
     <View style={{ gap: theme.layout.cardGap, paddingTop: theme.space[4] }}>
       <Skeleton height={theme.size.touch.workout} />
       <Skeleton height={theme.size.touch.workout * 3} />
@@ -133,7 +133,7 @@ export default function TodayTab() {
       onRefresh={() => { void Promise.allSettled([refresh(true), loadLocal(), loadTraining()]); }}
       colors={[theme.color.domain.health]} tintColor={theme.color.domain.health} />}
       contentContainerStyle={{ paddingTop: 0, paddingBottom: theme.space[4], gap: theme.layout.cardGap }}>
-      <Header title={local.profile?.name ? `${greeting}, ${local.profile.name}` : t('today.welcome')}
+      <Header mode="large" title={local.profile?.name ? `${greeting}, ${local.profile.name}` : t('today.welcome')}
         subtitle={date} right={<Pressable accessibilityRole="button" accessibilityLabel={t('today.openSettings')}
           onPress={() => router.push('/settings')}
           style={{ minHeight: theme.size.touch.min, minWidth: theme.size.touch.min,

@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Button, Card, Header, ListRow, Screen, Sheet, Typography } from '../../design/primitives';
+import { SearchIcon } from '../../design/primitives/TabIcon';
 import { useTheme } from '../../design/ThemeProvider';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { muscleLabel } from '../../i18n/muscles';
@@ -102,8 +103,12 @@ export default function TrainHome() {
     if(result.ok)await refresh();
   };
   return <Screen embedded>
-    <Header title={t('nav.train')} subtitle={t('train.subtitle')} right={
-      <Button label={t('train.search')} variant="secondary" onPress={()=>router.push('/(tabs)/train/library')}/>}/>
+    <Header mode="large" title={t('nav.train')} right={
+      <Pressable accessibilityRole="button" accessibilityLabel={t('train.search')}
+        onPress={()=>router.push('/(tabs)/train/library')}
+        style={{width:theme.size.touch.min,height:theme.size.touch.min,alignItems:'center',justifyContent:'center'}}>
+        <SearchIcon color={theme.color.text.primary} size={theme.space[6]} strokeWidth={theme.size.iconStroke}/>
+      </Pressable>}/>
     {loading?<Typography tone="secondary">{t('train.loading')}</Typography>:
       error?<Card><Typography>{t('train.loadError')}</Typography>
         <Button label={t('train.retry')} onPress={()=>void refresh()}/></Card>:

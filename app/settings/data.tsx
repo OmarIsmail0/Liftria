@@ -164,7 +164,7 @@ export default function DataAndStorage() {
     finally{setBusy(false);}
   }
   return <Screen>
-    <Header title={t('dataStorage.title')} subtitle={t('dataStorage.subtitle')}
+    <Header mode="inline" title={t('dataStorage.title')}
       onBack={()=>backOrReplace(router,'/settings')} />
     <Card title={t('dataStorage.counts')}>
       {counts ? <>

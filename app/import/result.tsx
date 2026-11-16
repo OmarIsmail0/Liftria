@@ -9,7 +9,7 @@ export default function ImportResult(){
  const done=()=>{clearImportDraft();router.replace('/settings/data');};
  const history=()=>{clearImportDraft();router.replace('/(tabs)/train/history');};
  return <Screen>
-  <Header title={t('import.result.title')}/>
+  <Header mode="inline" title={t('import.result.title')}/>
   {result?.ok?<Card rim="train" title={t((`import.result.success.${pluralForm(language,result.result.workouts)}`) as TranslationKey,{count:result.result.workouts})}>
    <ListRow title={t('import.result.sets')} detail={String(result.result.sets)}/>
    {result.result.custom>0&&<ListRow title={t('import.result.custom')}

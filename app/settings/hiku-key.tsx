@@ -124,7 +124,7 @@ export default function HikuKeySettings() {
   }
 
   return <Screen>
-    <Header title={t('hikuSettings.title')} subtitle={t('hikuSettings.subtitle')}
+    <Header mode="inline" title={t('hikuSettings.title')}
       onBack={() => backOrReplace(router, '/settings')} />
     <Card title={t('hikuSettings.apiKey')} rim="none">
       {state.status === 'ready' && !replacing ? <>

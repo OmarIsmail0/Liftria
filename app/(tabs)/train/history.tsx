@@ -54,7 +54,7 @@ export default function History(){
   const d=new Date(s.startedAt);return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();
  }).length;
  return <Screen embedded>
-  <Header title={t('train.history')} subtitle={t('history.subtitle')} onBack={()=>router.back()}/>
+  <Header mode="inline" title={t('train.history')} onBack={()=>router.back()}/>
   <Card rim="train" title={t('history.month')}>
    <Typography>{hidden?t('history.completed'):translateWorkoutCount(language,month)}</Typography>
    <Typography tone="secondary">{hidden?t('history.volumeHidden'):t('history.volumeValue',{value:formatNumber(language,Math.round(fromKg(volume,unit))),unit:weightUnitLabel(language,unit)})}</Typography>
