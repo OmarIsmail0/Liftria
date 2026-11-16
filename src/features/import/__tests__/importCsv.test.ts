@@ -1,4 +1,4 @@
-import { ImportParseError, readCsv, parseImportCsv, sha256, fromImportWeight, csvFileTypeError, detectImportSource, importFailureText } from '../importCsv';
+import { ImportParseError, readCsv, parseImportCsv, sha256, fromImportWeight, csvFileTypeError, detectImportSource, importFailureText, readFailureMessage } from '../importCsv';
 const {readFileSync}=jest.requireActual('fs') as {readFileSync:(file:string,encoding:'utf8')=>string};
 const {join}=jest.requireActual('path') as {join:(...parts:string[])=>string};
 test('SHA-256 UTF-8 deterministic vectors; no Web Crypto dependency',()=>{
@@ -224,4 +224,8 @@ test('source detection follows the header, not the file name',()=>{
  expect(detectImportSource(['Date','Workout Name','Exercise Name','Weight','Reps'])).toBe('strong');
  expect(detectImportSource(['Date','Exercise','Weight (kgs)','Reps'])).toBe('fitnotes');
  expect(detectImportSource(['date','exercise','weight_kg','reps'])).toBe('csv');
+});
+test('an oversize shared file reports the too-large message, not the generic open failure',()=>{
+ expect(readFailureMessage(new Error('too large'),'en')).toBe('This file is too large to import.');
+ expect(readFailureMessage(new Error('boom'),'en')).toContain("couldn't open");
 });
