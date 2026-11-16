@@ -1,6 +1,6 @@
 import {router,useFocusEffect} from 'expo-router';
 import {useCallback,useState} from 'react';
-import {Button,Card,Chip,Field,Header,Screen,Sheet,Toggle,Typography} from '../../../src/design/primitives';
+import {Button,Card,Chip,Field,Header,Screen,SectionHeader,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {formatEditableNumber} from '../../../src/i18n/editableNumber';
 import {getCurrentTarget,addTarget,type Target} from '../../../src/services/database/targets';
@@ -82,12 +82,13 @@ export default function EatTargets(){
   if(result.ok)setMealNames(next);else setError(true);
  };
  return <Screen embedded>
-  <Header title={t('eatI.targets')} onBack={()=>router.back()}/>
-  <Card rim="eat" title={t('eatI.dailyTarget')}>
+  <Header mode="inline" title={t('eatI.targets')} onBack={()=>router.back()}/>
+  <SectionHeader title={t('eatI.dailyTarget')}/>
+  <Card>
    {current?.source==='estimate'&&<Chip kind="estimate"/>}
    <Typography tone="secondary">{t('eatI.targetExplain')}</Typography>
    {estimated&&<Button label={t('eatI.useEstimate',{count:estimated.kcal})}
-     variant="secondary" onPress={()=>{
+     variant="neutral" onPress={()=>{
        setKcal(formatEditableNumber(estimated.kcal,'kcal'));
        setProtein(formatEditableNumber(estimated.proteinG,'grams'));
        setCarbs(formatEditableNumber(estimated.carbsG,'grams'));
@@ -102,25 +103,27 @@ export default function EatTargets(){
      onPress={()=>void save()}/>
    {saved&&<Typography>{t('eatI.saved')}</Typography>}
   </Card>
-  <Card title={t('eatI.display')}>
+  <SectionHeader title={t('eatI.display')}/>
+  <Card>
    <Toggle label={t('eatI.hideNumbers')} value={hide}
      onChange={v=>void setFlag('hideNumbers',v)}/>
   </Card>
-  <Card title={t('eatI.mealNames')}>
+  <SectionHeader title={t('eatI.mealNames')}/>
+  <Card>
    <Toggle label={t('eatI.ramadanMode')} detail={t('eatI.ramadanDetail')}
      value={ramadan} onChange={v=>void setFlag('eat.ramadan',v)}/>
    {ramadan&&<>
-      <Button label={t('eatI.ramadanPreset')} variant="secondary" onPress={()=>void preset()}/>
+      <Button label={t('eatI.ramadanPreset')} variant="neutral" onPress={()=>void preset()}/>
       <Field label={t('eatI.iftarTime')} value={iftarTime} onChangeText={setIftarTime}
         placeholder="18:00"/>
-      <Button label={t('eatI.saveTime')} variant="secondary"
+      <Button label={t('eatI.saveTime')} variant="neutral"
         disabled={!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(iftarTime)}
         onPress={()=>void setTypedSetting('eat.iftarTime',iftarTime).then(v=>{if(!v.ok)setError(true);})}/>
    </>}
    {MEALS.map(meal=><Field key={meal} label={t(`eatI.${meal}`)}
      value={mealNames[meal]??''} placeholder={t(`eatI.${meal}`)}
      onChangeText={value=>void updateName(meal,value)}/>)}
-   <Button label={t('eatI.saveNames')} variant="secondary" onPress={()=>void saveNames()}/>
+   <Button label={t('eatI.saveNames')} variant="neutral" onPress={()=>void saveNames()}/>
   </Card>
   {error&&<Typography>{t('eatI.error')}</Typography>}
   <Sheet visible={warning} title={t('eatI.targetCaution')}
@@ -131,7 +134,7 @@ export default function EatTargets(){
      setUseCalculated(false);
      setWarning(false);
    }}/>
-   <Button label={t('eatI.keepTarget')} variant="secondary" fullWidth
+   <Button label={t('eatI.keepTarget')} variant="neutral" fullWidth
      disabled={!guidance} onPress={()=>void save(true)}/>
   </Sheet>
  </Screen>;
