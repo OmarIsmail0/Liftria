@@ -11,9 +11,8 @@ import { readInProgressWorkout, discardInProgressWorkout, workoutNumbers,
   type ActiveWorkout } from './workoutData';
 import { weekDays, scheduledTemplate, isLocalDate } from './weekPlan';
 import { elapsedLabel } from './restClock';
-import { ensureExercisePack, listExercises } from '../../services/database/exerciseLibrary';
+import { countExercises, ensureExercisePack } from '../../services/database/exerciseLibrary';
 import { relativeTrainingDay } from './recoveryMath';
-import type { Exercise } from '../../services/database/gymTypes';
 import { PressRow } from './PressRow';
 
 export default function TrainHome() {
@@ -28,15 +27,15 @@ export default function TrainHome() {
   const [error,setError]=useState(false);
   const [starterBusy,setStarterBusy]=useState(false);
   const [starterMessage,setStarterMessage]=useState<string|null>(null);
-  const [library,setLibrary]=useState<Record<string,Exercise>>({});
+  const [exerciseCount,setExerciseCount]=useState(0);
   const [menuTemplate,setMenuTemplate]=useState<Template|null>(null);
   const [deleteTemplateId,setDeleteTemplateId]=useState<string|null>(null);
   const refresh=useCallback(async()=>{
     const [a,ts,ps,ss,pack]=await Promise.all([
       readInProgressWorkout(),listTemplates(),listPlans(),listSessions(250),
-      ensureExercisePack().then(seeded=>seeded.ok?listExercises():Promise.resolve(null)),
+      ensureExercisePack().then(seeded=>seeded.ok?countExercises():Promise.resolve(null)),
     ]);
-    if(pack?.ok)setLibrary(Object.fromEntries(pack.value.map(exercise=>[exercise.id,exercise])));
+    if(pack?.ok)setExerciseCount(pack.value);
     setError(!a.ok||!ts.ok||!ps.ok||!ss.ok);
     if(a.ok)setActive(a.value);
     if(ts.ok)setTemplates(ts.value);
@@ -102,7 +101,6 @@ export default function TrainHome() {
   if(!templates.some(template=>template.name==='Upper A'))starters.push('Upper A');
   if(!templates.some(template=>template.name==='Lower B'))starters.push('Lower B');
   const routineRows=templates.length+starters.length;
-  const exerciseCount=Object.keys(library).length;
   const openPreview=(templateId?:string)=>router.push(templateId?
     {pathname:'/(tabs)/train/preview',params:{templateId}}:
     '/(tabs)/train/preview');

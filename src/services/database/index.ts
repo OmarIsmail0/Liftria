@@ -20,7 +20,7 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 // New application id com.liftria.app gets a fresh on-device database. Do not rename
 // databases after shipping to friends without an explicit migration/copy strategy.
 export const DB_NAME = 'liftria.db';
-export const DB_SCHEMA_VERSION = 10;
+export const DB_SCHEMA_VERSION = 11;
 
 /** Only additive migrations. v1 SQL is retained byte-for-byte except for its version pragma. */
 export const DB_MIGRATIONS = [
@@ -253,6 +253,17 @@ export const DB_MIGRATIONS = [
   { version: 10, sql: `
     ALTER TABLE sets ADD COLUMN mark TEXT
       CHECK(mark IN ('drop','failure') OR mark IS NULL);
+  ` },
+  // Indexes only, no table or data change. They cover columns the Train, Eat and Progress
+  // screens filter or sort on, which had no index: sessions by state then date (history,
+  // records), session_exercises by exercise (previous sets, records, recents), weights and
+  // hiku_requests by date, and template_exercises by exercise (delete guard).
+  { version: 11, sql: `
+    CREATE INDEX IF NOT EXISTS idx_sessions_state_started ON sessions(state, started_at);
+    CREATE INDEX IF NOT EXISTS idx_session_exercises_exercise ON session_exercises(exercise_id);
+    CREATE INDEX IF NOT EXISTS idx_template_exercises_exercise ON template_exercises(exercise_id);
+    CREATE INDEX IF NOT EXISTS idx_weights_measured ON weights(measured_at);
+    CREATE INDEX IF NOT EXISTS idx_hiku_requests_created ON hiku_requests(created_at);
   ` },
 ] as const;
 

@@ -1,4 +1,4 @@
-import {bundledFoods,dayOffset,entryName,foodName,localDay,macroMismatch,mealAtTime,
+import {bundledEgyptFoods,bundledFoodById,bundledFoods,dayOffset,entryName,foodName,localDay,macroMismatch,mealAtTime,
   normalizeFoodSearch,searchFoods,snapshot,type Food} from '../foodCatalog';
 const food=(id:string,name:string,nameAr:string|null,aliases:string[]=[],source:'egypt'|'usda'='egypt'):Food=>({
   id,name,nameAr,aliases,source,estimate:source==='egypt',kcal:100,protein:10,carbs:20,fat:1,
@@ -72,4 +72,23 @@ test('pack micronutrients snapshot when present; unknown values stay null',()=>{
  const input={...food('x','Test',null),fiber:2,sugar:3,sodium:100};
  expect(snapshot(input,150)).toMatchObject({fiber:3,sugar:4.5,sodium:150});
  expect(snapshot({...input,sugar:null,sodium:undefined},150)).toMatchObject({sugar:null,sodium:null});
+});
+
+test('a bundled food is found by id without scanning, and Egyptian ids do not need the USDA pack',()=>{
+  const egypt=bundledEgyptFoods();
+  expect(egypt.length).toBeGreaterThan(0);
+  expect(egypt.every(item=>item.source==='egypt')).toBe(true);
+  expect(bundledFoodById('egypt:koshari')).toBe(egypt.find(item=>item.id==='egypt:koshari'));
+  // The full list starts with the same Egyptian objects, so search keys are shared.
+  expect(bundledFoods().slice(0,egypt.length)).toEqual(egypt);
+  expect(bundledFoods()[0]).toBe(egypt[0]);
+  const usda=bundledFoods().find(item=>item.source==='usda');
+  expect(usda&&bundledFoodById(usda.id)).toBe(usda);
+  expect(bundledFoodById('usda:does-not-exist')).toBeUndefined();
+  expect(bundledFoodById('egypt:does-not-exist')).toBeUndefined();
+});
+test('USDA foods have no Arabic name, so their diary rows keep the stored name in Arabic',()=>{
+  const usda=bundledFoods().find(item=>item.source==='usda');
+  expect(usda?.nameAr).toBeNull();
+  expect(entryName({foodId:usda!.id,name:'Stored name'},'ar')).toBe('Stored name');
 });

@@ -28,20 +28,39 @@ export function unpackFood(row:PackRow):Food {
         {labelEn:p[0],labelAr:p[1],grams:p[2]!})),
   };
 }
+let egyptCache:Food[]|null=null;
+/** The 29 Egyptian foods only. Cheap: it never touches the 2 MB USDA pack. */
+export function bundledEgyptFoods():Food[] {
+  if(!egyptCache)egyptCache=(egyptRows as unknown as PackRow[]).map(unpackFood);
+  return egyptCache;
+}
 let cache:Food[]|null=null;
 export function bundledFoods():Food[] {
-  if(!cache)cache=[...(egyptRows as unknown as PackRow[]),...(usdaRows as unknown as PackRow[])].map(unpackFood);
+  if(!cache)cache=[...bundledEgyptFoods(),...(usdaRows as unknown as PackRow[]).map(unpackFood)];
   return cache;
+}
+let bundledIndex:Map<string,Food>|null=null;
+let egyptIndex:Map<string,Food>|null=null;
+/**
+ * One bundled food by id, without scanning 8,200 rows. An `egypt:` id is answered from the
+ * small Egyptian list, so the USDA pack stays unparsed until a USDA food is really needed.
+ */
+export function bundledFoodById(id:string):Food|undefined {
+  if(id.startsWith('egypt:')){
+    if(!egyptIndex)egyptIndex=new Map(bundledEgyptFoods().map(food=>[food.id,food]));
+    return egyptIndex.get(id);
+  }
+  if(!bundledIndex)bundledIndex=new Map(bundledFoods().map(food=>[food.id,food]));
+  return bundledIndex.get(id);
 }
 export function foodName(food:Food,language:AppLanguage):string {
   return language==='ar'?(food.nameAr??food.name):food.name;
 }
-let byId:Map<string,Food>|null=null;
 /** Diary rows store the English name as a snapshot; show a bundled food's Arabic name in Arabic. */
 export function entryName(entry:{foodId:string|null;name:string},language:AppLanguage):string {
   if(language!=='ar'||!entry.foodId)return entry.name;
-  if(!byId)byId=new Map(bundledFoods().map(food=>[food.id,food]));
-  const food=byId.get(entry.foodId);
+  // Only Egyptian foods have an Arabic name, so USDA ids never need the large pack here.
+  const food=entry.foodId.startsWith('egypt:')?bundledFoodById(entry.foodId):undefined;
   return food?foodName(food,language):entry.name;
 }
 /** Arabic normalization preserves meaningful letters while unifying common spellings. */
@@ -105,6 +124,10 @@ export function searchFoods(foods:readonly Food[],text:string,limit=40):Food[]{
     Number(b.food.source==='egypt')-Number(a.food.source==='egypt') ||
     a.food.name.localeCompare(b.food.name,'en') || a.food.id.localeCompare(b.food.id));
   return ranked.slice(0,limit).map(row=>row.food);
+}
+/** Parses the bundled packs and builds the search keys, so the first keystroke is not the one that pays. */
+export function warmFoodSearch():void{
+  for(const food of bundledFoods())keysFor(food);
 }
 export function localDay(date:Date):string{
   const year=date.getFullYear(),month=String(date.getMonth()+1).padStart(2,'0');

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View } from 'react-native';
 import { useTheme } from '../../design/ThemeProvider';
 import type { Exercise } from '../../services/database/gymTypes';
@@ -18,7 +19,7 @@ export function viewBoxSize(viewBox: string, width: number): { width: number; he
   return { width, height: Math.max(1, Math.round(width * boxHeight / boxWidth)) };
 }
 
-export function ExerciseFigure({ exercise, size, crop = 'thumb' }: {
+export const ExerciseFigure = memo(function ExerciseFigure({ exercise, size, crop = 'thumb' }: {
   exercise: Exercise;
   size?: number;
   /** thumb is the square list crop. full is the whole figure, and renders nothing when unmapped. */
@@ -55,4 +56,4 @@ export function ExerciseFigure({ exercise, size, crop = 'thumb' }: {
     <PoseFigure pose={pose} viewBox={viewBox} themeKey={themeKey}
       width={Math.max(1, frame.width - border * 2)} height={Math.max(1, frame.height - border * 2)} />
   </View>;
-}
+});

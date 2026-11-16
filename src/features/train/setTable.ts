@@ -283,3 +283,49 @@ export function buildSetRows(input: {
   }
   return rows;
 }
+
+type DraftLike = { weight: string; reps: string; effort: string };
+type LoggedLike = { weight: number; reps: number; effort: string };
+
+/** The props SetTable renders from. Callbacks are required to be stable, so they are not compared. */
+export type SetTableRenderProps = {
+  exerciseId: string;
+  rows: readonly PlannedRow[];
+  history: readonly unknown[];
+  weightUnit: string;
+  effort: string;
+  drafts: Readonly<Record<string, DraftLike>>;
+  loggedValues: Readonly<Record<string, LoggedLike>>;
+  repMax: number;
+  expectedRows: number;
+  weightStep: number;
+  busy: boolean;
+};
+
+function sameRow(a: PlannedRow, b: PlannedRow): boolean {
+  return a.key === b.key && a.position === b.position && a.side === b.side && a.mark === b.mark
+    && a.loggedId === b.loggedId && a.workingNumber === b.workingNumber;
+}
+
+/**
+ * Memo comparison for one exercise's set table. `drafts` and `loggedValues` hold every
+ * exercise's entries, so only the entries for this table's own rows are compared. Without
+ * that, typing in one exercise would re-render all of them.
+ */
+export function setTablePropsEqual(previous: SetTableRenderProps, next: SetTableRenderProps): boolean {
+  if (previous.exerciseId !== next.exerciseId || previous.history !== next.history
+    || previous.weightUnit !== next.weightUnit || previous.effort !== next.effort
+    || previous.repMax !== next.repMax || previous.expectedRows !== next.expectedRows
+    || previous.weightStep !== next.weightStep || previous.busy !== next.busy
+    || previous.rows.length !== next.rows.length) return false;
+  for (let index = 0; index < next.rows.length; index += 1) {
+    const before = previous.rows[index], after = next.rows[index];
+    if (!before || !after || !sameRow(before, after)) return false;
+    if (previous.drafts[after.key] !== next.drafts[after.key]) return false;
+    if (after.loggedId) {
+      const was = previous.loggedValues[after.loggedId], now = next.loggedValues[after.loggedId];
+      if (was !== now && (!was || !now || was.weight !== now.weight || was.reps !== now.reps || was.effort !== now.effort)) return false;
+    }
+  }
+  return true;
+}

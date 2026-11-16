@@ -14,12 +14,11 @@ import { ChevronIcon } from '../../../src/design/primitives/TabIcon';
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { ExerciseFigure } from '../../../src/features/train/ExerciseFigure';
 import { PlateCalculatorCard } from '../../../src/features/train/PlateCalculatorCard';
-import { RestBar } from '../../../src/features/train/RestBar';
+import { ElapsedStat, RestSection } from '../../../src/features/train/ActiveClock';
 import { SetTable, type LoggedValues, type SetDraft } from '../../../src/features/train/SetTable';
 import { isPlateLoadedBarbell } from '../../../src/features/train/plateCalculator';
 import { askRestPermission, cancelSessionRestAlerts, prepareRestAlerts, runNotificationTurn } from '../../../src/features/train/restAlerts';
-import { restBarPhase } from '../../../src/features/train/restBar';
-import { elapsedLabel, nextClockDelay, restAnnouncement, selectCurrentRest, shiftRest } from '../../../src/features/train/restClock';
+import { shiftRest } from '../../../src/features/train/restClock';
 import {
   buildSetRows, cycleSetMark, persistedKind, persistedMark, type PlannedRow, type SetMark,
 } from '../../../src/features/train/setTable';
@@ -43,6 +42,7 @@ import { MUSCLES, type Exercise } from '../../../src/services/database/gymTypes'
 
 function KeepScreenOn() { useKeepAwake('liftria-active-workout'); return null; }
 
+const NO_HISTORY: PreviousSet[] = [];
 const REST_CHOICES = [0, 60, 90, 120, 150, 180, 240];
 
 type UndoDelete = { set: ActiveSet; key: string } | { key: string; set: null };
@@ -55,7 +55,7 @@ export default function ActiveWorkoutScreen() {
   const [view, setView] = useState<ActiveWorkout | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
+  const [restVisible, setRestVisible] = useState(false);
   const [focused, setFocused] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
   const [haptics, setHaptics] = useState(false);
@@ -84,8 +84,6 @@ export default function ActiveWorkoutScreen() {
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   const [undo, setUndo] = useState<UndoDelete | null>(null);
   const [hintSeen, setHintSeen] = useState(true);
-  const previousRestMs = useRef<number | null>(null);
-  const restPhase = useRef<string>('hidden');
   const listRef = useRef<ScrollView>(null);
   const places = useRef<Record<string, number>>({});
   const currentId = id ?? '';
@@ -106,17 +104,6 @@ export default function ActiveWorkoutScreen() {
     void syncWorkoutNotifications(language);
     return () => setFocused(false);
   }, [refresh, language]));
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    let live = true;
-    const tick = () => {
-      if (!live) return;
-      setNow(Date.now());
-      timer = setTimeout(tick, nextClockDelay(Date.now()));
-    };
-    timer = setTimeout(tick, nextClockDelay(Date.now()));
-    return () => { live = false; clearTimeout(timer); };
-  }, []);
   const exerciseIds = (view?.exercises ?? []).map(exercise => exercise.exerciseId).join('|');
   useEffect(() => {
     let live = true;
@@ -140,7 +127,6 @@ export default function ActiveWorkoutScreen() {
   useEffect(() => {
     const sub = AppState.addEventListener('change', state => {
       if (state !== 'active') return;
-      setNow(Date.now());
       void refresh();
     });
     return () => sub.remove();
@@ -159,22 +145,6 @@ export default function ActiveWorkoutScreen() {
     })();
     return () => { live = false; };
   }, [workoutId, workoutState, language, auto]);
-  const rest = view ? selectCurrentRest(view.sets, view.state, now) : { set: null, status: 'idle' as const, remainingMs: 0 };
-  const restExercise = view?.exercises.find(exercise => exercise.id === rest.set?.sessionExerciseId);
-  const phase = restBarPhase(rest.set?.restDeadline ?? null, rest.set?.loggedAt ?? null, restExercise?.restSec ?? 0, now, language);
-  useEffect(() => {
-    if (!focused || rest.status === 'idle') return;
-    const prior = previousRestMs.current;
-    if (prior !== null) {
-      const message = restAnnouncement(prior, rest.remainingMs, language);
-      if (message) void AccessibilityInfo.announceForAccessibility(message);
-    }
-    previousRestMs.current = rest.remainingMs;
-  }, [rest.remainingMs, rest.status, focused, language]);
-  useEffect(() => {
-    if (restPhase.current === 'running' && phase.phase === 'over' && haptics) Vibration.vibrate(20);
-    restPhase.current = phase.phase;
-  }, [phase.phase, haptics]);
   useEffect(() => {
     if (!undo) return;
     const timer = setTimeout(() => setUndo(null), 4000);
@@ -339,9 +309,8 @@ export default function ActiveWorkoutScreen() {
       if (!result.ok || !result.value) throw new Error('kind');
     });
   };
-  const adjust = async (delta: number) => {
-    if (!view || !rest.set) return;
-    const target = rest.set;
+  const adjust = async (target: ActiveSet, delta: number) => {
+    if (!view) return;
     const next = shiftRest(target.restDeadline, delta, Date.now());
     await runLogged(async () => {
       const saved = await updateRestDeadline(target.id, view.id, next);
@@ -365,6 +334,43 @@ export default function ActiveWorkoutScreen() {
     if (!saved.ok) setError(t('active.saveError'));
     await refresh();
   };
+  // Set tables are memoised, so their callbacks must keep one identity. They call through
+  // this ref to the newest closures (view, busy, language), refreshed after every render.
+  const latest = useRef<{
+    log: (exerciseId: string, row: PlannedRow, values: { weight: number; reps: number; effort: string }) => void;
+    unlog: (row: PlannedRow) => void;
+    cycle: (exerciseId: string, row: PlannedRow) => void;
+    remove: (row: PlannedRow) => void;
+    reject: (reason: 'weight' | 'reps') => void;
+    adjust: (target: ActiveSet, delta: number) => void;
+  } | null>(null);
+  useEffect(() => {
+    latest.current = {
+      log: (exerciseId, row, values) => {
+        const exercise = view?.exercises.find(item => item.id === exerciseId);
+        if (exercise) void logRow(exercise, row, values);
+      },
+      unlog: row => void unlog(row),
+      cycle: (exerciseId, row) => {
+        const exercise = view?.exercises.find(item => item.id === exerciseId);
+        if (exercise) void cycle(exercise, row);
+      },
+      remove: row => void deleteRow(row),
+      reject: reason => setError(t(reason === 'reps' ? 'setError.reps' : 'setError.weight')),
+      adjust: (target, delta) => void adjust(target, delta),
+    };
+  });
+  const onLogSet = useCallback((exerciseId: string, row: PlannedRow, values: { weight: number; reps: number; effort: string }) =>
+    latest.current?.log(exerciseId, row, values), []);
+  const onUnlogSet = useCallback((row: PlannedRow) => latest.current?.unlog(row), []);
+  const onCycleSet = useCallback((exerciseId: string, row: PlannedRow) => latest.current?.cycle(exerciseId, row), []);
+  const onDeleteSet = useCallback((row: PlannedRow) => latest.current?.remove(row), []);
+  const onRejectSet = useCallback((reason: 'weight' | 'reps') => latest.current?.reject(reason), []);
+  const onAdjustRest = useCallback((target: ActiveSet, delta: number) => latest.current?.adjust(target, delta), []);
+  const onDraftSet = useCallback((key: string, draft: SetDraft) =>
+    setDrafts(current => ({ ...current, [key]: draft })), []);
+  const onAddSet = useCallback((exerciseId: string) =>
+    setExtraRows(current => ({ ...current, [exerciseId]: (current[exerciseId] ?? 0) + 1 })), []);
   const menuExercise = view?.exercises.find(exercise => exercise.id === menuFor) ?? null;
   const menuIndex = menuExercise && view ? view.exercises.findIndex(exercise => exercise.id === menuExercise.id) : -1;
   const plateExercise = view?.exercises.find(exercise => exercise.id === plateFor) ?? null;
@@ -372,7 +378,7 @@ export default function ActiveWorkoutScreen() {
   if (!view) return <Screen embedded safeBottom>
     <Typography tone="secondary">{error ?? t('active.opening')}</Typography>
   </Screen>;
-  const barPad = phase.phase === 'hidden' ? theme.space[4] : 148;
+  const barPad = restVisible ? 148 : theme.space[4];
   return <Screen embedded safeBottom scroll={false}>
     {screenOn && focused && <KeepScreenOn />}
     <View style={{ paddingHorizontal: theme.layout.gutter, paddingTop: theme.space[2], gap: theme.space[2],
@@ -405,7 +411,7 @@ export default function ActiveWorkoutScreen() {
       automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
       contentContainerStyle={{ padding: theme.layout.gutter, gap: theme.layout.cardGap, paddingBottom: barPad + insets.bottom }}>
       <View style={{ flexDirection: 'row' }}>
-        <View style={{ flex: 1 }}><StatBlock value={bidiIsolate(language, elapsedLabel(view.startedAt, now))} label={t('workout.elapsed')} /></View>
+        <View style={{ flex: 1 }}><ElapsedStat startedAt={view.startedAt} label={t('workout.elapsed')} /></View>
         <View style={{ flex: 1 }}><StatBlock value={volumeText} label={t('workout.volume')} /></View>
         <View style={{ flex: 1 }}><StatBlock value={bidiIsolate(language, formatNumber(language, loggedCount))} label={t('workout.sets')} /></View>
       </View>
@@ -466,15 +472,12 @@ export default function ActiveWorkoutScreen() {
               </Typography>
             </Pressable>
           </View>
-          <SetTable rows={rows} history={history[exercise.exerciseId] ?? []} weightUnit={weightUnit} effort={effortMode}
+          <SetTable exerciseId={exercise.id} rows={rows} history={history[exercise.exerciseId] ?? NO_HISTORY}
+            weightUnit={weightUnit} effort={effortMode}
             drafts={drafts} loggedValues={loggedValues} repMax={exercise.repMax}
             expectedRows={exercise.targetSets * (exercise.unilateral ? 2 : 1)} weightStep={step} busy={busy}
-            onDraft={(key, draft) => setDrafts(current => ({ ...current, [key]: draft }))}
-            onLog={(row, values) => void logRow(exercise, row, values)}
-            onUnlog={row => void unlog(row)} onCycle={row => void cycle(exercise, row)}
-            onDelete={row => void deleteRow(row)}
-            onAdd={() => setExtraRows(current => ({ ...current, [exercise.id]: (current[exercise.id] ?? 0) + 1 }))}
-            onReject={reason => setError(t(reason === 'reps' ? 'setError.reps' : 'setError.weight'))} />
+            onDraft={onDraftSet} onLog={onLogSet} onUnlog={onUnlogSet} onCycle={onCycleSet}
+            onDelete={onDeleteSet} onAdd={onAddSet} onReject={onRejectSet} />
           {index === 0 && !hintSeen && <Typography tone="secondary" size="secondary">{t('workout.holdHint')}</Typography>}
           </Card>
         </View>;
@@ -492,7 +495,8 @@ export default function ActiveWorkoutScreen() {
         <Typography tone="secondary">{t('polish.musclesSoFar')}</Typography>
       </Pressable>
     </ScrollView>
-    <RestBar phase={phase} onMinus={() => void adjust(-15)} onPlus={() => void adjust(15)} onSkip={() => void adjust(-3600)} />
+    <RestSection sets={view.sets} exercises={view.exercises} workoutState={view.state} focused={focused}
+      haptics={haptics} onAdjust={onAdjustRest} onVisibleChange={setRestVisible} />
     {undo && <View style={{ position: 'absolute', start: theme.layout.gutter, end: theme.layout.gutter, bottom: barPad }}>
       <Snackbar message={t('workout.setDeleted')} onUndo={() => void undoDelete()} onDismiss={() => setUndo(null)} />
     </View>}

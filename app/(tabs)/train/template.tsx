@@ -1,4 +1,5 @@
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
+import { EXERCISE_SEARCH_DEBOUNCE_MS, useDeferredQuery } from '../../../src/features/train/exerciseRows';
 import { equipmentLabel } from '../../../src/i18n/equipment';
 import { bidiIsolate } from '../../../src/i18n';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
@@ -25,6 +26,7 @@ export default function TemplateEditor() {
   const [exercises,setExercises]=useState<TemplateExerciseInput[]>([]);
   const [library,setLibrary]=useState<Exercise[]>([]);
   const [query,setQuery]=useState('');
+  const appliedQuery=useDeferredQuery(query,EXERCISE_SEARCH_DEBOUNCE_MS);
   const [saved,setSaved]=useState(false);
   const [deleteSheet,setDeleteSheet]=useState(false);
   const [discardSheet,setDiscardSheet]=useState(false);
@@ -62,7 +64,7 @@ export default function TemplateEditor() {
     const key=(id??'')+'|'+(exerciseId??'');
     void (async()=>{
       const pack=await ensureExercisePack();
-      const [all,templates]=await Promise.all([pack.ok?listExercises():Promise.resolve(null),listTemplates()]);
+      const [all,templates]=await Promise.all([pack.ok?listExercises(false,true):Promise.resolve(null),listTemplates()]);
       if(!live)return;
       if(all?.ok)setLibrary(all.value);
       if(hydratedFor.current===key)return;
@@ -80,7 +82,7 @@ export default function TemplateEditor() {
     })();
     return ()=>{live=false;};
   },[id,exerciseId]));
-  const filtered=useMemo(()=>searchExercises(library,query,null,language).slice(0,8),[library,query,language]);
+  const filtered=useMemo(()=>searchExercises(library,appliedQuery,null,language).slice(0,8),[library,appliedQuery,language]);
   const linkGroup=(index:number,size:2|3)=>{
     setExercises(old=>{
       if(old.slice(index,index+size).length!==size||
