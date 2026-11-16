@@ -7,32 +7,24 @@ import type { LiftriaTheme } from '../../design/tokens';
  * turn virtualization off.
  */
 export function resultCardEdges(theme: LiftriaTheme): { top: ViewStyle; body: ViewStyle; bottom: ViewStyle } {
-  const aurora = theme.effectiveStyle === 'aurora';
-  const edge: ViewStyle = {
-    backgroundColor: theme.cardFill,
-    borderColor: aurora ? theme.surface.hairline : theme.color.border.subtle,
-    borderLeftWidth: theme.size.border.thin,
-    borderRightWidth: theme.size.border.thin,
-  };
+  const fill: ViewStyle = { backgroundColor: theme.cardFill };
   return {
     top: {
-      ...edge,
-      borderTopWidth: theme.size.border.thin,
-      borderTopLeftRadius: theme.radius.lg,
-      borderTopRightRadius: theme.radius.lg,
+      ...fill,
+      borderTopStartRadius: theme.radius.md,
+      borderTopEndRadius: theme.radius.md,
       paddingTop: theme.space[4],
       paddingHorizontal: theme.space[4],
       overflow: 'hidden',
     },
     body: {
-      ...edge,
+      ...fill,
       paddingHorizontal: theme.space[4],
     },
     bottom: {
-      ...edge,
-      borderBottomWidth: theme.size.border.thin,
-      borderBottomLeftRadius: theme.radius.lg,
-      borderBottomRightRadius: theme.radius.lg,
+      ...fill,
+      borderBottomStartRadius: theme.radius.md,
+      borderBottomEndRadius: theme.radius.md,
       paddingBottom: theme.space[4],
     },
   };
