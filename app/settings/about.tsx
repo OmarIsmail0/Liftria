@@ -1,22 +1,29 @@
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Chip, Header, ListGroup, ListRow, Screen, SectionHeader, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import Constants from 'expo-constants';
 import releaseVersion from '../../src/config/releaseVersion.json';
 
+/** "1.0.0 (3)": version name plus the store build number of this platform, when one is known. */
+function versionValue(): string {
+  const build = Platform.OS === 'ios'
+    ? Constants.expoConfig?.ios?.buildNumber
+    : Constants.expoConfig?.android?.versionCode ?? releaseVersion.androidCode;
+  return build === undefined || build === null || build === '' ? releaseVersion.name : `${releaseVersion.name} (${build})`;
+}
 export default function AboutHelp() {
   const { t: tr } = useLanguage();
+  const commit = Constants.expoConfig?.extra?.commit;
   return <Screen>
     <Header mode="inline" title={tr('p4.about.0')}
       onBack={()=>backOrReplace(router,'/settings')} />
     <Typography tone="secondary" size="secondary">{tr('p4.about.1')}</Typography>
     <SectionHeader title={tr('p4.about.2')} />
     <ListGroup>
-      <ListRow title={tr('p4.about.versionBuild',{version:releaseVersion.name,build:releaseVersion.androidCode})}
-        value={releaseVersion.name} />
-      {typeof Constants.expoConfig?.extra?.commit === 'string' &&
-        <ListRow title={tr('p4.about.commit',{commit:Constants.expoConfig.extra.commit})} />}
+      <ListRow title={tr('p4.about.version')} value={versionValue()}
+        detail={typeof commit === 'string' && commit !== '' ? tr('p4.about.buildCommit',{commit}) : undefined} />
     </ListGroup>
     <Typography tone="secondary" size="secondary">{tr('p4.about.17')}</Typography>
     <SectionHeader title={tr('p4.about.3')} />

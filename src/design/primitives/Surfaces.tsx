@@ -113,7 +113,8 @@ export function Header({ title, subtitle, onBack, right, mode }: {
   </View>;
 }
 
-const ListInset = createContext(false);
+/** True inside a grouped list: rows pad horizontally. Virtualized lists provide it per row. */
+export const ListInset = createContext(false);
 
 export function Card({ children, title, rim = 'none', flat = false }: {
   children: ReactNode; rim?: CardRim; title?: string; flat?: boolean;
