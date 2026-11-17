@@ -157,7 +157,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       background: false,
     }],
     ['expo-build-properties', {
-      android: { minSdkVersion: 28, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false },
+      android: {
+        minSdkVersion: 28, compileSdkVersion: 36, targetSdkVersion: 36, usesCleartextTraffic: false,
+        // R8 code shrinking and resource shrinking for release builds (smaller download).
+        // Verified on the emulator screenshot run, which opens every screen of the release APK.
+        enableMinifyInReleaseBuilds: true, enableShrinkResourcesInReleaseBuilds: true,
+      },
     }],
   ],
 });

@@ -64,13 +64,18 @@ function params(item: Exercise): (string | number | null)[] {
     JSON.stringify(item.secondaryMuscles),JSON.stringify(item.instructions),
     item.source,item.retired ? 1 : 0,item.packCategory];
 }
-const INSERT_EXERCISE = 'INSERT INTO exercises (id,name,aliases,equipment,type,unilateral,' +
-  'primary_muscles,secondary_muscles,instructions,source,retired,pack_category) ' +
-  'VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ' +
+const EXERCISE_COLUMNS = 12;
+/** Rows per multi-row INSERT: rows x columns stays at or under 900 bound parameters. */
+export const EXERCISE_INSERT_CHUNK = Math.floor(900 / EXERCISE_COLUMNS);
+const ROW_PLACEHOLDERS = '(' + Array(EXERCISE_COLUMNS).fill('?').join(',') + ')';
+const INSERT_HEAD = 'INSERT INTO exercises (id,name,aliases,equipment,type,unilateral,' +
+  'primary_muscles,secondary_muscles,instructions,source,retired,pack_category) VALUES ';
+const INSERT_TAIL = ' ' +
   'ON CONFLICT(id) DO UPDATE SET name=excluded.name,aliases=excluded.aliases,' +
   'equipment=excluded.equipment,type=excluded.type,primary_muscles=excluded.primary_muscles,' +
   'secondary_muscles=excluded.secondary_muscles,instructions=excluded.instructions,' +
   'retired=0,pack_category=excluded.pack_category WHERE exercises.source=\'pack\'';
+const INSERT_EXERCISE = INSERT_HEAD + ROW_PLACEHOLDERS + INSERT_TAIL;
 
 /** Idempotent pack reconcile in one transaction. Old IDs are retained as retired. */
 export async function ensureExercisePack(): Promise<DbResult<number>> {
@@ -80,7 +85,12 @@ export async function ensureExercisePack(): Promise<DbResult<number>> {
     if (installed?.value === PACK_ID) return 0;
     await db.withExclusiveTransactionAsync(async tx => {
       await tx.runAsync("UPDATE exercises SET retired=1 WHERE source='pack'");
-      for (const entry of bundledPack()) await tx.runAsync(INSERT_EXERCISE, params(packExercise(entry)));
+      const pack = bundledPack();
+      for (let i = 0; i < pack.length; i += EXERCISE_INSERT_CHUNK) {
+        const chunk = pack.slice(i, i + EXERCISE_INSERT_CHUNK);
+        await tx.runAsync(INSERT_HEAD + chunk.map(() => ROW_PLACEHOLDERS).join(',') + INSERT_TAIL,
+          chunk.flatMap(entry => params(packExercise(entry))));
+      }
       await tx.runAsync('INSERT INTO app_settings (key,value) VALUES (?,?) ' +
         'ON CONFLICT(key) DO UPDATE SET value=excluded.value', ['exercise_pack_version', PACK_ID]);
     });
