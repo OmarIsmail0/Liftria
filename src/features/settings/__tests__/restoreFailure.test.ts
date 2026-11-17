@@ -70,6 +70,23 @@ test('duplicate primary keys and unknown columns fail without wiping existing da
   expect(await dumpEveryTable(db)).toEqual(before);
 });
 
+test('a backup with an orphan child row is refused and the previous data is intact', async () => {
+  const { db, before } = await phoneWithData();
+  const backup = await validBackup();
+  const rows = backup.tables.template_exercises ?? [];
+  const broken: BackupData = { ...backup, tables: { ...backup.tables, template_exercises: [
+    ...rows, { ...rows[0], id: 'te-orphan', template_id: 'no-such-template' },
+  ] } };
+  expect((await restoreBackup(broken, 'RESTORE')).ok).toBe(false);
+  expect(await dumpEveryTable(db)).toEqual(before);
+});
+
+test('a valid backup still restores', async () => {
+  const { db, before } = await phoneWithData();
+  expect((await restoreBackup(await validBackup(), 'RESTORE')).ok).toBe(true);
+  expect(await dumpEveryTable(db)).toEqual(before);
+});
+
 test('restore never runs without the typed confirmation', async () => {
   const { db, before } = await phoneWithData();
   const backup = await validBackup();

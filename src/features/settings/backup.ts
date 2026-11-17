@@ -183,6 +183,9 @@ export async function restoreBackup(backup:BackupData,confirmation:string):Promi
     await tx.runAsync('INSERT INTO '+table+' ('+columns.join(',')+') VALUES ('+
      columns.map(()=>'?').join(',')+')',columns.map(column=>row[column]??null));
    }
+   // Orphan rows from a hand-edited backup: refuse and roll back (works with FK enforcement on or off).
+   const violations=await tx.getAllAsync<Record<string,unknown>>('PRAGMA foreign_key_check');
+   if(violations.length>0)throw new Error('Invalid backup: foreign key violations');
   });
  });
 }
