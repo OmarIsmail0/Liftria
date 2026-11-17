@@ -11,7 +11,7 @@ Food, training and progress belong together. Liftria brings your daily logs into
 MAKE EVERY DAY COUNT
 
 • Log meals and portions, including familiar Egyptian foods. Review calories, protein, carbs, fat, fiber, sugar and sodium when their sources provide them.
-• Track strength workouts, sets, reps, weights and rest. Build plans, use warm-up and plate suggestions, and review your session history.
+• Track strength workouts, sets, reps, weights and rest. Build plans, use warm-up and plate suggestions, and review your workout history.
 • Record your weight and follow its trend. When you have enough food and weigh-in history, Liftria can estimate your daily energy expenditure and propose a weekly calorie-target update. You decide whether to accept it.
 • Keep a simple water-glass count alongside your food diary.
 • Inspect compatible device health records where supported and where you grant permission. Available integrations differ between Android and iPhone.

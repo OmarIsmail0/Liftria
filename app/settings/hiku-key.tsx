@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import * as Network from 'expo-network';
 import { View } from 'react-native';
 import { useTheme } from '../../src/design/ThemeProvider';
-import { Button, Chip, Field, Header, ListGroup, ListRow, OptionRows, Screen, SectionHeader, Sheet, Toggle, Typography } from '../../src/design/primitives';
+import { Button, Field, Header, ListGroup, ListRow, OptionRows, Screen, SectionHeader, Sheet, Toggle, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
 import { deleteKey, getKey, isKeyWellFormed, keyState, saveKey, type KeyState } from '../../src/services/secure-storage';
 import { getTypedSetting, setTypedSetting } from '../../src/services/database/settings';
@@ -28,7 +28,6 @@ export default function HikuKeySettings() {
   const [photoUsage,setPhotoUsage]=useState<KeptPhotoUsage|null>(null);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [testWorks, setTestWorks] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   useEffect(() => {
     let mounted = true;
@@ -55,7 +54,6 @@ export default function HikuKeySettings() {
       const result = await saveKey(entry);
       if (result.status === 'ready') {
         setState(result);
-        setTestWorks(false);
         setEntry('');
         setReplacing(false);
         setMessage(t('hikuSettings.saved'));
@@ -66,17 +64,17 @@ export default function HikuKeySettings() {
 
   async function test() {
     if (busy) return;
-    setBusy(true); setTesting(true); setMessage(t('hikuSettings.testingStatus')); setTestWorks(false);
+    setBusy(true); setTesting(true); setMessage(t('hikuSettings.testingStatus'));
     try {
       const key = await getKey();
       if (!key) { setState({ status: 'missing' }); setMessage(t('hikuSettings.keyRequired')); return; }
       const net = await Network.getNetworkStateAsync();
       const offline = net.isConnected === false || net.isInternetReachable === false;
       const outcome = await testAnthropicKey(key, offline, fetch, model);
-      setTestWorks(outcome === 'works');
       setMessage(outcome === 'works' ? t('hikuSettings.testWorks') :
         outcome === 'unauthorized' ? t('hikuSettings.testUnauthorized') :
         outcome === 'offline' ? t('hikuSettings.testOffline') :
+        outcome === 'unreachable' ? t('hikuSettings.testUnreachable') :
         outcome === 'model-unavailable' ? t('hikuK.modelUnavailable') : t('hikuSettings.testUnavailable'));
     } catch { setMessage(t('hikuSettings.testError')); }
     finally { setBusy(false); setTesting(false); }
@@ -89,7 +87,6 @@ export default function HikuKeySettings() {
       const result = await deleteKey();
       if (result.status !== 'missing') { setMessage(t('hikuSettings.deleteError')); return; }
       setState(result);
-      setTestWorks(false);
       setEntry('');
       setReplacing(false);
       setDeletionOpen(false);
@@ -134,7 +131,6 @@ export default function HikuKeySettings() {
         <Typography tone="secondary">{state.hint}</Typography>
         <Button label={testing ? t('hikuSettings.testing') : t('hikuSettings.test')} variant="tonal" onPress={() => void test()}
           disabled={busy} />
-        {testWorks && <Chip kind="pending" label={t('hikuSettings.deviceTest')} />}
         <Button label={t('hikuSettings.replace')} variant="plain" disabled={busy} onPress={() => setReplacing(true)} />
         <Button label={t('hikuSettings.delete')} variant="destructive" disabled={busy} onPress={() => setDeletionOpen(true)} />
       </> : <>
@@ -157,7 +153,7 @@ export default function HikuKeySettings() {
         description:t(row.id==='claude-haiku-5-5'?'hikuK.modelFastDetail':'hikuK.modelAccurateDetail'),
        }))}
        onChange={next=>{void setTypedSetting('hiku.model',next).then(result=>{
-         if(result.ok){setModel(next);setTestWorks(false);setMessage(t('hikuK.modelSaved'));}
+         if(result.ok){setModel(next);setMessage(t('hikuK.modelSaved'));}
          else setMessage(t('hikuSettings.preferenceError'));
        });}}/>
     <SectionHeader title={t('hikuSettings.privacy')} />

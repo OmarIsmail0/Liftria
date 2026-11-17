@@ -59,7 +59,7 @@ export default function ExerciseLibrary() {
       setLoading(true); setError(null);
       const seeded = await ensureExercisePack();
       if (!seeded.ok) { if (active) { setError(t('library.openError')); setLoading(false); } return; }
-      const [result, history] = await Promise.all([listExercises(), recentExerciseIds()]);
+      const [result, history] = await Promise.all([listExercises(false, true), recentExerciseIds()]);
       if (!active) return;
       if (result.ok) setAll(result.value);
       else setError(t('library.readError'));

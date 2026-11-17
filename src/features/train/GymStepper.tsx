@@ -3,7 +3,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
 import { weightUnitLabel } from '../../i18n';
-import { formatEditableNumber } from '../../i18n/editableNumber';
+import { formatEditableNumber, parseEditableNumber } from '../../i18n/editableNumber';
 import { useLanguage } from '../../i18n/LanguageProvider';
 
 /** Gym stepper: 48dp touch, 36dp control, long-press repeat (400/150ms), direct numeric keypad. */
@@ -40,7 +40,7 @@ export function GymStepper({label,value,onChange,step=1,min=0,max=10000,unit=''}
       {control(-1)}
       {editing?<TextInput autoFocus accessibilityLabel={t('stepper.enter',{label})}
         keyboardType="decimal-pad" value={typed} onChangeText={setTyped}
-        onBlur={()=>{const parsed=Number(typed);if(Number.isFinite(parsed))
+        onBlur={()=>{const parsed=parseEditableNumber(typed);if(parsed!==null&&Number.isFinite(parsed))
           onChange(Math.max(min,Math.min(max,parsed)));setEditing(false);}}
         style={{flex:1,minHeight:64,textAlign:'center',color:theme.color.text.primary,
           fontSize:theme.type.body.size,borderBottomWidth:1,borderColor:theme.controlOutline}}/>:

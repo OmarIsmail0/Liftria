@@ -38,7 +38,8 @@ export function resolveImportMappings(parsed:ParsedImport,context:ImportContext,
    exercise.aliases.some(a=>normalizedName(a)===normalizedName(query));
   const exact=all.find(e=>matches(e,name))||
    (withoutEquipment!==name?all.find(e=>matches(e,withoutEquipment)):undefined);
-  const explicit=decisions[name];
+  // Own keys only: an exercise called "constructor" or "__proto__" must not read inherited members.
+  const explicit=Object.prototype.hasOwnProperty.call(decisions,name)?decisions[name]:undefined;
   const remembered=context.remembered[mappingKey(parsed.source,name)];
   const chosen=explicit??(exact?exact.id:remembered);
   const found=all.find(e=>e.id===chosen);

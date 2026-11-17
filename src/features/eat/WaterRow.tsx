@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ListGroup, Typography } from '../../design/primitives';
 import { useTheme } from '../../design/ThemeProvider';
+import { translateWaterTotal } from '../../i18n';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { getTypedSetting } from '../../services/database/settings';
 import { localDay } from './foodCatalog';
@@ -11,7 +12,7 @@ import { adjustWater, readWater, type WaterLog } from './waterRepository';
 /** One water row with a minus and plus. A missing log stays "not logged", not zero glasses. */
 export function WaterRow({ day = localDay(new Date()), demoGlasses }: { day?: string; demoGlasses?: number }) {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [log, setLog] = useState<WaterLog | null>(null);
   const [glassMl, setGlassMl] = useState(250);
   const [busy, setBusy] = useState(false);
@@ -33,9 +34,9 @@ export function WaterRow({ day = localDay(new Date()), demoGlasses }: { day?: st
     setBusy(false);
   }
   const amount = demoGlasses !== undefined
-    ? t('water.total', { glasses: demoGlasses, ml: demoGlasses * glassMl })
+    ? translateWaterTotal(language, demoGlasses, demoGlasses * glassMl)
     : log === null ? t('water.unlogged')
-    : t('water.total', { glasses: log.glasses, ml: log.glasses * log.glassMl });
+    : translateWaterTotal(language, log.glasses, log.glasses * log.glassMl);
   const removeDisabled = demoGlasses !== undefined || busy || log === null || log.glasses === 0;
   const addDisabled = demoGlasses !== undefined || busy || log?.glasses === 200;
   const step = (sign: '−' | '+', name: string, disabled: boolean, delta: -1 | 1) => (

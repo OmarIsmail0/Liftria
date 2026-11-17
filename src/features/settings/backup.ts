@@ -58,8 +58,30 @@ export function validateBackupTables(tables:Record<string,unknown>,backupVersion
  }
  return data;
 }
+/** Largest backup restore reads. The picker's byte size is checked first, so a huge
+ * file is refused before it is loaded into memory. The two checks agree: the file check
+ * counts UTF-8 bytes and parseBackup counts characters, and a file never has fewer bytes
+ * than characters (a bad byte decodes to one character), so a file that passes the byte
+ * check cannot fail the character check for size alone. */
+export const MAX_BACKUP_CHARS=100*1024*1024;
+/** True when this JSON text, saved as a file, would be refused by restore for size
+ * (UTF-8 bytes, the same measure as the file-size check). Does not allocate a copy. */
+export function backupExceedsRestoreLimit(json:string,limit:number=MAX_BACKUP_CHARS):boolean{
+ if(json.length>limit)return true;
+ if(json.length*3<=limit)return false;
+ let bytes=0;
+ for(let i=0;i<json.length;i++){
+  const c=json.charCodeAt(i);
+  if(c<0x80)bytes+=1;
+  else if(c<0x800)bytes+=2;
+  else if(c>=0xd800&&c<0xdc00&&i+1<json.length){bytes+=4;i++;}
+  else bytes+=3;
+  if(bytes>limit)return true;
+ }
+ return false;
+}
 export function parseBackup(raw:string,manifest:BackupManifest=BACKUP_MANIFEST):BackupData{
- if(raw.length>100*1024*1024)throw new Error('Backup is too large');
+ if(raw.length>MAX_BACKUP_CHARS)throw new Error('Backup is too large');
  const value:unknown=JSON.parse(raw);
  if(!obj(value)||value.format!=='liftria-backup'||value.formatVersion!==1||
    typeof value.schemaVersion!=='number'||typeof value.exportedAt!=='string'||

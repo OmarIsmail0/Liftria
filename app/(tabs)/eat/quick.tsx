@@ -1,3 +1,4 @@
+import { parseEditableNumber } from '../../../src/i18n/editableNumber';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Button, Card, Chip, Field, Header, Screen, Typography } from '../../../src/design/primitives';
@@ -14,7 +15,7 @@ export default function QuickCalories() {
   const [kcal, setKcal] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
-  const number = Number(kcal);
+  const number = parseEditableNumber(kcal) ?? Number.NaN;
   const valid = kcal.trim() !== '' && Number.isFinite(number) && number > 0 && number <= 10000;
   async function save() {
     if (!valid || busy) return;

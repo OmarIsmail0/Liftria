@@ -5,7 +5,7 @@ import { Button, Card, Chip, Field, Header, ListGroup, ListRow, Screen, SectionH
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n';
-import { formatEditableNumber } from '../../../src/i18n/editableNumber';
+import { formatEditableNumber, parseEditableNumber } from '../../../src/i18n/editableNumber';
 import { AccentRow } from '../../../src/features/eat/eatLayout';
 import { MEALS, entryName, localDay, type MealKey, type Food } from '../../../src/features/eat/foodCatalog';
 import { deleteEntry, foodById, moveEntry, readDiaryDay, removeMeal, restoreEntries, saveMeal,
@@ -53,7 +53,7 @@ export default function MealDetail() {
   }
   async function update() {
     if (!selected) return;
-    const grams = Number(edited);
+    const grams = parseEditableNumber(edited) ?? Number.NaN;
     if (food && Number.isFinite(grams) && grams > 0 && grams <= 2000) {
       const result = await updateEntryGrams(selected.id, food, grams);
       if (!result.ok) setError(true);

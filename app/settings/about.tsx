@@ -44,7 +44,6 @@ export default function AboutHelp() {
     <Typography>{tr('p4.about.23')}</Typography>
     <Typography>{tr('polish.bodyMapCredit')}</Typography>
     <Typography>{tr('p4.about.24')}</Typography>
-    <Typography tone="secondary" size="secondary">{tr('p4.about.25')}</Typography>
     <SectionHeader title={tr('p4.about.16')} />
     <Typography tone="secondary" size="secondary">{tr('p4.about.26')}</Typography>
     <Typography tone="secondary" size="secondary">{tr('p4.about.27')}</Typography>

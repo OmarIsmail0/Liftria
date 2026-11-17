@@ -1,24 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Redirect, type Href } from 'expo-router';
-import { onboardingDestination } from '../src/features/onboarding/draft';
 import { screenshotRoute } from '../src/navigation/checkRoute';
+import { resolveStartup, type StartupOutcome } from '../src/features/startup/startupRoute';
+import { RecoveryScreen } from '../src/features/startup/RecoveryScreen';
 
-/** First install enters onboarding; interruption resumes at the saved step. */
+/** First install enters onboarding; interruption resumes at the saved step.
+ * A database that cannot be opened shows a recovery screen, never onboarding or a blank page. */
 export default function Index() {
-  const [destination, setDestination] = useState<Href | null>(null);
+  const [outcome, setOutcome] = useState<StartupOutcome | null>(null);
   // CI-only: the iPhone screenshot check opens a screen at launch (store builds return null).
   const [checkRoute] = useState(() => screenshotRoute());
+  const retry = useCallback(async () => { setOutcome(await resolveStartup()); }, []);
   useEffect(() => {
     let mounted = true;
-    void onboardingDestination().then(href => {
-      if (mounted) setDestination(href);
-    }).catch(() => {
-      // A failed settings read must never silently mark setup as completed.
-      if (mounted) setDestination({ pathname: '/onboarding/[step]', params: { step: 'welcome' } });
-    });
+    void resolveStartup().then(next => { if (mounted) setOutcome(next); });
     return () => { mounted = false; };
   }, []);
   if (checkRoute) return <Redirect href={checkRoute as Href} />;
-  if (!destination) return null;
-  return <Redirect href={destination} />;
+  if (!outcome) return null;
+  if (outcome.kind === 'problem') {
+    return <RecoveryScreen kind={outcome.problem} onRetry={retry} />;
+  }
+  return <Redirect href={outcome.href} />;
 }

@@ -1,6 +1,7 @@
 import { bidiIsolate, translate, type AppLanguage } from '../../i18n';
 import { Directory, File, Paths } from 'expo-file-system';
 import { clearLocalHealthCache, deleteLocalDatabase, localStorageCounts } from '../../services/database';
+import * as Notifications from 'expo-notifications';
 import { deleteKey } from '../../services/secure-storage';
 import { clearImportDraft } from '../import/importDraft';
 
@@ -44,13 +45,21 @@ export async function deleteTemporaryFiles(): Promise<boolean> {
 export type DeleteLocalOutcome =
   | {ok:true}
   | {ok:false;stage:'database'|'key'|'files';message:string};
+/** Scheduled rest alerts and the ongoing workout notification carry exercise and workout names.
+ * Best effort and never blocks the deletion: with no notification permission there is nothing to cancel. */
+export async function cancelAllNotifications(): Promise<void> {
+  try { await Notifications.cancelAllScheduledNotificationsAsync(); } catch { /* Nothing scheduled, or no permission. */ }
+  try { await Notifications.dismissAllNotificationsAsync(); } catch { /* Nothing shown. */ }
+}
 export type DeletionOps = {
   removeDatabase: typeof deleteLocalDatabase;
   removeKey: typeof deleteKey;
   removeTemporaryFiles: typeof deleteTemporaryFiles;
+  removeNotifications?: typeof cancelAllNotifications;
 };
 export const deletionOps: DeletionOps = {
   removeDatabase: deleteLocalDatabase, removeKey: deleteKey, removeTemporaryFiles: deleteTemporaryFiles,
+  removeNotifications: cancelAllNotifications,
 };
 /** Only v2 SQLite and SecureStore contain user-managed data in Phase 2. No app-created document files exist. */
 export function deletionIncludesAppFiles(): boolean { return false; }
@@ -62,13 +71,15 @@ export function formatLocalDatabaseSize(bytes: number, language: AppLanguage = '
     : `${megabytes} ${translate(language, 'units.mb')}`;
 }
 
-/** Database first, Android Keystore key second, temporary files last. Never claim success after partial failure. */
+/** Database first, then notifications (best effort), Android Keystore key, temporary files last. Never claim success after partial failure. */
 export async function deleteEverythingOnPhone(confirmation:string, ops: DeletionOps = deletionOps,
   language: AppLanguage = 'en'): Promise<DeleteLocalOutcome> {
   if (!canDeleteEverything(confirmation)) return {ok:false,stage:'database',message:translate(language,'dataStorage.typeDelete')};
   const database = await ops.removeDatabase();
   if (!database.ok) return {ok:false,stage:'database',
     message:translate(language,'dataStorage.deleteDatabaseFailed')};
+  // Reminders must not outlive the data, even when a later step fails.
+  try { await ops.removeNotifications?.(); } catch { /* Best effort. */ }
   const key = await ops.removeKey();
   if (key.status !== 'missing') return {ok:false,stage:'key',
     message:translate(language,'dataStorage.deleteKeyFailed')};

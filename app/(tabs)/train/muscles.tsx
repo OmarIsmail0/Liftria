@@ -38,7 +38,7 @@ export default function MuscleBrowser() {
     let mounted = true;
     void (async () => {
       const pack = await ensureExercisePack();
-      const loaded = pack.ok ? await listExercises() : null;
+      const loaded = pack.ok ? await listExercises(false, true) : null;
       if (mounted) {
         if (loaded?.ok) setAll(loaded.value);
         else setError(true);
@@ -95,9 +95,6 @@ export default function MuscleBrowser() {
       renderItem={renderItem}
       ListFooterComponent={<View>
         <View style={edges.bottom} />
-        <View style={{ marginTop: theme.layout.cardGap }}>
-          <Typography tone="tertiary" size="small">{t('muscle.browserData', { count: MUSCLES.length })}</Typography>
-        </View>
       </View>}
     />
   </Screen>;

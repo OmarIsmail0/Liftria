@@ -8,7 +8,8 @@ import { muscleLabel } from '../../i18n/muscles';
 import { MUSCLES, type Exercise, type ExerciseType, type Muscle, type PackExercise } from './gymTypes';
 
 export const PACK_ID = 'free-exercise-db:f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5';
-const pack = rawPack as PackExercise[];
+/** Read on first use, not at import: the 800 KB pack should not be parsed before the first screen paints. */
+const bundledPack = (): PackExercise[] => rawPack as PackExercise[];
 const muscleSchema = z.enum(MUSCLES);
 export const customExerciseSchema = z.object({
   name: z.string().trim().min(1).max(90),
@@ -55,7 +56,7 @@ export function packExercise(item: PackExercise): Exercise {
     packCategory: item.category,
   };
 }
-export const bundledExercises = (): Exercise[] => pack.map(packExercise);
+export const bundledExercises = (): Exercise[] => bundledPack().map(packExercise);
 
 function params(item: Exercise): (string | number | null)[] {
   return [item.id,item.name,JSON.stringify(item.aliases),item.equipment,item.type,
@@ -79,19 +80,30 @@ export async function ensureExercisePack(): Promise<DbResult<number>> {
     if (installed?.value === PACK_ID) return 0;
     await db.withExclusiveTransactionAsync(async tx => {
       await tx.runAsync("UPDATE exercises SET retired=1 WHERE source='pack'");
-      for (const entry of pack) await tx.runAsync(INSERT_EXERCISE, params(packExercise(entry)));
+      for (const entry of bundledPack()) await tx.runAsync(INSERT_EXERCISE, params(packExercise(entry)));
       await tx.runAsync('INSERT INTO app_settings (key,value) VALUES (?,?) ' +
         'ON CONFLICT(key) DO UPDATE SET value=excluded.value', ['exercise_pack_version', PACK_ID]);
     });
-    return pack.length;
+    return bundledPack().length;
   });
 }
-export async function listExercises(includeRetired = false): Promise<DbResult<Exercise[]>> {
+const SUMMARY_COLUMNS = 'id,name,aliases,equipment,type,unilateral,primary_muscles,secondary_muscles,' +
+  "'[]' AS instructions,source,retired,pack_category";
+/**
+ * `summary` leaves the instruction steps out (`instructions` comes back empty). The steps are
+ * most of the pack's 800 KB, and the library, picker and routine search never show them.
+ */
+export async function listExercises(includeRetired = false, summary = false): Promise<DbResult<Exercise[]>> {
   return dbOperation(async db => {
-    const rows = await db.getAllAsync<StoredExercise>('SELECT * FROM exercises ' +
+    const rows = await db.getAllAsync<StoredExercise>('SELECT ' + (summary ? SUMMARY_COLUMNS : '*') + ' FROM exercises ' +
       (includeRetired ? '' : 'WHERE retired=0 ') + 'ORDER BY name COLLATE NOCASE, id');
     return rows.map(fromExerciseRow);
   });
+}
+/** How many exercises the library shows, without reading or decoding any of them. */
+export async function countExercises(): Promise<DbResult<number>> {
+  return dbOperation(async db =>
+    (await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM exercises WHERE retired=0'))?.count ?? 0);
 }
 export async function getExercise(id: string): Promise<DbResult<Exercise | null>> {
   return dbOperation(async db => {

@@ -37,6 +37,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Files and the share sheet can open a CSV in Liftria. Rank is Alternate so we
     // don't become the default app for every text file.
     infoPlist: {
+      // Only the system's own HTTPS is used (no custom cryptography), so App Store Connect
+      // needs no export-compliance answer on every upload.
+      ITSAppUsesNonExemptEncryption: false,
       LSSupportsOpeningDocumentsInPlace: true,
       CFBundleDocumentTypes: [
         {
@@ -73,6 +76,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#F3F5F8',
     },
     package: 'com.liftria.app',
+    // Resize the window for the keyboard so inputs on long forms stay visible (this is also the default).
+    softwareKeyboardLayoutMode: 'resize',
     versionCode: resolveAndroidVersionCode(process.env.LIFTRIA_ANDROID_VERSION_CODE, releaseVersion.androidCode),
     permissions: [...healthReadPermissions, 'android.permission.INTERNET', 'android.permission.POST_NOTIFICATIONS'],
     allowBackup: false,
@@ -147,7 +152,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Read-only Apple Health. `NSHealthUpdateUsageDescription: false` omits the write
     // prompt (the plugin adds one by default). `background: false` omits background delivery.
     ['@kingstinct/react-native-healthkit', {
-      NSHealthShareUsageDescription: 'Liftria reads steps, heart rate, workouts, sleep and body measurements from Apple Health to show them in the app. It never writes to Apple Health.',
+      NSHealthShareUsageDescription: 'Liftria reads steps, heart rate, calories, workouts, sleep and body measurements from Apple Health to show them in the app. It never writes to Apple Health.',
       NSHealthUpdateUsageDescription: false,
       background: false,
     }],

@@ -27,7 +27,7 @@ test('v10 on a v9 database keeps logged sets and adds a nullable drop or failure
   await migrateDatabase(db);
 
   const version = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version;');
-  expect(version?.user_version).toBe(10);
+  expect(version?.user_version).toBe(11);
   expect(await db.getFirstAsync<{ weight: number; reps: number; kind: string; mark: string | null; rest_sec: number }>(
     'SELECT st.weight, st.reps, st.kind, st.mark, se.rest_sec FROM sets st JOIN session_exercises se ON se.id=st.session_exercise_id WHERE st.id=?',
     ['set'])).toEqual({ weight: 80, reps: 8, kind: 'working', mark: null, rest_sec: 90 });

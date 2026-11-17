@@ -32,21 +32,25 @@ Read this file, then `PHASE_5_ISSUES.md`, before you do anything else.
 
 ## Where things stand
 
-- **Phase 5 tasks** (`PHASE_5_ISSUES.md`):
-  - Done: L (gym parity, #23), M (adaptive expenditure, #24), N (backup, water, fiber, #25),
-    O (Hiku photo Beta, #26).
-  - **Next for the builder: PR S (iPhone).** Then **PR R** (release polish). R has a growing
-    list of screenshot findings: wording, Arabic units in the Hiku totals, Hiku review rows.
-- **PR #27, Claude's design polish (open, draft):**
-  - Contents: an even hairline card edge, opaque light cards, a soft layered shadow, a white
-    back-button disc, an opaque sheet with a scrim, and no trailing row divider. Motion: press
-    scale, cards fade up, sliding segmented control / toggle / tab pill, sheets slide.
-  - **Screenshots verified on `f01e129`** (2026-10-28): the tab pill and segmented thumb sit on
-    the right option, including a bar that first opens on Hiku, in English and Arabic.
-    **Waiting only on the owner's approval to merge.** They have seen the before-and-after.
-  - After it merges, tell the builder to merge `main` into its open branch.
-- **Owner items:** Android signing secrets (`LIFTRIA_*`) for the signed release, and an Apple
-  Developer account for real iPhone installs.
+- **Version 1.0.0. Every planned task is merged** (Phase 5, the Phase 6 redesign, and the
+  Phase 7 production-readiness pass). The task files hold the detail:
+  - `PHASE_6_ISSUES.md`: the design pass v2 (system font, flat surfaces, labelled tab bar,
+    one orange accent). Target look: `docs/design-v2/mockup.html`. Tokens in
+    `src/design/tokens.ts` are the source of truth.
+  - `PHASE_7_ISSUES.md`: what the production pass fixed, and the **open list** (owner-only
+    items, things that need a real phone, and later work). Start there.
+- **Builders (owner, 2026-11-16):** Cursor built Phase 6; since then the owner wants Claude Code
+  agents only (Sonnet 5.5, Opus 5.5 when needed). Claude writes the task, reviews and merges.
+  Agents work in worktrees under `.claude/worktrees/` (ignored by git, lint, tsc and Jest).
+  Never symlink `node_modules` into a worktree: an agent committed the link once and the merge
+  replaced the real folder. Use `npm ci` there and stage explicit paths.
+- **CI habit (owner: "stop the repeated builds"):** run `npm run check` locally after each
+  merge; add the `build` label once per batch for emulator screenshots, not once per step.
+- **Test build:** `test-build-release.yml` (dispatch on main with a `phase0.yml` run id)
+  publishes https://github.com/OmarIsmail0/Liftria/releases/download/test-build/liftria-test.apk.
+  It is test-signed: for the owner's phone only.
+- **Owner items:** Android signing secrets (`LIFTRIA_*`) for the signed release and the Play
+  bundle, a Play Console account, an Apple Developer account, and a real-phone test.
 
 ## Cursor
 

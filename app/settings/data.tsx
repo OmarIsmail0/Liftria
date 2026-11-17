@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {formatDate, pluralForm, type TranslationKey} from '../../src/i18n';
 import { router,useLocalSearchParams } from 'expo-router';
+import { devRoutesEnabled } from '../../src/navigation/devRoutes';
 import {View} from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import {File,Paths} from 'expo-file-system';
@@ -9,10 +10,10 @@ import { useTheme } from '../../src/design/ThemeProvider';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { Button, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, Typography } from '../../src/design/primitives';
 import { backOrReplace } from '../../src/navigation/back';
-import { localStorageCounts,DB_SCHEMA_VERSION,type LocalStorageCounts } from '../../src/services/database';
+import { DB_SCHEMA_VERSION } from '../../src/services/database';
 import { lastImportBatch, undoLastImport, type ImportBatch } from '../../src/features/import/importRepository';
 import { canDeleteEverything, clearHealthCacheOnPhone, deleteEverythingOnPhone, exportFileName, formatLocalDatabaseSize } from '../../src/features/settings/storage';
-import {exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
+import {MAX_BACKUP_CHARS,backupExceedsRestoreLimit,exportBackup,parseBackup,backupPreview,previewGroups,progressPhotoByteCount,BACKUP_TABLES,restoreBackup,type BackupData} from '../../src/features/settings/backup';
 import {progressPhotoUsage,type ProgressPhotoUsage} from '../../src/features/progress/progressPhotoRepository';
 import {importerLabel} from '../../src/features/import/importCsv';
 import {workoutCsv,diaryCsv,measurementsCsv} from '../../src/features/settings/csvExport';
@@ -31,10 +32,10 @@ const DEMO_BACKUP:BackupData={
 };
 export default function DataAndStorage() {
   const {demoBackup}=useLocalSearchParams<{demoBackup?:string}>();
-  const isDemo=demoBackup==='1';
+  // The sample preview is a screenshot helper: a store build ignores ?demoBackup=1.
+  const isDemo=demoBackup==='1'&&devRoutesEnabled();
   const { theme, resetLocalPreferences } = useTheme();
   const { language,resetLanguage, t } = useLanguage();
-  const [counts,setCounts]=useState<LocalStorageCounts|null>(null);
   const [photoUsage,setPhotoUsage]=useState<ProgressPhotoUsage|null>(null);
   const [imported,setImported]=useState<ImportBatch|null>(null);
   const [undoVisible,setUndoVisible]=useState(false);
@@ -54,8 +55,6 @@ export default function DataAndStorage() {
    else{setPendingRestore(null);setRestoreText('');}
   };
   const load=useCallback(async()=>{
-    const result=await localStorageCounts();
-    if(result.ok)setCounts(result.value);
     const photos=await progressPhotoUsage();
     if(photos.ok)setPhotoUsage(photos.value);
     const batch=await lastImportBatch();
@@ -84,9 +83,10 @@ export default function DataAndStorage() {
        kind==='workouts'?await workoutCsv():kind==='diary'?await diaryCsv():await measurementsCsv();
       if(!result.ok){setMessage(t('backup.failed'));return;}
       const extension=kind==='backup'?'json':'csv';
-      await shareFile(exportFileName(kind),
-       typeof result.value==='string'?result.value:JSON.stringify(result.value),extension==='json'?'json':'csv');
-      setMessage(t('backup.ready'));
+      const content=typeof result.value==='string'?result.value:JSON.stringify(result.value);
+      await shareFile(exportFileName(kind),content,extension==='json'?'json':'csv');
+      // The file is still saved, but warn when restore would refuse it for size.
+      setMessage(kind==='backup'&&backupExceedsRestoreLimit(content)?t('backup.tooLargeToRestore'):t('backup.ready'));
     }catch{setMessage(t('backup.shareFailed'));}
     finally{setBusy(false);}
   }
@@ -99,6 +99,8 @@ export default function DataAndStorage() {
       if(!asset)throw new Error('Missing picked document');
       const file=new File(asset.uri);
       try{
+        // Refuse a huge file before reading it, so it cannot exhaust memory.
+        if((asset.size??file.size??0)>MAX_BACKUP_CHARS){setMessage(t('backup.tooLarge'));return;}
         const parsed=parseBackup(await file.text());
         setPendingRestore(parsed);setRestoreText('');
       }finally{
@@ -166,17 +168,12 @@ export default function DataAndStorage() {
   return <Screen>
     <Header mode="inline" title={t('dataStorage.title')}
       onBack={()=>backOrReplace(router,'/settings')} />
-    <SectionHeader title={t('dataStorage.counts')} />
-    {counts ? <ListGroup>
-      <ListRow title={t('dataStorage.workouts')} value={String(counts.workouts)} />
-      <ListRow title={t('dataStorage.meals')} value={t('dataStorage.testEntries',{count:counts.meals})} />
-      <ListRow title={t('dataStorage.health')} value={String(counts.healthSamples+counts.healthAggregates)} />
-      <ListRow title={t('dataStorage.targets')} value={String(counts.targetVersions)} />
-      <ListRow title={t('dataStorage.profiles')} value={String(counts.profiles)} />
-      <ListRow title={t('dataStorage.database')} value={formatLocalDatabaseSize(counts.databaseBytes, language)} />
-      {photoUsage&&<ListRow title={t('dataStorage.photos')} value={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />}
-    </ListGroup> : <Typography tone="secondary">{t('dataStorage.countsLoading')}</Typography>}
-    <Typography tone="secondary" size="secondary">{t('dataStorage.countsNote')}</Typography>
+    {photoUsage&&photoUsage.count>0&&<>
+      <SectionHeader title={t('dataStorage.storageTitle')} />
+      <ListGroup>
+        <ListRow title={t('dataStorage.photos')} value={t((`progressPhotos.count.${pluralForm(language,photoUsage.count)}`) as TranslationKey,{count:photoUsage.count})+' · '+formatLocalDatabaseSize(photoUsage.bytes, language)} />
+      </ListGroup>
+    </>}
     <SectionHeader title={t('dataStorage.importSection')} />
     <ListGroup>
       <ListRow title={t('dataStorage.importRow')}
@@ -191,6 +188,9 @@ export default function DataAndStorage() {
     <ListGroup>
       <ListRow title={busy?t('dataStorage.working'):t('dataStorage.clearHealth')}
         onPress={()=>void clearCache()} />
+    </ListGroup>
+    <SectionHeader title={t('settings.home.backup')} />
+    <ListGroup>
       <ListRow title={t('backup.export')} onPress={()=>void exportData('backup')} />
       <ListRow title={t('backup.restore')} onPress={()=>void chooseBackup()} />
       <ListRow title={t('backup.workoutsCsv')} onPress={()=>void exportData('workouts')} />

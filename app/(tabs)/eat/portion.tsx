@@ -5,7 +5,7 @@ import { Button, Card, Chip, Field, Header, Screen, Typography } from '../../../
 import { useTheme } from '../../../src/design/ThemeProvider';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { formatNumber } from '../../../src/i18n';
-import { formatEditableNumber } from '../../../src/i18n/editableNumber';
+import { formatEditableNumber, parseEditableNumber } from '../../../src/i18n/editableNumber';
 import { ChoiceChips, MealPicker } from '../../../src/features/eat/eatLayout';
 import { foodName, snapshot, MEALS, type MealKey, type Food } from '../../../src/features/eat/foodCatalog';
 import { foodById, logFood } from '../../../src/features/eat/diaryRepository';
@@ -31,7 +31,7 @@ export default function PortionPicker() {
     });
     return () => { alive = false; };
   }, [params.id]);
-  const amount = Number(grams);
+  const amount = parseEditableNumber(grams) ?? Number.NaN;
   const valid = Number.isFinite(amount) && amount > 0 && amount <= 2000;
   const nutrition = useMemo(() => food && valid ? snapshot(food, amount) : null, [food, valid, amount]);
   async function save() {

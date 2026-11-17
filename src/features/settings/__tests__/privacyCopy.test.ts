@@ -16,6 +16,9 @@ const keys: TranslationKey[] = [
   'p4.privacy.12',
   'p4.privacy.13',
   'p4.privacy.14',
+  'p4.privacy.15',
+  'p4.privacy.16',
+  'p4.privacy.17',
 ];
 
 test('privacy route copy exists in both English and Arabic', () => {
@@ -32,4 +35,12 @@ test('privacy copy keeps the implementation-critical claims', () => {
   expect(translate('en', 'p4.privacy.8')).toContain('EXIF');
   expect(translate('en', 'p4.privacy.12')).toContain('read only');
   expect(translate('en', 'p4.privacy.14')).toContain('Delete all');
+});
+
+test('privacy copy states the network use and the unencrypted backup honestly', () => {
+  expect(translate('en', 'p4.privacy.16')).toContain('only for Hiku');
+  expect(translate('en', 'p4.privacy.16')).toContain('no analytics');
+  expect(translate('en', 'p4.privacy.13')).toContain('not encrypted');
+  expect(translate('en', 'p4.privacy.13')).toContain('never your API key');
+  expect(translate('en', 'p4.privacy.14')).toContain('scheduled notifications');
 });

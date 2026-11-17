@@ -1,5 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { devRoutesEnabled } from '../../../src/navigation/devRoutes';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Button, Card, Header, ListGroup, ListRow, Screen, Snackbar, Typography } from '../../../src/design/primitives';
 import { useTheme } from '../../../src/design/ThemeProvider';
@@ -119,7 +120,7 @@ export default function EatHome() {
           </View>
         </View>;
       })}
-      <WaterRow day={day} demoGlasses={params.demoWater === '3' ? 3 : undefined} />
+      <WaterRow day={day} demoGlasses={devRoutesEnabled() && params.demoWater === '3' ? 3 : undefined} />
       <View style={{ gap: theme.space[2] }}>
         <MealHeading title={t('eatI.repeatDay')} />
         <Card>

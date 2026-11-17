@@ -164,6 +164,11 @@ jobs:
           set -euo pipefail
           ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon --max-workers=2
           ./gradlew assembleRelease -PreactNativeArchitectures="$RELEASE_ARCHS" --no-daemon --max-workers=2
+          # Google Play needs an Android App Bundle for a new app: build it only for a
+          # properly signed release (main, with the owner's keystore).
+          if [ -n "$LIFTRIA_SIGNING_KEYSTORE" ]; then
+            ./gradlew bundleRelease -PreactNativeArchitectures="$RELEASE_ARCHS" --no-daemon --max-workers=2
+          fi
 
       - name: Mark non-distributable release APKs NOT FOR SHARING
         if: ${{ steps.release_signing.outputs.ready != 'true' }}
@@ -185,6 +190,14 @@ jobs:
           path: android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 7
+      - name: Upload signed Play Store bundle (AAB)
+        if: ${{ steps.release_signing.outputs.ready == 'true' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: liftria-play-store-bundle
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
       - name: Check release APK permissions
         run: |
           python3 - <<'PY'

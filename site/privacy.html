@@ -4,16 +4,16 @@
 <body><main>
 <nav><a href="index.html">Liftria</a><a href="support.html">Support</a><a href="#ar">العربية</a></nav>
 <h1>Privacy policy</h1>
-<p class="muted">Last updated: 4 November 2026</p>
+<p class="muted">Last updated: 16 November 2026</p>
 
 <h2>Your data stays on your phone</h2>
-<p>Liftria stores your app data (profile, workouts, food diary, body measurements, progress photos and settings) in a local database on your phone. There is no Liftria account and no Liftria server. We do not collect, receive, sell or share your data, and the app contains no advertising or analytics.</p>
+<p>Liftria stores your app data (profile, workouts, food diary, body measurements, progress photos and settings) in a local database on your phone. There is no Liftria account and no Liftria server. We do not collect, receive, sell or share your data. The app contains no advertising, analytics, crash reporting or tracking, and it does not check for updates or load anything else from the internet in the background. The app's data is excluded from Android cloud backup.</p>
 
 <h2>Hiku, the optional AI assistant</h2>
 <ul>
-<li>Hiku is off until you add your own Anthropic API key. When you add it, Liftria makes one request to Anthropic to check that the key works. The key is stored in the phone's secure storage.</li>
-<li>Hiku sends a request to Anthropic only when you tap Send. A text request contains the meal text you wrote. A photo request contains a downscaled copy of the photo (1024 px on the long edge, re-encoded without EXIF metadata such as location) and your optional note.</li>
-<li>If you switch on "Include today" or "Include training", those summaries are added to the same request. Your health data, profile and full history are never sent.</li>
+<li>Hiku is off until you add your own Anthropic API key. The key is stored in the phone's secure storage (Android Keystore or iPhone Keychain), never in the Liftria database, a backup or an export. Only when you tap "Test key" does Liftria make a request to Anthropic to check that the key (and the model you chose) works; the request contains the key and nothing else.</li>
+<li>Hiku sends a request to Anthropic only when you tap Send. All requests go over HTTPS directly from your phone to Anthropic (api.anthropic.com); Liftria has no server in between. A text request contains the meal text you wrote. A photo request contains a downscaled copy of the photo (1024 px on the long edge, re-encoded without EXIF metadata such as location) and your optional note.</li>
+<li>If you switch on "Include today" or "Include training", those summaries are added to the same request. Your health data, profile and full history are never sent. Hiku keeps a usage history on your phone (date, model, token counts and estimated cost) but not your meal text.</li>
 <li>Hiku photos are not kept in Liftria unless you turn on "Keep photos". Requests you send are handled by Anthropic under its own privacy policy: <a href="https://www.anthropic.com/legal/privacy">anthropic.com/legal/privacy</a>.</li>
 </ul>
 
@@ -21,18 +21,18 @@
 <p>With your permission, Liftria reads health data such as steps, heart rate, sleep and weight from Health Connect (Android) or Apple Health (iPhone) to show it in the app. Access is read only: Liftria never writes, changes or deletes health records. This data is shown on your phone and is not sent anywhere, including to Hiku. You can remove access at any time in Health Connect or in the Health app.</p>
 
 <h2>Imports, backups and exports</h2>
-<p>When you import a file (for example a Hevy export), Liftria reads it on your phone and does not keep the file. Backups and CSV exports are files created on your phone; they leave the phone only if you choose to share them.</p>
+<p>When you import a file (for example a Hevy export), Liftria reads it on your phone and does not keep the file. Backups and CSV exports are made as a temporary file that Liftria deletes after the share sheet closes; the file leaves the phone only where you choose to send it, and from then on it is under that app's or service's control. A backup is not encrypted and contains your records, including progress photos and any kept Hiku photos, but never your API key. CSV exports contain no photos.</p>
 
 <h2>Permissions</h2>
 <ul>
 <li>Notifications: rest timer alerts and the ongoing workout notification. All are local; nothing is pushed from a server.</li>
 <li>Camera and photos: only when you take or choose a photo (a Hiku meal photo or a progress photo).</li>
 <li>Health data: read only, as described above.</li>
-<li>Internet: used only for Hiku, to check your API key when you add it and to send the requests you start.</li>
+<li>Internet: used only for Hiku, to check your API key when you tap "Test key" and to send the requests you start. If you tap a link in the app (the Health Connect install page or Anthropic's price list), it opens in your browser or app store.</li>
 </ul>
 
 <h2>Deleting your data</h2>
-<p>Settings → Data and storage → Delete all removes Liftria's local data, saved progress photos and the saved API key from your phone. Uninstalling the app also removes its data. Records in Health Connect or Apple Health stay in those apps. Requests already sent to Anthropic are governed by Anthropic's policy.</p>
+<p>Settings → Data and storage → Delete all removes Liftria's local data, saved progress photos, the saved API key, temporary files and scheduled notifications from your phone. Uninstalling the app also removes its data. Records in Health Connect or Apple Health stay in those apps. Requests already sent to Anthropic are governed by Anthropic's policy.</p>
 
 <h2>Children</h2>
 <p>Liftria is not directed at children under 13.</p>
@@ -43,16 +43,16 @@
 <hr>
 <div id="ar" dir="rtl" lang="ar">
 <h1>سياسة الخصوصية</h1>
-<p class="muted">آخر تحديث: 4 نوفمبر 2026</p>
+<p class="muted">آخر تحديث: 16 نوفمبر 2026</p>
 
 <h2>بياناتك تبقى على هاتفك</h2>
-<p>يحفظ ليفتريا بيانات التطبيق (الملف الشخصي والتمارين ويوميات الأكل وقياسات الجسم وصور التقدّم والإعدادات) في قاعدة بيانات محلية على هاتفك. لا يوجد حساب ليفتريا ولا خادم خاص به. لا نجمع بياناتك ولا نستلمها ولا نبيعها ولا نشاركها، ولا يحتوي التطبيق على إعلانات أو أدوات تحليل.</p>
+<p>يحفظ ليفتريا بيانات التطبيق (الملف الشخصي والتمارين ويوميات الأكل وقياسات الجسم وصور التقدّم والإعدادات) في قاعدة بيانات محلية على هاتفك. لا يوجد حساب ليفتريا ولا خادم خاص به. لا نجمع بياناتك ولا نستلمها ولا نبيعها ولا نشاركها. لا يحتوي التطبيق على إعلانات أو أدوات تحليل أو تقارير أعطال أو تتبّع، ولا يفحص التحديثات ولا يحمّل أي شيء آخر من الإنترنت في الخلفية. بيانات التطبيق مستثناة من النسخ الاحتياطي السحابي في أندرويد.</p>
 
 <h2>هيكو، المساعد الذكي الاختياري</h2>
 <ul>
-<li>هيكو متوقف حتى تضيف مفتاح Anthropic API الخاص بك. عند إضافته يرسل ليفتريا طلبًا واحدًا إلى Anthropic للتأكد من أن المفتاح يعمل. يُحفظ المفتاح في التخزين الآمن على الهاتف.</li>
-<li>يرسل هيكو طلبًا إلى Anthropic فقط عندما تضغط إرسال. طلب النص يحتوي على نص الوجبة الذي كتبته. طلب الصورة يحتوي على نسخة مصغّرة من الصورة (1024 بكسل لأطول ضلع، بدون بيانات EXIF مثل الموقع) وملاحظتك الاختيارية.</li>
-<li>إذا فعّلت «تضمين اليوم» أو «تضمين التمرين»، تُضاف هذه الملخصات إلى الطلب نفسه. لا تُرسل بياناتك الصحية ولا ملفك الشخصي ولا سجلك الكامل أبدًا.</li>
+<li>هيكو متوقف حتى تضيف مفتاح Anthropic API الخاص بك. يُحفظ المفتاح في التخزين الآمن على الهاتف (Android Keystore أو iPhone Keychain)، ولا يُكتب أبدًا في قاعدة بيانات ليفتريا ولا في نسخة احتياطية ولا في ملف تصدير. فقط عندما تضغط «اختبار المفتاح» يرسل ليفتريا طلبًا إلى Anthropic للتأكد من أن المفتاح (والنموذج الذي اخترته) يعمل؛ ويحتوي الطلب على المفتاح فقط.</li>
+<li>يرسل هيكو طلبًا إلى Anthropic فقط عندما تضغط إرسال. تُرسل كل الطلبات عبر HTTPS مباشرة من هاتفك إلى Anthropic (api.anthropic.com) دون أي خادم وسيط من ليفتريا. طلب النص يحتوي على نص الوجبة الذي كتبته. طلب الصورة يحتوي على نسخة مصغّرة من الصورة (1024 بكسل لأطول ضلع، بدون بيانات EXIF مثل الموقع) وملاحظتك الاختيارية.</li>
+<li>إذا فعّلت «تضمين اليوم» أو «تضمين التمرين»، تُضاف هذه الملخصات إلى الطلب نفسه. لا تُرسل بياناتك الصحية ولا ملفك الشخصي ولا سجلك الكامل أبدًا. يحتفظ هيكو بسجل استخدام على هاتفك (التاريخ والنموذج وعدد الرموز والتكلفة التقديرية) ولا يحتفظ بنص وجباتك.</li>
 <li>لا تُحفظ صور هيكو في ليفتريا إلا إذا فعّلت «الاحتفاظ بالصور». تتعامل Anthropic مع الطلبات المرسلة وفق سياسة الخصوصية الخاصة بها: <a href="https://www.anthropic.com/legal/privacy">anthropic.com/legal/privacy</a>.</li>
 </ul>
 
@@ -60,18 +60,18 @@
 <p>بإذنك، يقرأ ليفتريا بيانات صحية مثل الخطوات ونبض القلب والنوم والوزن من هيلث كونيكت (أندرويد) أو Apple Health (آيفون) لعرضها في التطبيق. الوصول للقراءة فقط: لا يكتب ليفتريا السجلات الصحية ولا يغيّرها ولا يحذفها. تُعرض هذه البيانات على هاتفك ولا تُرسل إلى أي مكان، ولا إلى هيكو. يمكنك إلغاء الوصول في أي وقت من هيلث كونيكت أو من تطبيق الصحة.</p>
 
 <h2>الاستيراد والنسخ الاحتياطي والتصدير</h2>
-<p>عند استيراد ملف (مثل تصدير Hevy) يقرؤه ليفتريا على هاتفك ولا يحتفظ به. النسخ الاحتياطية وملفات CSV تُنشأ على هاتفك ولا تغادره إلا إذا اخترت مشاركتها.</p>
+<p>عند استيراد ملف (مثل تصدير Hevy) يقرؤه ليفتريا على هاتفك ولا يحتفظ به. تُنشأ النسخ الاحتياطية وملفات CSV كملف مؤقت يحذفه ليفتريا بعد إغلاق قائمة المشاركة؛ ولا يغادر الملف هاتفك إلا إلى المكان الذي تختاره، ويصبح بعدها تحت سيطرة ذلك التطبيق أو الخدمة. النسخة الاحتياطية غير مشفّرة وتحتوي على سجلاتك، ومنها صور التقدّم وصور هيكو المحفوظة، لكنها لا تحتوي على مفتاح API أبدًا. ملفات CSV لا تحتوي على صور.</p>
 
 <h2>الأذونات</h2>
 <ul>
 <li>الإشعارات: تنبيهات مؤقت الراحة وإشعار التمرين الجاري. كلها محلية ولا يُرسل شيء من خادم.</li>
 <li>الكاميرا والصور: فقط عند التقاط صورة أو اختيارها (صورة وجبة لهيكو أو صورة تقدّم).</li>
 <li>البيانات الصحية: للقراءة فقط كما هو موضح أعلاه.</li>
-<li>الإنترنت: يُستخدم فقط لهيكو، للتحقق من مفتاح API عند إضافته ولإرسال الطلبات التي تبدأها.</li>
+<li>الإنترنت: يُستخدم فقط لهيكو، للتحقق من مفتاح API عندما تضغط «اختبار المفتاح» ولإرسال الطلبات التي تبدأها. إذا ضغطت على رابط داخل التطبيق (صفحة تثبيت هيلث كونيكت أو قائمة أسعار Anthropic) فإنه يُفتح في المتصفح أو المتجر.</li>
 </ul>
 
 <h2>حذف بياناتك</h2>
-<p>الإعدادات ← البيانات والتخزين ← حذف الكل يزيل بيانات ليفتريا المحلية وصور التقدّم المحفوظة والمفتاح المحفوظ من هاتفك. حذف التطبيق يزيل بياناته أيضًا. تبقى السجلات في هيلث كونيكت أو Apple Health في تلك التطبيقات. الطلبات المرسلة مسبقًا إلى Anthropic تخضع لسياستها.</p>
+<p>الإعدادات ← البيانات والتخزين ← حذف الكل يزيل بيانات ليفتريا المحلية وصور التقدّم المحفوظة والمفتاح المحفوظ والملفات المؤقتة والإشعارات المجدولة من هاتفك. حذف التطبيق يزيل بياناته أيضًا. تبقى السجلات في هيلث كونيكت أو Apple Health في تلك التطبيقات. الطلبات المرسلة مسبقًا إلى Anthropic تخضع لسياستها.</p>
 
 <h2>الأطفال</h2>
 <p>ليفتريا غير موجّه للأطفال دون 13 عامًا.</p>

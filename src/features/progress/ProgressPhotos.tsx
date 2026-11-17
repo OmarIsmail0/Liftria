@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Image, ScrollView, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { File, Paths } from 'expo-file-system';
@@ -17,7 +17,8 @@ import { captureProgressPhoto } from './progressPhotoCapture';
 import { sanitizeProgressPhoto, type CleanProgressPhoto } from './progressPhotoFile';
 import { ProgressPhotoMark } from './ProgressPhotoMark';
 import {
-  addProgressPhoto, getProgressPhoto, listProgressPhotos, removeProgressPhoto, saveProgressPhotoNote,
+  addProgressPhoto, getProgressPhoto, listProgressPhotoSummaries, listProgressPhotosForCard, progressPhotoImages,
+  removeProgressPhoto, saveProgressPhotoNote,
 } from './progressPhotoRepository';
 import {
   POSES, PROGRESS_PHOTO_BLUR, chooseComparePhoto, comparePhotosForPose, defaultCompareIds, formatLoggedBodyWeight,
@@ -66,6 +67,11 @@ function PhotoVisual({ frame, blurred, label, height }: {
   height: number;
 }) {
   const { theme } = useTheme();
+  // A summary frame carries no image bytes yet; keep the slot until they arrive.
+  if (frame.image.kind === 'jpeg' && frame.image.base64 === '') {
+    return <View accessible accessibilityLabel={label}
+      style={{ width: '100%', height, borderRadius: theme.radius.md, backgroundColor: theme.color.bg.raised }} />;
+  }
   if (frame.image.kind === 'drawing') {
     return <ProgressPhotoMark pose={frame.pose} variant={frame.image.variant} blurred={blurred} label={label} height={height} />;
   }
@@ -75,6 +81,8 @@ function PhotoVisual({ frame, blurred, label, height }: {
     source={{ uri: 'data:image/jpeg;base64,' + frame.image.base64 }}
     blurRadius={blurred ? PROGRESS_PHOTO_BLUR : 0}
     resizeMode="cover"
+    // Android decodes a 1080 px photo at the size it is drawn, not at full size, for the small thumbnails.
+    resizeMethod="resize"
     style={{ width: '100%', height, borderRadius: theme.radius.md }}
   />;
 }
@@ -98,7 +106,7 @@ export function ProgressPhotosCard({ preview }: { preview?: ProgressPhotoCardPre
   const [busy, setBusy] = useState(false);
   const load = useCallback(async () => {
     const [list, setting] = await Promise.all([
-      listProgressPhotos(),
+      listProgressPhotosForCard(),
       getTypedSetting('progress.showPhotos'),
     ]);
     if (list.ok) { setPhotos(list.value.map(frameFromPhoto)); setError(false); }
@@ -243,7 +251,7 @@ export function ProgressPhotoGallery() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const load = useCallback(async () => {
-    const list = await listProgressPhotos();
+    const list = await listProgressPhotoSummaries();
     if (list.ok) { setPhotos(list.value.map(frameFromPhoto)); setError(false); }
     else setError(true);
     setReady(true);
@@ -394,7 +402,7 @@ export function ProgressPhotoCompare() {
   const [error, setError] = useState(false);
   const load = useCallback(async () => {
     const [list, logged, units, hide] = await Promise.all([
-      listProgressPhotos(), listLocalWeights(), getTypedSetting('units.weight'), getTypedSetting('hideNumbers'),
+      listProgressPhotoSummaries(), listLocalWeights(), getTypedSetting('units.weight'), getTypedSetting('hideNumbers'),
     ]);
     if (list.ok) { setPhotos(list.value.map(frameFromPhoto)); setError(false); }
     else setError(true);
@@ -408,13 +416,27 @@ export function ProgressPhotoCompare() {
     ? picked : defaultCompareIds(options);
   const earlier = options.find(item => item.id === chosen?.earlierId) ?? null;
   const later = options.find(item => item.id === chosen?.laterId) ?? null;
+  // The list holds no image bytes; load only the two photos on screen.
+  const [images, setImages] = useState<Record<string, string>>({});
+  const earlierId = earlier?.id, laterId = later?.id;
+  useEffect(() => {
+    const wanted = [earlierId, laterId].filter((id): id is string => !!id && images[id] === undefined);
+    if (wanted.length === 0) return;
+    let live = true;
+    void progressPhotoImages(wanted).then(result => {
+      if (live && result.ok) setImages(current => ({ ...current, ...result.value }));
+    });
+    return () => { live = false; };
+  }, [earlierId, laterId, images]);
+  const withImage = (frame: ProgressPhotoFrame | null): ProgressPhotoFrame | null =>
+    frame && frame.image.kind === 'jpeg' ? { ...frame, image: { kind: 'jpeg', base64: images[frame.id] ?? '' } } : frame;
   return <Screen embedded scroll={false}>
     <ScrollView keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ gap: theme.layout.cardGap, paddingVertical: theme.space[3] }}>
       <Header mode="inline" title={t('progressPhotos.compare')} onBack={leave} />
       <Card>
         <ProgressPhotoCompareBody pose={pose} onPose={next => { setPose(next); setPicked(null); }}
-          options={options} earlier={earlier} later={later} weightUnit={weightUnit} hidden={hidden}
+          options={options} earlier={withImage(earlier)} later={withImage(later)} weightUnit={weightUnit} hidden={hidden}
           onPick={id => setPicked(current => {
             const base = current && options.some(item => item.id === current.earlierId) ? current : defaultCompareIds(options);
             if (!base) return current;

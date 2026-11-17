@@ -22,6 +22,6 @@ test('Android still configures its rest channel before checking permissions',asy
  Object.defineProperty(Platform,'OS',{configurable:true,value:'android'});
  expect(await prepareRestAlerts()).toBe(true);
  expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(REST_CHANNEL,
-  {name:'Rest timer (device test)',importance:Notifications.AndroidImportance.HIGH});
+  {name:'Rest timer',importance:Notifications.AndroidImportance.HIGH});
  expect(Notifications.getPermissionsAsync).toHaveBeenCalledTimes(1);
 });

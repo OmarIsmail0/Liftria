@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTheme } from '../../design/ThemeProvider';
 import { Typography } from '../../design/primitives';
+import { translateWaterTotal } from '../../i18n';
 import { useLanguage } from '../../i18n/LanguageProvider';
 
 /**
@@ -34,11 +35,11 @@ export function WaterRow({ divider, ready, glasses, millilitres, glassMl, error,
   onChange: (delta: -1 | 1) => void;
 }) {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const detail = !ready ? t('today.loading')
     : error && glasses === null ? t('water.error')
     : glasses === null ? t('water.unlogged')
-    : t('water.total', { glasses, ml: millilitres ?? glasses * glassMl });
+    : translateWaterTotal(language, glasses, millilitres ?? glasses * glassMl);
   const removeDisabled = !ready || busy || glasses === null || glasses === 0;
   const addDisabled = !ready || busy || glasses === 200;
   return <View style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: theme.space[3],

@@ -23,16 +23,14 @@ describe('Phase 4 bilingual contract', () => {
     }
     expect(translateWorkoutCount('ar', 3)).toContain('3');
   });
-  it('says rest alerts are in testing, in plain language', () => {
-    expect(en['notifications.pending']).toBe('In testing');
-    expect(ar['notifications.pending']).toBe('قيد الاختبار');
-    expect(en['notifications.subtitle']).toBe('Rest alerts are in testing');
-    expect(ar['notifications.subtitle']).toBe('تنبيهات الراحة قيد الاختبار');
+  it('describes rest alerts in plain language, with no testing caveat', () => {
+    expect(en).not.toHaveProperty('notifications.pending');
+    expect(en).not.toHaveProperty('notifications.subtitle');
     expect(en['notifications.restNote']).toBe(
-      'Liftria asks about rest alerts in context during your first rest. Lock-screen delivery can be delayed by Android; the in-app deadline timer remains the reliable source.',
+      'Liftria asks once, during your first rest. Your phone may delay alerts while it is locked, so the timer in the app is always the exact one.',
     );
     expect(ar['notifications.restNote']).toBe(
-      'يسألك ليفتريا عن تنبيهات الراحة في أول فترة راحة. قد يؤخّر أندرويد وصول التنبيه على شاشة القفل؛ ويظل المؤقت داخل التطبيق المرجع الأوثق.',
+      'يسألك ليفتريا مرة واحدة أثناء أول فترة راحة. قد يتأخر وصول التنبيه والهاتف مقفل، لذلك يبقى المؤقت داخل التطبيق هو الأدق.',
     );
   });
   it('retains logical start/end and swaps directional chevrons only', () => {

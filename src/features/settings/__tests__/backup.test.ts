@@ -85,3 +85,14 @@ test('a v7 backup without progress photos restores as an empty table',()=>{
  expect(parsed.schemaVersion).toBe(7);
  expect(progressPhotoByteCount(parsed)).toBe(0);
 });
+
+test('a backup over the restore limit is flagged by UTF-8 bytes, like the file-size check',()=>{
+ const {backupExceedsRestoreLimit}=jest.requireActual('../backup') as typeof import('../backup');
+ expect(backupExceedsRestoreLimit('abcd',4)).toBe(false);
+ expect(backupExceedsRestoreLimit('abcde',4)).toBe(true);
+ // Three Arabic letters are 3 characters but 6 bytes: within the character limit, over the byte limit.
+ expect(backupExceedsRestoreLimit('\u0639\u0639\u0639',4)).toBe(true);
+ expect(backupExceedsRestoreLimit('\u0639\u0639',4)).toBe(false);
+ expect(backupExceedsRestoreLimit('\u{1F600}',3)).toBe(true);
+ expect(backupExceedsRestoreLimit('\u{1F600}',4)).toBe(false);
+});

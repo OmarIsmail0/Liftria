@@ -22,7 +22,7 @@ const palette = {
   dark: {
     color: {
       bg: { base: '#0D0E10', surface: '#18191C', raised: '#232529' },
-      border: { subtle: '#2B2D32', strong: '#5C6168', control: '#8D9199' },
+      border: { subtle: '#2B2D32', strong: '#6A6F76', control: '#8D9199' },
       text: { primary: '#F2F3F5', secondary: '#A9ADB4', tertiary: '#8D9199', inverse: '#1A0D06' },
       accent: '#FF8A5C',
       action: { primary: { bg: '#FF8A5C', fg: '#1A0D06' } },
@@ -47,21 +47,21 @@ const palette = {
     color: {
       bg: { base: '#F4F3F1', surface: '#FFFFFF', raised: '#ECEAE6' },
       border: { subtle: '#E3E1DC', strong: '#5C6066', control: '#6E7279' },
-      text: { primary: '#17181A', secondary: '#5C6066', tertiary: '#6E7279', inverse: '#FFFFFF' },
-      accent: '#C2410C',
-      action: { primary: { bg: '#C2410C', fg: '#FFFFFF' } },
-      domain: { train: '#C2410C', eat: '#C2410C', health: '#C2410C', hiku: '#C2410C' },
+      text: { primary: '#17181A', secondary: '#5C6066', tertiary: '#666A71', inverse: '#FFFFFF' },
+      accent: '#B83B09',
+      action: { primary: { bg: '#B83B09', fg: '#FFFFFF' } },
+      domain: { train: '#B83B09', eat: '#B83B09', health: '#B83B09', hiku: '#B83B09' },
       on: { accent: '#FFFFFF', train: '#FFFFFF', hiku: '#FFFFFF' },
       tint: {
         accent: '#FBE9DF', success: '#E3F3E9',
         train: '#FBE9DF', eat: '#FBE9DF', health: '#FBE9DF', hiku: '#FBE9DF',
         warning: '#F4EFE6', danger: '#ECEAE6',
       },
-      macro: { protein: '#2E6BD3', carbs: '#9A6C00', fat: '#B8406F' },
+      macro: { protein: '#2E6BD3', carbs: '#8F6500', fat: '#B8406F' },
       status: { success: '#177A45', warning: '#8A5C00', danger: '#B3261E' },
       track: '#ECEAE6',
       board: { bg: '#F4F3F1' },
-      chip: { hiku: { bg: '#FBE9DF', fg: '#C2410C' } },
+      chip: { hiku: { bg: '#FBE9DF', fg: '#B83B09' } },
     },
     surface: { hairline: '#E3E1DC', control: '#ECEAE6', pressed: '#E3E1DC' },
     sheet: { scrim: 'rgba(16,24,40,0.36)' },
@@ -86,7 +86,7 @@ const shared = {
   // 5 was 20 and 10 was 40; both sit on the nearest v2 step (16 and 32).
   space: { 1: 4, 2: 8, 3: 12, 4: 16, 5: 16, 6: 24, 8: 32, 10: 32 },
   radius: { sm: 8, md: 12, lg: 16, pill: 999 },
-  layout: { gutter: 16, cardGap: 24, sheetMaxHeight: '90%' },
+  layout: { gutter: 16, cardGap: 24, sheetMaxHeight: '90%', maxContentWidth: 640 },
   size: {
     iconStroke: 1.8,
     touch: { min: 48, primary: 56, workout: 64, nav: 56 },

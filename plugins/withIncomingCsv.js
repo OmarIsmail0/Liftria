@@ -1,7 +1,7 @@
 // A CSV shared as text/plain often arrives as EXTRA_STREAM, not EXTRA_TEXT.
 // expo-sharing only reads EXTRA_TEXT for text/plain, so the file would be dropped.
 // Relabel that one case as a generic file before the sharing listener runs.
-const { withMainActivity } = require('expo/config-plugins');
+const { withMainActivity, withAndroidManifest } = require('expo/config-plugins');
 
 const MARKER = 'liftria: incoming-csv';
 const METHOD = `
@@ -44,7 +44,28 @@ ${METHOD}`;
   return next.slice(0, end) + added + '\n' + next.slice(end);
 }
 
+// Expo's dev-client plugin appends its `exp+<slug>` scheme to every VIEW intent filter. On the
+// "open a CSV" filter (mime types, no scheme) that makes Android require that scheme, so a
+// file:// or content:// CSV from Files would never offer Liftria. Drop it from filters that
+// match by mime type.
+function removeDevSchemeFromMimeFilters(manifest) {
+  for (const application of manifest.manifest.application || []) {
+    for (const activity of application.activity || []) {
+      for (const filter of activity['intent-filter'] || []) {
+        const data = filter.data || [];
+        if (!data.some((d) => d.$ && d.$['android:mimeType'])) continue;
+        filter.data = data.filter((d) => !String((d.$ && d.$['android:scheme']) || '').startsWith('exp+'));
+      }
+    }
+  }
+  return manifest;
+}
+
 function withIncomingCsv(config) {
+  config = withAndroidManifest(config, (mod) => {
+    mod.modResults = removeDevSchemeFromMimeFilters(mod.modResults);
+    return mod;
+  });
   return withMainActivity(config, (mod) => {
     if (mod.modResults.language !== 'kt') throw new Error('withIncomingCsv expects MainActivity.kt');
     mod.modResults.contents = patchMainActivity(mod.modResults.contents);
@@ -54,3 +75,4 @@ function withIncomingCsv(config) {
 
 module.exports = withIncomingCsv;
 module.exports.patchMainActivity = patchMainActivity;
+module.exports.removeDevSchemeFromMimeFilters = removeDevSchemeFromMimeFilters;

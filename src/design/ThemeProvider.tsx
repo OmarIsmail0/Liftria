@@ -6,6 +6,7 @@ import { createTheme, type LiftriaTheme, type ThemeMode, type VisualStyle } from
 import { resolveStartupAccessibility } from './startupAccessibility';
 import { getTypedSetting, setTypedSetting } from '../services/database/settings';
 import { hydrateThemePreferences, canRenderThemedNavigation } from './themePreferences';
+import { STARTUP_TIMEOUT_MS, withTimeout } from '../features/startup/withTimeout';
 
 export type ThemePreferences = { mode: ThemeMode; style: VisualStyle };
 
@@ -74,10 +75,11 @@ export function ThemeProvider({
     let mounted = true;
     // Missing/corrupt values fall back to defaults; an unavailable DB does not
     // block the app. The native splash stays up while initial values load.
-    void hydrateThemePreferences({ mode: initialMode, style: initialStyle }, {
+    // A database that never answers must not hold the splash forever.
+    void withTimeout(hydrateThemePreferences({ mode: initialMode, style: initialStyle }, {
       theme: () => getTypedSetting('theme'),
       style: () => getTypedSetting('style'),
-    }).then(saved => {
+    }), STARTUP_TIMEOUT_MS, { mode: initialMode, style: initialStyle }).then(saved => {
       if (mounted) setPreferences(saved);
     }).finally(() => {
       if (mounted) setSettingsReady(true);
@@ -153,6 +155,11 @@ export function ThemeProvider({
   }), [theme, preferences, highTextContrast, reduceTransparency, reduceMotion, fontScale, ready]);
 
   return <ThemeContext.Provider value={value}>{ready ? children : null}</ThemeContext.Provider>;
+}
+
+/** For screens that may render outside the provider, such as the root error screen. */
+export function useOptionalTheme(): ThemeContextValue | null {
+  return useContext(ThemeContext);
 }
 
 export function useTheme(): ThemeContextValue {

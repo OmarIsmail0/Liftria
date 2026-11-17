@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Button, Card, Header, Screen, Typography } from '../../src/design/primitives';
 import { setImportDraft } from '../../src/features/import/importDraft';
 import { previewDraftFromShare, type SharedPiece } from '../../src/features/import/importIncoming';
-import { readFailureMessage } from '../../src/features/import/importCsv';
+import { MAX_CSV_BYTES, readFailureMessage } from '../../src/features/import/importCsv';
 import { deleteCachedImportFile, writeIncomingImportFile } from '../../src/features/settings/storage';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 
@@ -43,7 +43,15 @@ export default function IncomingImport(){
    try{
     const preview=await previewDraftFromShare({
      url:sharedUrl,language,payloads:await sharedPieces(),
-     readText:uri=>new File(uri).text(),
+     readText:async uri=>{
+      const file=new File(uri);
+      // Refuse a huge file before reading it into memory. A content:// URI may not report a
+      // size (it can throw, or give 0/null); then the check after reading still applies.
+      let size:unknown;
+      try{size=file.size;}catch{size=undefined;}
+      if(typeof size==='number'&&size>MAX_CSV_BYTES)throw new Error('too large');
+      return file.text();
+     },
     });
     try{clearSharedPayloads();}catch{/* Nothing was shared, or the module is unavailable. */}
     if(cancel)return;

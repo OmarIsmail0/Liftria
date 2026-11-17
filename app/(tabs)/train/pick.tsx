@@ -79,7 +79,7 @@ export default function AddWorkoutExercise() {
     void (async () => {
       const seeded = await ensureExercisePack();
       const [exercises, latest] = await Promise.all([
-        seeded.ok ? listExercises() : Promise.resolve(null),
+        seeded.ok ? listExercises(false, true) : Promise.resolve(null),
         recentExerciseIds(24),
       ]);
       if (!live) return;

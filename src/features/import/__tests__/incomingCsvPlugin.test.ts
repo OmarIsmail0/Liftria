@@ -29,3 +29,17 @@ test('text/plain file shares are relabeled before the activity listeners run',()
 test('a MainActivity without onCreate fails loudly',()=>{
  expect(()=>patchMainActivity('class MainActivity')).toThrow('onCreate');
 });
+
+test('the dev-client scheme is removed from mime-type filters only', () => {
+  const { removeDevSchemeFromMimeFilters } = jest.requireActual('../../../../plugins/withIncomingCsv.js') as {
+    removeDevSchemeFromMimeFilters: (m: unknown) => any;
+  };
+  const link = [{ $: { 'android:scheme': 'liftria' } }, { $: { 'android:scheme': 'exp+liftria' } }];
+  const manifest = { manifest: { application: [{ activity: [{ 'intent-filter': [
+    { data: [...link] },
+    { data: [{ $: { 'android:mimeType': 'text/csv' } }, { $: { 'android:scheme': 'exp+liftria' } }] },
+  ] }] }] } };
+  const filters = removeDevSchemeFromMimeFilters(manifest).manifest.application[0].activity[0]['intent-filter'];
+  expect(filters[0].data).toEqual(link);
+  expect(filters[1].data).toEqual([{ $: { 'android:mimeType': 'text/csv' } }]);
+});

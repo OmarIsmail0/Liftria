@@ -193,7 +193,6 @@ export default function Diagnostics() {
     try {
       const result = await runMealEstimate({ image, signal: controller.signal });
       if (result.ok) {
-        console.info('[Liftria] Claude token counts only', result.usage);
         const estimates = result.data.items.map(item =>
           `${item.name}: ${item.quantity} ${item.unit} (confidence ${item.confidence.toFixed(2)})`);
         setAiText(`Estimated only — NOT measured:\n${estimates.join('\n')}\nTokens: ${result.usage.inputTokens} input / ${result.usage.outputTokens} output`);

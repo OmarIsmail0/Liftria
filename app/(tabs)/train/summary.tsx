@@ -3,7 +3,7 @@ import { formatNumber, pluralForm, type TranslationKey } from '../../../src/i18n
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Chip, Field, Header, ListGroup, ListRow, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../src/design/primitives';
+import { Button, Field, Header, Screen, SectionHeader, Sheet, StatBlock, Typography } from '../../../src/design/primitives';
 import { completeWorkout, discardInProgressWorkout, readWorkout, workoutNumbers,
   type ActiveWorkout } from '../../../src/features/train/workoutData';
 import { elapsedLabel } from '../../../src/features/train/restClock';
@@ -47,8 +47,11 @@ export default function WorkoutSummaryScreen() {
   const save=async()=>{
     if(!workout||busy)return;setBusy(true);
     const result=await completeWorkout(workout.id,notes.trim()||null);
-    if(result.ok&&result.value)router.replace('/(tabs)/train');
-    else {setError(t('summary.saveError'));setBusy(false);}
+    if(result.ok&&result.value){router.replace('/(tabs)/train');return;}
+    // Already finished (a second tap, or another screen): it is saved, so do not report a failure.
+    const current=result.ok?await readWorkout(workout.id):null;
+    if(current?.ok&&current.value?.state==='finished'){router.replace('/(tabs)/train');return;}
+    setError(t('summary.saveError'));setBusy(false);
   };
   const discardNow=async()=>{
     if(!workout||busy)return;setBusy(true);
@@ -82,15 +85,6 @@ export default function WorkoutSummaryScreen() {
       {newRecords>0?<Typography bold>{t((`summary.records.${pluralForm(language,newRecords)}`) as TranslationKey,{count:newRecords})}</Typography>:
         <Typography tone="secondary">{t('summary.noRecords')}</Typography>}
       <Typography tone="secondary" size="secondary">{t('summary.recordNote')}</Typography>
-    </View>
-    <View style={{gap:8}}>
-      <SectionHeader title={t('summary.wearables')}/>
-      <ListGroup>
-        <ListRow title={t('summary.heart')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
-          detail={t('summary.noWatch')}/>
-        <ListRow title={t('summary.calories')} suffix={<Chip kind="pending" label={t('chips.pending')}/>}
-          detail={t('summary.noCalories')}/>
-      </ListGroup>
     </View>
     <Field label={t('summary.notesOptional')} value={notes} onChangeText={setNotes} multiline/>
     {error&&<Typography>{error}</Typography>}

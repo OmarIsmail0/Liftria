@@ -1,8 +1,9 @@
 import {router,useFocusEffect,useLocalSearchParams} from 'expo-router';
 import {useCallback,useState} from 'react';
+import {devRoutesEnabled} from '../../../src/navigation/devRoutes';
 import {useLanguage} from '../../../src/i18n/LanguageProvider';
 import {bidiIsolate,formatNumber} from '../../../src/i18n';
-import {formatEditableNumber} from '../../../src/i18n/editableNumber';
+import {formatEditableNumber,parseEditableNumber} from '../../../src/i18n/editableNumber';
 import {Button,Card,Chip,EmptyState,Field,Header,ListGroup,ListRow,Screen,SegmentedControl,Sheet,Toggle,Typography} from '../../../src/design/primitives';
 import {dayOffset,localDay} from '../../../src/features/eat/foodCatalog';
 import {readDiaryRange,summarizeEntries,type DiaryEntry} from '../../../src/features/eat/diaryRepository';
@@ -19,7 +20,9 @@ import {targetSafety} from '../../../src/features/onboarding/targetEstimate';
 
 export default function NutritionTrends(){
  const {t,language}=useLanguage();
- const {demoAdaptive}=useLocalSearchParams<{demoAdaptive?:'early'|'ready'}>();
+ const {demoAdaptive:demoParam}=useLocalSearchParams<{demoAdaptive?:'early'|'ready'}>();
+ // Demo data is a developer/screenshot route: a release build ignores the parameter.
+ const demoAdaptive=devRoutesEnabled()?demoParam:undefined;
  const [range,setRange]=useState<RangeKey>('4w'),[entries,setEntries]=useState<DiaryEntry[]>([]);
  const [target,setTarget]=useState<Target|null>(null),[hidden,setHidden]=useState(false),[error,setError]=useState(false);
  const [burn,setBurn]=useState<BurnResult|null>(null);
@@ -67,7 +70,7 @@ export default function NutritionTrends(){
   };
   return {fiber:average('fiber'),sugar:average('sugar'),sodium:average('sodium')};
  })();
- const edited=proposedInput.trim()?Number(proposedInput):NaN;
+ const edited=parseEditableNumber(proposedInput)??NaN;
  const editedValid=Number.isInteger(edited)&&edited>=1000&&edited<=10000;
  async function answer(action:'accept'|'edit'|'dismiss',kcal:number|null=null,confirmed=false){
   if(!checkin||busy||checkin.status!=='pending')return;

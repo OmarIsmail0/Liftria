@@ -4,7 +4,7 @@ import {
   SET_HOLD_DELETE_MS, buildSetRows, commitSetDraft, cycleSetMark, historySetSpoken, historySetTitle,
   markedSetLine, persistedKind, persistedMark,
   previousCellText, previousForWorkingSet, rowKey, setMarkGlyph, setRowAccessibilityLabel,
-  setTableColumns, uncheckedRowPayload, visualColumnOrder,
+  setTableColumns, setTablePropsEqual, uncheckedRowPayload, visualColumnOrder, type SetTableRenderProps,
 } from '../setTable';
 import { equipmentFilterOf, exerciseMatchesFilters, muscleFilterMatches } from '../exerciseFilters';
 import { bundledExercises } from '../../../services/database/exerciseLibrary';
@@ -146,4 +146,39 @@ test('muscle and equipment chips map the pack, and recent filters do not drop th
   expect(exerciseMatchesFilters(bench!, 'chest', 'barbell')).toBe(true);
   expect(exerciseMatchesFilters(bench!, 'legs', 'any')).toBe(false);
   expect(all.filter(exercise => exerciseMatchesFilters(exercise, 'all', 'any'))).toHaveLength(876);
+});
+
+describe('set table memo comparison', () => {
+  const row = (key: string, loggedId: string | null = null) => ({
+    key, position: 0, side: null, mark: 'working' as const, loggedId, workingNumber: 1,
+  });
+  const base = (): SetTableRenderProps => ({
+    exerciseId: 'a', rows: [row('a:0'), row('a:1', 'set1')], history: [], weightUnit: 'kg', effort: 'off',
+    drafts: { 'a:0': { weight: '60', reps: '5', effort: '' } },
+    loggedValues: { set1: { weight: 60, reps: 5, effort: '' } },
+    repMax: 12, expectedRows: 3, weightStep: 2.5, busy: false,
+  });
+  test('typing in another exercise or rebuilding rows and logged values does not re-render this table', () => {
+    const before = base();
+    const after: SetTableRenderProps = {
+      ...before,
+      rows: [row('a:0'), row('a:1', 'set1')],
+      drafts: { ...before.drafts, 'b:0': { weight: '99', reps: '1', effort: '' } },
+      loggedValues: { ...before.loggedValues, set1: { weight: 60, reps: 5, effort: '' }, other: { weight: 1, reps: 1, effort: '' } },
+    };
+    expect(setTablePropsEqual(before, after)).toBe(true);
+  });
+  test('a change to this table own draft, logged set, rows or settings does re-render it', () => {
+    const before = base();
+    expect(setTablePropsEqual(before, { ...before, drafts: { 'a:0': { weight: '62.5', reps: '5', effort: '' } } })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, drafts: {} })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, loggedValues: { set1: { weight: 65, reps: 5, effort: '' } } })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, loggedValues: {} })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, rows: [row('a:0'), row('a:1')] })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, rows: [row('a:0')] })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, weightUnit: 'lb' })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, busy: true })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, history: [{}] })).toBe(false);
+    expect(setTablePropsEqual(before, { ...before, rows: [{ ...row('a:0'), mark: 'drop' as const }, row('a:1', 'set1')] })).toBe(false);
+  });
 });
