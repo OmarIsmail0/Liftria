@@ -46,7 +46,12 @@ Claude's record of the production-readiness pass. **This file is Claude's.** Don
 - CSV "Open with" from the Files app; the recovery screen and error boundaries.
 
 ### Later (not blocking a first release)
-- R8 minify and resource shrinking are off (bigger APK); turn on with a device test.
-- Restore does not run `PRAGMA foreign_key_check` on the imported rows.
-- Records list is not virtualised; progress photos are stored as base64 in the database.
-- First launch inserts 876 exercises row by row.
+- Progress photos are stored as base64 in the database (a file-based store would be lighter).
+- Meal reminders are not built (the block is hidden in store builds).
+
+## Round 2 (PR #128)
+- R8 code shrinking and resource shrinking are on for release builds; the emulator run opened every screen of the shrunk APK.
+- Restore runs `PRAGMA foreign_key_check` before committing and rolls back on any orphan row.
+- First launch seeds the 876 exercises in batches of 75 rows.
+- The records list is virtualised.
+- About shows one "Version 1.0.0 (build)" row.
